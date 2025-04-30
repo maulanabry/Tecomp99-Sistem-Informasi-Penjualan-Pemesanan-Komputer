@@ -1,9 +1,13 @@
+@php
+    $isDataMasterActive = request()->is('admin/kategori*') || request()->is('produk.*') || request()->is('servis.*') || request()->is('promo.*') || request()->is('pelanggan.*');
+    $isOrderActive = request()->is('order.servis') || request()->is('order.produk');
+@endphp
 <div x-data="{ open: false }" 
      @toggle-sidebar.window="open = !open"
      :class="{'translate-x-0': open, '-translate-x-full': !open}"
-     class="fixed md:static md:translate-x-0 w-64 h-[calc(100vh-4rem)] bg-white dark:bg-neutral-600 border-r border-neutral-200 dark:border-neutral-500 flex flex-col transition-transform duration-300 ease-in-out">
+     class="fixed md:static md:translate-x-0 w-64 h-[calc(100vh-4rem)] bg-white dark:bg-gray-700 border-r border-neutral-200 dark:border-neutral-500 flex flex-col transition-transform duration-300 ease-in-out shadow-md">
     <!-- Main Navigation -->
-    <nav class="flex-1 px-4 py-4 overflow-y-auto">
+    <nav class="flex-1 px-4 py-4 overflow-y-auto mt-2">
         <ul class="space-y-2 text-neutral-600 dark:text-neutral-100">
             <!-- Dashboard -->
             <li>
@@ -12,48 +16,54 @@
                     <span>Dashboard</span>
                 </a>
             </li>
+<!-- Data Master -->
+<li x-data="{ open: {{ request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('produk.*') || request()->is('servis.*') || request()->is('promo.*') || request()->is('pelanggan.*') ? 'true' : 'false' }} }" class="mt-4">
+    <button @click="open = !open" :class="{'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300': {{ request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('produk.*') || request()->is('servis.*') || request()->is('promo.*') || request()->is('pelanggan.*') ? 'true' : 'false' }} }" class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500">
+        <div class="flex items-center">
+            <i class="fas fa-database w-5 h-5 mr-3"></i>
+            <span>Data Master</span>
+        </div>
+        <i class="fas fa-chevron-down w-4 h-4 transition-transform" :class="{ 'transform rotate-180': open }"></i>
+    </button>
+    <ul x-show="open" class="mt-1 space-y-1 pl-10">
+        <li>
+            <a href="{{ route('categories.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/kategori*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                Data Kategori
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('brands.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/brand*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                Data Brand
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('produk.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('produk.*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                Data Produk
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('servis.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('servis.*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                Data Servis
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('promo.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('promo.*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                Data Promo
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('pelanggan.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('pelanggan.*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                Data Pelanggan
+            </a>
+        </li>
+    </ul>
+</li>
 
-            <!-- Data Master -->
-            <li x-data="{ open: false }" class="mt-4">
-                <button @click="open = !open" class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500">
-                    <div class="flex items-center">
-                        <i class="fas fa-database w-5 h-5 mr-3"></i>
-                        <span>Data Master</span>
-                    </div>
-                    <i class="fas fa-chevron-down w-4 h-4 transition-transform" :class="{ 'transform rotate-180': open }"></i>
-                </button>
-                <ul x-show="open" class="mt-1 space-y-1 pl-10">
-                    <li>
-                        <a href="{{ route('categories.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/kategori*') ? 'text-primary-600 dark:text-primary-300' : '' }}">
-                            Data Kategori
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ ('produk.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('produk.*') ? 'text-primary-600 dark:text-primary-300' : '' }}">
-                            Data Produk
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ ('servis.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('servis.*') ? 'text-primary-600 dark:text-primary-300' : '' }}">
-                            Data Servis
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ ('promo.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('promo.*') ? 'text-primary-600 dark:text-primary-300' : '' }}">
-                            Data Promo
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ ('pelanggan.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('pelanggan.*') ? 'text-primary-600 dark:text-primary-300' : '' }}">
-                            Data Pelanggan
-                        </a>
-                    </li>
-                </ul>
-            </li>
+
 
             <!-- Order -->
-            <li x-data="{ open: false }" class="mt-4">
-                <button @click="open = !open" class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500">
+            <li x-data="{ open: {{ $isOrderActive ? 'true' : 'false' }} }" class="mt-4">
+                <button @click="open = !open" :class="{'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300': {{ $isOrderActive ? 'true' : 'false' }}}" class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500">
                     <div class="flex items-center">
                         <i class="fas fa-shopping-cart w-5 h-5 mr-3"></i>
                         <span>Order</span>

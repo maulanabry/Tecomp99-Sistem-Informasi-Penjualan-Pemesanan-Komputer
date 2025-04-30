@@ -23,10 +23,26 @@ class CategoryController extends Controller
             $query->where('type', $request->type);
         }
 
-        // Get paginated results
-        $categories = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Sorting
+        $allowedSorts = ['name', 'type', 'slug', 'created_at'];
+        $sort = $request->get('sort', 'created_at');
+        $direction = $request->get('direction', 'desc');
 
-        return view('admin.category', compact('categories'));
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'created_at';
+        }
+        if (!in_array($direction, ['asc', 'desc'])) {
+            $direction = 'desc';
+        }
+
+        $categories = $query->orderBy($sort, $direction)->paginate(10)->appends([
+            'search' => $request->search,
+            'type' => $request->type,
+            'sort' => $sort,
+            'direction' => $direction,
+        ]);
+
+        return view('admin.category', compact('categories', 'sort', 'direction'));
     }
     public function create()
     {
@@ -35,17 +51,24 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'type' => 'required|in:produk,layanan',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|max:255',
+                'type' => 'required|in:produk,layanan',
+            ]);
 
-        $validated['slug'] = Str::slug($validated['name']);
+            $validated['slug'] = Str::slug($validated['name']);
 
-        Category::create($validated);
+            Category::create($validated);
 
-        return redirect()->route('categories.index')
-            ->with('success', 'Category created successfully.');
+            return redirect()->route('categories.index')
+                ->with('success', 'Kategori berhasil ditambahkan.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()
+                ->withErrors($e->validator)
+                ->withInput()
+                ->with('error', 'Gagal menambahkan kategori. Silakan periksa kembali data yang dimasukkan.');
+        }
     }
 
     public function edit(Category $category)
@@ -55,24 +78,35 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'type' => 'required|in:produk,layanan',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|max:255',
+                'type' => 'required|in:produk,layanan',
+            ]);
 
-        $validated['slug'] = Str::slug($validated['name']);
+            $validated['slug'] = Str::slug($validated['name']);
 
-        $category->update($validated);
+            $category->update($validated);
 
-        return redirect()->route('categories.index')
-            ->with('success', 'Category updated successfully.');
+            return redirect()->route('categories.index')
+                ->with('success', 'Kategori berhasil diperbarui.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()
+                ->withErrors($e->validator)
+                ->withInput()
+                ->with('error', 'Gagal memperbarui kategori. Silakan periksa kembali data yang dimasukkan.');
+        }
     }
 
     public function destroy(Category $category)
     {
-        $category->delete();
-
-        return redirect()->route('categories.index')
-            ->with('success', 'Category deleted successfully.');
+        try {
+            $category->delete();
+            return redirect()->route('categories.index')
+                ->with('success', 'Kategori berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->route('categories.index')
+                ->with('error', 'Gagal menghapus kategori. Kategori mungkin sedang digunakan.');
+        }
     }
 }

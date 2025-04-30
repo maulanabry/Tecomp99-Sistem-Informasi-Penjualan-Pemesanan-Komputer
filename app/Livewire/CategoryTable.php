@@ -1,9 +1,6 @@
-//calling view
-<livewire:counter />
-
 <?php
 
-
+namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -14,12 +11,18 @@ class CategoryTable extends Component
     use WithPagination;
 
     public $search = '';
-    public $filterStatus = '';
-    public $filterType = '';
+    public $type = '';
 
     protected $paginationTheme = 'tailwind';
 
+    protected $queryString = ['search', 'type'];
+
     public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingType()
     {
         $this->resetPage();
     }
@@ -28,21 +31,17 @@ class CategoryTable extends Component
     {
         $query = Category::query();
 
-        if ($this->search) {
+        if ($this->search !== '') {
             $query->where('name', 'like', '%' . $this->search . '%');
         }
 
-        if ($this->filterStatus) {
-            $query->where('status', $this->filterStatus);
-        }
-
-        if ($this->filterType) {
-            $query->where('type', $this->filterType);
+        if ($this->type !== '') {
+            $query->where('type', $this->type);
         }
 
         $categories = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('livewire.admin.category-table', [
+        return view('livewire.category-table', [
             'categories' => $categories,
         ]);
     }

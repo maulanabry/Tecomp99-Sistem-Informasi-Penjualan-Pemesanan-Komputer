@@ -24,7 +24,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 ml-0 md:ml-64 p-4 overflow-y-auto bg-neutral-100 dark:bg-neutral-600 min-h-[calc(100vh-3.75rem)]">
+        <main class="flex-1 ml-0 md:ml-64 p-4 overflow-y-auto bg-neutral-100 dark:bg-gray-900 min-h-[calc(100vh-3.75rem)]">
             {{ $slot }}
             <x-footer />
         </main>
