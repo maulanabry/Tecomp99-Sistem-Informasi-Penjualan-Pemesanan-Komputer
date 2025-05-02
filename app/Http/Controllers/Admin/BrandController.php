@@ -31,7 +31,7 @@ class BrandController extends Controller
             $direction = 'desc';
         }
 
-        $brands = $query->orderBy($sort, $direction)->paginate(10)->appends([
+        $brands = $query->orderBy($sort, $direction)->paginate(25)->appends([
             'search' => $request->search,
             'sort' => $sort,
             'direction' => $direction,
