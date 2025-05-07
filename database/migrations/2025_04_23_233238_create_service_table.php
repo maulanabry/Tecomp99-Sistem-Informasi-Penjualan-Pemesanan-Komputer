@@ -14,8 +14,11 @@ return new class extends Migration {
             $table->text('description');
             $table->integer('price');
             $table->string('thumbnail');
-            $table->string('slug')->unique();
-            $table->timestamps();
+            $table->string('slug');
+            $table->boolean('is_active')->default(true); // true = aktif, false = nonaktif
+            $table->unsignedInteger('sold_count')->default(0); // jumlah servis yang telah dipesan
+            $table->timestamps(); // created_at dan updated_at
+            $table->softDeletes(); // deleted_at
 
             $table->foreign('categories_id')
                 ->references('categories_id')

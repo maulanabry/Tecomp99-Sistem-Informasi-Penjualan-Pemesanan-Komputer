@@ -12,8 +12,9 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         $query = Category::query();
+        $deletedQuery = Category::onlyTrashed();
 
-        // Filter by name
+        // Filter active categories by name
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
@@ -35,14 +36,32 @@ class CategoryController extends Controller
             $direction = 'desc';
         }
 
-        $categories = $query->orderBy($sort, $direction)->paginate(10)->appends([
+        // Filter deleted categories by name
+        if ($request->filled('recovery_search')) {
+            $deletedQuery->where('name', 'like', '%' . $request->recovery_search . '%');
+        }
+
+        // Filter deleted categories by type
+        if ($request->filled('recovery_type') && $request->recovery_type !== '') {
+            $deletedQuery->where('type', $request->recovery_type);
+        }
+
+        $categories = $query->orderBy($sort, $direction)->paginate(15)->appends([
             'search' => $request->search,
             'type' => $request->type,
             'sort' => $sort,
             'direction' => $direction,
         ]);
 
-        return view('admin.category', compact('categories', 'sort', 'direction'));
+        $deletedCategories = $deletedQuery
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(10)
+            ->appends([
+                'recovery_search' => $request->recovery_search,
+                'recovery_type' => $request->recovery_type,
+            ]);
+
+        return view('admin.category', compact('categories', 'deletedCategories', 'sort', 'direction'));
     }
     public function create()
     {
@@ -103,10 +122,45 @@ class CategoryController extends Controller
         try {
             $category->delete();
             return redirect()->route('categories.index')
-                ->with('success', 'Kategori berhasil dihapus.');
+                ->with('success', 'Kategori berhasil dihapus sementara.');
         } catch (\Exception $e) {
             return redirect()->route('categories.index')
                 ->with('error', 'Gagal menghapus kategori. Kategori mungkin sedang digunakan.');
         }
+    }
+
+    public function restore($id)
+    {
+        try {
+            $category = Category::onlyTrashed()->findOrFail($id);
+            $category->restore();
+            return back()
+                ->with('success', 'Kategori berhasil dipulihkan.');
+        } catch (\Exception $e) {
+            return back()
+                ->with('error', 'Gagal memulihkan kategori: ' . $e->getMessage());
+        }
+    }
+
+    public function forceDelete($id)
+    {
+        try {
+            $category = Category::withTrashed()->findOrFail($id);
+            $category->forceDelete();
+            return redirect()->route('categories.recovery')
+                ->with('success', 'Kategori berhasil dihapus permanen.');
+        } catch (\Exception $e) {
+            return redirect()->route('categories.recovery')
+                ->with('error', 'Gagal menghapus kategori secara permanen.');
+        }
+    }
+
+    public function recovery()
+    {
+        $categories = Category::onlyTrashed()
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(15);
+
+        return view('admin.categories.recovery', compact('categories'));
     }
 }

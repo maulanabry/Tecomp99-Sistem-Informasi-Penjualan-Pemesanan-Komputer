@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->enum('type', ['produk', 'layanan']);
             $table->string('slug');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

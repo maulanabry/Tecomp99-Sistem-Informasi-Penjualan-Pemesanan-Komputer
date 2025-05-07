@@ -12,8 +12,9 @@ return new class extends Migration
             $table->id('brand_id'); // Primary Key
             $table->string('name', 255);
             $table->string('slug', 255);
-            $table->string('logo', 255);
+            $table->string('logo', 255)->nullable();
             $table->timestamps(); // created_at and updated_at
+            $table->softDeletes(); // deleted_at
         });
     }
 

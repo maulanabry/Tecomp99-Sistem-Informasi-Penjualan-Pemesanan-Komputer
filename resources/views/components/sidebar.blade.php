@@ -1,5 +1,5 @@
 @php
-    $isDataMasterActive = request()->is('admin/kategori*') || request()->is('produk.*') || request()->is('servis.*') || request()->is('promo.*') || request()->is('pelanggan.*');
+    $isDataMasterActive = request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('admin/servis*') || request()->is('produk.*') || request()->is('promo.*') || request()->is('pelanggan.*');
     $isOrderActive = request()->is('order.servis') || request()->is('order.produk');
 @endphp
 <div x-data="{ open: false }" 
@@ -17,8 +17,8 @@
                 </a>
             </li>
 <!-- Data Master -->
-<li x-data="{ open: {{ request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('produk.*') || request()->is('servis.*') || request()->is('promo.*') || request()->is('pelanggan.*') ? 'true' : 'false' }} }" class="mt-4">
-    <button @click="open = !open" :class="{'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300': {{ request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('produk.*') || request()->is('servis.*') || request()->is('promo.*') || request()->is('pelanggan.*') ? 'true' : 'false' }} }" class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500">
+<li x-data="{ open: {{ request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('produk.*') || request()->is('admin/servis*') || request()->is('promo.*') || request()->is('pelanggan.*') ? 'true' : 'false' }} }" class="mt-4">
+    <button @click="open = !open" :class="{'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300': {{ request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('admin/produk.*') || request()->is('admin/servis*') || request()->is('promo.*') || request()->is('pelanggan.*') ? 'true' : 'false' }} }" class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500">
         <div class="flex items-center">
             <i class="fas fa-database w-5 h-5 mr-3"></i>
             <span>Data Master</span>
@@ -42,7 +42,7 @@
             </a>
         </li>
         <li>
-            <a href="{{ route('servis.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('servis.*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+            <a href="{{ route('services.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/servis*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                 Data Servis
             </a>
         </li>

@@ -13,8 +13,9 @@ class BrandController extends Controller
     public function index(Request $request)
     {
         $query = Brand::query();
+        $deletedQuery = Brand::onlyTrashed();
 
-        // Filter by name
+        // Filter active brands by name
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
@@ -31,13 +32,25 @@ class BrandController extends Controller
             $direction = 'desc';
         }
 
-        $brands = $query->orderBy($sort, $direction)->paginate(25)->appends([
+        // Filter deleted brands by name
+        if ($request->filled('recovery_search')) {
+            $deletedQuery->where('name', 'like', '%' . $request->recovery_search . '%');
+        }
+
+        $brands = $query->orderBy($sort, $direction)->paginate(10)->appends([
             'search' => $request->search,
             'sort' => $sort,
             'direction' => $direction,
         ]);
 
-        return view('admin.brand', compact('brands', 'sort', 'direction'));
+        $deletedBrands = $deletedQuery
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(10)
+            ->appends([
+                'recovery_search' => $request->recovery_search
+            ]);
+
+        return view('admin.brand', compact('brands', 'deletedBrands', 'sort', 'direction'));
     }
 
     public function create()
@@ -146,28 +159,54 @@ class BrandController extends Controller
 
     public function destroy(Brand $brand)
     {
-        if ($brand->logo) {
-            $oldLogoPath = public_path($brand->logo);
-            if (file_exists($oldLogoPath)) {
-                unlink($oldLogoPath);
-            }
-        }
-        $brand->delete();
-
         try {
+            $brand->delete();
+            return redirect()->route('brands.index')
+                ->with('success', 'Brand berhasil dihapus sementara.');
+        } catch (\Exception $e) {
+            return redirect()->route('brands.index')
+                ->with('error', 'Gagal menghapus brand. Brand mungkin sedang digunakan.');
+        }
+    }
+
+    public function restore($id)
+    {
+        try {
+            $brand = Brand::onlyTrashed()->findOrFail($id);
+            $brand->restore();
+            return back()
+                ->with('success', 'Brand berhasil dipulihkan.');
+        } catch (\Exception $e) {
+            return back()
+                ->with('error', 'Gagal memulihkan brand: ' . $e->getMessage());
+        }
+    }
+
+    public function forceDelete($id)
+    {
+        try {
+            $brand = Brand::withTrashed()->findOrFail($id);
             if ($brand->logo) {
                 $oldLogoPath = public_path($brand->logo);
                 if (file_exists($oldLogoPath)) {
                     unlink($oldLogoPath);
                 }
             }
-            $brand->delete();
-
-            return redirect()->route('brands.index')
-                ->with('success', 'Brand berhasil dihapus.');
+            $brand->forceDelete();
+            return redirect()->route('brands.recovery')
+                ->with('success', 'Brand berhasil dihapus permanen.');
         } catch (\Exception $e) {
-            return redirect()->route('brands.index')
-                ->with('error', 'Gagal menghapus brand. Brand mungkin sedang digunakan.');
+            return redirect()->route('brands.recovery')
+                ->with('error', 'Gagal menghapus brand secara permanen.');
         }
+    }
+
+    public function recovery()
+    {
+        $brands = Brand::onlyTrashed()
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(10);
+
+        return view('admin.brand.recovery', compact('brands'));
     }
 }

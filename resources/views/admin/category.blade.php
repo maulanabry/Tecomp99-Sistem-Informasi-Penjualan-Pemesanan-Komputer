@@ -1,3 +1,5 @@
+
+
 <x-layout-admin>
     <div class="py-6">
         @if (session('success'))
@@ -23,9 +25,16 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Manajemen Kategori</h1>
-                <a href="{{ route('categories.create') }}" class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto">
-                    Tambah Kategori
-                </a>
+                <div class="flex space-x-3">
+                    <a href="{{ route('categories.recovery') }}" 
+                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                        <i class="fas fa-recycle mr-2"></i>
+                        Pulihkan Data
+                    </a>
+                    <a href="{{ route('categories.create') }}" class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto">
+                        Tambah Kategori
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -101,12 +110,12 @@
                                             </td>
 <td class="whitespace-nowrap py-4 pl-3 pr-4 text-sm font-medium sm:pr-6">
     <div class="flex justify-center items-center gap-2">
+        
         <!-- Tombol Ubah -->
         <a href="{{ route('categories.edit', $category) }}" 
             class="inline-flex items-center gap-1 rounded-md bg-primary-600 hover:bg-primary-700 px-3 py-2 text-xs font-semibold text-white shadow-sm">
-           <svg class="w-4 h-4 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                <path fill-rule="evenodd" d="M11.32 6.176H5c-1.105 0-2 .949-2 2.118v10.588C3 20.052 3.895 21 5 21h11c1.105 0 2-.948 2-2.118v-7.75l-3.914 4.144A2.46 2.46 0 0 1 12.81 16l-2.681.568c-1.75.37-3.292-1.263-2.942-3.115l.536-2.839c.097-.512.335-.983.684-1.352l2.914-3.086Z" clip-rule="evenodd"/>
-                <path fill-rule="evenodd" d="M19.846 4.318a2.148 2.148 0 0 0-.437-.692 2.014 2.014 0 0 0-.654-.463 1.92 1.92 0 0 0-1.544 0 2.014 2.014 0 0 0-.654.463l-.546.578 2.852 3.02.546-.579a2.14 2.14 0 0 0 .437-.692 2.244 2.244 0 0 0 0-1.635ZM17.45 8.721 14.597 5.7 9.82 10.76a.54.54 0 0 0-.137.27l-.536 2.84c-.07.37.239.696.588.622l2.682-.567a.492.492 0 0 0 .255-.145l4.778-5.06Z" clip-rule="evenodd"/>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l-3 3H3v-3l9-9 3 3-6 6z" />
             </svg>
             Ubah
         </a>
@@ -152,6 +161,8 @@
             </div>
         </div>
     </div>
+
+    
 </x-layout-admin>
 @php
     function sortLink($column, $label, $sort, $direction) {
