@@ -22,8 +22,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Protected Routes
 // ==========================
 Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
-
-
     // Categories
     Route::prefix('admin/kategori')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');
@@ -36,6 +34,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\CategoryController::class, 'restore'])->name('categories.restore');
         Route::delete('/{id}/force', [\App\Http\Controllers\Admin\CategoryController::class, 'forceDelete'])->name('categories.force-delete');
     });
+
     // Brands
     Route::prefix('admin/brand')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\BrandController::class, 'index'])->name('brands.index');
@@ -61,21 +60,36 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\ServiceController::class, 'restore'])->name('services.restore');
         Route::delete('/{id}/force', [\App\Http\Controllers\Admin\ServiceController::class, 'forceDelete'])->name('services.force-delete');
     });
-    Route::prefix('produk')->group(function () {
-        Route::get('/', function () {
-            return view('produk.index');
-        })->name('produk.index');
+
+    // Products
+    Route::prefix('admin/produk')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ProductController::class, 'index'])->name('products.index');
+        Route::get('/recovery', [\App\Http\Controllers\Admin\ProductController::class, 'recovery'])->name('products.recovery');
+        Route::get('/create', [\App\Http\Controllers\Admin\ProductController::class, 'create'])->name('products.create');
+        Route::post('/', [\App\Http\Controllers\Admin\ProductController::class, 'store'])->name('products.store');
+        Route::get('/{product}/edit', [\App\Http\Controllers\Admin\ProductController::class, 'edit'])->name('products.edit');
+        Route::put('/{product}', [\App\Http\Controllers\Admin\ProductController::class, 'update'])->name('products.update');
+        Route::delete('/{product}', [\App\Http\Controllers\Admin\ProductController::class, 'destroy'])->name('products.destroy');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\ProductController::class, 'restore'])->name('products.restore');
+        Route::delete('/{id}/force', [\App\Http\Controllers\Admin\ProductController::class, 'forceDelete'])->name('products.force-delete');
+
+        // New image management routes
+        Route::delete('/{productId}/images/{imageId}', [\App\Http\Controllers\Admin\ProductController::class, 'deleteImage'])->name('products.images.delete');
+        Route::post('/{productId}/images/{imageId}/main', [\App\Http\Controllers\Admin\ProductController::class, 'setMainImage'])->name('products.images.main');
     });
+
     Route::prefix('servis')->group(function () {
         Route::get('/', function () {
             return view('servis.index');
         })->name('servis.index');
     });
+
     Route::prefix('promo')->group(function () {
         Route::get('/', function () {
             return view('promo.index');
         })->name('promo.index');
     });
+
     Route::prefix('pelanggan')->group(function () {
         Route::get('/', function () {
             return view('pelanggan.index');
