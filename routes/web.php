@@ -54,6 +54,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/recovery', [\App\Http\Controllers\Admin\ServiceController::class, 'recovery'])->name('services.recovery');
         Route::get('/create', [\App\Http\Controllers\Admin\ServiceController::class, 'create'])->name('services.create');
         Route::post('/', [\App\Http\Controllers\Admin\ServiceController::class, 'store'])->name('services.store');
+        Route::get('/{service}', [\App\Http\Controllers\Admin\ServiceController::class, 'show'])->name('services.show');
         Route::get('/{service}/edit', [\App\Http\Controllers\Admin\ServiceController::class, 'edit'])->name('services.edit');
         Route::put('/{service}', [\App\Http\Controllers\Admin\ServiceController::class, 'update'])->name('services.update');
         Route::delete('/{service}', [\App\Http\Controllers\Admin\ServiceController::class, 'destroy'])->name('services.destroy');
@@ -67,13 +68,12 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/recovery', [\App\Http\Controllers\Admin\ProductController::class, 'recovery'])->name('products.recovery');
         Route::get('/create', [\App\Http\Controllers\Admin\ProductController::class, 'create'])->name('products.create');
         Route::post('/', [\App\Http\Controllers\Admin\ProductController::class, 'store'])->name('products.store');
+        Route::get('/{product}', [\App\Http\Controllers\Admin\ProductController::class, 'show'])->name('products.show');
         Route::get('/{product}/edit', [\App\Http\Controllers\Admin\ProductController::class, 'edit'])->name('products.edit');
         Route::put('/{product}', [\App\Http\Controllers\Admin\ProductController::class, 'update'])->name('products.update');
         Route::delete('/{product}', [\App\Http\Controllers\Admin\ProductController::class, 'destroy'])->name('products.destroy');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\ProductController::class, 'restore'])->name('products.restore');
         Route::delete('/{id}/force', [\App\Http\Controllers\Admin\ProductController::class, 'forceDelete'])->name('products.force-delete');
-
-        // New image management routes
         Route::delete('/{productId}/images/{imageId}', [\App\Http\Controllers\Admin\ProductController::class, 'deleteImage'])->name('products.images.delete');
         Route::post('/{productId}/images/{imageId}/main', [\App\Http\Controllers\Admin\ProductController::class, 'setMainImage'])->name('products.images.main');
     });

@@ -254,4 +254,9 @@ class ServiceController extends Controller
 
         return view('admin.service.recovery', compact('services', 'categories'));
     }
+
+    public function show(Service $service)
+    {
+        return view('admin.service.show', compact('service'));
+    }
 }
