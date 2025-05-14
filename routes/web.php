@@ -78,22 +78,31 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::post('/{productId}/images/{imageId}/main', [\App\Http\Controllers\Admin\ProductController::class, 'setMainImage'])->name('products.images.main');
     });
 
-    Route::prefix('servis')->group(function () {
-        Route::get('/', function () {
-            return view('servis.index');
-        })->name('servis.index');
+    // Promos
+    Route::prefix('admin/promo')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PromoController::class, 'index'])->name('promos.index');
+        Route::get('/recovery', [\App\Http\Controllers\Admin\PromoController::class, 'recovery'])->name('promos.recovery');
+        Route::get('/create', [\App\Http\Controllers\Admin\PromoController::class, 'create'])->name('promos.create');
+        Route::post('/', [\App\Http\Controllers\Admin\PromoController::class, 'store'])->name('promos.store');
+        Route::get('/{promo}/edit', [\App\Http\Controllers\Admin\PromoController::class, 'edit'])->name('promos.edit');
+        Route::put('/{promo}', [\App\Http\Controllers\Admin\PromoController::class, 'update'])->name('promos.update');
+        Route::delete('/{promo}', [\App\Http\Controllers\Admin\PromoController::class, 'destroy'])->name('promos.destroy');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\PromoController::class, 'restore'])->name('promos.restore');
+        Route::delete('/{id}/force', [\App\Http\Controllers\Admin\PromoController::class, 'forceDelete'])->name('promos.force-delete');
     });
 
-    Route::prefix('promo')->group(function () {
-        Route::get('/', function () {
-            return view('promo.index');
-        })->name('promo.index');
-    });
-
-    Route::prefix('pelanggan')->group(function () {
-        Route::get('/', function () {
-            return view('pelanggan.index');
-        })->name('pelanggan.index');
+    // Customers
+    Route::prefix('admin/pelanggan')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
+        Route::get('/recovery', [\App\Http\Controllers\Admin\CustomerController::class, 'recovery'])->name('customers.recovery');
+        Route::get('/create', [\App\Http\Controllers\Admin\CustomerController::class, 'create'])->name('customers.create');
+        Route::post('/', [\App\Http\Controllers\Admin\CustomerController::class, 'store'])->name('customers.store');
+        Route::get('/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->name('customers.show');
+        Route::get('/{customer}/edit', [\App\Http\Controllers\Admin\CustomerController::class, 'edit'])->name('customers.edit');
+        Route::put('/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'update'])->name('customers.update');
+        Route::delete('/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'destroy'])->name('customers.destroy');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\CustomerController::class, 'restore'])->name('customers.restore');
+        Route::delete('/{id}/force', [\App\Http\Controllers\Admin\CustomerController::class, 'forceDelete'])->name('customers.force-delete');
     });
 
     // Order

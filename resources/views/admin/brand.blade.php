@@ -53,84 +53,127 @@
                     </div>
                 </form>
 
-                <!-- Brands Table -->
-                <div class="mt-4 flex flex-col">
-                    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                        <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                                <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-                                    <thead class="bg-gray-50 dark:bg-gray-700">
-                                        <tr>
-                                            <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">No</th>
-                                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Logo</th>
-                                            <th class="px-3 py-3.5 text-left">{!! sortLink('name', 'Nama', $sort, $direction) !!}</th>
-                                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Slug</th>
-                                            <th class="px-3 py-3.5 text-left">{!! sortLink('created_at', 'Tanggal Dibuat', $sort, $direction) !!}</th>
-                                            <th class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-gray-800">
-                                        @forelse ($brands as $brand)
-                                        <tr>
-                                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-100 sm:pl-6">
-                                                {{ $loop->iteration + ($brands->currentPage() - 1) * $brands->perPage() }}
-                                            </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm">
-                                                @if($brand->logo)
-                                                    <img src="{{ asset($brand->logo) }}" alt="{{ $brand->name }}" class="h-10">
-                                                @else
-                                                    <span class="text-gray-500 dark:text-gray-400">No Logo</span>
-                                                @endif
-                                            </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-100">
-                                                {{ $brand->name }}
-                                            </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                                                {{ $brand->slug }}
-                                            </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                                                {{ $brand->created_at->format('d M Y') }}
-                                            </td>
-                                            <td class="whitespace-nowrap py-4 pl-3 pr-4 text-sm font-medium sm:pr-6">
-                                                <div class="flex justify-center items-center gap-2">
-                                                    <a href="{{ route('brands.edit', $brand) }}" 
-                                                        class="inline-flex items-center gap-1 rounded-md bg-primary-600 hover:bg-primary-700 px-3 py-2 text-xs font-semibold text-white shadow-sm">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l-3 3H3v-3l9-9 3 3-6 6z" />
-                                                        </svg>
-                                                        Ubah
-                                                    </a>
-
-                                                    <button type="button" 
-                                                        data-modal-target="delete-modal-{{ $brand->brand_id }}" 
-                                                        data-modal-toggle="delete-modal-{{ $brand->brand_id }}"
-                                                        class="inline-flex items-center gap-1 rounded-md bg-danger-500 hover:bg-danger-400 px-3 py-2 text-xs font-semibold text-white shadow-sm">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                        Hapus
-                                                    </button>
-                                                    
-                                                    <x-delete-confirmation-modal 
-                                                        :id="$brand->brand_id"
-                                                        :action="route('brands.destroy', $brand)"
-                                                        message="Apakah Anda yakin ingin menghapus brand ini?"
-                                                        :itemName="$brand->name"
-                                                    />
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
-                                                Tidak ada brand ditemukan.
-                                            </td>
-                                        </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                <!-- Brands Table/Cards -->
+                <div class="mt-4">
+                    <!-- Table Headers (Hidden on Mobile) -->
+                    <div class="hidden md:block">
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
+                            <div class="grid grid-cols-6 gap-4 px-6 py-3">
+                                <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100">No</div>
+                                <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Logo</div>
+                                <div class="text-left">{!! sortLink('name', 'Nama', $sort, $direction) !!}</div>
+                                <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Slug</div>
+                                <div class="text-left">{!! sortLink('created_at', 'Tanggal Dibuat', $sort, $direction) !!}</div>
+                                <div class="text-center text-sm font-semibold text-gray-900 dark:text-gray-100">Aksi</div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Table Body/Cards -->
+                    <div class="bg-white dark:bg-gray-800 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                        @forelse ($brands as $brand)
+                            <!-- Mobile Card View -->
+                            <div class="block md:hidden p-4 border-b border-gray-200 dark:border-gray-600">
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100">No:</span>
+                                        <span class="text-sm text-gray-500 dark:text-gray-300">
+                                            {{ $loop->iteration + ($brands->currentPage() - 1) * $brands->perPage() }}
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Logo:</span>
+                                        <div class="text-sm">
+                                            @if($brand->logo)
+                                                <img src="{{ asset($brand->logo) }}" alt="{{ $brand->name }}" class="h-10">
+                                            @else
+                                                <span class="text-gray-500 dark:text-gray-400">No Logo</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Nama:</span>
+                                        <span class="text-sm text-gray-500 dark:text-gray-300">{{ $brand->name }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Slug:</span>
+                                        <span class="text-sm text-gray-500 dark:text-gray-300">{{ $brand->slug }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Tanggal Dibuat:</span>
+                                        <span class="text-sm text-gray-500 dark:text-gray-300">
+                                            {{ $brand->created_at->format('d M Y') }}
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-end items-center gap-2 mt-4">
+                                        <a href="{{ route('brands.edit', $brand) }}" 
+                                            class="inline-flex items-center gap-1 rounded-md bg-primary-600 hover:bg-primary-700 px-3 py-2 text-xs font-semibold text-white shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l-3 3H3v-3l9-9 3 3-6 6z" />
+                                            </svg>
+                                            Ubah
+                                        </a>
+                                        <button type="button" 
+                                            data-modal-target="delete-modal-{{ $brand->brand_id }}" 
+                                            data-modal-toggle="delete-modal-{{ $brand->brand_id }}"
+                                            class="inline-flex items-center gap-1 rounded-md bg-danger-500 hover:bg-danger-400 px-3 py-2 text-xs font-semibold text-white shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            Hapus
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Desktop Table View -->
+                            <div class="hidden md:grid md:grid-cols-6 md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600">
+                                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    {{ $loop->iteration + ($brands->currentPage() - 1) * $brands->perPage() }}
+                                </div>
+                                <div class="text-sm">
+                                    @if($brand->logo)
+                                        <img src="{{ asset($brand->logo) }}" alt="{{ $brand->name }}" class="h-10">
+                                    @else
+                                        <span class="text-gray-500 dark:text-gray-400">No Logo</span>
+                                    @endif
+                                </div>
+                                <div class="text-sm text-gray-900 dark:text-gray-100">{{ $brand->name }}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-300">{{ $brand->slug }}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-300">
+                                    {{ $brand->created_at->format('d M Y') }}
+                                </div>
+                                <div class="flex justify-center items-center gap-2">
+                                    <a href="{{ route('brands.edit', $brand) }}" 
+                                        class="inline-flex items-center gap-1 rounded-md bg-primary-600 hover:bg-primary-700 px-3 py-2 text-xs font-semibold text-white shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l-3 3H3v-3l9-9 3 3-6 6z" />
+                                        </svg>
+                                        Ubah
+                                    </a>
+                                    <button type="button" 
+                                        data-modal-target="delete-modal-{{ $brand->brand_id }}" 
+                                        data-modal-toggle="delete-modal-{{ $brand->brand_id }}"
+                                        class="inline-flex items-center gap-1 rounded-md bg-danger-500 hover:bg-danger-400 px-3 py-2 text-xs font-semibold text-white shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+
+                            <x-delete-confirmation-modal 
+                                :id="$brand->brand_id"
+                                :action="route('brands.destroy', $brand)"
+                                message="Apakah Anda yakin ingin menghapus brand ini?"
+                                :itemName="$brand->name"
+                            />
+                        @empty
+                            <div class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                Tidak ada brand ditemukan.
+                            </div>
+                        @endforelse
                     </div>
                 </div>
 
