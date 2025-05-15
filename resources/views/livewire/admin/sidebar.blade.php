@@ -2,8 +2,8 @@
     $isDataMasterActive = request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('admin/servis*') || request()->is('admin/produk*') || request()->is('admin/promo*') || request()->is('pelanggan.*');
     $isOrderActive = request()->is('order.servis') || request()->is('order.produk');
 @endphp
-<div x-data="{ open: false }" 
-     @toggle-sidebar.window="open = !open"
+<div x-data="{ open: @entangle('isSidebarOpen') }" 
+     x-init="$watch('open', value => $dispatch('toggle-sidebar', { open: value }))"
      :class="{'translate-x-0': open, '-translate-x-full': !open}"
      class="fixed md:static md:translate-x-0 w-64 h-[calc(100vh-4rem)] bg-white dark:bg-gray-700 border-r border-neutral-200 dark:border-neutral-500 flex flex-col transition-transform duration-300 ease-in-out shadow-md">
     <!-- Main Navigation -->
@@ -32,7 +32,7 @@
             </a>
         </li>
         <li>
-            <a href="{{ route('brands.index') }}"  class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/brand*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+            <a href="{{ route('brands.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/brand*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                 Data Brand
             </a>
         </li>
@@ -86,10 +86,10 @@
 
             <!-- Other Menu Items -->
             <li class="mt-4">
-                <a href="{{ ('transaksi') }}" class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('transaksi') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
-                    <i class="fas fa-credit-card w-5 h-5 mr-3"></i>
-                    <span>Transaksi Pembayaran</span>
-                </a>
+            <a href="{{ ('transaksi') }}" class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('transaksi') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                <i class="fas fa-credit-card w-5 h-5 mr-3"></i>
+                <span>Transaksi Pembayaran</span>
+            </a>
             </li>
             <li class="mt-4">
                 <a href="{{ ('jadwal') }}" class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('jadwal') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
