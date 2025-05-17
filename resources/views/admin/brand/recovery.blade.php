@@ -22,30 +22,8 @@
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="py-4">
-                <!-- Search Form -->
-                <form method="GET" action="{{ route('brands.recovery') }}" class="mb-6">
-                    <div class="grid grid-cols-1 gap-4">
-                        <!-- Search -->
-                        <div class="relative rounded-md shadow-sm">
-                            <input type="text" name="search" value="{{ request('search') }}" 
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 pr-10 focus:border-primary-500 dark:text-gray-200 shadow-sm focus:ring-primary-500 sm:text-sm" 
-                                placeholder="Cari brand terhapus...">
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        <!-- Filter Button -->
-                        <div>
-                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-                                Terapkan Filter
-                            </button>
-                        </div>
-                    </div>
-                </form>
+            <div class="py-1">
+              
 
                 <!-- Deleted Brands Table -->
                 <div class="mt-4 flex flex-col">
