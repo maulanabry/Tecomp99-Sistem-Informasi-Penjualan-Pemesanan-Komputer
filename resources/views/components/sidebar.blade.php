@@ -11,7 +11,7 @@
         <ul class="space-y-2 text-neutral-600 dark:text-neutral-100">
             <!-- Dashboard -->
             <li>
-                <a href="{{ route('admin.dashboard.index') }}" class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/dashboard') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                <a href="{{ route('admin.dashboard.index') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/dashboard') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                     <i class="fas fa-home w-5 h-5 mr-3"></i>
                     <span>Dashboard</span>
                 </a>
@@ -27,32 +27,32 @@
     </button>
     <ul x-show="open" class="mt-1 space-y-1 pl-10">
         <li>
-            <a href="{{ route('categories.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/kategori*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+            <a href="{{ route('categories.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/kategori*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                 Data Kategori
             </a>
         </li>
         <li>
-            <a href="{{ route('brands.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/brand*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+            <a href="{{ route('brands.index') }}"  wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/brand*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                 Data Brand
             </a>
         </li>
         <li>
-            <a href="{{ route('products.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/produk*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+            <a href="{{ route('products.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/produk*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                 Data Produk
             </a>
         </li>
         <li>
-            <a href="{{ route('services.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/servis*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+            <a href="{{ route('services.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/servis*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                 Data Servis
             </a>
         </li>
         <li>
-            <a href="{{ route('promos.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/promo*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+            <a href="{{ route('promos.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/promo*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                 Data Promo
             </a>
         </li>
         <li>
-            <a href="{{ route('customers.index') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/pelanggan*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+            <a href="{{ route('customers.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/pelanggan*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                 Data Pelanggan
             </a>
         </li>
@@ -72,12 +72,12 @@
                 </button>
                 <ul x-show="open" class="mt-1 space-y-1 pl-10">
                     <li>
-                        <a href="{{ ('order.servis') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('order.servis') ? 'text-primary-600 dark:text-primary-300' : '' }}">
+                        <a href="{{ ('order.servis') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('order.servis') ? 'text-primary-600 dark:text-primary-300' : '' }}">
                             Order Servis
                         </a>
                     </li>
                     <li>
-                        <a href="{{ ('order.produk') }}" class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('order.produk') ? 'text-primary-600 dark:text-primary-300' : '' }}">
+                        <a href="{{ ('order.produk') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('order.produk') ? 'text-primary-600 dark:text-primary-300' : '' }}">
                             Order Produk
                         </a>
                     </li>
@@ -86,13 +86,13 @@
 
             <!-- Other Menu Items -->
             <li class="mt-4">
-                <a href="{{ ('transaksi') }}" class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('transaksi') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                <a href="{{ ('transaksi') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('transaksi') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                     <i class="fas fa-credit-card w-5 h-5 mr-3"></i>
                     <span>Transaksi Pembayaran</span>
                 </a>
             </li>
             <li class="mt-4">
-                <a href="{{ ('jadwal') }}" class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('jadwal') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                <a href="{{ ('jadwal') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('jadwal') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                     <i class="fas fa-calendar w-5 h-5 mr-3"></i>
                     <span>Jadwal Servis</span>
                 </a>
@@ -104,7 +104,7 @@
     <div class="px-4 py-4 border-t border-neutral-200 dark:border-neutral-500">
         <ul class="space-y-2 text-neutral-600 dark:text-neutral-100">
             <li>
-                <a href="{{ ('peraturan') }}" class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('peraturan') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                <a href="{{ ('peraturan') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('peraturan') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                     <i class="fas fa-book w-5 h-5 mr-3"></i>
                     <span>Peraturan</span>
                 </a>

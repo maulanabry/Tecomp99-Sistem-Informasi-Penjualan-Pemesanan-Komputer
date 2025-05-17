@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <div class="py-4">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                    <form action="{{ route('categories.store') }}" method="POST" class="p-6 space-y-6">
+                    <form action="{{ route('categories.store') }}" wire:navigate method="POST" class="p-6 space-y-6">
                         @csrf
                         
                         <!-- Nama -->
@@ -38,11 +38,11 @@
 
                         <!-- Aksi -->
                         <div class="flex items-center justify-end space-x-3 pt-4">
-                            <a href="{{ route('categories.index') }}"
+                            <a href="{{ route('categories.index') }}" wire:navigate
                                 class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                                 Batal
                             </a>
-                            <button type="submit"
+                            <button type="submit" wire:navigate
                                 class="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                                 Tambah Kategori
                             </button>

@@ -7,7 +7,7 @@
                     <i class="fas fa-bars w-6 h-6"></i>
                 </button>
                 <div class="flex items-center justify-start">
-                    <a href="{{ ('dashboard') }}" class="flex ml-2 md:mr-24 items-center">
+                    <a href="{{ route('admin.dashboard.index') }}" wire:navigate class="flex ml-2 md:mr-24 items-center">
                         <img class="w-30 h-12 mr-2" src="/images/logo-tecomp99.svg" alt="logo">
                         <!-- Admin Panel Title, hidden on mobile -->
                         <span class="hidden md:block self-center text-xl font-semibold sm:text-2xl whitespace-nowrap text-neutral-600 dark:text-white">
