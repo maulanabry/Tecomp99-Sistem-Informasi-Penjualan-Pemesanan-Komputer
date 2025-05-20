@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('customers', function (Blueprint $table) {
-            $table->string('customer_id')->primary(); // CSTDDMMYY001
+            $table->string('customer_id')->primary(); // Format: CSTDDMMYY001
             $table->string('name');
             $table->string('email')->unique()->nullable();
             $table->string('password')->nullable();
@@ -18,6 +18,12 @@ return new class extends Migration {
             $table->enum('gender', ['pria', 'wanita'])->nullable();
             $table->string('contact', 20);
             $table->text('address')->nullable();
+
+            // Kolom tambahan
+            $table->unsignedInteger('service_orders_count')->default(0); // jumlah servis
+            $table->unsignedInteger('product_orders_count')->default(0); // jumlah produk
+            $table->unsignedInteger('total_points')->default(0); // poin total
+
             $table->timestamps();
             $table->softDeletes();
         });

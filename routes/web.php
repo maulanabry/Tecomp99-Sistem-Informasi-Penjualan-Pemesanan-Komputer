@@ -84,6 +84,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/recovery', [\App\Http\Controllers\Admin\PromoController::class, 'recovery'])->name('promos.recovery');
         Route::get('/create', [\App\Http\Controllers\Admin\PromoController::class, 'create'])->name('promos.create');
         Route::post('/', [\App\Http\Controllers\Admin\PromoController::class, 'store'])->name('promos.store');
+        Route::get('/{promo}', [\App\Http\Controllers\Admin\PromoController::class, 'show'])->name('promos.show');
         Route::get('/{promo}/edit', [\App\Http\Controllers\Admin\PromoController::class, 'edit'])->name('promos.edit');
         Route::put('/{promo}', [\App\Http\Controllers\Admin\PromoController::class, 'update'])->name('promos.update');
         Route::delete('/{promo}', [\App\Http\Controllers\Admin\PromoController::class, 'destroy'])->name('promos.destroy');
@@ -92,7 +93,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
     });
 
     // Customers
-    Route::prefix('admin/pelanggan')->group(function () {
+    Route::prefix('admin/customer')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
         Route::get('/recovery', [\App\Http\Controllers\Admin\CustomerController::class, 'recovery'])->name('customers.recovery');
         Route::get('/create', [\App\Http\Controllers\Admin\CustomerController::class, 'create'])->name('customers.create');

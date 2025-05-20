@@ -22,10 +22,14 @@ class Service extends Model
         'price',
         'thumbnail',
         'slug',
+        'sold_count',
+        'is_active',
     ];
 
     protected $casts = [
         'price' => 'integer',
+        'sold_count' => 'integer',
+        'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

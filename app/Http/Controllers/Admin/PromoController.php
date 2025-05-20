@@ -169,4 +169,9 @@ class PromoController extends Controller
 
         return view('admin.promo.recovery', compact('promos'));
     }
+
+    public function show(Promo $promo)
+    {
+        return view('admin.promo.show', compact('promo'));
+    }
 }
