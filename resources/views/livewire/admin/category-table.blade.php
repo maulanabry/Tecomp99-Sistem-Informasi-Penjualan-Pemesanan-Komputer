@@ -38,7 +38,7 @@
     <div class="mt-4">
         <!-- Table Headers (Hidden on Mobile) -->
         <div class="hidden md:block">
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg dark:text-gray-100">
                 <div class="grid grid-cols-12 gap-4 px-6 py-3">
                     <div class="col-span-1 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">No</div>
                     <div class="col-span-4 text-left" wire:click="sortBy('name')" role="button">
@@ -55,7 +55,7 @@
                     <div class="col-span-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Slug</div>
                     <div class="col-span-1 text-left" wire:click="sortBy('created_at')" role="button">
                         <div class="flex items-center gap-1">
-                            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Tanggal</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Tanggal Dibuat</span>
                             @if ($sortField === 'created_at')
                                 <span class="text-xs dark:text-gray-100">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
                             @else

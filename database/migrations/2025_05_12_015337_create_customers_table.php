@@ -17,9 +17,6 @@ return new class extends Migration {
             $table->string('photo')->nullable();
             $table->enum('gender', ['pria', 'wanita'])->nullable();
             $table->string('contact', 20);
-            $table->text('address')->nullable();
-
-            // Kolom tambahan
             $table->unsignedInteger('service_orders_count')->default(0); // jumlah servis
             $table->unsignedInteger('product_orders_count')->default(0); // jumlah produk
             $table->unsignedInteger('total_points')->default(0); // poin total

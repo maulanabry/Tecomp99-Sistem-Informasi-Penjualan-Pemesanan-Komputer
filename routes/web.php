@@ -105,14 +105,17 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\CustomerController::class, 'restore'])->name('customers.restore');
         Route::delete('/{id}/force', [\App\Http\Controllers\Admin\CustomerController::class, 'forceDelete'])->name('customers.force-delete');
     });
+    // Order
+    Route::prefix('admin/order-products')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\OrderProductController::class, 'index'])->name('order-products.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\OrderProductController::class, 'create'])->name('order-products.create');
+    });
 
     // Order
     Route::get('/order/servis', function () {
         return view('order.servis');
     })->name('order.servis');
-    Route::get('/order/produk', function () {
-        return view('order.produk');
-    })->name('order.produk');
+
 
     // Transaksi
     Route::get('/transaksi', function () {

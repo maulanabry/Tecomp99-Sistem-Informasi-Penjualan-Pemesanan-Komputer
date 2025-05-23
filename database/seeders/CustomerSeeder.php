@@ -14,13 +14,15 @@ class CustomerSeeder extends Seeder
             'customer_id' => Customer::generateCustomerId(),
             'name' => 'Irwan Afandi',
             'email' => 'irwan@example.com',
-            'password' => Hash::make('password123'), // if has account
+            'password' => Hash::make('password123'), // Jika memiliki akun
             'hasAccount' => true,
             'contact' => '081234567890',
             'gender' => 'pria',
-            'address' => 'Jl. Contoh No. 123, Surabaya',
             'photo' => null,
             'last_active' => now(),
+            'service_orders_count' => 3,
+            'product_orders_count' => 5,
+            'total_points' => 120,
         ]);
 
         Customer::create([
@@ -31,9 +33,11 @@ class CustomerSeeder extends Seeder
             'hasAccount' => false,
             'contact' => '089876543210',
             'gender' => 'wanita',
-            'address' => null,
             'photo' => null,
             'last_active' => null,
+            'service_orders_count' => 0,
+            'product_orders_count' => 1,
+            'total_points' => 10,
         ]);
     }
 }

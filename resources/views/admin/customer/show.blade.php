@@ -60,6 +60,26 @@
                                     </span>
                                 </dd>
                             </div>
+                            <div>
+    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Pesanan Servis</dt>
+    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+        {{ $customer->service_orders_count ?? 0 }}
+    </dd>
+</div>
+
+<div>
+    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Pesanan Produk</dt>
+    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+        {{ $customer->product_orders_count ?? 0 }}
+    </dd>
+</div>
+
+<div>
+    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Poin</dt>
+    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+        {{ $customer->total_points ?? 0 }}
+    </dd>
+</div>
 
                             <div>
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Terakhir Aktif</dt>

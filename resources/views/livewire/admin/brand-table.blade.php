@@ -27,7 +27,7 @@
     </div>
 
     <!-- Brands Table -->
-    <div class="mt-4">
+    <div class="mt-4 dark:text-gray-100">
         <!-- Table Headers (Hidden on Mobile) -->
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
@@ -61,7 +61,7 @@
         </div>
 
         <!-- Table Body -->
-        <div class="bg-white dark:bg-gray-800 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+        <div class="bg-white dark:bg-gray-800 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg ">
             @forelse ($brands as $brand)
                 <!-- Mobile View -->
                 <div class="block md:hidden p-4 border-b border-gray-200 dark:border-gray-600">

@@ -1,39 +1,47 @@
 <div>
     <!-- Search, Filter, and Row Selector Form -->
-    <div class="flex flex-col md:flex-row justify-between items-center w-full gap-4 mb-4">
-        <!-- Search -->
-        <div class="w-full md:w-1/2 relative">
-            <input type="text" 
-                wire:model.live="search" 
-                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 pr-10 focus:border-primary-500 dark:text-gray-200 shadow-sm focus:ring-primary-500 sm:text-sm" 
-                placeholder="Cari servis...">
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                </svg>
+        <div class="flex flex-col md:flex-row justify-between items-center w-full gap-4 mb-4">
+            <!-- Search -->
+            <div class="w-full md:w-1/2 relative">
+                <input type="text" 
+                    wire:model.live="search" 
+                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 pr-10 focus:border-primary-500 dark:text-gray-200 shadow-sm focus:ring-primary-500 sm:text-sm" 
+                    placeholder="Cari servis...">
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                </div>
             </div>
-        </div>
 
-        <div class="flex flex-col md:flex-row gap-4 w-full md:w-1/2">
-            <!-- Category Filter -->
-            <div class="w-full md:w-2/3">
-                <select wire:model.live="categoryFilter" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                    <option value="">Semua Kategori</option>
-                    @foreach(\App\Models\Category::all() as $category)
-                        <option value="{{ $category->categories_id }}">{{ $category->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <!-- Row Selector -->
-            <div class="w-full md:w-1/3">
-                <select wire:model.live="perPage" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                    <option value="5">5 Baris</option>
-                    <option value="10">10 Baris</option>
-                    <option value="25">25 Baris</option>
-                </select>
+            <div class="flex flex-col md:flex-row gap-4 w-full md:w-1/2">
+                <!-- Category Filter -->
+                <div class="w-full md:w-1/3">
+                    <select wire:model.live="categoryFilter" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="">Semua Kategori</option>
+                        @foreach(\App\Models\Category::all() as $category)
+                            <option value="{{ $category->categories_id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <!-- Status Filter -->
+                <div class="w-full md:w-1/3">
+                    <select wire:model.live="statusFilter" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="">Semua Status</option>
+                        <option value="1">Aktif</option>
+                        <option value="0">Nonaktif</option>
+                    </select>
+                </div>
+                <!-- Row Selector -->
+                <div class="w-full md:w-1/3">
+                    <select wire:model.live="perPage" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="5">5 Baris</option>
+                        <option value="10">10 Baris</option>
+                        <option value="25">25 Baris</option>
+                    </select>
+                </div>
             </div>
         </div>
-    </div>
 
     <!-- Services Table -->
     <div class="mt-4">
@@ -114,17 +122,15 @@
                 <!-- Mobile Card View -->
                 <div class="block md:hidden p-4 border-b border-gray-200 dark:border-gray-600">
                     <div class="space-y-3">
-                        <div class="flex items-start justify-between">
-                            <div class="flex-1">
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between items-center">
                                 <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $service->name }}</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">ID: {{ $service->service_id }}</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $service->category ? $service->category->name : 'N/A' }}</p>
-                            </div>
-                            <div class="flex-shrink-0">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $service->is_active ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' }}">
                                     {{ $service->is_active ? 'Aktif' : 'Nonaktif' }}
                                 </span>
                             </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">ID: {{ $service->service_id }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $service->category ? $service->category->name : 'N/A' }}</p>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
@@ -145,33 +151,22 @@
                         <!-- Actions -->
                         <div class="flex justify-end items-center gap-2 mt-4">
                             <x-action-dropdown>
-                                                                                <a href="{{ route('services.show', $service) }}" 
-                                           class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
-                                           role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                            Lihat
-                                        </a>
-                                        <a href="{{ route('services.edit', $service) }}" 
-                                           class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
-                                           role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l-3 3H3v-3l9-9 3 3-6 6z" />
-                                            </svg>
-                                            Ubah
-                                        </a>
-                               <button type="button"
-                                    data-modal-target="delete-modal-{{ $service->service_id }}"
-                                    data-modal-toggle="delete-modal-{{ $service->service_id }}"
-                                    class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                    role="menuitem">
-                                <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                Hapus
-                            </button>
+                                <a href="{{ route('services.show', $service) }}" 
+                                   class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
+                                   role="menuitem">
+                                    Lihat
+                                </a>
+                                <a href="{{ route('services.edit', $service) }}" 
+                                   class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
+                                   role="menuitem">
+                                    Ubah
+                                </a>
+                                <button type="button"
+                                        wire:click="confirmDelete({{ $service->service_id }})"
+                                        class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        role="menuitem">
+                                    Hapus
+                                </button>
                             </x-action-dropdown>
                         </div>
                     </div>
@@ -195,31 +190,20 @@
                     <div class="text-sm text-gray-500 dark:text-gray-300">{{ $service->updated_at->format('d M Y H:i') }}</div>
                     <div class="flex justify-center items-center gap-2">
                         <x-action-dropdown>
-                                                                                <a href="{{ route('services.show', $service) }}" 
-                                           class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
-                                           role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                            Lihat
-                                        </a>
-                                        <a href="{{ route('services.edit', $service) }}" 
-                                           class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
-                                           role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l-3 3H3v-3l9-9 3 3-6 6z" />
-                                            </svg>
-                                            Ubah
-                                        </a>
-                               <button type="button"
-                                    data-modal-target="delete-modal-{{ $service->service_id }}"
-                                    data-modal-toggle="delete-modal-{{ $service->service_id }}"
+                            <a href="{{ route('services.show', $service) }}" 
+                               class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
+                               role="menuitem">
+                                Lihat
+                            </a>
+                            <a href="{{ route('services.edit', $service) }}" 
+                               class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
+                               role="menuitem">
+                                Ubah
+                            </a>
+                            <button type="button"
+                                    wire:click="confirmDelete({{ $service->service_id }})"
                                     class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                     role="menuitem">
-                                <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
                                 Hapus
                             </button>
                         </x-action-dropdown>

@@ -28,7 +28,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Servis Populer</p>
-                    <h3 class="text-md font-bold text-gray-900 dark:text-white mt-1">{{ $servisPopuler }}</h3>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mt-1">{{ $servisPopuler }}</h3>
                 </div>
                 <div class="p-3 bg-success-100 dark:bg-success-900 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-success-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -43,7 +43,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Servis Kurang Diminati</p>
-                    <h3 class="text-md font-bold text-gray-900 dark:text-white mt-1">{{ $servisKurangDiminati }}</h3>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mt-1">{{ $servisKurangDiminati }}</h3>
                 </div>
                 <div class="p-3 bg-warning-100 dark:bg-warning-900 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-warning-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

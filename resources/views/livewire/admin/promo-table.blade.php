@@ -33,7 +33,7 @@
 
     <!-- Table Headers (Hidden on Mobile) -->
     <div class="hidden md:block">
-        <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg dark:text-gray-100"">
             <div class="grid grid-cols-11 gap-4 px-6 py-3">
                 <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100">No</div>
                 <div class="text-left cursor-pointer" wire:click="sortBy('name')" role="button">

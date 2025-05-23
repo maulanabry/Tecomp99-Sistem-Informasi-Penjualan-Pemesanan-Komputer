@@ -19,18 +19,20 @@ class Customer extends Model
         'name',
         'email',
         'password',
+        'last_active',
         'hasAccount',
-        'contact',
-        'address',
-        'gender',
         'photo',
-        'last_active'
+        'gender',
+        'contact',
+        'service_orders_count',
+        'product_orders_count',
+        'total_points',
     ];
 
-    protected $casts = [
-        'hasAccount' => 'boolean',
-        'last_active' => 'datetime',
-    ];
+    public function addresses()
+    {
+        return $this->hasMany(CustomerAddress::class, 'customer_id', 'customer_id');
+    }
 
     public static function generateCustomerId(): string
     {
@@ -52,13 +54,14 @@ class Customer extends Model
 
     public function getFormattedAddressAttribute(): string
     {
-        if (!$this->address) {
+        $defaultAddress = $this->addresses()->where('is_default', true)->first();
+        if (!$defaultAddress) {
             return '-';
         }
 
-        $words = explode(' ', $this->address);
+        $words = explode(' ', $defaultAddress->detail_address);
         if (count($words) <= 3) {
-            return $this->address;
+            return $defaultAddress->detail_address;
         }
 
         return implode(' ', array_slice($words, 0, 3)) . '...';

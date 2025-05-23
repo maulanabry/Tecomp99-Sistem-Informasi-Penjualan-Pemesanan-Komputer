@@ -35,6 +35,7 @@ class ProductSeeder extends Seeder
             $product['product_id'] = 'PRD' . $kategori . $urut;
             $product['brand_id'] = 1; // Atur sesuai brand default kamu
             $product['stock'] = 10; // Bisa disesuaikan
+            $product['weight'] = 10; // gram
             $product['slug'] = Str::slug($product['name']);
             $product['is_active'] = true;
             $product['sold_count'] = 0;

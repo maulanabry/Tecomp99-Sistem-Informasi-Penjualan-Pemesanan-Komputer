@@ -12,6 +12,7 @@ class ServiceTable extends Component
 
     public $search = '';
     public $categoryFilter = '';
+    public $statusFilter = '';
     public $sortField = 'updated_at';
     public $sortDirection = 'desc';
     public $perPage = 10;
@@ -21,6 +22,7 @@ class ServiceTable extends Component
     protected $queryString = [
         'search' => ['except' => ''],
         'categoryFilter' => ['except' => ''],
+        'statusFilter' => ['except' => ''],
         'sortField' => ['except' => 'updated_at'],
         'sortDirection' => ['except' => 'desc'],
     ];
@@ -31,6 +33,11 @@ class ServiceTable extends Component
     }
 
     public function updatingCategoryFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter()
     {
         $this->resetPage();
     }
@@ -93,6 +100,9 @@ class ServiceTable extends Component
             })
             ->when($this->categoryFilter, function ($query) {
                 $query->where('categories_id', $this->categoryFilter);
+            })
+            ->when($this->statusFilter !== '', function ($query) {
+                $query->where('is_active', (int) $this->statusFilter);
             })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);

@@ -72,12 +72,12 @@
                 </button>
                 <ul x-show="open" class="mt-1 space-y-1 pl-10">
                     <li>
-                        <a href="{{ ('order.servis') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('order.servis') ? 'text-primary-600 dark:text-primary-300' : '' }}">
+                        <a href="{{  route('order-products.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('order.servis') ? 'text-primary-600 dark:text-primary-300' : '' }}">
                             Order Servis
                         </a>
                     </li>
                     <li>
-                        <a href="{{ ('order.produk') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('order.produk') ? 'text-primary-600 dark:text-primary-300' : '' }}">
+                        <a href="{{ route('order-products.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('order.produk') ? 'text-primary-600 dark:text-primary-300' : '' }}">
                             Order Produk
                         </a>
                     </li>

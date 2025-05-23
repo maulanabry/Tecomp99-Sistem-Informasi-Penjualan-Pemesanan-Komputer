@@ -19,6 +19,7 @@ class Promo extends Model
         'discount_amount',
         'minimum_order_amount',
         'is_active',
+        'used_count',
         'start_date',
         'end_date',
     ];

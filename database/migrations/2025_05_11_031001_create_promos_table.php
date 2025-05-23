@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->integer('discount_amount')->nullable();
             $table->integer('minimum_order_amount')->nullable();
             $table->boolean('is_active')->default(false);
+            $table->unsignedInteger('used_count')->default(0); // jumlah penggunaan promo
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();

@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('name');
             $table->text('description')->nullable();
             $table->integer('price');
+            $table->integer('weight')->default(0);
             $table->integer('stock')->default(0);
             $table->boolean('is_active')->default(true);
             $table->integer('sold_count')->default(0);

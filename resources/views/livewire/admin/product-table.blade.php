@@ -14,7 +14,7 @@
             </div>
         </div>
 
-     
+        <div class="flex flex-col md:flex-row gap-4 w-full md:w-1/2">
         <!-- Category Filter -->
         <div class="w-full md:w-1/3">
             <select wire:model.live="categoryFilter" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
@@ -49,7 +49,7 @@
                 <option value="25">25 Baris</option>
             </select>
         </div>
-    
+        </div>
     </div>
 
     <!-- Products Table -->
@@ -58,7 +58,7 @@
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
                 <div class="grid grid-cols-11 gap-4 px-6 py-3">
-                    <div class="col-span-1 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">No</div>
+                    <div class="col-span-1 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 ">No</div>
                     <div class="col-span-1 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Gambar</div>
                     <div class="col-span-1 text-left cursor-pointer" wire:click="sortBy('product_id')" role="button">
                         <div class="flex items-center gap-1">
@@ -78,11 +78,6 @@
                             @else
                                 <span class="text-xs">˄˅</span>
                             @endif
-                        </div>
-                    </div>
-                                          <div class="col-span-1 text-left cursor-pointer" wire:click="sortBy('brand_id')" role="button">
-                        <div class="flex items-center gap-1">
-                            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Brand</span>
                         </div>
                     </div>
                     <div class="col-span-1 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Kategori</div>
@@ -116,6 +111,11 @@
                             @endif
                         </div>
                     </div>
+                    <div class="col-span-1 text-left cursor-pointer" wire:click="sortBy('brand_id')" role="button">
+                        <div class="flex items-center gap-1">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Brand</span>
+                        </div>
+                    </div>
                     <div class="col-span-1 text-left cursor-pointer" wire:click="sortBy('is_active')" role="button">
                         <div class="flex items-center gap-1">
                             <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Status</span>
@@ -126,7 +126,6 @@
                             @endif
                         </div>
                     </div>
-                  
 
                     <div class="col-span-1 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">Aksi</div>
                 </div>
@@ -140,10 +139,8 @@
                 <div class="block md:hidden p-4 border-b border-gray-200 dark:border-gray-600">
                     <div class="space-y-3">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">No:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">
-                                {{ $loop->iteration + ($products->currentPage() - 1) * $products->perPage() }}
-                            </span>
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">ID Produk:</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $product->product_id }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Nama:</span>
@@ -153,13 +150,14 @@
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">ID Produk:</span>
                             <span class="text-sm text-gray-500 dark:text-gray-300">{{ $product->product_id }}</span>
                         </div>
-                                                <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Brand:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $product->brand ? $product->brand->name : 'N/A' }}</span>
-                        </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Kategori:</span>
                             <span class="text-sm text-gray-500 dark:text-gray-300">{{ $product->category ? $product->category->name : 'N/A' }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Brand:</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $product->brand ? $product->brand->name : 'N/A' }}</span>
+                        </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Harga:</span>
                             <span class="text-sm text-gray-500 dark:text-gray-300">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
@@ -174,12 +172,14 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Status:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product->is_active ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' }}">
                                 {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Diperbarui pada:</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $product->updated_at->format('d M Y H:i') }}</span>
                         </div>
-
 
                         <!-- Actions -->
                         <div class="flex justify-end items-center gap-2 mt-4">
@@ -234,17 +234,17 @@
                     </div>
                     <div class="text-sm text-gray-900 dark:text-gray-100">{{ $product->product_id }}</div>
                     <div class="text-sm text-gray-900 dark:text-gray-100">{{ $product->name }}</div>
-                      <div class="text-sm text-gray-500 dark:text-gray-300">{{ $product->brand ? $product->brand->name : 'N/A' }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-300">{{ $product->category ? $product->category->name : 'N/A' }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-300">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-300">{{ number_format($product->stock, 0, ',', '.') }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-300">{{ number_format($product->sold_count, 0, ',', '.') }}</div>
+                       <div class="text-sm text-gray-500 dark:text-gray-300">{{ $product->brand ? $product->brand->name : 'N/A' }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-300">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product->is_active ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' }}">
                             {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
                         </span>
                     </div>
-              
+                    
                     <div class="flex justify-center items-center gap-2">
                         <x-action-dropdown>
                                                                                 <a href="{{ route('products.show', $product) }}" 

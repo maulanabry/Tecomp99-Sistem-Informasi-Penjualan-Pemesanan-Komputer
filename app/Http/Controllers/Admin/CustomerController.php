@@ -11,40 +11,7 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Customer::query();
-
-        // Search by name
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
-
-        // Filter by hasAccount
-        if ($request->filled('hasAccount')) {
-            $query->where('hasAccount', $request->boolean('hasAccount'));
-        }
-
-        // Sorting
-        $allowedSorts = ['customer_id', 'name', 'email', 'contact', 'hasAccount', 'last_active', 'address', 'updated_at'];
-        $sort = $request->get('sort', 'updated_at');
-        $direction = $request->get('direction', 'desc');
-
-        if (!in_array($sort, $allowedSorts)) {
-            $sort = 'updated_at';
-        }
-        if (!in_array($direction, ['asc', 'desc'])) {
-            $direction = 'desc';
-        }
-
-        $customers = $query->orderBy($sort, $direction)
-            ->paginate(10)
-            ->appends([
-                'search' => $request->search,
-                'hasAccount' => $request->hasAccount,
-                'sort' => $sort,
-                'direction' => $direction,
-            ]);
-
-        return view('admin.customer', compact('customers', 'sort', 'direction'));
+        return view('admin.customer');
     }
 
     public function create()
@@ -59,10 +26,15 @@ class CustomerController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'nullable|email|unique:customers,email',
                 'contact' => 'required|string|max:20',
-                'address' => 'nullable|string',
                 'gender' => 'nullable|in:pria,wanita',
                 'hasAccount' => 'boolean',
                 'password' => 'required_if:hasAccount,1|nullable|min:6',
+                'province_id' => 'required|integer',
+                'city_id' => 'required|integer',
+                'subdistrict_id' => 'nullable|integer',
+                'postal_code' => 'required|string|max:10',
+                'detail_address' => 'required|string',
+                'is_default' => 'boolean',
             ]);
 
             $validated['customer_id'] = Customer::generateCustomerId();
@@ -76,7 +48,25 @@ class CustomerController extends Controller
                 $validated['last_active'] = null;
             }
 
-            Customer::create($validated);
+            $customerData = collect($validated)->except([
+                'province_id',
+                'city_id',
+                'subdistrict_id',
+                'postal_code',
+                'detail_address',
+                'is_default'
+            ])->toArray();
+
+            $customer = Customer::create($customerData);
+
+            $customer->addresses()->create([
+                'province_id' => $validated['province_id'],
+                'city_id' => $validated['city_id'],
+                'subdistrict_id' => $validated['subdistrict_id'] ?? null,
+                'postal_code' => $validated['postal_code'],
+                'detail_address' => $validated['detail_address'],
+                'is_default' => $validated['is_default'] ?? false,
+            ]);
 
             return redirect()->route('customers.index')
                 ->with('success', 'Data pelanggan berhasil ditambahkan.');
@@ -104,10 +94,15 @@ class CustomerController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'nullable|email|unique:customers,email,' . $customer->customer_id . ',customer_id',
                 'contact' => 'required|string|max:20',
-                'address' => 'nullable|string',
                 'gender' => 'nullable|in:pria,wanita',
                 'hasAccount' => 'boolean',
                 'password' => 'nullable|min:6',
+                'province_id' => 'required|integer',
+                'city_id' => 'required|integer',
+                'subdistrict_id' => 'nullable|integer',
+                'postal_code' => 'required|string|max:10',
+                'detail_address' => 'required|string',
+                'is_default' => 'boolean',
             ]);
 
             $validated['hasAccount'] = $request->boolean('hasAccount', false);
@@ -126,7 +121,32 @@ class CustomerController extends Controller
                 $validated['last_active'] = null;
             }
 
-            $customer->update($validated);
+            $customerData = collect($validated)->except([
+                'province_id',
+                'city_id',
+                'subdistrict_id',
+                'postal_code',
+                'detail_address',
+                'is_default'
+            ])->toArray();
+
+            $customer->update($customerData);
+
+            $addressData = [
+                'province_id' => $validated['province_id'],
+                'city_id' => $validated['city_id'],
+                'subdistrict_id' => $validated['subdistrict_id'] ?? null,
+                'postal_code' => $validated['postal_code'],
+                'detail_address' => $validated['detail_address'],
+                'is_default' => $validated['is_default'] ?? false,
+            ];
+
+            $existingAddress = $customer->addresses()->where('is_default', true)->first();
+            if ($existingAddress) {
+                $existingAddress->update($addressData);
+            } else {
+                $customer->addresses()->create($addressData);
+            }
 
             return redirect()->route('customers.index')
                 ->with('success', 'Data pelanggan berhasil diperbarui.');
