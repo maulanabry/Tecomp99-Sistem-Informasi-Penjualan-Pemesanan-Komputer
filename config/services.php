@@ -34,5 +34,19 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'rajaongkir' => [
+        'key' => env('RAJAONGKIR_API_KEY'),
+    ],
+    'komerce' => [
+        'key' => env('KOMERCE_API_KEY'),
+        'url' => env('KOMERCE_API_URL', 'https://api-sandbox.collaborator.komerce.id'),
+    ],
 
+    'BITESHIP_API_KEY' => env('BITESHIP_API_KEY'),
+    'BITESHIP_API_URL' => env('BITESHIP_API_URL'),
+
+    'binderbyte' => [
+        'key' => env('BINDERBYTE_API_KEY'),
+        'url' => env('BINDERBYTE_API_URL', 'https://api.binderbyte.com'),
+    ],
 ];

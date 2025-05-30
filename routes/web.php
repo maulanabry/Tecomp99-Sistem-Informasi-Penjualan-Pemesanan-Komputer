@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\KomerceAPIController;
+use App\Http\Controllers\Admin\KomerceAPIController as ControllersKomerceAPIController;
 use App\Http\Controllers\Pemilik\PemilikDashboardController;
-use App\Http\Controllers\Pemilik\TeknisiDashboardController as PemilikTeknisiDashboardController;
-use App\Http\Controllers\Teknisi\DashboardController as TeknisiDashboardController;
-use App\Http\Controllers\Teknisi\TeknisiDashboardController as TeknisiTeknisiDashboardController;
+use App\Http\Controllers\Teknisi\TeknisiDashboardController;
 use Illuminate\Support\Facades\Route;
+
+
 
 // ==========================
 // Authentication Routes
@@ -96,8 +99,13 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
     Route::prefix('admin/customer')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
         Route::get('/recovery', [\App\Http\Controllers\Admin\CustomerController::class, 'recovery'])->name('customers.recovery');
-        Route::get('/create', [\App\Http\Controllers\Admin\CustomerController::class, 'create'])->name('customers.create');
-        Route::post('/', [\App\Http\Controllers\Admin\CustomerController::class, 'store'])->name('customers.store');
+        // Customer Creation - Step 1
+        Route::get('/create', [\App\Http\Controllers\Admin\CustomerController::class, 'createStep1'])->name('customers.create.step1');
+        Route::post('/store-step1', [\App\Http\Controllers\Admin\CustomerController::class, 'storeStep1'])->name('customers.store.step1');
+
+        // Customer Creation - Step 2
+        Route::get('/{customer}/create-step2', [\App\Http\Controllers\Admin\CustomerController::class, 'createStep2'])->name('customers.create.step2');
+        Route::post('/{customer}/store-step2', [\App\Http\Controllers\Admin\CustomerController::class, 'storeStep2'])->name('customers.store.step2');
         Route::get('/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->name('customers.show');
         Route::get('/{customer}/edit', [\App\Http\Controllers\Admin\CustomerController::class, 'edit'])->name('customers.edit');
         Route::put('/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'update'])->name('customers.update');
@@ -105,17 +113,25 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\CustomerController::class, 'restore'])->name('customers.restore');
         Route::delete('/{id}/force', [\App\Http\Controllers\Admin\CustomerController::class, 'forceDelete'])->name('customers.force-delete');
     });
-    // Order
-    Route::prefix('admin/order-products')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\OrderProductController::class, 'index'])->name('order-products.index');
-        Route::get('/create', [\App\Http\Controllers\Admin\OrderProductController::class, 'create'])->name('order-products.create');
-    });
 
     // Order
+    Route::prefix('admin/order-products')->middleware(['auth:admin'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\OrderProductController::class, 'index'])->name('order-products.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\OrderProductController::class, 'create'])->name('order-products.create');
+        Route::post('/', [\App\Http\Controllers\Admin\OrderProductController::class, 'store'])->name('order-products.store');
+        Route::get('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'show'])->name('order-products.show');
+        Route::get('/{orderProduct}/edit', [\App\Http\Controllers\Admin\OrderProductController::class, 'edit'])->name('order-products.edit');
+        Route::put('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'update'])->name('order-products.update');
+        Route::delete('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'destroy'])->name('order-products.destroy');
+        Route::get('/recovery', [\App\Http\Controllers\Admin\OrderProductController::class, 'recovery'])->name('order-products.recovery');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderProductController::class, 'restore'])->name('order-products.restore');
+    });
     Route::get('/order/servis', function () {
         return view('order.servis');
     })->name('order.servis');
-
+    Route::get('/order/produk', function () {
+        return view('order.produk');
+    })->name('order.produk');
 
     // Transaksi
     Route::get('/transaksi', function () {
@@ -144,7 +160,7 @@ Route::middleware('auth:admin')->group(function () {
 
 // Teknisi Dashboard
 Route::middleware('auth:teknisi')->group(function () {
-    Route::get('/teknisi/dashboard', [TeknisiTeknisiDashboardController::class, 'index'])->name('teknisi.dashboard.index');
+    Route::get('/teknisi/dashboard', [TeknisiDashboardController::class, 'index'])->name('teknisi.dashboard.index');
 });
 
 // Pemilik Dashboard

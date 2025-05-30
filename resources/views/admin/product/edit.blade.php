@@ -110,6 +110,18 @@
                             </div>
                         </div>
 
+                        <!-- Weight -->
+                        <div>
+                            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                                Berat (gram)
+                            </label>
+                            <div class="mt-1">
+                                <input type="number" name="weight" id="weight" value="{{ old('weight', $product->weight) }}" required
+                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                    min="0">
+                            </div>
+                        </div>
+
                         <!-- Stock -->
                         <div>
                             <label for="stock" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -124,13 +136,12 @@
 
                         <!-- Status -->
                         <div>
-                            <div class="flex items-center">
-                                <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }}
-                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded">
-                                <label for="is_active" class="ml-2 block text-sm text-gray-700 dark:text-gray-200">
-                                    Aktif
-                                </label>
-                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="hidden" name="is_active" value="0">
+                                <input type="checkbox" name="is_active" value="1" class="sr-only peer" {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                                <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Status Aktif</span>
+                            </label>
                         </div>
 
                         <!-- Current Images -->

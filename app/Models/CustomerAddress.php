@@ -14,11 +14,12 @@ class CustomerAddress extends Model
     protected $fillable = [
         'customer_id',
         'province_id',
+        'province_name',
         'city_id',
+        'city_name',
         'subdistrict_id',
         'postal_code',
         'detail_address',
-        'is_default',
     ];
 
     public function customer()

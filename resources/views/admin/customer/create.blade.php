@@ -7,7 +7,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <div class="py-4">
                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-                    <form action="{{ route('customers.store') }}" method="POST" class="space-y-6 p-6">
+                    <form action="{{ route('customers.store') }}" method="POST" class="space-y-8 p-6">
                         @csrf
 
                         @if ($errors->any())
@@ -34,117 +34,158 @@
                             </div>
                         @endif
 
-                        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
-                            <!-- Name -->
-                            <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Nama
-                                </label>
-                                <div class="mt-1">
-                                    <input type="text" name="name" id="name" value="{{ old('name') }}"
-                                        class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
-                                </div>
+                        <!-- Informasi Customer Section -->
+                        <div class="space-y-6">
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Informasi Customer</h3>
                             </div>
-
-                            <!-- Email -->
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Email
-                                </label>
-                                <div class="mt-1">
-                                    <input type="email" name="email" id="email" value="{{ old('email') }}"
-                                        class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
-                                </div>
-                            </div>
-
-                            <!-- Contact -->
-                            <div>
-                                <label for="contact" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    No HP
-                                </label>
-                                <div class="mt-1">
-                                    <input type="text" name="contact" id="contact" value="{{ old('contact') }}"
-                                        class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
-                                </div>
-                            </div>
-
-                            <!-- Gender -->
-                            <div>
-                                <label for="gender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Jenis Kelamin
-                                </label>
-                                <div class="mt-1">
-                                    <select name="gender" id="gender"
-                                        class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
-                                        <option value="">Pilih Jenis Kelamin</option>
-                                        <option value="pria" {{ old('gender') === 'pria' ? 'selected' : '' }}>Pria</option>
-                                        <option value="wanita" {{ old('gender') === 'wanita' ? 'selected' : '' }}>Wanita</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Address -->
-                            <div class="sm:col-span-2">
-                                <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Alamat
-                                </label>
-                                <div class="mt-1">
-                                    <textarea name="address" id="address" rows="3"
-                                        class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">{{ old('address') }}</textarea>
-                                </div>
-                            </div>
-
-                            <div x-data="{ hasAccount: {{ old('hasAccount') ? 'true' : 'false' }} }">
-                                <!-- Has Account -->
-                                <div class="sm:col-span-2">
-                                    <div class="flex items-center">
-                                        <input type="checkbox" name="hasAccount" id="has_account" value="1" 
-                                            x-model="hasAccount"
-                                            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded">
-                                        <label for="has_account" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                            Memiliki Akun
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- Password (only shown when has_account is checked) -->
-                                <div class="sm:col-span-2 mt-4" x-show="hasAccount" x-transition>
-                                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Password
-                                        <span class="text-red-500">*</span>
+                            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+                                <!-- Nama -->
+                                <div>
+                                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Nama <span class="text-red-500">*</span>
                                     </label>
-                                    <div class="mt-1 flex gap-2" x-data="{ showPassword: false }">
-                                        <input 
-                                            :type="showPassword ? 'text' : 'password'" 
-                                            name="password" 
-                                            id="password"
-                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md"
-                                            minlength="6"
-                                            :required="hasAccount"
-                                            :disabled="!hasAccount"
-                                            x-on:hasAccount-changed="if (!hasAccount) $el.value = ''">
-                                        <button 
-                                            type="button"
-                                            class="flex items-center justify-center px-3 border border-gray-300 dark:border-gray-600 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 focus:outline-none rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 bg-white dark:bg-gray-700"
-                                            @click="showPassword = !showPassword"
-                                            :title="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
-                                            <svg class="h-5 w-5" :class="{'hidden': showPassword, 'block': !showPassword}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                            <svg class="h-5 w-5" :class="{'block': showPassword, 'hidden': !showPassword}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                            </svg>
-                                        </button>
+                                    <div class="mt-1">
+                                        <input type="text" name="name" id="name" value="{{ old('name') }}" required
+                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
                                     </div>
-                                                                                                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                            Minimal 6 karakter. Kosongkan jika tidak ingin mengubah password.
-                                        </p>
+                                </div>
+
+                                <!-- No HP -->
+                                <div>
+                                    <label for="contact" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        No HP <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="mt-1">
+                                        <input type="text" name="contact" id="contact" value="{{ old('contact') }}" required
+                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
+                                    </div>
+                                </div>
+
+                                <!-- Email -->
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Email
+                                    </label>
+                                    <div class="mt-1">
+                                        <input type="email" name="email" id="email" value="{{ old('email') }}"
+                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
+                                    </div>
+                                </div>
+
+                                <!-- Jenis Kelamin -->
+                                <div>
+                                    <label for="gender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Jenis Kelamin
+                                    </label>
+                                    <div class="mt-1">
+                                        <select name="gender" id="gender"
+                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
+                                            <option value="">Pilih Jenis Kelamin</option>
+                                            <option value="pria" {{ old('gender') === 'pria' ? 'selected' : '' }}>Pria</option>
+                                            <option value="wanita" {{ old('gender') === 'wanita' ? 'selected' : '' }}>Wanita</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex justify-end space-x-3 pt-4">
+                        <!-- Informasi Alamat Section -->
+                        <div class="space-y-6 pt-6">
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Informasi Alamat</h3>
+                            </div>
+                            <div x-data="addressForm" class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+                                <!-- Header Image -->
+                                <div class="sm:col-span-2 mb-6">
+                                    <img src="https://images.pexels.com/photos/4386442/pexels-photo-4386442.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
+                                         alt="Location Selection" 
+                                         class="w-full h-48 object-cover rounded-lg shadow-md">
+                                </div>
+
+                                <!-- Provinsi -->
+                                <div>
+                                    <label for="province_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Provinsi <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="mt-1 relative">
+                                        <select name="province_id" id="province_id" x-model="province_id" @change="fetchCities()"
+                                            :class="{'border-red-300': error}"
+                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
+                                            <option value="">Pilih Provinsi</option>
+                                            <template x-for="province in provinces" :key="province.id">
+                                                <option :value="province.id" x-text="province.name"></option>
+                                            </template>
+                                        </select>
+                                        <!-- Loading indicator -->
+                                        <div x-show="loading" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <!-- Error message -->
+                                    <template x-if="error">
+                                        <p class="mt-2 text-sm text-red-600" x-text="error"></p>
+                                    </template>
+                                </div>
+
+                                <!-- Kota/Kabupaten -->
+                                <div>
+                                    <label for="city_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Kota/Kabupaten <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="mt-1 relative">
+                                        <select name="city_id" id="city_id" x-model="city_id" @change="updateCityName()"
+                                            :class="{'border-red-300': error}"
+                                            :disabled="!province_id || loading"
+                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed">
+                                            <option value="">Pilih Kota/Kabupaten</option>
+                                            <template x-for="city in cities" :key="city.id">
+                                                <option :value="city.id" x-text="city.name"></option>
+                                            </template>
+                                        </select>
+                                        <!-- Loading indicator -->
+                                        <div x-show="loading" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Alamat Lengkap -->
+                                <div class="sm:col-span-2">
+                                    <label for="detail_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Alamat Lengkap
+                                    </label>
+                                    <div class="mt-1">
+                                        <textarea name="detail_address" id="detail_address" rows="3"
+                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">{{ old('detail_address') }}</textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Kode Pos -->
+                                <div>
+                                    <label for="postal_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Kode Pos
+                                    </label>
+                                    <div class="mt-1">
+                                        <input type="text" name="postal_code" id="postal_code" value="{{ old('postal_code') }}"
+                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Fields -->
+                        <input type="hidden" name="province_name" id="province_name" value="{{ old('province_name') }}">
+                        <input type="hidden" name="city_name" id="city_name" value="{{ old('city_name') }}">
+
+                        <!-- Form Buttons -->
+                        <div class="flex justify-end space-x-3 pt-6">
                             <a href="{{ route('customers.index') }}"
                                 class="inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                 Batal
@@ -162,24 +203,72 @@
 
     @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const hasAccountCheckbox = document.getElementById('has_account');
-            const passwordField = document.getElementById('password_field');
-            const passwordInput = document.getElementById('password');
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('addressForm', () => ({
+                provinces: [],
+                cities: [],
+                province_id: '',
+                city_id: '',
+                loading: false,
+                error: null,
 
-            function togglePasswordField() {
-                if (hasAccountCheckbox.checked) {
-                    passwordField.style.display = 'block';
-                    passwordInput.setAttribute('required', 'required');
-                } else {
-                    passwordField.style.display = 'none';
-                    passwordInput.removeAttribute('required');
-                    passwordInput.value = ''; // Clear password when unchecked
+                async init() {
+                    this.loading = true;
+                    this.error = null;
+                    try {
+                        const response = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+                        if (!response.ok) {
+                            throw new Error('Gagal mengambil data provinsi dari server');
+                        }
+                        const data = await response.json();
+                        // Sort provinces alphabetically
+                        this.provinces = data.sort((a, b) => a.name.localeCompare(b.name));
+                    } catch (e) {
+                        this.error = 'Gagal memuat data provinsi: ' + (e.message || 'Terjadi kesalahan pada server');
+                        console.error('Error:', e);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async fetchCities() {
+                    if (!this.province_id) {
+                        this.cities = [];
+                        return;
+                    }
+                    this.loading = true;
+                    this.error = null;
+                    this.city_id = '';
+                    try {
+                        const response = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${this.province_id}.json`);
+                        if (!response.ok) {
+                            throw new Error('Gagal mengambil data kota dari server');
+                        }
+                        const data = await response.json();
+                        // Sort cities alphabetically
+                        this.cities = data.sort((a, b) => a.name.localeCompare(b.name));
+                        
+                        // Update hidden province name field
+                        const selectedProvince = this.provinces.find(p => p.id === this.province_id);
+                        if (selectedProvince) {
+                            document.getElementById('province_name').value = selectedProvince.name;
+                        }
+                    } catch (e) {
+                        this.error = 'Gagal memuat data kota: ' + (e.message || 'Terjadi kesalahan pada server');
+                        console.error('Error:', e);
+                        this.cities = [];
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                updateCityName() {
+                    const selectedCity = this.cities.find(c => c.id === this.city_id);
+                    if (selectedCity) {
+                        document.getElementById('city_name').value = selectedCity.name;
+                    }
                 }
-            }
-
-            hasAccountCheckbox.addEventListener('change', togglePasswordField);
-            togglePasswordField(); // Initial state
+            }));
         });
     </script>
     @endpush

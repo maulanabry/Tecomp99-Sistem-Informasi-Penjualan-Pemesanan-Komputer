@@ -62,8 +62,8 @@
 
 
             <!-- Order -->
-            <li x-data="{ open: {{ $isOrderActive ? 'true' : 'false' }} }" class="mt-4">
-                <button @click="open = !open" :class="{'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300': {{ $isOrderActive ? 'true' : 'false' }}}" class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500">
+            <li x-data="{ open: {{ request()->is('admin/order-products*') ? 'true' : 'false' }} }" class="mt-4">
+                <button @click="open = !open" :class="{'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300': {{ request()->is('admin/order-products*') ? 'true' : 'false' }}}" class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500">
                     <div class="flex items-center">
                         <i class="fas fa-shopping-cart w-5 h-5 mr-3"></i>
                         <span>Order</span>
@@ -77,7 +77,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('order-products.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('order.produk') ? 'text-primary-600 dark:text-primary-300' : '' }}">
+                        <a href="{{ route('order-products.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/order-products*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                             Order Produk
                         </a>
                     </li>

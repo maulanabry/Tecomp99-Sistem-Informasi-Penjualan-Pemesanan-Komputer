@@ -9,22 +9,26 @@ return new class extends Migration {
     {
         Schema::create('customer_addresses', function (Blueprint $table) {
             $table->id();
-            $table->string('customer_id');
+            $table->string('customer_id', 20);
             $table->foreign('customer_id')
                 ->references('customer_id')
                 ->on('customers')
                 ->onDelete('cascade');
 
-            // RajaOngkir fields
-            $table->unsignedInteger('province_id');
-            $table->unsignedInteger('city_id');
-            $table->unsignedInteger('subdistrict_id')->nullable(); // Optional, only for RajaOngkir Pro
-            $table->string('postal_code', 10);
-            $table->text('detail_address');
-
-            $table->boolean('is_default')->default(false); // Penanda alamat utama
+            $table->unsignedInteger('province_id')->nullable();
+            $table->unsignedInteger('city_id')->nullable();
+            $table->string('province_name')->nullable();
+            $table->string('city_name')->nullable();
+            $table->unsignedInteger('subdistrict_id')->nullable();
+            $table->string('postal_code', 10)->nullable();
+            $table->text('detail_address')->nullable();
+            $table->boolean('is_default')->default(true); // opsional
 
             $table->timestamps();
+
+            $table->index('customer_id');
+            $table->index('province_id');
+            $table->index('city_id');
         });
     }
 

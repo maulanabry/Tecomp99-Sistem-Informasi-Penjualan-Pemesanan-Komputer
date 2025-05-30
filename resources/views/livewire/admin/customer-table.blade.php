@@ -135,11 +135,21 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Terakhir Aktif:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->last_active ? $customer->last_active->format('d M Y H:i') : '-' }}</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-300">
+                                @if($customer->last_active instanceof \Illuminate\Support\Carbon)
+                                    {{ $customer->last_active->format('d M Y H:i') }}
+                                @elseif(is_string($customer->last_active))
+                                    {{ \Illuminate\Support\Carbon::parse($customer->last_active)->format('d M Y H:i') }}
+                                @else
+                                    -
+                                @endif
+                            </span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Alamat:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->formatted_address }}</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-300">
+                                {{ $customer->addresses ? (strlen($customer->addresses->detail_address) > 30 ? substr($customer->addresses->detail_address, 0, 30) . '...' : $customer->addresses->detail_address) : '-' }}
+                            </span>
                         </div>
                         <div class="flex justify-end items-center gap-2 mt-4">
                                     <x-action-dropdown>
@@ -196,8 +206,18 @@
                             {{ $customer->hasAccount ? 'Ya' : 'Tidak' }}
                         </span>
                     </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->last_active ? $customer->last_active->format('d M Y H:i') : '-' }}</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->formatted_address }}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-300">
+                        @if($customer->last_active instanceof \Illuminate\Support\Carbon)
+                            {{ $customer->last_active->format('d M Y H:i') }}
+                        @elseif(is_string($customer->last_active))
+                            {{ \Illuminate\Support\Carbon::parse($customer->last_active)->format('d M Y H:i') }}
+                        @else
+                            -
+                        @endif
+                    </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-300">
+                        {{ $customer->addresses ? (strlen($customer->addresses->detail_address) > 30 ? substr($customer->addresses->detail_address, 0, 30) . '...' : $customer->addresses->detail_address) : '-' }}
+                    </div>
                     <div class="flex justify-center items-center gap-2">
                         <x-action-dropdown>
                                <a href="{{ route('customers.show', $customer) }}" 
