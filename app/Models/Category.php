@@ -19,6 +19,11 @@ class Category extends Model
         'slug'
     ];
 
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'categories_id', 'categories_id');
+    }
+
     protected static function boot()
     {
         parent::boot();
