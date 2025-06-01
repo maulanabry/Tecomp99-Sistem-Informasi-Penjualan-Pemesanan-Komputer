@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\Promo;
 use App\Models\OrderProduct;
 use App\Models\OrderProductItem;
 use Illuminate\Support\Facades\DB;
@@ -48,6 +49,7 @@ class CreateOrderProduct extends Component
     public function mount()
     {
         $this->customers = Customer::with('addresses')->get();
+        $this->promos = Promo::where('is_active', true)->valid()->get();
     }
 
     public function openProductModal()
