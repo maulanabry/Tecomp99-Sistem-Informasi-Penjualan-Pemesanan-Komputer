@@ -26,12 +26,19 @@ class CreateOrderProduct extends Component
     public $subtotal = 0;
     public $grandTotal = 0;
 
+    // Customer details properties
+    public $selectedCustomer = null;
+    public $customerAddress = null;
+
     // Modal properties
     public $showProductModal = false;
     public $searchQuery = '';
     public $selectedCategory = '';
     public $selectedBrand = '';
     public $filteredProducts = [];
+
+    //Shipping
+    public $shipper_destination_id = 69278; // Default to Manyar, Surabaya (id)
 
     protected $rules = [
         'customer_id' => 'required|exists:customers,customer_id',
@@ -50,6 +57,45 @@ class CreateOrderProduct extends Component
     {
         $this->customers = Customer::with('addresses')->get();
         $this->promos = Promo::where('is_active', true)->valid()->get();
+
+        // Initialize customer details if customer_id is set
+        if ($this->customer_id) {
+            $this->selectedCustomer = collect($this->customers)->firstWhere('customer_id', $this->customer_id);
+            $this->customerAddress = $this->selectedCustomer ? $this->selectedCustomer->addresses->first() : null;
+        }
+    }
+
+    public function updatedCustomerId($value)
+    {
+        if ($value) {
+            // Fetch fresh customer data with addresses to ensure we have the latest data
+            $this->selectedCustomer = Customer::with('addresses')->find($value);
+
+            if ($this->selectedCustomer) {
+                $this->customerAddress = $this->selectedCustomer->addresses ? $this->selectedCustomer->addresses->first() : null;
+
+                // Show appropriate message based on address availability
+                $message = $this->customerAddress
+                    ? 'Data pelanggan berhasil dimuat'
+                    : 'Data pelanggan dimuat, tetapi tidak memiliki alamat';
+
+                $this->dispatch('notify', [
+                    'type' => 'success',
+                    'message' => $message
+                ]);
+            } else {
+                $this->selectedCustomer = null;
+                $this->customerAddress = null;
+
+                $this->dispatch('notify', [
+                    'type' => 'error',
+                    'message' => 'Pelanggan tidak ditemukan'
+                ]);
+            }
+        } else {
+            $this->selectedCustomer = null;
+            $this->customerAddress = null;
+        }
     }
 
     public function openProductModal()
@@ -139,10 +185,10 @@ class CreateOrderProduct extends Component
                     $quantity = max(1, intval($value));
                     $this->orderItems[$index]->quantity = $quantity;
                     $this->orderItems[$index]->total = $this->orderItems[$index]->unit_price * $quantity;
-                    $this->calculateTotals();
                 }
             }
         }
+        $this->calculateTotals();
     }
 
     public function updatedDiscount()

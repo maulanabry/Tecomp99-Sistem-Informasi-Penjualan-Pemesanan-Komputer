@@ -32,7 +32,7 @@
                     <!-- Customer Selection -->
                     <div>
                         <label for="customer_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Nama Pelanggan</label>
-                        <select wire:model="customer_id" id="customer_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <select wire:model.live="customer_id" id="customer_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
                             <option value="">Pilih Pelanggan</option>
                             @foreach ($customers as $customer)
                                 <option value="{{ $customer->customer_id }}">{{ $customer->name }}</option>
@@ -42,28 +42,53 @@
                     </div>
 
                     <!-- Customer Details -->
-                    @if ($customer_id)
-                        @php
-                            $selectedCustomer = $customers->firstWhere('customer_id', $customer_id);
-                            $address = $selectedCustomer ? $selectedCustomer->addresses->first() : null;
-                        @endphp
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $selectedCustomer->email ?? '-' }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Nomor HP</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $selectedCustomer->contact ?? '-' }}</p>
-                            </div>
-                            <div class="col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Alamat</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    {{ $address ? $address->detail_address . ', ' . $address->city_name . ', ' . $address->province_name : '-' }}
+                    <div class="grid grid-cols-2 gap-4" wire:loading.class="opacity-50" wire:target="customer_id">
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
+                            <div class="mt-1">
+                                <p class="text-sm text-gray-900 dark:text-gray-100">
+                                    <span wire:loading.remove wire:target="customer_id">
+                                        {{ isset($selectedCustomer) ? $selectedCustomer->email : '-' }}
+                                    </span>
+                                    <span wire:loading wire:target="customer_id" class="text-gray-400">
+                                        Memuat...
+                                    </span>
                                 </p>
                             </div>
                         </div>
-                    @endif
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Nomor HP</label>
+                            <div class="mt-1">
+                                <p class="text-sm text-gray-900 dark:text-gray-100">
+                                    <span wire:loading.remove wire:target="customer_id">
+                                        {{ $selectedCustomer->contact ?? '-' }}
+                                    </span>
+                                    <span wire:loading wire:target="customer_id" class="text-gray-400">
+                                        Memuat...
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-span-2 relative">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Alamat</label>
+                            <div class="mt-1">
+                                <p class="text-sm text-gray-900 dark:text-gray-100">
+                                    <span wire:loading.remove wire:target="customer_id">
+                                        @if($customerAddress)
+                                            {{ $customerAddress->detail_address }}, 
+                                            {{ $customerAddress->city_name }}, 
+                                            {{ $customerAddress->province_name }}
+                                        @else
+                                            -
+                                        @endif
+                                    </span>
+                                    <span wire:loading wire:target="customer_id" class="text-gray-400">
+                                        Memuat...
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -71,7 +96,7 @@
             <div class=" pl-6 grid grid-cols-2 gap-6">
                 <div>
                     <label for="order_type" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Tipe Pesanan</label>
-                    <select wire:model="order_type" id="order_type" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                    <select wire:model.live="order_type" id="order_type" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
                         <option value="langsung">Langsung</option>
                         <option value="pengiriman">Pengiriman</option>
                     </select>
@@ -139,7 +164,14 @@
                                             <input 
                                                 type="number" 
                                                 min="1" 
-                                                wire:model.live.debounce.500ms="orderItems.{{ $index }}.quantity" 
+                                                wire:model.live="orderItems.{{ $index }}.quantity" 
+                                                x-data
+                                                x-on:input="
+                                                    $wire.orderItems[{{ $index }}].total = 
+                                                    $wire.orderItems[{{ $index }}].unit_price * 
+                                                    $event.target.value;
+                                                    $wire.calculateTotals()
+                                                "
                                                 wire:loading.attr="disabled"
                                                 class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm" 
                                             />
