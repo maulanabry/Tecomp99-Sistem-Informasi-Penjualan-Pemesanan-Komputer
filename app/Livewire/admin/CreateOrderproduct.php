@@ -21,6 +21,8 @@ class CreateOrderProduct extends Component
     public $shipping_cost = 0;
     public $promo_id = null;
     public $discount = 0;
+    public $promo_code = '';
+    public $promoError = null;
 
     public $orderItems = [];
     public $subtotal = 0;
@@ -49,6 +51,7 @@ class CreateOrderProduct extends Component
         'orderItems' => 'required|array|min:1',
         'orderItems.*.product_id' => 'required|exists:products,product_id',
         'orderItems.*.quantity' => 'required|integer|min:1',
+        'promo_code' => 'nullable|string|max:50',
     ];
 
     protected $listeners = ['productSelected' => 'onProductSelected'];
@@ -72,16 +75,30 @@ class CreateOrderProduct extends Component
             $this->selectedCustomer = Customer::with('addresses')->find($value);
 
             if ($this->selectedCustomer) {
-                $this->customerAddress = $this->selectedCustomer->addresses ? $this->selectedCustomer->addresses->first() : null;
+                // Filter addresses to ensure the customer_id matches
+                if ($this->selectedCustomer->addresses) {
+                    $this->customerAddress = $this->selectedCustomer->addresses
+                        ->where('customer_id', $value)
+                        ->where('is_default', true)
+                        ->first();
 
-                // Show appropriate message based on address availability
+                    // If no default address exists, get the first address for the customer
+                    if (!$this->customerAddress) {
+                        $this->customerAddress = $this->selectedCustomer->addresses
+                            ->where('customer_id', $value)
+                            ->first();
+                    }
+                } else {
+                    $this->customerAddress = null;
+                }
+
+                // Notify the user about the address status
                 $message = $this->customerAddress
-                    ? 'Data pelanggan berhasil dimuat'
-                    : 'Data pelanggan dimuat, tetapi tidak memiliki alamat';
-
+                    ? 'Alamat pelanggan berhasil dimuat.'
+                    : 'Pelanggan tidak memiliki alamat yang tersedia.';
                 $this->dispatch('notify', [
                     'type' => 'success',
-                    'message' => $message
+                    'message' => $message,
                 ]);
             } else {
                 $this->selectedCustomer = null;
@@ -89,18 +106,13 @@ class CreateOrderProduct extends Component
 
                 $this->dispatch('notify', [
                     'type' => 'error',
-                    'message' => 'Pelanggan tidak ditemukan'
+                    'message' => 'Pelanggan tidak ditemukan.',
                 ]);
             }
         } else {
             $this->selectedCustomer = null;
             $this->customerAddress = null;
         }
-    }
-
-    public function openProductModal()
-    {
-        $this->dispatch('openModal');
     }
 
     public function onProductSelected($productId)
@@ -200,7 +212,52 @@ class CreateOrderProduct extends Component
     {
         $this->subtotal = collect($this->orderItems)->sum('total');
         $discount = $this->discount ?? 0;
-        $this->grandTotal = max(0, $this->subtotal - $discount);
+        $this->grandTotal = max(0, $this->subtotal - $discount + $this->shipping_cost);
+    }
+
+    public function applyPromoCode()
+    {
+        $this->promoError = null;
+        $this->discount = 0;
+        $this->promo_id = null;
+
+        $code = trim($this->promo_code);
+        if (empty($code)) {
+            $this->promoError = 'Kode promo tidak boleh kosong.';
+            return;
+        }
+
+        $promo = Promo::where('code', $code)
+            ->where('is_active', true)
+            ->valid()
+            ->first();
+
+        if (!$promo) {
+            $this->promoError = 'Kode promo tidak valid atau sudah tidak aktif.';
+            return;
+        }
+
+        if ($promo->minimum_order_amount && $this->subtotal < $promo->minimum_order_amount) {
+            $this->promoError = "Minimal pembelian untuk promo ini adalah Rp " . number_format($promo->minimum_order_amount, 0, ',', '.');
+            return;
+        }
+
+        // Calculate discount based on promo type
+        if ($promo->type === 'percentage' && $promo->discount_percentage) {
+            $this->discount = intval(($this->subtotal * $promo->discount_percentage) / 100);
+        } elseif ($promo->type === 'amount' && $promo->discount_amount) {
+            $this->discount = $promo->discount_amount;
+        } else {
+            $this->discount = 0;
+        }
+
+        $this->promo_id = $promo->promo_id;
+        $this->calculateTotals();
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => 'Promo berhasil diterapkan.'
+        ]);
     }
 
     public function submit()

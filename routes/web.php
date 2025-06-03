@@ -167,3 +167,7 @@ Route::middleware('auth:teknisi')->group(function () {
 Route::middleware('auth:pemilik')->group(function () {
     Route::get('/pemilik/dashboard', [PemilikDashboardController::class, 'index'])->name('pemilik.dashboard.index');
 });
+
+Route::group(['prefix' => 'public'], function () {
+    Route::get('/search-destination', [App\Http\Controllers\Api\Public\RajaOngkirController::class, 'searchDestination'])->name('public.search-destination');
+});

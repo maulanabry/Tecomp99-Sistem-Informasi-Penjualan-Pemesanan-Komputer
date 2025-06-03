@@ -53,35 +53,60 @@ class CustomerController extends Controller
 
     public function storeStep2(Request $request, $customer_id)
     {
+        // Mencari customer berdasarkan ID
         $customer = Customer::findOrFail($customer_id);
 
         try {
+            // Cek apakah pengguna memilih untuk melewati alamat
             if ($request->input('action') === 'skip') {
                 return redirect()->route('customers.index')
                     ->with('success', 'Input alamat dilewati.');
             }
 
-            $validated = $request->validate([
-                'province_id' => 'required|integer',
-                'province_name' => 'required|string|max:255',
-                'city_id' => 'required|integer',
-                'city_name' => 'required|string|max:255',
-                'postal_code' => 'required|string|max:10',
-                'detail_address' => 'required|string',
-            ]);
+            // Validasi input alamat hanya jika action adalah save
+            if ($request->input('action') === 'save') {
+                $validated = $request->validate([
+                    'province_id' => 'required|integer',
+                    'province_name' => 'required|string|max:255',
+                    'city_id' => 'required|integer',
+                    'city_name' => 'required|string|max:255',
+                    'district_id' => 'required|integer',
+                    'district_name' => 'required|string|max:255',
+                    'subdistrict_id' => 'required|integer',
+                    'subdistrict_name' => 'required|string|max:255',
+                    'postal_code' => 'required|string|max:10',
+                    'detail_address' => 'required|string',
+                ]);
 
-            $customer->addresses()->create([
-                'province_id' => $validated['province_id'],
-                'province_name' => $validated['province_name'],
-                'city_id' => $validated['city_id'],
-                'city_name' => $validated['city_name'],
-                'postal_code' => $validated['postal_code'],
-                'detail_address' => $validated['detail_address'],
-            ]);
 
-            return redirect()->route('customers.index')
-                ->with('success', 'Alamat berhasil disimpan.');
+
+                // Menyimpan alamat terkait customer
+                $address = $customer->addresses()->create([
+                    'province_id' => $validated['province_id'],
+                    'province_name' => $validated['province_name'],
+                    'city_id' => $validated['city_id'],
+                    'city_name' => $validated['city_name'],
+                    'district_id' => $validated['district_id'],
+                    'district_name' => $validated['district_name'],
+                    'subdistrict_id' => $validated['subdistrict_id'],
+                    'subdistrict_name' => $validated['subdistrict_name'],
+                    'postal_code' => $validated['postal_code'],
+                    'detail_address' => $validated['detail_address'],
+                    'is_default' => true,
+                ]);
+
+
+
+                return redirect()->route('customers.index')
+                    ->with('success', 'Alamat berhasil disimpan.');
+            }
+
+            // If no valid action is provided
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Aksi tidak valid.']);
         } catch (\Exception $e) {
+            // Menangani error dan kembali dengan pesan error
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['error' => 'Gagal menyimpan alamat: ' . $e->getMessage()]);
@@ -158,7 +183,8 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
-        return view('admin.customer.edit', compact('customer'));
+        $customerAddress = $customer->addresses()->where('is_default', true)->first();
+        return view('admin.customer.edit', compact('customer', 'customerAddress'));
     }
 
     public function update(Request $request, Customer $customer)
@@ -175,7 +201,10 @@ class CustomerController extends Controller
                 'province_name' => 'nullable|string|max:255',
                 'city_id' => 'nullable|integer',
                 'city_name' => 'nullable|string|max:255',
+                'district_id' => 'nullable|integer',
+                'district_name' => 'nullable|string|max:255',
                 'subdistrict_id' => 'nullable|integer',
+                'subdistrict_name' => 'nullable|string|max:255',
                 'postal_code' => 'nullable|string|max:10',
                 'detail_address' => 'nullable|string',
             ]);
@@ -199,7 +228,10 @@ class CustomerController extends Controller
             $customerData = collect($validated)->except([
                 'province_id',
                 'city_id',
+                'district_id',
+                'district_name',
                 'subdistrict_id',
+                'subdistrict_name',
                 'postal_code',
                 'detail_address',
                 'is_default'
@@ -214,9 +246,13 @@ class CustomerController extends Controller
                     'province_name' => $validated['province_name'],
                     'city_id' => $validated['city_id'],
                     'city_name' => $validated['city_name'],
-                    'subdistrict_id' => $validated['subdistrict_id'] ?? null,
+                    'district_id' => $validated['district_id'],
+                    'district_name' => $validated['district_name'],
+                    'subdistrict_id' => $validated['subdistrict_id'],
+                    'subdistrict_name' => $validated['subdistrict_name'],
                     'postal_code' => $validated['postal_code'],
                     'detail_address' => $validated['detail_address'],
+                    'is_default' => true
                 ];
 
                 $existingAddress = $customer->addresses()->where('is_default', true)->first();

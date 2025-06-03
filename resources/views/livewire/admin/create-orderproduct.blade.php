@@ -239,20 +239,29 @@
                 @error('note') <span class="text-danger-600 text-sm">{{ $message }}</span> @enderror
             </div>
 
-            <!-- Promo and Cost Summary -->
+            <!-- Promo Code Input and Cost Summary -->
             <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg grid grid-cols-2 gap-6">
                 <div>
-                    <label for="promo_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Promo</label>
-                    <select wire:model="promo_id" id="promo_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                        <option value="">Pilih Promo</option>
-                        @foreach ($promos as $promo)
-                            <option value="{{ $promo->promo_id }}">
-                                {{ $promo->name }} - {{ $promo->type === 'percentage' ? $promo->discount_percentage . '%' : 'Rp ' . number_format($promo->discount_amount, 0, ',', '.') }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @if(empty($promos))
-                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Tidak ada promo aktif saat ini</p>
+                    <label for="promo_code" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Kode Promo</label>
+                    <div class="flex space-x-2">
+                        <input 
+                            type="text" 
+                            wire:model.defer="promo_code" 
+                            id="promo_code" 
+                            placeholder="Masukkan kode promo" 
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        />
+                        <button 
+                            type="button" 
+                            wire:click="applyPromoCode" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        >
+                            Terapkan
+                        </button>
+                    </div>
+                    @error('promo_code') <span class="text-danger-600 text-sm">{{ $message }}</span> @enderror
+                    @if ($promoError)
+                        <p class="mt-2 text-sm text-danger-600">{{ $promoError }}</p>
                     @endif
                 </div>
 
