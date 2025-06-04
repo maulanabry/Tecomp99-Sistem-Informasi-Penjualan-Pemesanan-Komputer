@@ -167,97 +167,6 @@ document.querySelectorAll(".add-product-btn").forEach((button) => {
     });
 });
 
-// Promo code logic
-const promoCodeInput = document.getElementById("promo_code");
-const promoIdInput = document.getElementById("promo_id");
-const promoTypeInput = document.getElementById("promo_type");
-const promoValueInput = document.getElementById("promo_value");
-const applyPromoBtn = document.getElementById("applyPromoBtn");
-const promoInfo = document.getElementById("promoInfo");
-const promoSuccess = document.getElementById("promoSuccess");
-const promoError = document.getElementById("promoError");
-const discountDisplay = document.getElementById("discountDisplay");
-
-function showPromoError(message) {
-    promoInfo.classList.remove("hidden");
-    promoSuccess.classList.add("hidden");
-    promoError.classList.remove("hidden");
-    promoError.textContent = message;
-}
-
-function showPromoSuccess(message) {
-    promoInfo.classList.remove("hidden");
-    promoError.classList.add("hidden");
-    promoSuccess.classList.remove("hidden");
-    promoSuccess.textContent = message;
-}
-
-function clearPromo() {
-    promoIdInput.value = "";
-    promoTypeInput.value = "";
-    promoValueInput.value = "";
-    promoInfo.classList.add("hidden");
-    calculateTotals();
-}
-
-promoCodeInput.addEventListener("input", () => {
-    if (!promoCodeInput.value.trim()) {
-        clearPromo();
-    }
-});
-
-applyPromoBtn.addEventListener("click", async () => {
-    const code = promoCodeInput.value.trim();
-    if (!code) {
-        showPromoError("Masukkan kode promo");
-        return;
-    }
-
-    try {
-        const response = await fetch(
-            `/api/public/check-promo?code=${encodeURIComponent(
-                code
-            )}&status=active`,
-            {
-                headers: {
-                    Accept: "application/json",
-                },
-            }
-        );
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || "Gagal memeriksa kode promo");
-        }
-
-        const promo = await response.json();
-        if (!promo || !promo.is_active) {
-            throw new Error("Kode promo tidak valid atau tidak aktif");
-        }
-
-        // Store promo data
-        promoIdInput.value = promo.id;
-        promoTypeInput.value = promo.discount_type;
-        promoValueInput.value = promo.discount_value;
-
-        // Show success with discount info
-        const discountInfo =
-            promo.discount_type === "percentage"
-                ? `${promo.discount_value}%`
-                : `Rp ${parseInt(promo.discount_value).toLocaleString(
-                      "id-ID"
-                  )}`;
-        showPromoSuccess(
-            `Promo berhasil diterapkan: ${promo.name} (${discountInfo})`
-        );
-        calculateTotals();
-    } catch (error) {
-        console.error("Error applying promo:", error);
-        showPromoError(error.message);
-        clearPromo();
-    }
-});
-
 // Calculate total weight
 function calculateTotalWeight() {
     let totalWeight = 0;
@@ -478,32 +387,6 @@ function calculateTotals() {
         const unitPrice = parseInt(unitPriceText) || 0;
         subtotal += qty * unitPrice;
     });
-
-    // Calculate discount from promo code
-    let discount = 0;
-    if (promoIdInput.value && promoTypeInput.value && promoValueInput.value) {
-        const discountType = promoTypeInput.value;
-        const discountValue = parseFloat(promoValueInput.value);
-
-        console.log("Applying promo:", {
-            type: discountType,
-            value: discountValue,
-        });
-
-        if (discountType === "percentage") {
-            discount = Math.round(subtotal * (discountValue / 100));
-            console.log(`Calculating ${discountValue}% discount:`, discount);
-        } else if (discountType === "fixed") {
-            discount = discountValue;
-            console.log(`Applying fixed discount:`, discount);
-        }
-
-        // Cap discount at subtotal
-        if (discount > subtotal) {
-            console.log(`Capping discount at subtotal:`, subtotal);
-            discount = subtotal;
-        }
-    }
 
     const shippingCost = parseInt(shippingCostInput.value) || 0;
     const grandTotal = subtotal - discount + shippingCost;
