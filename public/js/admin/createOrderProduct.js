@@ -1,9 +1,9 @@
-// Utility function to format number as Rupiah currency
+// Fungsi utilitas untuk memformat angka menjadi mata uang Rupiah
 function formatRupiah(number) {
     return "Rp " + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-// Customer selection logic
+// Logika pemilihan pelanggan
 const customerSelect = document.getElementById("customer_id");
 const customerInfo = document.getElementById("customerInfo");
 const customerEmail = document.getElementById("customerEmail");
@@ -14,13 +14,13 @@ const customerPostalCode = document.getElementById("customerPostalCode");
 customerSelect.addEventListener("change", function () {
     const selectedOption = this.options[this.selectedIndex];
     if (this.value) {
-        // Update customer information
+        // Perbarui informasi pelanggan
         customerEmail.textContent =
             selectedOption.getAttribute("data-email") || "-";
         customerPhone.textContent =
             selectedOption.getAttribute("data-contact") || "-";
 
-        // Build full address
+        // Bangun alamat lengkap
         const addressParts = [
             selectedOption.getAttribute("data-address"),
             selectedOption.getAttribute("data-subdistrict"),
@@ -33,20 +33,20 @@ customerSelect.addEventListener("change", function () {
         customerPostalCode.textContent =
             selectedOption.getAttribute("data-postal") || "-";
 
-        // Show customer info section
+        // Tampilkan bagian informasi pelanggan
         customerInfo.classList.remove("hidden");
     } else {
-        // Hide customer info section if no customer selected
+        // Sembunyikan bagian informasi pelanggan jika tidak ada pelanggan yang dipilih
         customerInfo.classList.add("hidden");
 
-        // Reset shipping cost
+        // Reset biaya pengiriman
         shippingCostInput.value = 0;
         shippingCostDisplay.textContent = "Rp 0";
         calculateTotals();
     }
 });
 
-// Order type logic
+// Logika tipe pesanan
 const orderTypeSelect = document.getElementById("order_type");
 const shippingCostContainer = document.getElementById("shippingCostContainer");
 const shippingCostInput = document.getElementById("shipping_cost");
@@ -65,20 +65,20 @@ orderTypeSelect.addEventListener("change", function () {
     }
 });
 
-// Check Ongkir button handler
+// Handler tombol cek ongkir
 const checkOngkirBtn = document.getElementById("checkOngkirBtn");
 const checkOngkirLoader = document.getElementById("checkOngkirLoader");
 
 checkOngkirBtn.addEventListener("click", async function () {
     try {
-        // Show loader
+        // Tampilkan loader
         checkOngkirLoader.classList.remove("hidden");
         checkOngkirBtn.querySelector("span").textContent = "Mengecek...";
         checkOngkirBtn.disabled = true;
 
         await updateShippingCost(true);
     } finally {
-        // Hide loader and reset button
+        // Sembunyikan loader dan reset tombol
         checkOngkirLoader.classList.add("hidden");
         checkOngkirBtn.querySelector("span").textContent = "Cek Ongkir";
         checkOngkirBtn.disabled = false;
@@ -90,7 +90,7 @@ shippingCostInput.addEventListener("input", function () {
     calculateTotals();
 });
 
-// Product list management
+// Manajemen daftar produk
 const addProductBtn = document.getElementById("addProductBtn");
 const addProductModal = document.getElementById("addProductModal");
 const closeAddProductModalBtn = document.getElementById("closeAddProductModal");
@@ -105,7 +105,7 @@ closeAddProductModalBtn.addEventListener("click", () => {
     addProductModal.classList.add("hidden");
 });
 
-// Add product from modal to product list
+// Tambahkan produk dari modal ke daftar produk
 document.querySelectorAll(".add-product-btn").forEach((button) => {
     button.addEventListener("click", (e) => {
         const row = e.target.closest("tr");
@@ -124,9 +124,9 @@ document.querySelectorAll(".add-product-btn").forEach((button) => {
             return;
         }
 
-        // Add row to product items table
+        // Tambahkan baris ke tabel daftar produk
         const tr = document.createElement("tr");
-        tr.id = `product-row-${productId}-${Date.now()}`; // Use a unique ID for each row
+        tr.id = `product-row-${productId}-${Date.now()}`; // Gunakan ID unik untuk setiap baris
         tr.className =
             "bg-white border-b dark:bg-gray-800 dark:border-gray-700";
         const productWeight = row.getAttribute("data-product-weight");
@@ -150,7 +150,7 @@ document.querySelectorAll(".add-product-btn").forEach((button) => {
             `;
         productItemsTableBody.appendChild(tr);
 
-        // Add event listener for remove button
+        // Tambahkan event listener untuk tombol hapus
         tr.querySelector(".remove-product-btn").addEventListener(
             "click",
             (event) => {
@@ -167,7 +167,98 @@ document.querySelectorAll(".add-product-btn").forEach((button) => {
     });
 });
 
-// Calculate total weight
+// Logika kode promo
+const promoCodeInput = document.getElementById("promo_code");
+const promoIdInput = document.getElementById("promo_id");
+const promoTypeInput = document.getElementById("promo_type");
+const promoValueInput = document.getElementById("promo_value");
+const applyPromoBtn = document.getElementById("applyPromoBtn");
+const promoInfo = document.getElementById("promoInfo");
+const promoSuccess = document.getElementById("promoSuccess");
+const promoError = document.getElementById("promoError");
+const discountDisplay = document.getElementById("discountDisplay");
+
+function showPromoError(message) {
+    promoInfo.classList.remove("hidden");
+    promoSuccess.classList.add("hidden");
+    promoError.classList.remove("hidden");
+    promoError.textContent = message;
+}
+
+function showPromoSuccess(message) {
+    promoInfo.classList.remove("hidden");
+    promoError.classList.add("hidden");
+    promoSuccess.classList.remove("hidden");
+    promoSuccess.textContent = message;
+}
+
+function clearPromo() {
+    promoIdInput.value = "";
+    promoTypeInput.value = "";
+    promoValueInput.value = "";
+    promoInfo.classList.add("hidden");
+    calculateTotals();
+}
+
+promoCodeInput.addEventListener("input", () => {
+    if (!promoCodeInput.value.trim()) {
+        clearPromo();
+    }
+});
+
+applyPromoBtn.addEventListener("click", async () => {
+    const code = promoCodeInput.value.trim();
+    if (!code) {
+        showPromoError("Masukkan kode promo");
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/public/check-promo?code=${encodeURIComponent(
+                code
+            )}&status=active`,
+            {
+                headers: {
+                    Accept: "application/json",
+                },
+            }
+        );
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || "Gagal memeriksa kode promo");
+        }
+
+        const promo = await response.json();
+        if (!promo || !promo.is_active) {
+            throw new Error("Kode promo tidak valid atau tidak aktif");
+        }
+
+        // Simpan data promo
+        promoIdInput.value = promo.id;
+        promoTypeInput.value = promo.discount_type;
+        promoValueInput.value = promo.discount_value;
+
+        // Tampilkan sukses dengan info diskon
+        const discountInfo =
+            promo.discount_type === "percentage"
+                ? `${promo.discount_value}%`
+                : `Rp ${parseInt(promo.discount_value).toLocaleString(
+                      "id-ID"
+                  )}`;
+        showPromoSuccess(
+            `Promo berhasil diterapkan: ${promo.name} (${discountInfo})`
+        );
+        calculateTotals();
+    } catch (error) {
+        console.error("Error applying promo:", error);
+        showPromoError(error.message);
+        clearPromo();
+    }
+});
+
+// Hitung total berat
 function calculateTotalWeight() {
     let totalWeight = 0;
     document.querySelectorAll("#productItemsTableBody tr").forEach((row) => {
@@ -178,7 +269,7 @@ function calculateTotalWeight() {
     return totalWeight;
 }
 
-// Fetch destination data from postal code
+// Ambil data tujuan dari kode pos
 async function getDestinationData(postalCode) {
     try {
         console.log("Mencari destinasi untuk kode pos:", postalCode);
@@ -218,7 +309,7 @@ async function getDestinationData(postalCode) {
     }
 }
 
-// Calculate shipping cost
+// Hitung biaya pengiriman
 async function calculateShippingCost(destination, weight) {
     try {
         console.log("Menghitung ongkir dengan params:", {
@@ -226,7 +317,7 @@ async function calculateShippingCost(destination, weight) {
             weight,
         });
 
-        // Create URL-encoded form data
+        // Buat data form yang di-URL-encode
         const params = new URLSearchParams();
         params.append("destination", destination);
         params.append("weight", weight);
@@ -256,7 +347,7 @@ async function calculateShippingCost(destination, weight) {
         const data = await response.json();
         console.log("Data ongkir:", data);
 
-        // Find JNE REG service
+        // Temukan layanan JNE REG
         const regService = data.find(
             (service) => service.code === "jne" && service.service === "REG"
         );
@@ -275,13 +366,13 @@ async function calculateShippingCost(destination, weight) {
     }
 }
 
-// Update shipping cost
+// Perbarui biaya pengiriman
 async function updateShippingCost(isButtonClick = false) {
     const checkOngkirBtn = document.getElementById("checkOngkirBtn");
     const checkOngkirLoader = document.getElementById("checkOngkirLoader");
 
     try {
-        // Only proceed if it's a button click or resetting cost for non-delivery
+        // Hanya lanjutkan jika ini adalah klik tombol atau mereset biaya untuk non-pengiriman
         if (!isButtonClick && orderTypeSelect.value === "Pengiriman") {
             return;
         }
@@ -293,7 +384,7 @@ async function updateShippingCost(isButtonClick = false) {
             return;
         }
 
-        // Validate customer selection
+        // Validasi pemilihan pelanggan
         if (!customerSelect.value) {
             alert("Silakan pilih pelanggan terlebih dahulu.");
             return;
@@ -311,7 +402,7 @@ async function updateShippingCost(isButtonClick = false) {
             return;
         }
 
-        // Validate products
+        // Validasi produk
         const weight = calculateTotalWeight();
         console.log("Total berat:", weight);
         if (weight === 0) {
@@ -321,7 +412,7 @@ async function updateShippingCost(isButtonClick = false) {
             return;
         }
 
-        // Show loading indicator
+        // Tampilkan indikator pemuatan
         if (checkOngkirBtn && checkOngkirLoader) {
             checkOngkirLoader.classList.remove("hidden");
             checkOngkirBtn.disabled = true;
@@ -329,7 +420,7 @@ async function updateShippingCost(isButtonClick = false) {
         }
 
         try {
-            // Get destination data and calculate shipping cost
+            // Ambil data tujuan dan hitung biaya pengiriman
             const destinationData = await getDestinationData(postalCode);
             console.log("Data destinasi:", destinationData);
 
@@ -362,12 +453,12 @@ async function updateShippingCost(isButtonClick = false) {
                 "Terjadi kesalahan saat menghitung ongkos kirim. Silakan coba lagi."
         );
 
-        // Reset shipping cost on error
+        // Reset biaya pengiriman jika terjadi kesalahan
         shippingCostInput.value = 0;
         shippingCostDisplay.textContent = "Rp 0";
         calculateTotals();
     } finally {
-        // Hide loading indicator and reset button
+        // Sembunyikan indikator pemuatan dan reset tombol
         if (checkOngkirBtn && checkOngkirLoader) {
             checkOngkirLoader.classList.add("hidden");
             checkOngkirBtn.disabled = false;
@@ -376,7 +467,7 @@ async function updateShippingCost(isButtonClick = false) {
     }
 }
 
-// Calculate totals function
+// Fungsi hitung total
 function calculateTotals() {
     let subtotal = 0;
     document.querySelectorAll("#productItemsTableBody tr").forEach((row) => {
@@ -388,10 +479,36 @@ function calculateTotals() {
         subtotal += qty * unitPrice;
     });
 
+    // Hitung diskon dari kode promo
+    let discount = 0;
+    if (promoIdInput.value && promoTypeInput.value && promoValueInput.value) {
+        const discountType = promoTypeInput.value;
+        const discountValue = parseFloat(promoValueInput.value);
+
+        console.log("Applying promo:", {
+            type: discountType,
+            value: discountValue,
+        });
+
+        if (discountType === "percentage") {
+            discount = Math.round(subtotal * (discountValue / 100));
+            console.log(`Calculating ${discountValue}% discount:`, discount);
+        } else if (discountType === "fixed") {
+            discount = discountValue;
+            console.log(`Applying fixed discount:`, discount);
+        }
+
+        // Batasi diskon pada subtotal
+        if (discount > subtotal) {
+            console.log(`Capping discount at subtotal:`, subtotal);
+            discount = subtotal;
+        }
+    }
+
     const shippingCost = parseInt(shippingCostInput.value) || 0;
     const grandTotal = subtotal - discount + shippingCost;
 
-    // Update displays
+    // Perbarui tampilan
     document.getElementById("subtotalDisplay").textContent =
         formatRupiah(subtotal);
     discountDisplay.textContent = formatRupiah(discount);
@@ -399,7 +516,7 @@ function calculateTotals() {
     document.getElementById("grandTotalDisplay").textContent =
         formatRupiah(grandTotal);
 
-    // Update hidden input for items JSON
+    // Perbarui input tersembunyi untuk item JSON
     const items = [];
     document.querySelectorAll("#productItemsTableBody tr").forEach((row) => {
         const productId = row.id.replace("product-row-", "");
@@ -418,7 +535,7 @@ function calculateTotals() {
     itemsInput.value = JSON.stringify(items);
 }
 
-// On form submit, validate at least one product added
+// Saat formulir disubmit, validasi setidaknya satu produk ditambahkan
 document.getElementById("orderForm").addEventListener("submit", function (e) {
     if (document.querySelectorAll("#productItemsTableBody tr").length === 0) {
         e.preventDefault();

@@ -70,7 +70,7 @@
                     <option value="Pengiriman">Pengiriman</option>
                 </select>
                 <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    * Pilih "Pengiriman" untuk menghitung ongkos kirim JNE
+                    * Pilih "Pengiriman" untuk menghitung ongkos kirim JNE REG
                 </div>
                 <div id="shippingCostContainer" class="mt-4 hidden">
                     <label for="shipping_cost" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Ongkos Kirim (Rp)</label>
@@ -106,28 +106,7 @@
                 <input type="hidden" name="items" id="itemsInput" />
             </div>
 
-            <!-- Promo -->
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Promo</h2>
-                <div class="flex gap-2">
-                    <div class="flex-1">
-                        <label for="promo_code" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Kode Promo</label>
-                        <input type="text" id="promo_code" name="promo_code" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Masukkan kode promo">
-                        <input type="hidden" id="promo_id" name="promo_id">
-                        <input type="hidden" id="promo_type" name="promo_type">
-                        <input type="hidden" id="promo_value" name="promo_value">
-                    </div>
-                    <div class="flex items-end">
-                        <button type="button" id="applyPromoBtn" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                            Terapkan
-                        </button>
-                    </div>
-                </div>
-                <div id="promoInfo" class="mt-2 text-sm hidden">
-                    <p class="text-green-600 dark:text-green-400 hidden" id="promoSuccess"></p>
-                    <p class="text-red-600 dark:text-red-400 hidden" id="promoError"></p>
-                </div>
-            </div>
+           
 
             <!-- Catatan -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
@@ -146,33 +125,58 @@
                 </select>
             </div>
 
-            <!-- Ringkasan Total -->
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 max-w-md mx-auto">
-                <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Ringkasan Total</h2>
-                <div class="space-y-2">
-                    <div class="flex justify-between text-gray-700 dark:text-gray-300">
-                        <span>Subtotal:</span>
-                        <span id="subtotalDisplay">Rp 0</span>
-                    </div>
-                    <div class="flex justify-between text-gray-700 dark:text-gray-300">
-                        <span>Diskon Promo:</span>
-                        <span id="discountDisplay">Rp 0</span>
-                    </div>
-                    <div class="flex justify-between text-gray-700 dark:text-gray-300">
-                        <span>Ongkos Kirim:</span>
-                        <div class="flex items-center gap-2">
-                            <button type="button" id="checkOngkirBtn" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-xs px-3 py-1.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800 flex items-center gap-2">
-                                <span>Cek Ongkir</span>
-                                <div id="checkOngkirLoader" class="hidden">
-                                    <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                </div>
+ <!-- Promo -->
+            <div class="flex gap-4">
+                <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 w-2/4">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Promo</h2>
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <label for="promo_code" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Kode Promo</label>
+                            <input type="text" id="promo_code" name="promo_code" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Masukkan kode promo">
+                            <input type="hidden" id="promo_id" name="promo_id">
+                            <input type="hidden" id="promo_type" name="promo_type">
+                            <input type="hidden" id="promo_value" name="promo_value">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="button" id="applyPromoBtn" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                                Terapkan
                             </button>
-                            <span id="shippingCostDisplay">Rp 0</span>
                         </div>
                     </div>
-                    <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-600">
-                        <span>Total Keseluruhan:</span>
-                        <span id="grandTotalDisplay">Rp 0</span>
+                    <div id="promoInfo" class="mt-2 text-sm hidden">
+                        <p class="text-green-600 dark:text-green-400 hidden" id="promoSuccess"></p>
+                        <p class="text-red-600 dark:text-red-400 hidden" id="promoError"></p>
+                    </div>
+                </div>
+
+                <!-- Ringkasan Total -->
+                <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 w-2/4">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Ringkasan Total</h2>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-gray-700 dark:text-gray-300">
+                            <span>Subtotal:</span>
+                            <span id="subtotalDisplay">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700 dark:text-gray-300">
+                            <span>Diskon Promo:</span>
+                            <span id="discountDisplay">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700 dark:text-gray-300">
+                            <span>Ongkos Kirim:</span>
+                            <div class="flex items-center gap-2">
+                                <button type="button" id="checkOngkirBtn" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-xs px-3 py-1.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800 flex items-center gap-2">
+                                    <span>Cek Ongkir</span>
+                                    <div id="checkOngkirLoader" class="hidden">
+                                        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                    </div>
+                                </button>
+                                <span id="shippingCostDisplay">Rp 0</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-600">
+                            <span>Total Keseluruhan:</span>
+                            <span id="grandTotalDisplay">Rp 0</span>
+                        </div>
                     </div>
                 </div>
             </div>
