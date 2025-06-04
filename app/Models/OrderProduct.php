@@ -20,10 +20,22 @@ class OrderProduct extends Model
         'status_payment',
         'sub_total',
         'discount_amount',
+        'promo_id',
+        'shipping_cost',
         'grand_total',
         'type',
         'note',
     ];
+
+    public function promo()
+    {
+        return $this->belongsTo(Promo::class, 'promo_id', 'promo_id');
+    }
+
+    public function shipping()
+    {
+        return $this->hasOne(Shipping::class, 'order_product_id', 'order_product_id');
+    }
 
     public function customer()
     {

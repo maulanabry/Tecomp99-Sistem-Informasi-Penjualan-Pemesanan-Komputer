@@ -10,11 +10,12 @@ return new class extends Migration {
         Schema::create('shipping', function (Blueprint $table) {
             $table->id('shipping_id');
             $table->string('order_product_id');
-            $table->string('courier_name', 100);
-            $table->string('courier_service', 100)->nullable();
+            $table->string('courier_name', 100)->default('JNE');
+            $table->string('courier_service', 100)->default('REG');
             $table->string('tracking_number', 100)->unique()->nullable();
             $table->enum('status', ['menunggu', 'dikirim', 'diterima', 'dibatalkan'])->default('menunggu');
             $table->integer('shipping_cost')->default(0);
+            $table->integer('total_weight')->default(0);
             $table->timestamp('shipped_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
             $table->timestamps();

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Shipping extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'shipping';
 
@@ -20,6 +21,7 @@ class Shipping extends Model
         'tracking_number',
         'status',
         'shipping_cost',
+        'total_weight',
         'shipped_at',
         'delivered_at',
     ];

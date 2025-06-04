@@ -174,4 +174,34 @@ class PromoController extends Controller
     {
         return view('admin.promo.show', compact('promo'));
     }
+    public function validatePromo(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $code = $request->input('code');
+
+        $promo = Promo::where('code', $code)
+            ->where('is_active', true)
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->first();
+
+        if (!$promo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode promo tidak valid atau sudah kedaluwarsa',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'promo_id' => $promo->promo_id,
+            'promo_name' => $promo->name,
+            'discount_type' => $promo->type,
+            'discount_value' => $promo->type === 'percentage' ? $promo->discount_percentage : $promo->discount_amount,
+            'minimum_order_amount' => $promo->minimum_order_amount,
+        ]);
+    }
 }

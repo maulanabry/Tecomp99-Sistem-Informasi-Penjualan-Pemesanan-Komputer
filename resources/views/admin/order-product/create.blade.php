@@ -74,7 +74,8 @@
                 </div>
                 <div id="shippingCostContainer" class="mt-4 hidden">
                     <label for="shipping_cost" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Ongkos Kirim (Rp)</label>
-                    <input type="number" id="shipping_cost" name="shipping_cost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" value="0" min="0" step="1000" readonly />
+                    <input type="number" id="shipping_cost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" value="0" min="0" step="1000" readonly />
+                    <input type="hidden" id="shipping_cost_hidden" name="shipping_cost" value="0" />
                 </div>
             </div>
 
@@ -114,16 +115,6 @@
                 <textarea name="note" id="note" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Catatan tambahan (opsional)"></textarea>
             </div>
 
-            <!-- Status Pembayaran -->
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Status Pembayaran</h2>
-                <select id="payment_status" name="payment_status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-                    <option value="unpaid">Belum Dibayar</option>
-                    <option value="down_payment">DP</option>
-                    <option value="paid">Lunas</option>
-                    <option value="cancelled">Batal</option>
-                </select>
-            </div>
 
  <!-- Promo -->
             <div class="flex gap-4">
@@ -221,13 +212,13 @@
                                     <tbody>
                                         @foreach(\App\Models\Product::all() as $product)
                                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700" 
-                                            data-product-id="{{ $product->id }}" 
+                                            data-product-id="{{ $product->product_id }}" 
                                             data-product-name="{{ $product->name }}" 
                                             data-product-price="{{ $product->price }}"
-                                            data-product-weight="{{ $product->weight }}">
+                                            data-product-weight="{{ $product->weight ?? 0 }}">
                                             <td class="px-6 py-4">{{ $product->name }}</td>
                                             <td class="px-6 py-4 text-right">{{ number_format($product->price, 0, ',', '.') }}</td>
-                                            <td class="px-6 py-4 text-right">{{ $product->weight }}</td>
+                                            <td class="px-6 py-4 text-right">{{ $product->weight ?? 0 }}</td>
                                             <td class="px-6 py-4 text-right">{{ $product->stock }}</td>
                                             <td class="px-6 py-4 text-right">
                                                 <input type="number" min="1" max="{{ $product->stock }}" value="1" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 quantity-input" />

@@ -21,14 +21,20 @@ class Product extends Model
         'description',
         'price',
         'stock',
+        'weight',
         'is_active',
         'sold_count',
         'slug',
     ];
 
+    protected $attributes = [
+        'weight' => 0,
+    ];
+
     protected $casts = [
         'price' => 'integer',
         'stock' => 'integer',
+        'weight' => 'integer',
         'sold_count' => 'integer',
         'is_active' => 'boolean',
         'created_at' => 'datetime',
