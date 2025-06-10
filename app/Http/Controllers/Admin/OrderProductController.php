@@ -30,7 +30,7 @@ class OrderProductController extends Controller
     {
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,customer_id',
-            'order_type' => 'required|in:Pengiriman,Pengambilan',
+            'order_type' => 'required|in:Pengiriman,Langsung',
             'items' => 'required|json',
             'shipping_cost' => 'nullable|integer|min:0',
             'promo_code' => 'nullable|string',
@@ -43,7 +43,7 @@ class OrderProductController extends Controller
             // Map order_type to database enum values
             $typeMapping = [
                 'Pengiriman' => 'pengiriman',
-                'Pengambilan' => 'langsung',
+                'Langsung' => 'langsung',
             ];
             $dbType = $typeMapping[$validated['order_type']] ?? 'langsung';
             Log::debug('Mapped dbType: ' . $dbType);
@@ -97,7 +97,7 @@ class OrderProductController extends Controller
             $grandTotal = $subtotal - $discount + $shippingCost;
 
             $orderId = 'ORD' . now()->format('dmy') . str_pad(
-                \App\Models\OrderProduct::withTrashed()->whereDate('created_at', today())->count() + 1,
+                \App\Models\OrderProduct::withTrashed()->count() + 1, // Count all orders, including soft-deleted ones
                 3,
                 '0',
                 STR_PAD_LEFT
@@ -106,7 +106,7 @@ class OrderProductController extends Controller
             // Map order_type to database enum values
             $typeMapping = [
                 'Pengiriman' => 'pengiriman',
-                'Pengambilan' => 'langsung',
+                'langsung' => 'langsung',
             ];
             $dbType = $typeMapping[$validated['order_type']] ?? 'langsung';
 
@@ -179,8 +179,14 @@ class OrderProductController extends Controller
     public function show(OrderProduct $orderProduct)
     {
         // Show order product details
-        return view('admin.order-product-show', compact('orderProduct'));
+        return view('admin.order-product.show', compact('orderProduct'));
     }
+
+    public function showInvoice(OrderProduct $orderProduct)
+    {
+        return view('admin.order-product.show-invoice', compact('orderProduct'));
+    }
+
 
     public function edit(OrderProduct $orderProduct)
     {
@@ -196,8 +202,24 @@ class OrderProductController extends Controller
 
     public function destroy(OrderProduct $orderProduct)
     {
-        $orderProduct->delete();
-        return redirect()->route('order-products.index')->with('success', 'Order produk berhasil dihapus.');
+        try {
+            // Restock products and decrement sold count for each order item
+            foreach ($orderProduct->items as $item) {
+                $product = Product::find($item->product_id);
+                if ($product) {
+                    $product->increment('stock', $item->quantity);
+                    $product->decrement('sold_count', $item->quantity);
+                }
+            }
+
+            // Update the status_order to 'dibatalkan'
+            $orderProduct->update([
+                'status_order' => 'dibatalkan',
+            ]);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal membatalkan order: ' . $e->getMessage());
+        }
+        return redirect()->route('order-products.index')->with('success', 'Order produk berhasil dibatalkan.');
     }
 
     public function recovery()

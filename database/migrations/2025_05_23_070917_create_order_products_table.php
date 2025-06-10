@@ -17,10 +17,9 @@ return new class extends Migration {
             $table->integer('sub_total');
             $table->integer('discount_amount')->nullable();
             $table->integer('grand_total');
-
+            $table->integer('shipping_cost')->nullable();
             $table->enum('type', ['langsung', 'pengiriman']);
             $table->text('note')->nullable();
-
             $table->timestamps();
             $table->softDeletes();
 

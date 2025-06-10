@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->string('password')->nullable();
             $table->timestamp('last_active')->nullable();
             $table->boolean('hasAccount')->default(false);
+            $table->boolean('hasAddress')->default(false);
             $table->string('photo')->nullable();
             $table->enum('gender', ['pria', 'wanita'])->nullable();
             $table->string('contact', 20);

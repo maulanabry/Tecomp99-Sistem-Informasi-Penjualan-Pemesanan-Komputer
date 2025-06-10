@@ -12,8 +12,8 @@ class OrderProductTable extends Component
     use WithPagination;
 
     public $search = '';
-    public $orderStatusFilter = '';
-    public $paymentStatusFilter = '';
+    public $statusOrderFilter = '';
+    public $statusPaymentFilter = '';
     public $typeFilter = '';
     public $perPage = 10;
     public $sortField = 'created_at';
@@ -26,12 +26,12 @@ class OrderProductTable extends Component
         $this->resetPage();
     }
 
-    public function updatingOrderStatusFilter()
+    public function updatingStatusOrderFilter()
     {
         $this->resetPage();
     }
 
-    public function updatingPaymentStatusFilter()
+    public function updatingStatusPaymentFilter()
     {
         $this->resetPage();
     }
@@ -65,12 +65,12 @@ class OrderProductTable extends Component
             });
         }
 
-        if ($this->orderStatusFilter) {
-            $query->where('status_order', $this->orderStatusFilter);
+        if ($this->statusOrderFilter) {
+            $query->where('status_order', $this->statusOrderFilter);
         }
 
-        if ($this->paymentStatusFilter) {
-            $query->where('status_payment', $this->paymentStatusFilter);
+        if ($this->statusPaymentFilter) {
+            $query->where('status_payment', $this->statusPaymentFilter);
         }
 
         if ($this->typeFilter) {

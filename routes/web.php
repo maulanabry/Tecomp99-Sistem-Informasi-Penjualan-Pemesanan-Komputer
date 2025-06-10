@@ -119,7 +119,9 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\OrderProductController::class, 'index'])->name('order-products.index');
         Route::get('/create', [\App\Http\Controllers\Admin\OrderProductController::class, 'create'])->name('order-products.create');
         Route::post('/', [\App\Http\Controllers\Admin\OrderProductController::class, 'store'])->name('order-products.store');
+        Route::post('/store2', [\App\Http\Controllers\Admin\OrderProductController::class, 'store2'])->name('order-products.store2');
         Route::get('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'show'])->name('order-products.show');
+        Route::get('/{orderProduct}/invoice', [\App\Http\Controllers\Admin\OrderProductController::class, 'showInvoice'])->name('order-products.invoice');
         Route::get('/{orderProduct}/edit', [\App\Http\Controllers\Admin\OrderProductController::class, 'edit'])->name('order-products.edit');
         Route::put('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'update'])->name('order-products.update');
         Route::delete('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'destroy'])->name('order-products.destroy');

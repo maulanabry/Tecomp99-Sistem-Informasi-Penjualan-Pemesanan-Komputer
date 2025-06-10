@@ -29,6 +29,10 @@ class Customer extends Model
         'total_points',
     ];
 
+    protected $casts = [
+        'last_active' => 'datetime',
+    ];
+
     public function addresses()
     {
         return $this->hasOne(CustomerAddress::class, 'customer_id', 'customer_id');

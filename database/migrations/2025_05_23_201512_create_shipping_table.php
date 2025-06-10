@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->timestamp('shipped_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
             $table->timestamps();
+            $table->softDeletes(); // Adds the `deleted_at` column
 
             $table->foreign('order_product_id')
                 ->references('order_product_id')
@@ -29,6 +30,8 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('shipping');
+        Schema::table('shipping', function (Blueprint $table) {
+            $table->dropSoftDeletes(); // Removes the `deleted_at` column
+        });
     }
 };

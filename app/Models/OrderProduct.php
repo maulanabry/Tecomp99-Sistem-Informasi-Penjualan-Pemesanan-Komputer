@@ -20,7 +20,6 @@ class OrderProduct extends Model
         'status_payment',
         'sub_total',
         'discount_amount',
-        'promo_id',
         'shipping_cost',
         'grand_total',
         'type',

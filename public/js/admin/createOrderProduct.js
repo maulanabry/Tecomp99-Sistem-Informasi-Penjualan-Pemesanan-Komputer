@@ -41,6 +41,7 @@ customerSelect.addEventListener("change", async function () {
 
         // Reset shipping cost
         shippingCostInput.value = 0;
+        document.getElementById("shipping_cost_hidden").value = 0;
         shippingCostDisplay.textContent = "Rp 0";
         await calculateTotals().catch((error) => {
             console.error(
@@ -65,6 +66,7 @@ orderTypeSelect.addEventListener("change", async function () {
         shippingCostContainer.classList.add("hidden");
         checkOngkirBtn.parentElement.classList.add("hidden");
         shippingCostInput.value = 0;
+        document.getElementById("shipping_cost_hidden").value = 0;
         shippingCostDisplay.textContent = "Rp 0";
         await calculateTotals().catch((error) => {
             console.error(
@@ -505,6 +507,8 @@ async function updateShippingCost(isButtonClick = false) {
 
             console.log("Biaya pengiriman:", shippingCost);
             shippingCostInput.value = shippingCost;
+            document.getElementById("shipping_cost_hidden").value =
+                shippingCost;
             shippingCostDisplay.textContent = `Rp ${shippingCost.toLocaleString(
                 "id-ID"
             )}`;
