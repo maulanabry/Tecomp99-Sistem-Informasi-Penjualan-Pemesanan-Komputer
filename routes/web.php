@@ -123,18 +123,26 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'show'])->name('order-products.show');
         Route::get('/{orderProduct}/invoice', [\App\Http\Controllers\Admin\OrderProductController::class, 'showInvoice'])->name('order-products.invoice');
         Route::get('/{orderProduct}/edit', [\App\Http\Controllers\Admin\OrderProductController::class, 'edit'])->name('order-products.edit');
+        Route::get('/{orderProduct}/edit-shipping', [\App\Http\Controllers\Admin\OrderProductController::class, 'editShipping'])->name('order-products.edit-shipping');
+        Route::put('/{orderProduct}/shipping', [\App\Http\Controllers\Admin\OrderProductController::class, 'updateShipping'])->name('order-products.update-shipping');
         Route::put('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'update'])->name('order-products.update');
         Route::delete('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'destroy'])->name('order-products.destroy');
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderProductController::class, 'recovery'])->name('order-products.recovery');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderProductController::class, 'restore'])->name('order-products.restore');
         Route::post('/validate-promo', [\App\Http\Controllers\Admin\OrderProductController::class, 'validatePromoCode'])->name('order-products.validate-promo');
     });
-    Route::get('/order/servis', function () {
-        return view('order.servis');
-    })->name('order.servis');
-    Route::get('/order/produk', function () {
-        return view('order.produk');
-    })->name('order.produk');
+    Route::prefix('admin/order-services')->middleware(['auth:admin'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\OrderServiceController::class, 'index'])->name('order-services.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\OrderServiceController::class, 'create'])->name('order-services.create');
+        Route::post('/', [\App\Http\Controllers\Admin\OrderServiceController::class, 'store'])->name('order-services.store');
+        Route::get('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'show'])->name('order-services.show');
+        Route::get('/{orderService}/edit', [\App\Http\Controllers\Admin\OrderServiceController::class, 'edit'])->name('order-services.edit');
+        Route::put('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'update'])->name('order-services.update');
+        Route::delete('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'destroy'])->name('order-services.destroy');
+        Route::get('/recovery', [\App\Http\Controllers\Admin\OrderServiceController::class, 'recovery'])->name('order-services.recovery');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderServiceController::class, 'restore'])->name('order-services.restore');
+    });
+
 
     // Transaksi
     Route::get('/transaksi', function () {

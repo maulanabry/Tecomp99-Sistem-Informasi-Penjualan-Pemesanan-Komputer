@@ -4,22 +4,33 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <div class="flex items-center space-x-4">
-                        <a href="{{ route('order-products.index') }}" 
-                            class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Kembali
-                        </a>
-                        <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Order Produk</h1>
-                    </div>
-
+                    <a href="{{ route('order-products.index') }}" 
+                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Order Produk</h1>
                 </div>
-                <a href="{{ route('order-products.invoice', $orderProduct) }}" 
+                <div class="flex items-center space-x-4">
+                    @if($orderProduct->type === 'pengiriman')
+                        <a href="{{ route('order-products.edit-shipping', $orderProduct) }}" 
                             class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                            <i class="fas fa-file-invoice mr-2"></i>
-                            Lihat Invoice
+                            <i class="fas fa-truck mr-2"></i>
+                            Ubah Pengiriman
                         </a>
-
+                    @endif
+                    <a href="{{ route('order-products.invoice', $orderProduct) }}" 
+                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                        <i class="fas fa-file-invoice mr-2"></i>
+                        Lihat Invoice
+                    </a>
+                    <button type="button"
+                        onclick="confirmDelete(this)"
+                        class="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto">
+                        <i class="fas fa-times mr-2"></i>
+                        Batalkan Pesanan
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -214,13 +225,13 @@
                             <div>
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Dikirim</dt>
                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    {{ $shipping?->shipped_at ? $shipping->shipped_at->format('d/m/Y H:i') : '-' }}
+                                    {{ $shipping?->shipped_at ? date('d/m/Y H:i', strtotime($shipping->shipped_at)) : '-' }}
                                 </dd>
                             </div>
                             <div>
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Diterima</dt>
                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    {{ $shipping?->delivered_at ? $shipping->delivered_at->format('d/m/Y H:i') : '-' }}
+                                    {{ $shipping?->delivered_at ? date('d/m/Y H:i', strtotime($shipping->delivered_at)) : '-' }}
                                 </dd>
                             </div>
                         </div>

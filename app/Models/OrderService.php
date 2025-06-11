@@ -22,10 +22,17 @@ class OrderService extends Model
         'type',
         'device',
         'note',
+        'hasTicket',
         'sub_total',
+        'hasDevice',
         'grand_total_amount',
         'discount_amount',
     ];
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
+    }
 
     public function items()
     {

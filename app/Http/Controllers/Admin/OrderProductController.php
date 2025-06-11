@@ -285,4 +285,62 @@ class OrderProductController extends Controller
             'discount_value' => $promo->type === 'percentage' ? $promo->discount_percentage : $promo->discount_amount,
         ]);
     }
+    public function editShipping(OrderProduct $orderProduct)
+    {
+        if ($orderProduct->type !== 'pengiriman') {
+            return redirect()->route('order-products.index')
+                ->with('error', 'Pesanan ini bukan tipe pengiriman.');
+        }
+
+        return view('admin.order-product.edit-shipping', compact('orderProduct'));
+    }
+
+    public function updateShipping(Request $request, OrderProduct $orderProduct)
+    {
+        if ($orderProduct->type !== 'pengiriman') {
+            return redirect()->route('order-products.index')
+                ->with('error', 'Pesanan ini bukan tipe pengiriman.');
+        }
+
+        $validated = $request->validate([
+            'kurir' => 'required|string|max:100',
+            'nomor_resi' => 'nullable|string|max:100',
+            'status_pengiriman' => 'required|in:menunggu,dikirim,diterima,dibatalkan',
+            'tanggal_pengiriman' => 'nullable|date',
+        ]);
+
+        try {
+            // Get the shipping record associated with the order product
+            $shipping = $orderProduct->shipping;
+
+            // If no shipping record exists, create a new one
+            if (!$shipping) {
+                $shipping = new Shipping();
+                $shipping->order_product_id = $orderProduct->order_product_id;
+            }
+
+            // Update the shipping attributes with the validated data
+            $shipping->courier_name = $validated['kurir'];
+            $shipping->tracking_number = $validated['nomor_resi'];
+            $shipping->status = $validated['status_pengiriman'];
+            $shipping->shipped_at = $validated['tanggal_pengiriman'];
+
+            // Save the changes to the shipping record
+            $shipping->save();
+
+            // Update order status if shipping status changes
+            if ($validated['status_pengiriman'] === 'dikirim' && $orderProduct->status_order !== 'dikirim') {
+                $orderProduct->update(['status_order' => 'dikirim']);
+            } elseif ($validated['status_pengiriman'] === 'diterima' && $orderProduct->status_order !== 'selesai') {
+                $orderProduct->update(['status_order' => 'selesai']);
+            }
+
+            return redirect()->route('order-products.show', $orderProduct)
+                ->with('success', 'Informasi pengiriman berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui informasi pengiriman: ' . $e->getMessage());
+        }
+    }
 }

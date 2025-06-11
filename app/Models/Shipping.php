@@ -26,6 +26,11 @@ class Shipping extends Model
         'delivered_at',
     ];
 
+    protected $casts = [
+        'shipped_at' => 'datetime',
+        'delivered_at' => 'datetime',
+    ];
+
     public function orderProduct()
     {
         return $this->belongsTo(OrderProduct::class, 'order_product_id', 'order_product_id');

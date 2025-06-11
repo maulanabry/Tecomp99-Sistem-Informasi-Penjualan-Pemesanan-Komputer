@@ -18,7 +18,7 @@ return new class extends Migration
             // Changed admin_id to unsignedBigInteger to match admins table primary key type
             $table->unsignedBigInteger('admin_id');
             $table->foreign('admin_id')->references('id')->on('admins');
-            $table->enum('status', ['Menunggu', 'Diproses', 'Diantar', 'Perlu Diambil', 'Selesai']);
+            $table->enum('status', ['Menunggu', 'Menuju Lokasi', 'Diproses', 'Diantar', 'Perlu Diambil', 'Selesai']);
             $table->dateTime('schedule_date');
             $table->timestamps();
             $table->softDeletes();
