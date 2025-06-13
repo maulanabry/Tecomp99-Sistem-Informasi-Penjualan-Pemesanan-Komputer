@@ -10,8 +10,6 @@ use App\Http\Controllers\Pemilik\PemilikDashboardController;
 use App\Http\Controllers\Teknisi\TeknisiDashboardController;
 use Illuminate\Support\Facades\Route;
 
-
-
 // ==========================
 // Authentication Routes
 // ==========================
@@ -99,11 +97,8 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
     Route::prefix('admin/customer')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
         Route::get('/recovery', [\App\Http\Controllers\Admin\CustomerController::class, 'recovery'])->name('customers.recovery');
-        // Customer Creation - Step 1
         Route::get('/create', [\App\Http\Controllers\Admin\CustomerController::class, 'createStep1'])->name('customers.create.step1');
         Route::post('/store-step1', [\App\Http\Controllers\Admin\CustomerController::class, 'storeStep1'])->name('customers.store.step1');
-
-        // Customer Creation - Step 2
         Route::get('/{customer}/create-step2', [\App\Http\Controllers\Admin\CustomerController::class, 'createStep2'])->name('customers.create.step2');
         Route::post('/{customer}/store-step2', [\App\Http\Controllers\Admin\CustomerController::class, 'storeStep2'])->name('customers.store.step2');
         Route::get('/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->name('customers.show');
@@ -114,7 +109,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::delete('/{id}/force', [\App\Http\Controllers\Admin\CustomerController::class, 'forceDelete'])->name('customers.force-delete');
     });
 
-    // Order
+    // Order Products
     Route::prefix('admin/order-products')->middleware(['auth:admin'])->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\OrderProductController::class, 'index'])->name('order-products.index');
         Route::get('/create', [\App\Http\Controllers\Admin\OrderProductController::class, 'create'])->name('order-products.create');
@@ -131,6 +126,8 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderProductController::class, 'restore'])->name('order-products.restore');
         Route::post('/validate-promo', [\App\Http\Controllers\Admin\OrderProductController::class, 'validatePromoCode'])->name('order-products.validate-promo');
     });
+
+    // Order Services
     Route::prefix('admin/order-services')->middleware(['auth:admin'])->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\OrderServiceController::class, 'index'])->name('order-services.index');
         Route::get('/create', [\App\Http\Controllers\Admin\OrderServiceController::class, 'create'])->name('order-services.create');
@@ -143,6 +140,16 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderServiceController::class, 'restore'])->name('order-services.restore');
     });
 
+    // Payments
+    Route::prefix('admin/payments')->middleware(['auth:admin'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('payments.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\PaymentController::class, 'create'])->name('payments.create');
+        Route::post('/', [\App\Http\Controllers\Admin\PaymentController::class, 'store'])->name('payments.store');
+        Route::get('/{payment_id}', [\App\Http\Controllers\Admin\PaymentController::class, 'show'])->name('payments.show');
+        // Add new route for editing payment details
+        Route::get('/{payment_id}/edit', [\App\Http\Controllers\Admin\PaymentController::class, 'edit'])->name('payments.edit');
+        Route::put('/{payment_id}', [\App\Http\Controllers\Admin\PaymentController::class, 'update'])->name('payments.update');
+    });
 
     // Transaksi
     Route::get('/transaksi', function () {

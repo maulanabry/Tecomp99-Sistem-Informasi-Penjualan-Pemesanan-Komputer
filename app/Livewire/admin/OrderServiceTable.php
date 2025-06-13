@@ -18,6 +18,8 @@ class OrderServiceTable extends Component
     public $typeFilter = '';
     public $perPage = 10;
 
+    protected $listeners = ['orderServiceSummaryToggled' => 'render'];
+
     public function sortBy($field)
     {
         if ($this->sortField === $field) {

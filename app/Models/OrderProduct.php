@@ -26,6 +26,13 @@ class OrderProduct extends Model
         'note',
     ];
 
+    /**
+     * The relationships that should always be loaded.
+     *
+     * @var array
+     */
+    protected $with = ['payments'];
+
     public function promo()
     {
         return $this->belongsTo(Promo::class, 'promo_id', 'promo_id');
@@ -44,5 +51,13 @@ class OrderProduct extends Model
     public function items()
     {
         return $this->hasMany(OrderProductItem::class, 'order_product_id', 'order_product_id');
+    }
+
+    /**
+     * Get the payments for the order product.
+     */
+    public function payments()
+    {
+        return $this->hasMany(PaymentDetail::class, 'order_product_id', 'order_product_id');
     }
 }

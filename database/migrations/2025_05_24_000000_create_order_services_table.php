@@ -24,7 +24,7 @@ return new class extends Migration
             $table->boolean('hasTicket')->default(false);
             $table->boolean('hasDevice')->default(false);
             $table->integer('sub_total')->default(0);
-            $table->integer('grand_total_amount')->default(0);
+            $table->integer('grand_total')->default(0);
             $table->integer('discount_amount')->default(0);
             $table->timestamps();
             $table->softDeletes();

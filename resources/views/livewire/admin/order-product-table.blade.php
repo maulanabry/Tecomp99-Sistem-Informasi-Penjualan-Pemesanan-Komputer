@@ -215,15 +215,15 @@
                                 Pengiriman
                             </a>
                             @endif
-                            <button type="button"
-                                data-modal-target="delete-modal-{{ $order->order_product_id }}"
-                                data-modal-toggle="delete-modal-{{ $order->order_product_id }}"
+                               <button type="button"
+                                data-modal-target="cancel-order-{{ $order->order_product_id }}"
+                                data-modal-toggle="cancel-order-{{ $order->order_product_id }}"
                                 class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 role="menuitem">
                                 <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
-                                Hapus
+                                Batalkan Order
                             </button>
                         </x-action-dropdown>
                     </div>
@@ -305,18 +305,26 @@
                                 Ubah
                             </a>
                             <button type="button"
-                                data-modal-target="delete-modal-{{ $order->order_product_id }}"
-                                data-modal-toggle="delete-modal-{{ $order->order_product_id }}"
+                                data-modal-target="cancel-order-{{ $order->order_product_id }}"
+                                data-modal-toggle="cancel-order-{{ $order->order_product_id }}"
                                 class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 role="menuitem">
                                 <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
-                                Hapus
+                                Batalkan Order
                             </button>
-                         </x-action-dropdown>
+                        </x-action-dropdown>
                     </div>
                 </div>
+                                <x-cancel-order-modal 
+                    :id="$order->order_product_id"
+                    :action="route('order-products.destroy', $order)"
+                    message="Apakah Anda yakin ingin membatalkan order ini?"
+                    :itemName="$order->order_product_id"
+                    wire:model="isModalOpen"
+                    wire:key="cancel-order-{{ $order->order_product_id }}"
+                />
             @empty
                 <div class="p-4 text-center text-sm text-gray-600 dark:text-gray-300">Tidak ada pesanan ditemukan.</div>
             @endforelse

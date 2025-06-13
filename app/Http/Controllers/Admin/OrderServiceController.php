@@ -98,7 +98,7 @@ class OrderServiceController extends Controller
                 'hasDevice' => $request->boolean('hasDevice'),
                 'hasTicket' => false,
                 'sub_total' => 0,
-                'grand_total_amount' => 0,
+                'grand_total' => 0,
                 'discount_amount' => 0,
             ]);
 
@@ -150,7 +150,7 @@ class OrderServiceController extends Controller
                 'note' => $request->note,
                 'sub_total' => $request->sub_total,
                 'discount_amount' => $request->discount_amount,
-                'grand_total_amount' => $grandTotal,
+                'grand_total' => $grandTotal,
                 'hasDevice' => $request->boolean('hasDevice'),
             ]);
 
