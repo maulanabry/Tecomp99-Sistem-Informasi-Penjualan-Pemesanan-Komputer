@@ -15,9 +15,9 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Order Servis</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $totalOrderService }}</h3>
                 </div>
-                <div class="p-3 bg-info-100 dark:bg-info-900 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-info-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h4l3 8 4-16 3 8h4" />
+                <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                 </div>
             </div>
@@ -30,10 +30,10 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Pendapatan</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">Rp {{ number_format($pendapatan, 0, ',', '.') }}</h3>
                 </div>
-                <div class="p-3 bg-success-100 dark:bg-success-900 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-success-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 1.343-3 3 0 1.306.835 2.418 2 2.83V17h2v-3.17c1.165-.412 2-1.524 2-2.83 0-1.657-1.343-3-3-3z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2m-14 0H3m16.364-6.364l-1.414 1.414m-11.314 0l-1.414-1.414m16.364 12.728l-1.414-1.414m-11.314 0l-1.414 1.414" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2m-14 0H3" />
                     </svg>
                 </div>
             </div>
@@ -46,9 +46,9 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Reguler</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $reguler }}</h3>
                 </div>
-                <div class="p-3 bg-info-100 dark:bg-info-900 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-info-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h4l3 8 4-16 3 8h4" />
+                <div class="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                 </div>
             </div>
@@ -61,14 +61,16 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Onsite</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $onsite }}</h3>
                 </div>
-                <div class="p-3 bg-warning-100 dark:bg-warning-900 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-warning-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                <div class="p-3 bg-amber-100 dark:bg-amber-900 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </div>
             </div>
         </div>
-   @if($showAllCards)
+
+        @if($showAllCards)
         <!-- Completed Orders -->
         <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between">
@@ -76,8 +78,8 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Selesai</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $orderSelesai }}</h3>
                 </div>
-                <div class="p-3 bg-success-100 dark:bg-success-900 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-success-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
@@ -91,9 +93,9 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Dibatalkan</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $orderDibatalkan }}</h3>
                 </div>
-                <div class="p-3 bg-danger-100 dark:bg-danger-900 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-danger-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                <div class="p-3 bg-red-100 dark:bg-red-900 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </div>
             </div>
@@ -106,9 +108,9 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Belum Dibayar</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $orderBelumDibayar }}</h3>
                 </div>
-                <div class="p-3 bg-warning-100 dark:bg-warning-900 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-warning-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                <div class="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
             </div>
@@ -121,13 +123,13 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Sudah Dibayar</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $orderLunas }}</h3>
                 </div>
-                <div class="p-3 bg-info-100 dark:bg-info-900 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-info-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 8h6m-5 0a3 3 0 110 6H9l3 3m-3-6h6m6 1a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
             </div>
         </div>
-           @endif
+        @endif
     </div>
 </div>

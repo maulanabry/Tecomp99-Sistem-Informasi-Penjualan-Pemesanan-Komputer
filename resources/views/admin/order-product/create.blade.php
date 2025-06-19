@@ -21,27 +21,20 @@
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Pelanggan</h2>
                 <label for="customer_id" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Pilih Pelanggan</label>
-                <select id="customer_id" name="customer_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-                    <option value="">-- Pilih Pelanggan --</option>
+                <select id="customer_id" name="customer_id" class="select2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+                    <option value="">Cari nama pelanggan...</option>
                     @foreach(\App\Models\Customer::all() as $customer)
-                        @php
-                            $defaultAddress = $customer->addresses()->where('is_default', true)->first() 
-                                ?? $customer->addresses()->first();
-                        @endphp
-                        <option value="{{ $customer->customer_id }}" 
-                            data-email="{{ $customer->email }}" 
+                        <option value="{{ $customer->customer_id }}"
+                            data-name="{{ $customer->name }}"
                             data-contact="{{ $customer->contact }}"
-                            data-address="{{ $defaultAddress ? $defaultAddress->detail_address : '-' }}"
-                            data-province="{{ $defaultAddress ? $defaultAddress->province_name : '-' }}"
-                            data-city="{{ $defaultAddress ? $defaultAddress->city_name : '-' }}"
-                            data-district="{{ $defaultAddress ? $defaultAddress->district_name : '-' }}"
-                            data-subdistrict="{{ $defaultAddress ? $defaultAddress->subdistrict_name : '-' }}"
-                            data-postal="{{ $defaultAddress ? $defaultAddress->postal_code : '-' }}">
-                            {{ $customer->name }}
+                            data-email="{{ $customer->email }}"
+                            data-address="{{ $customer->addresses ? $customer->addresses->detail_address : '' }}"
+                            data-postal-code="{{ $customer->addresses ? $customer->addresses->postal_code : '' }}">
+                            {{ $customer->name }} - {{ $customer->contact }}
                         </option>
                     @endforeach
                 </select>
-                <div id="customerInfo" class="mt-4 hidden">
+                <div id="customer-info" class="mt-4 hidden bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                             <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Informasi Kontak</h3>
@@ -51,7 +44,7 @@
                             </div>
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Alamat Pengiriman</h3>
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Alamat</h3>
                             <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                                 <p id="customerFullAddress" class="whitespace-pre-line"></p>
                                 <p><span class="font-medium">Kode Pos:</span> <span id="customerPostalCode"></span></p>
@@ -107,8 +100,6 @@
                 <input type="hidden" name="items" id="itemsInput" />
             </div>
 
-           
-
             <!-- Catatan -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Catatan</h2>
@@ -116,7 +107,7 @@
             </div>
 
 
- <!-- Promo -->
+            <!-- Promo -->
             <div class="flex gap-4">
                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 w-2/4">
                     <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Promo</h2>
@@ -172,9 +163,15 @@
                 </div>
             </div>
 
-            <div class="text-center">
-                <button type="submit" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-8 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                    Simpan Pesanan
+            <!-- Buttons -->
+            <div class="flex justify-end space-x-4">
+                <a href="{{ route('order-products.index') }}"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-primary-300 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:border-gray-600 dark:focus:ring-primary-800">
+                    Batal
+                </a>
+                <button type="submit"
+                    class="px-4 py-2 text-sm font-medium text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                    Simpan
                 </button>
             </div>
         </form>
@@ -240,5 +237,79 @@
         </div>
     </div>
 
+   <!-- Include jQuery and Select2 CSS/JS via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('js/admin/createOrderProduct.js') }}"></script>
+    <style>
+        /* Tailwind-compatible Select2 styling */
+        .select2-container--default .select2-selection--single {
+            background-color: #f9fafb; /* Tailwind bg-gray-50 */
+            border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
+            border-radius: 0.375rem; /* Tailwind rounded-lg */
+            padding: 0.625rem 0.75rem; /* Tailwind p-2.5 */
+            height: 2.5rem; /* Tailwind h-10 */
+            color: #111827; /* Tailwind text-gray-900 */
+            font-size: 0.875rem; /* Tailwind text-sm */
+            line-height: 1.25rem; /* Tailwind leading-5 */
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            padding-left: 0;
+            padding-right: 0;
+            line-height: 1.25rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 2.5rem;
+            right: 0.75rem;
+            width: 1.5rem;
+        }
+        .select2-container--default .select2-selection--single:focus,
+        .select2-container--default .select2-selection--single:hover {
+            border-color: #3b82f6; /* Tailwind ring-primary-500 */
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); /* Tailwind focus ring */
+        }
+        .select2-dropdown {
+            border-radius: 0.375rem; /* Tailwind rounded-lg */
+            border-color: #d1d5db; /* Tailwind border-gray-300 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                        0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Tailwind shadow-lg */
+        }
+        .select2-results__option--highlighted {
+            background-color: #3b82f6; /* Tailwind bg-primary-500 */
+            color: white;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $('#customer_id').select2({
+                placeholder: "Cari nama pelanggan...",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#customer_id').parent()
+            });
+
+            // Update customer information on selection
+            $('#customer_id').on('change', function() {
+                const selectedOption = $(this).find(':selected');
+                const name = selectedOption.data('name');
+                const contact = selectedOption.data('contact');
+                const email = selectedOption.data('email');
+                const address = selectedOption.data('address');
+                const postalCode = selectedOption.data('postal-code');
+
+                if (name || contact || email || address || postalCode) {
+                    $('#customerEmail').text(email || '-');
+                    $('#customerPhone').text(contact || '-');
+                    $('#customerFullAddress').text(address || '-');
+                    $('#customerPostalCode').text(postalCode || '-');
+                    $('#customer-info').removeClass('hidden');
+                } else {
+                    $('#customer-info').addClass('hidden');
+                }
+            });
+        });
+    </script>
 </x-layout-admin>

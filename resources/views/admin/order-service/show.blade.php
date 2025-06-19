@@ -36,7 +36,7 @@
                     <dl class="space-y-3">
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Order</dt>
-                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $orderService->order_service_id }}</dd>
+<dd class="text-sm text-gray-900 dark:text-white">{{ $orderService->order_service_id }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Order</dt>
@@ -69,7 +69,7 @@
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Order</dt>
-                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $orderService->created_at->format('d/m/Y H:i') }}</dd>
+<dd class="text-sm text-gray-900 dark:text-white">{{ $orderService->created_at->format('d/m/Y H:i') }}</dd>
                         </div>
                     </dl>
                 </div>
@@ -77,11 +77,11 @@
                     <dl class="space-y-3">
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jenis Servis</dt>
-                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ ucfirst($orderService->type) }}</dd>
+<dd class="text-sm text-gray-900 dark:text-white">{{ ucfirst($orderService->type) }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Perangkat</dt>
-                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $orderService->device }}</dd>
+<dd class="text-sm text-gray-900 dark:text-white">{{ $orderService->device }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -101,12 +101,12 @@
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Keluhan</dt>
-                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $orderService->complaints }}</dd>
+<dd class="text-sm text-gray-900 dark:text-gray-white">{{ $orderService->complaints }}</dd>
                         </div>
                         @if($orderService->note)
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Catatan</dt>
-                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $orderService->note }}</dd>
+<dd class="text-sm text-gray-900 dark:text-gray-white">{{ $orderService->note }}</dd>
                         </div>
                         @endif
                     </dl>
@@ -122,15 +122,15 @@
                     <dl class="space-y-3">
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nama</dt>
-                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $orderService->customer->name }}</dd>
+<dd class="text-sm text-gray-900 dark:text-gray-white">{{ $orderService->customer->name }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
-                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $orderService->customer->email }}</dd>
+<dd class="text-sm text-gray-900 dark:text-gray-white">{{ $orderService->customer->email }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nomor Telepon</dt>
-                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $orderService->customer->contact }}</dd>
+<dd class="text-sm text-gray-900 dark:text-gray-white">{{ $orderService->customer->contact }}</dd>
                         </div>
                     </dl>
                 </div>
@@ -138,7 +138,7 @@
                     <dl class="space-y-3">
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Alamat</dt>
-                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">
+<dd class="text-sm text-gray-900 dark:text-gray-white">
                                 @php
                                     $defaultAddress = $orderService->customer->addresses()->where('is_default', true)->first() 
                                         ?? $orderService->customer->addresses()->first();
@@ -169,7 +169,11 @@
                     <tbody>
                         @foreach($orderService->tickets as $ticket)
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td class="px-6 py-4">{{ $ticket->service_ticket_id }}</td>
+                            <td class="px-6 py-4">
+                                <a href="{{ route('service-tickets.show', $ticket) }}" class="text-primary-600 hover:underline">
+                                    {{ $ticket->service_ticket_id }}
+                                </a>
+                            </td>
                             <td class="px-6 py-4">{{ $ticket->admin->name }}</td>
                             <td class="px-6 py-4">
                                 <span class="px-2 py-1 text-xs font-medium rounded-full
@@ -198,15 +202,15 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sub Total</dt>
-                    <dd class="text-lg font-semibold text-gray-900 dark:text-white">Rp {{ number_format($orderService->sub_total, 0, ',', '.') }}</dd>
+                    <dd class="text-lg text-gray-900 dark:text-white">Rp {{ number_format($orderService->sub_total, 0, ',', '.') }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Diskon</dt>
-                    <dd class="text-lg font-semibold text-gray-900 dark:text-white">Rp {{ number_format($orderService->discount_amount, 0, ',', '.') }}</dd>
+                    <dd class="text-lg text-gray-900 dark:text-white">Rp {{ number_format($orderService->discount_amount, 0, ',', '.') }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total</dt>
-                    <dd class="text-lg font-semibold text-gray-900 dark:text-white">Rp {{ number_format($orderService->grand_total_amount, 0, ',', '.') }}</dd>
+<dd class="text-lg text-gray-900 dark:text-white">Rp {{ number_format($orderService->grand_total_amount, 0, ',', '.') }}</dd>
                 </div>
             </div>
         </div>

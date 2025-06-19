@@ -15,6 +15,7 @@ class ServiceAction extends Model
     protected $fillable = [
         'service_action_id',
         'service_ticket_id',
+        'number',
         'action',
         'created_at',
     ];

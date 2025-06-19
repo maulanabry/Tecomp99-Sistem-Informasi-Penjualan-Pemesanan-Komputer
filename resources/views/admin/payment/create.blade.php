@@ -47,15 +47,28 @@
                 </div>
 
                 <!-- Order Info Display -->
-                <div id="orderInfo" class="mt-4 hidden">
+                <div id="orderProductInfo" class="mt-4 hidden">
                     <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Informasi Order</h3>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Informasi Order Produk</h3>
                         <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                            <p><span class="font-medium">Sub Total:</span> Rp <span id="subTotal">0</span></p>
-                            <p><span class="font-medium">Diskon:</span> Rp <span id="discount">0</span></p>
-                            <p><span class="font-medium">Total Pembayaran:</span> Rp <span id="grandTotal">0</span></p>
-                            <p><span class="font-medium">Status Pembayaran:</span> <span id="paymentStatus">-</span></p>
-                            <p><span class="font-medium">Customer:</span> <span id="customerName">-</span></p>
+                            <p><span class="font-medium">Sub Total:</span> Rp <span id="productSubTotal">0</span></p>
+                            <p><span class="font-medium">Diskon:</span> Rp <span id="productDiscount">0</span></p>
+                            <p><span class="font-medium">Total Pembayaran:</span> Rp <span id="productGrandTotal">0</span></p>
+                            <p><span class="font-medium">Status Pembayaran:</span> <span id="productPaymentStatus">-</span></p>
+                            <p><span class="font-medium">Customer:</span> <span id="productCustomerName">-</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="orderServiceInfo" class="mt-4 hidden">
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Informasi Order Servis</h3>
+                        <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                            <p><span class="font-medium">Sub Total:</span> Rp <span id="serviceSubTotal">0</span></p>
+                            <p><span class="font-medium">Diskon:</span> Rp <span id="serviceDiscount">0</span></p>
+                            <p><span class="font-medium">Total Pembayaran:</span> Rp <span id="serviceGrandTotal">0</span></p>
+                            <p><span class="font-medium">Status Pembayaran:</span> <span id="servicePaymentStatus">-</span></p>
+                            <p><span class="font-medium">Customer:</span> <span id="serviceCustomerName">-</span></p>
                         </div>
                     </div>
                 </div>
@@ -128,12 +141,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             const orderTypeSelect = document.getElementById('order_type');
             const orderSelect = document.getElementById('order_id');
-            const orderInfo = document.getElementById('orderInfo');
-            const subTotal = document.getElementById('subTotal');
-            const discount = document.getElementById('discount');
-            const grandTotal = document.getElementById('grandTotal');
-            const paymentStatus = document.getElementById('paymentStatus');
-            const customerName = document.getElementById('customerName');
+            const orderProductInfo = document.getElementById('orderProductInfo');
+            const orderServiceInfo = document.getElementById('orderServiceInfo');
 
             // Format number to Indonesian Rupiah
             const formatRupiah = (number) => {
@@ -143,16 +152,19 @@
             orderTypeSelect.addEventListener('change', async function() {
                 orderSelect.disabled = true;
                 orderSelect.innerHTML = '<option value="">Memuat data...</option>';
-                orderInfo.classList.add('hidden');
+                orderProductInfo.classList.add('hidden');
+                orderServiceInfo.classList.add('hidden');
 
                 if (this.value) {
                     let orders = [];
                     if (this.value === 'produk') {
                         orders = JSON.parse('@json($orderProducts)');
-                    } else {
+                        orderProductInfo.classList.remove('hidden');
+                    } else if (this.value === 'servis') {
                         orders = JSON.parse('@json($orderServices)');
+                        orderServiceInfo.classList.remove('hidden');
                     }
-                    
+
                     orderSelect.innerHTML = '<option value="">Pilih order</option>';
                     orders.forEach(order => {
                         const option = document.createElement('option');
@@ -165,7 +177,7 @@
                         option.dataset.customerName = order.customer_name;
                         orderSelect.appendChild(option);
                     });
-                    
+
                     orderSelect.disabled = false;
                 } else {
                     orderSelect.innerHTML = '<option value="">Pilih order terlebih dahulu</option>';
@@ -175,29 +187,18 @@
             orderSelect.addEventListener('change', function() {
                 if (this.value) {
                     const selectedOption = this.options[this.selectedIndex];
-                    subTotal.textContent = formatRupiah(selectedOption.dataset.subTotal || 0);
-                    discount.textContent = formatRupiah(selectedOption.dataset.discount || 0);
-                    grandTotal.textContent = formatRupiah(selectedOption.dataset.grandTotal || 0);
-                    paymentStatus.textContent = selectedOption.dataset.status;
-                    customerName.textContent = selectedOption.dataset.customerName;
-                    orderInfo.classList.remove('hidden');
-
-                    // Set amount field to remaining payment
-                    const amountInput = document.getElementById('amount');
-                    amountInput.value = selectedOption.dataset.grandTotal;
-                } else {
-                    orderInfo.classList.add('hidden');
-                }
-            });
-
-            // File input preview and validation
-            const proofPhoto = document.getElementById('proof_photo');
-            proofPhoto.addEventListener('change', function() {
-                if (this.files[0]) {
-                    // Check file size (2MB = 2 * 1024 * 1024)
-                    if (this.files[0].size > 2 * 1024 * 1024) {
-                        alert('Ukuran file terlalu besar. Maksimal 2MB.');
-                        this.value = '';
+                    if (orderTypeSelect.value === 'produk') {
+                        document.getElementById('productSubTotal').textContent = formatRupiah(selectedOption.dataset.subTotal || 0);
+                        document.getElementById('productDiscount').textContent = formatRupiah(selectedOption.dataset.discount || 0);
+                        document.getElementById('productGrandTotal').textContent = formatRupiah(selectedOption.dataset.grandTotal || 0);
+                        document.getElementById('productPaymentStatus').textContent = selectedOption.dataset.status || '-';
+                        document.getElementById('productCustomerName').textContent = selectedOption.dataset.customerName || '-';
+                    } else if (orderTypeSelect.value === 'servis') {
+                        document.getElementById('serviceSubTotal').textContent = formatRupiah(selectedOption.dataset.subTotal || 0);
+                        document.getElementById('serviceDiscount').textContent = formatRupiah(selectedOption.dataset.discount || 0);
+                        document.getElementById('serviceGrandTotal').textContent = formatRupiah(selectedOption.dataset.grandTotal || 0);
+                        document.getElementById('servicePaymentStatus').textContent = selectedOption.dataset.status || '-';
+                        document.getElementById('serviceCustomerName').textContent = selectedOption.dataset.customerName || '-';
                     }
                 }
             });

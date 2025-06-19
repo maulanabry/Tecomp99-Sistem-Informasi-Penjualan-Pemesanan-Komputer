@@ -18,7 +18,9 @@ class PaymentController extends Controller
 
     public function show($payment_id)
     {
-        $payment = PaymentDetail::where('payment_id', $payment_id)->firstOrFail();
+        $payment = PaymentDetail::with(['orderProduct.customer', 'orderService.customer'])
+            ->where('payment_id', $payment_id)
+            ->firstOrFail();
         return view('admin.payment.show', compact('payment'));
     }
 
@@ -178,6 +180,42 @@ class PaymentController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan saat menyimpan pembayaran. ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Cancel a payment and update related order status
+     */
+    public function cancel($payment_id)
+    {
+        try {
+            // Find and update payment status
+            PaymentDetail::where('payment_id', $payment_id)
+                ->update(['status' => 'gagal']);
+
+            $payment = PaymentDetail::where('payment_id', $payment_id)->firstOrFail();
+
+            // Update related order's payment status to belum_dibayar
+            if ($payment->order_type === 'produk') {
+                $order = OrderProduct::where('order_product_id', $payment->order_product_id)->first();
+                if ($order) {
+                    $order->status_payment = 'belum_dibayar';
+                    $order->save();
+                }
+            } else {
+                $order = OrderService::where('order_service_id', $payment->order_service_id)->first();
+                if ($order) {
+                    $order->status_payment = 'belum_dibayar';
+                    $order->save();
+                }
+            }
+
+            return redirect()
+                ->back()
+                ->with('success', 'Pembayaran berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            return back()
+                ->with('error', 'Terjadi kesalahan saat membatalkan pembayaran. ' . $e->getMessage());
         }
     }
 }

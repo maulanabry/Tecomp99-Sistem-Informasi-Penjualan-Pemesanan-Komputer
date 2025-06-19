@@ -19,6 +19,24 @@ class ServiceTicket extends Model
         'admin_id',
         'status',
         'schedule_date',
+        'estimation_days', // New field
+        'estimate_date',   // New field
+    ];
+
+    protected $dates = [
+        'schedule_date',
+        'estimate_date',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+
+    protected $casts = [
+        'schedule_date' => 'datetime',
+        'estimate_date' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function orderService()

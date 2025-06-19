@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('service_ticket_id')->references('service_ticket_id')->on('service_tickets');
             $table->text('action');
             $table->timestamp('created_at')->nullable();
+            $table->integer('number');
         });
     }
 

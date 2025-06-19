@@ -17,6 +17,15 @@
                         <i class="fas fa-edit mr-2"></i>
                         Edit Payment
                     </a>
+                    @if($payment->status !== 'gagal')
+                        <button type="button"
+                            data-modal-target="cancel-payment-modal-{{ $payment->payment_id }}"
+                            data-modal-toggle="cancel-payment-modal-{{ $payment->payment_id }}"
+                            class="inline-flex items-center justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-red-600 dark:text-red-400 dark:hover:bg-gray-700">
+                            <i class="fas fa-times-circle mr-2"></i>
+                            Batalkan Pembayaran
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -108,4 +117,24 @@
             </div>
         </div>
     </div>
+
+    {{-- Cancel Payment Modal --}}
+    @if($payment->status !== 'gagal')
+        @php
+            $customerName = '';
+            if ($payment->order_type === 'produk' && $payment->orderProduct && $payment->orderProduct->customer) {
+                $customerName = $payment->orderProduct->customer->name;
+            } elseif ($payment->order_type === 'servis' && $payment->orderService && $payment->orderService->customer) {
+                $customerName = $payment->orderService->customer->name;
+            }
+        @endphp
+
+        <x-cancel-payment-modal 
+            :id="$payment->payment_id"
+            :paymentId="$payment->payment_id"
+            :customerName="$customerName"
+            :amount="$payment->amount"
+            :action="route('payments.cancel', ['payment_id' => $payment->payment_id])"
+        />
+    @endif
 </x-layout-admin>

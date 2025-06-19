@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\OrderProduct;
+use App\Models\OrderService;
 use App\Models\PaymentDetail;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -42,14 +44,33 @@ class PaymentDetailsTable extends Component
         $this->resetPage();
     }
 
-    public function deletePayment($paymentId)
+    public function cancelPayment($paymentId)
     {
         try {
-            $payment = PaymentDetail::findOrFail($paymentId);
-            $payment->delete();
-            session()->flash('success', 'Pembayaran berhasil dihapus.');
+            $payment = PaymentDetail::where('payment_id', $paymentId)->firstOrFail();
+
+            // Update payment status to gagal
+            $payment->status = 'gagal';
+            $payment->save();
+
+            // Update related order's payment status to belum_dibayar
+            if ($payment->order_type === 'produk') {
+                $order = OrderProduct::where('order_product_id', $payment->order_product_id)->first();
+                if ($order) {
+                    $order->status_payment = 'belum_dibayar';
+                    $order->save();
+                }
+            } else {
+                $order = OrderService::where('order_service_id', $payment->order_service_id)->first();
+                if ($order) {
+                    $order->status_payment = 'belum_dibayar';
+                    $order->save();
+                }
+            }
+
+            session()->flash('success', 'Pembayaran berhasil dibatalkan.');
         } catch (\Exception $e) {
-            session()->flash('error', 'Gagal menghapus pembayaran.');
+            session()->flash('error', 'Gagal membatalkan pembayaran. ' . $e->getMessage());
         }
     }
 

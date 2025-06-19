@@ -10,8 +10,14 @@ class PaymentDetail extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $primaryKey = 'payment_id';
+    protected $keyType = 'string';
+    public $incrementing = false;
+
+
 
     protected $fillable = [
+        'payment_id',
         'order_product_id',
         'order_service_id',
         'method',
@@ -44,6 +50,16 @@ class PaymentDetail extends Model
     public function orderService()
     {
         return $this->belongsTo(OrderService::class, 'order_service_id', 'order_service_id');
+    }
+
+    /**
+     * Get the customer associated with the payment through order product or service.
+     */
+    public function customer()
+    {
+        return $this->order_type === 'produk'
+            ? $this->orderProduct->customer()
+            : $this->orderService->customer();
     }
 
     /**

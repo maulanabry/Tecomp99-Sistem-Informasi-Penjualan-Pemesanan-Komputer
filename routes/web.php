@@ -139,6 +139,30 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderServiceController::class, 'recovery'])->name('order-services.recovery');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderServiceController::class, 'restore'])->name('order-services.restore');
     });
+    // Service Tickets
+    Route::prefix('admin/service-tickets')->middleware(['auth:admin'])->group(function () {
+        // Main Service Ticket Routes
+        Route::get('/', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'index'])->name('service-tickets.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'create'])->name('service-tickets.create');
+        Route::post('/', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'store'])->name('service-tickets.store');
+        Route::get('/{ticket}', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'show'])->name('service-tickets.show');
+        Route::get('/{ticket}/edit', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'edit'])->name('service-tickets.edit');
+        Route::put('/{ticket}', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'update'])->name('service-tickets.update');
+        Route::delete('/{ticket}', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'destroy'])->name('service-tickets.destroy');
+
+        // Service Ticket Actions
+        Route::get('/{ticket}/actions/create', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'createAction'])->name('service-tickets.actions.create');
+        Route::post('/{ticket}/actions', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'storeAction'])->name('service-tickets.actions.store');
+        Route::delete('/{ticket}/actions/{action}', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'destroyAction'])->name('service-tickets.actions.destroy');
+
+        // Service Ticket Status Management
+        Route::put('/{ticket}/status', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'updateStatus'])->name('service-tickets.update-status');
+
+        // Service Ticket Recovery
+        Route::get('/recovery', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'recovery'])->name('service-tickets.recovery');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'restore'])->name('service-tickets.restore');
+        Route::delete('/{id}/force', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'forceDelete'])->name('service-tickets.force-delete');
+    });
 
     // Payments
     Route::prefix('admin/payments')->middleware(['auth:admin'])->group(function () {
@@ -149,6 +173,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         // Add new route for editing payment details
         Route::get('/{payment_id}/edit', [\App\Http\Controllers\Admin\PaymentController::class, 'edit'])->name('payments.edit');
         Route::put('/{payment_id}', [\App\Http\Controllers\Admin\PaymentController::class, 'update'])->name('payments.update');
+        Route::put('/{payment_id}/cancel', [\App\Http\Controllers\Admin\PaymentController::class, 'cancel'])->name('payments.cancel');
     });
 
     // Transaksi

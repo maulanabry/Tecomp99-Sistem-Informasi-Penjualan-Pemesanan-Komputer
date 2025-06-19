@@ -68,7 +68,7 @@
     <div class="mt-4">
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-                <div class="grid grid-cols-10 gap-4 px-6 py-3">
+                <div class="grid grid-cols-11 gap-4 px-6 py-3">
                     <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 w-[50px]">No</div>
                     <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1 cursor-pointer" wire:click="sortBy('order_service_id')">
                         <div class="flex items-center gap-1">
@@ -126,6 +126,9 @@
                     <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1">
                         Grand Total
                     </div>
+                    <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1">
+                        Has Device
+                    </div>
                     <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1 cursor-pointer" wire:click="sortBy('created_at')">
                         <div class="flex items-center gap-1">
                             Tanggal Order
@@ -145,7 +148,7 @@
         <div class="bg-white dark:bg-gray-800 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
             @forelse ($orderServices as $order)
                 <!-- Tampilan Desktop -->
-                <div class="hidden md:grid grid-cols-10 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="hidden md:grid grid-cols-11 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="w-[50px] text-sm text-gray-900 dark:text-gray-100">
                         {{ $loop->iteration + ($orderServices->currentPage() - 1) * $orderServices->perPage() }}
                     </div>
@@ -181,7 +184,7 @@
                         @endphp
                         @php
                             $paymentStatusLabels = [
-                                'belum_dibayar' => 'Belum Dibayar',
+                                'belum_dibayar' => 'Belum Diba..',
                                 'down_payment' => 'Down Payment',
                                 'lunas' => 'Lunas',
                                 'dibatalkan' => 'Dibatalkan',
@@ -194,6 +197,13 @@
                     </div>
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">Rp {{ number_format($order->sub_total, 0, ',', '.') }}</div>
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">Rp {{ number_format($order->grand_total_amount, 0, ',', '.') }}</div>
+                    <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">
+                        @if($order->hasDevice)
+                            <span class="text-green-500">Ada</span>
+                        @else
+                            <span class="text-red-500">Tidak Ada</span>
+                        @endif
+                    </div>
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">{{ $order->created_at->format('d M Y') }}</div>
                     <div class="col-span-1 text-center">
                         <x-action-dropdown>
@@ -204,6 +214,21 @@
                                 </svg>
                                 Lihat
                             </a>
+                            @if(!in_array($order->status_order, ['Selesai', 'Dibatalkan']))
+                                <a href="{{ route('order-services.edit', $order->order_service_id) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                    Edit
+                                </a>
+                            @else
+                                <span class="flex items-center px-4 py-2 text-sm text-gray-400 dark:text-gray-500 cursor-not-allowed" role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                    Edit
+                                </span>
+                            @endif
                             <button type="button"
                                 wire:click="cancelOrder('{{ $order->order_service_id }}')"
                                 class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -246,6 +271,14 @@
                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
                         <span>Grand Total:</span><span>Rp {{ number_format($order->grand_total_amount, 0, ',', '.') }}</span>
                     </div>
+                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
+                        <span>Perangkat</span>
+                        @if($order->hasDevice)
+                            <span class="text-green-500">Ada</span>
+                        @else
+                            <span class="text-red-500">Tidak Ada</span>
+                        @endif
+                    </div>
                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
                         <span>Tanggal Order:</span><span>{{ $order->created_at->format('d M Y') }}</span>
                     </div>
@@ -258,6 +291,21 @@
                                 </svg>
                                 Lihat
                             </a>
+                            @if(!in_array($order->status_order, ['Selesai', 'Dibatalkan']))
+                                <a href="{{ route('order-services.edit', $order->order_service_id) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                    Edit
+                                </a>
+                            @else
+                                <span class="flex items-center px-4 py-2 text-sm text-gray-400 dark:text-gray-500 cursor-not-allowed" role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                    Edit
+                                </span>
+                            @endif
                             <button type="button"
                                 wire:click="cancelOrder('{{ $order->order_service_id }}')"
                                 class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
