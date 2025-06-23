@@ -138,6 +138,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::delete('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'destroy'])->name('order-services.destroy');
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderServiceController::class, 'recovery'])->name('order-services.recovery');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderServiceController::class, 'restore'])->name('order-services.restore');
+        Route::post('/validate-promo', [\App\Http\Controllers\Admin\OrderServiceController::class, 'validatePromoCode'])->name('order-services.validate-promo');
     });
     // Service Tickets
     Route::prefix('admin/service-tickets')->middleware(['auth:admin'])->group(function () {

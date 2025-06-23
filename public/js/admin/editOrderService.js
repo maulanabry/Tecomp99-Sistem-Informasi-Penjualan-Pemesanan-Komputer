@@ -6,12 +6,6 @@ function formatRupiah(number) {
 // DOM Elements
 const itemsTableBody = document.getElementById("itemsTableBody");
 const itemsInput = document.getElementById("itemsInput");
-const addProductBtn = document.getElementById("addProductBtn");
-const addServiceBtn = document.getElementById("addServiceBtn");
-const addProductModal = document.getElementById("addProductModal");
-const addServiceModal = document.getElementById("addServiceModal");
-const closeAddProductModal = document.getElementById("closeAddProductModal");
-const closeAddServiceModal = document.getElementById("closeAddServiceModal");
 const promoCodeInput = document.getElementById("promo_code");
 const promoIdInput = document.getElementById("promo_id");
 const promoTypeInput = document.getElementById("promo_type");
@@ -24,19 +18,62 @@ const subtotalDisplay = document.getElementById("subtotalDisplay");
 const discountDisplay = document.getElementById("discountDisplay");
 const grandTotalDisplay = document.getElementById("grandTotalDisplay");
 
-// Event Listeners untuk Modal
-addProductBtn.addEventListener("click", () =>
-    addProductModal.classList.remove("hidden")
-);
-addServiceBtn.addEventListener("click", () =>
-    addServiceModal.classList.remove("hidden")
-);
-closeAddProductModal.addEventListener("click", () =>
-    addProductModal.classList.add("hidden")
-);
-closeAddServiceModal.addEventListener("click", () =>
-    addServiceModal.classList.add("hidden")
-);
+// Remove modal event listeners (modals removed)
+
+// Listen for Livewire events for adding items
+document.addEventListener("livewire:load", function () {
+    Livewire.on("productSelected", (productId) => {
+        // Fetch product details via AJAX or from a global store
+        fetchProductById(productId).then((product) => {
+            addItemToTable({
+                id: product.product_id,
+                name: product.name,
+                price: product.price,
+                quantity: 1,
+                type: "product",
+            });
+        });
+    });
+
+    Livewire.on("serviceSelected", (serviceId) => {
+        // Fetch service details via AJAX or from a global store
+        fetchServiceById(serviceId).then((service) => {
+            addItemToTable({
+                id: service.service_id,
+                name: service.name,
+                price: service.price,
+                quantity: 1,
+                type: "service",
+            });
+        });
+    });
+
+    // Re-attach event listeners after Livewire updates DOM
+    Livewire.hook("message.processed", (message, component) => {
+        attachAddProductListeners();
+        attachAddServiceListeners();
+    });
+});
+
+// Fetch product details by ID (assumes an API endpoint exists)
+async function fetchProductById(productId) {
+    const response = await fetch(`/api/products/${productId}`);
+    if (!response.ok) {
+        alert("Gagal mengambil data produk");
+        throw new Error("Failed to fetch product");
+    }
+    return await response.json();
+}
+
+// Fetch service details by ID (assumes an API endpoint exists)
+async function fetchServiceById(serviceId) {
+    const response = await fetch(`/api/services/${serviceId}`);
+    if (!response.ok) {
+        alert("Gagal mengambil data servis");
+        throw new Error("Failed to fetch service");
+    }
+    return await response.json();
+}
 
 // Event Listener untuk quantity inputs yang sudah ada
 document.querySelectorAll(".quantity-input").forEach((input) => {
@@ -64,64 +101,88 @@ function updateRowTotal(quantityInput) {
 }
 
 // Event Listeners untuk tambah produk
-document.querySelectorAll(".add-product-btn").forEach((button) => {
-    button.addEventListener("click", function () {
-        const row = this.closest("tr");
-        const productId = row.dataset.productId;
-        const productName = row.dataset.productName;
-        const price = parseInt(row.dataset.productPrice);
-        const quantityInput = row.querySelector(".quantity-input");
-        const quantity = parseInt(quantityInput.value);
-        const maxStock = parseInt(quantityInput.max);
+function attachAddProductListeners() {
+    document.querySelectorAll(".add-product-btn").forEach((button) => {
+        button.addEventListener("click", function () {
+            console.log("Add product button clicked:", this);
+            const card = this.closest("[data-product-id]");
+            console.log("Closest card element:", card);
+            if (!card) {
+                alert("Error: Product card data not found.");
+                return;
+            }
+            const productId = card.dataset.productId;
+            const productName = card.dataset.productName;
+            const price = parseInt(card.dataset.productPrice);
+            const quantityInput = card.querySelector(".quantity-input");
+            const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+            const maxStock = quantityInput
+                ? parseInt(quantityInput.max)
+                : Infinity;
 
-        if (isNaN(quantity) || quantity < 1) {
-            alert("Kuantitas minimal 1");
-            return;
-        }
+            if (isNaN(quantity) || quantity < 1) {
+                alert("Kuantitas minimal 1");
+                return;
+            }
 
-        if (quantity > maxStock) {
-            alert("Kuantitas melebihi stok tersedia");
-            return;
-        }
+            if (quantity > maxStock) {
+                alert("Kuantitas melebihi stok tersedia");
+                return;
+            }
 
-        addItemToTable({
-            id: productId,
-            name: productName,
-            price: price,
-            quantity: quantity,
-            type: "product",
+            addItemToTable({
+                id: productId,
+                name: productName,
+                price: price,
+                quantity: quantity,
+                type: "product",
+            });
+
+            if (typeof addProductModal !== "undefined") {
+                addProductModal.classList.add("hidden");
+            }
         });
-
-        addProductModal.classList.add("hidden");
     });
-});
+}
+
+attachAddProductListeners();
 
 // Event Listeners untuk tambah servis
-document.querySelectorAll(".add-service-btn").forEach((button) => {
-    button.addEventListener("click", function () {
-        const row = this.closest("tr");
-        const serviceId = row.dataset.serviceId;
-        const serviceName = row.dataset.serviceName;
-        const price = parseInt(row.dataset.servicePrice);
-        const quantityInput = row.querySelector(".quantity-input");
-        const quantity = parseInt(quantityInput.value);
+function attachAddServiceListeners() {
+    document.querySelectorAll(".add-service-btn").forEach((button) => {
+        button.addEventListener("click", function () {
+            const card = this.closest("[data-service-id]");
+            if (!card) {
+                alert("Error: Service card data not found.");
+                return;
+            }
+            const serviceId = card.dataset.serviceId;
+            const serviceName = card.dataset.serviceName;
+            const price = parseInt(card.dataset.servicePrice);
+            const quantityInput = card.querySelector(".quantity-input");
+            const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
 
-        if (isNaN(quantity) || quantity < 1) {
-            alert("Kuantitas minimal 1");
-            return;
-        }
+            if (isNaN(quantity) || quantity < 1) {
+                alert("Kuantitas minimal 1");
+                return;
+            }
 
-        addItemToTable({
-            id: serviceId,
-            name: serviceName,
-            price: price,
-            quantity: quantity,
-            type: "service",
+            addItemToTable({
+                id: serviceId,
+                name: serviceName,
+                price: price,
+                quantity: quantity,
+                type: "service",
+            });
+
+            if (typeof addServiceModal !== "undefined") {
+                addServiceModal.classList.add("hidden");
+            }
         });
-
-        addServiceModal.classList.add("hidden");
     });
-});
+}
+
+attachAddServiceListeners();
 
 // Fungsi untuk menambahkan item ke tabel
 function addItemToTable(item) {
@@ -169,6 +230,24 @@ function addItemToTable(item) {
 
     itemsTableBody.appendChild(tr);
     calculateTotals();
+
+    // Log current items JSON after adding item
+    const items = [];
+    document.querySelectorAll("#itemsTableBody tr").forEach((row) => {
+        const type = row.dataset.type;
+        const id = row.dataset[`${type}Id`];
+        const price = parseInt(row.dataset.price);
+        const quantity = parseInt(row.querySelector(".quantity-input").value);
+
+        items.push({
+            type: type,
+            [`${type}_id`]: id,
+            quantity: quantity,
+            price: price,
+            total: quantity * price,
+        });
+    });
+    console.log("Current items JSON:", JSON.stringify(items));
 }
 
 // Promo code handling
@@ -320,41 +399,50 @@ function updateDisplays(subtotal, discount) {
 }
 
 // Form submission handling
-document
-    .getElementById("orderForm")
-    .addEventListener("submit", async function (e) {
+document.getElementById("orderForm").addEventListener("submit", function (e) {
+    // No preventDefault, allow normal form submission
+
+    // Validate at least one item
+    if (document.querySelectorAll("#itemsTableBody tr").length === 0) {
+        alert("Harap tambahkan setidaknya satu item ke dalam pesanan.");
         e.preventDefault();
+        return;
+    }
 
-        // Validate at least one item
-        if (document.querySelectorAll("#itemsTableBody tr").length === 0) {
-            alert("Harap tambahkan setidaknya satu item ke dalam pesanan.");
-            return;
-        }
+    // Prepare items JSON
+    const items = [];
+    document.querySelectorAll("#itemsTableBody tr").forEach((row) => {
+        const type = row.dataset.type;
+        const id = row.dataset[`${type}Id`];
+        const price = parseInt(row.dataset.price);
+        const quantity = parseInt(row.querySelector(".quantity-input").value);
 
-        // Prepare items JSON
-        const items = [];
-        document.querySelectorAll("#itemsTableBody tr").forEach((row) => {
-            const type = row.dataset.type;
-            const id = row.dataset[`${type}Id`];
-            const price = parseInt(row.dataset.price);
-            const quantity = parseInt(
-                row.querySelector(".quantity-input").value
-            );
-
-            items.push({
-                type: type,
-                [`${type}_id`]: id,
-                quantity: quantity,
-                price: price,
-                total: quantity * price,
-            });
+        items.push({
+            type: type,
+            [`${type}_id`]: id,
+            quantity: quantity,
+            price: price,
+            total: quantity * price,
         });
-
-        itemsInput.value = JSON.stringify(items);
-
-        // Submit the form
-        this.submit();
     });
+
+    itemsInput.value = JSON.stringify(items);
+
+    // Also update hidden inputs for sub_total and discount_amount
+    const subTotalInput = document.getElementById("sub_total");
+    const discountAmountInput = document.getElementById("discount_amount");
+
+    if (subTotalInput) {
+        // Get the subtotal from the display (remove non-digits)
+        subTotalInput.value =
+            parseInt(subtotalDisplay.textContent.replace(/\D/g, "")) || 0;
+    }
+    if (discountAmountInput) {
+        // Get the discount from the display (remove non-digits)
+        discountAmountInput.value =
+            parseInt(discountDisplay.textContent.replace(/\D/g, "")) || 0;
+    }
+});
 
 // Initialize totals on page load
 calculateTotals();

@@ -15,11 +15,17 @@
         <h1 class="text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100">Edit Pesanan Servis</h1>
 
         <form id="orderForm" action="{{ route('order-services.update', $orderService->order_service_id) }}" method="POST" class="space-y-6">
-            @csrf
-            @method('PATCH')
+             @csrf
+             @method('PUT')
+
+            @if ($errors->any())
+                <div class="mb-4">
+                    <x-alert type="danger" :message="implode( $errors->all())" />
+                </div>
+            @endif
 
             <!-- Section 1: Informasi Pelanggan & Detail Servis -->
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
                 <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Informasi Pelanggan & Detail Servis</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -27,33 +33,88 @@
                         <p class="text-gray-900 dark:text-gray-100">{{ $orderService->customer->name }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Tipe Order</label>
-                        <p class="text-gray-900 dark:text-gray-100">{{ $orderService->type }}</p>
+                        <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Tipe Order</label>
+                        <select id="type" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                            @php
+                                $typeOptions = ['reguler' => 'Reguler', 'onsite' => 'Onsite'];
+                            @endphp
+                            @foreach ($typeOptions as $value => $label)
+                                <option value="{{ $value }}" {{ $orderService->type === $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Status Order</label>
-                        <p class="text-gray-900 dark:text-gray-100">{{ $orderService->status_order }}</p>
+                        <label for="status_order" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Status Order</label>
+                        <select id="status_order" name="status_order" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                            @php
+                                $statusOrderOptions = [
+                                    'Menunggu' => 'Menunggu',
+                                    'Diproses' => 'Diproses',
+                                    'Dibatalkan' => 'Dibatalkan',
+                                    'Selesai' => 'Selesai'
+                                ];
+                            @endphp
+                            @foreach ($statusOrderOptions as $value => $label)
+                                <option value="{{ $value }}" {{ $orderService->status_order === $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Status Pembayaran</label>
-                        <p class="text-gray-900 dark:text-gray-100">{{ $orderService->status_payment }}</p>
+                        <label for="status_payment" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Status Pembayaran</label>
+                        <select id="status_payment" name="status_payment" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                            @php
+                                $statusPaymentOptions = ['belum_dibayar' => 'Belum Dibayar', 'down_payment' => 'Down Payment', 'lunas' => 'Lunas', 'dibatalkan' => 'Dibatalkan'];
+                            @endphp
+                            @foreach ($statusPaymentOptions as $value => $label)
+                                <option value="{{ $value }}" {{ $orderService->status_payment === $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="device" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Device</label>
+                        <textarea id="device" name="device" rows="3" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">{{ $orderService->device }}</textarea>
+                    </div>
+                    <div>
+                        <label for="complaints" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Complaints</label>
+                        <textarea id="complaints" name="complaints" rows="3" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">{{ $orderService->complaints }}</textarea>
+                    </div>
+                    <div>
+                        <label for="note" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Note</label>
+                        <textarea id="note" name="note" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">{{ $orderService->note }}</textarea>
+                    </div>
+                    <div class="flex items-center mt-4">
+                        <input type="checkbox" id="hasDevice" name="hasDevice" value="1" class="w-4 h-4 text-primary-600 bg-gray-100 border border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" {{ $orderService->hasDevice ? 'checked' : '' }}>
+                        <label for="hasDevice" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Has Device</label>
                     </div>
                 </div>
             </div>
 
-            <!-- Section 2: Tabel Order Service Items -->
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Daftar Item</h2>
-                    <div class="flex gap-2">
-                        <button type="button" id="addProductBtn" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                            Tambah Produk
-                        </button>
-                        <button type="button" id="addServiceBtn" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                            Tambah Servis
-                        </button>
+            <!-- Section 2: Product and Service List -->
+            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+                <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Produk & Servis</h2>
+                <div>
+                    <ul class="flex flex-wrap text-sm font-medium text-center text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700" id="tabs-tab" role="tablist">
+                        <li class="mr-2" role="presentation">
+                            <button class="inline-block p-4 rounded-t-lg border-b-2 border-primary-600 text-primary-600 dark:border-primary-500 dark:text-primary-500" id="produk-tab" data-tabs-target="#produk" type="button" role="tab" aria-controls="produk" aria-selected="true">Produk</button>
+                        </li>
+                        <li class="mr-2" role="presentation">
+                            <button class="inline-block p-4 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="servis-tab" data-tabs-target="#servis" type="button" role="tab" aria-controls="servis" aria-selected="false">Servis</button>
+                        </li>
+                    </ul>
+                    <div id="tabs-tabContent">
+                        <div class="p-4 bg-white dark:bg-gray-800 rounded-lg" id="produk" role="tabpanel" aria-labelledby="produk-tab">
+                            @livewire('admin.product-card-list')
+                        </div>
+                        <div class="hidden p-4 bg-white dark:bg-gray-800 rounded-lg" id="servis" role="tabpanel" aria-labelledby="servis-tab">
+                            @livewire('admin.service-card-list')
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Section 3: Daftar Order Service Item -->
+            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+                <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Daftar Item</h2>
                 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -104,7 +165,7 @@
                 <input type="hidden" name="items" id="itemsInput" />
             </div>
 
-            <!-- Section 3: Promo -->
+            <!-- Section 4: Promo and Ringkasan Pembayaran -->
             <div class="flex gap-4">
                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 w-2/4">
                     <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Promo</h2>
@@ -128,7 +189,6 @@
                     </div>
                 </div>
 
-                <!-- Section 4: Ringkasan Pembayaran -->
                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 w-2/4">
                     <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Ringkasan Pembayaran</h2>
                     <div class="space-y-2">
@@ -153,6 +213,8 @@
                     Simpan Perubahan
                 </button>
             </div>
+            <input type="hidden" name="sub_total" id="sub_total" value="{{ $orderService->sub_total }}">
+            <input type="hidden" name="discount_amount" id="discount_amount" value="{{ $orderService->discount_amount }}">
         </form>
 
         <!-- Modal Tambah Produk -->
@@ -272,4 +334,5 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ asset('js/admin/editOrderService.js') }}"></script>
+    <script src="{{ asset('js/admin/tabs.js') }}"></script>
 </x-layout-admin>

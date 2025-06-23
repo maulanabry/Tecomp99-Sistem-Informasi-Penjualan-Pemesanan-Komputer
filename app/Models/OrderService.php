@@ -25,7 +25,7 @@ class OrderService extends Model
         'hasTicket',
         'sub_total',
         'hasDevice',
-        'grand_total_amount',
+        'grand_total',
         'discount_amount',
     ];
 

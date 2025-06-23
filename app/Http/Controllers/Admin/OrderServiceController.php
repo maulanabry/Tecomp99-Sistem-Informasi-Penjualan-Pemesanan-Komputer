@@ -132,6 +132,7 @@ class OrderServiceController extends Controller
             'sub_total' => 'required|integer|min:0',
             'discount_amount' => 'required|integer|min:0',
             'hasDevice' => 'nullable|boolean',
+            'items' => 'required|json',
         ]);
 
         try {
@@ -153,6 +154,48 @@ class OrderServiceController extends Controller
                 'grand_total' => $grandTotal,
                 'hasDevice' => $request->boolean('hasDevice'),
             ]);
+
+            // Update order service items
+            $items = json_decode($request->items, true);
+
+            // Collect existing item IDs to track which to delete
+            $existingItemIds = $orderService->items()->pluck('order_service_item_id')->toArray();
+            $updatedItemIds = [];
+
+            foreach ($items as $itemData) {
+                $itemId = $itemData['order_service_item_id'] ?? null;
+                $quantity = $itemData['quantity'] ?? 1;
+                $price = $itemData['price'] ?? 0;
+
+                if ($itemId && in_array($itemId, $existingItemIds)) {
+                    // Update existing item
+                    $orderItem = $orderService->items()->where('order_service_item_id', $itemId)->first();
+                    $orderItem->update([
+                        'quantity' => $quantity,
+                        'price' => $price,
+                    ]);
+                    $updatedItemIds[] = $itemId;
+                } else {
+                    // Create new item
+                    $newItemData = [
+                        'quantity' => $quantity,
+                        'price' => $price,
+                    ];
+                    if (isset($itemData['product_id'])) {
+                        $newItemData['product_id'] = $itemData['product_id'];
+                    }
+                    if (isset($itemData['service_id'])) {
+                        $newItemData['service_id'] = $itemData['service_id'];
+                    }
+                    $orderService->items()->create($newItemData);
+                }
+            }
+
+            // Delete removed items
+            $itemsToDelete = array_diff($existingItemIds, $updatedItemIds);
+            if (!empty($itemsToDelete)) {
+                $orderService->items()->whereIn('order_service_item_id', $itemsToDelete)->delete();
+            }
 
             return redirect()->route('order-services.show', $orderService)
                 ->with('success', 'Order servis berhasil diperbarui.');
@@ -194,5 +237,58 @@ class OrderServiceController extends Controller
             return redirect()->route('order-services.recovery')
                 ->with('error', 'Gagal memulihkan order servis: ' . $e->getMessage());
         }
+    }
+
+    public function validatePromoCode(Request $request)
+    {
+        $request->validate([
+            'promo_code' => 'required|string',
+            'subtotal' => 'required|numeric|min:0',
+        ]);
+
+        $code = trim($request->input('promo_code'));
+        $subtotal = $request->input('subtotal');
+
+        $promo = \App\Models\Promo::where('code', $code)
+            ->where('is_active', true)
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->first();
+
+        if (!$promo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode promo tidak valid atau sudah kedaluwarsa',
+            ], 404);
+        }
+
+        if ($promo->minimum_order_amount && $subtotal < $promo->minimum_order_amount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Minimal pembelian untuk promo ini adalah Rp ' . number_format($promo->minimum_order_amount, 0, ',', '.'),
+            ], 400);
+        }
+
+        // Calculate discount based on promo type
+        $discount = 0;
+        if ($promo->type === 'percentage' && $promo->discount_percentage) {
+            $discount = intval(($subtotal * $promo->discount_percentage) / 100);
+        } elseif ($promo->type === 'amount' && $promo->discount_amount) {
+            $discount = $promo->discount_amount;
+        }
+
+        // Cap discount at subtotal
+        if ($discount > $subtotal) {
+            $discount = $subtotal;
+        }
+
+        return response()->json([
+            'success' => true,
+            'promo_id' => $promo->promo_id,
+            'promo_name' => $promo->name,
+            'discount' => $discount,
+            'discount_type' => $promo->type,
+            'discount_value' => $promo->type === 'percentage' ? $promo->discount_percentage : $promo->discount_amount,
+        ]);
     }
 }
