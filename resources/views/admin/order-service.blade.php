@@ -12,6 +12,11 @@
         @endif
     <div class="py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+            <!-- Breadcrumbs -->
+            <div class="mb-2">
+                <x-breadcrumbs />
+            </div>
+
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Manajemen Order Servis</h1>
                 <a href="{{ route('order-services.create') }}"

@@ -12,6 +12,11 @@
         @endif
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+            <!-- Breadcrumbs -->
+            <div class="mb-2">
+                <x-breadcrumbs />
+            </div>
+
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Manajemen Servis</h1>
                 <div class="flex space-x-3">
