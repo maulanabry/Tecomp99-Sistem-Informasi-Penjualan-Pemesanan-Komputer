@@ -200,6 +200,9 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
 // Admin Dashboard
 Route::middleware('auth:admin')->group(function () {
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard.index');
+    Route::get('/admin/inventory-alerts', function () {
+        return view('admin.inventory-alerts');
+    })->name('admin.inventory-alerts');
 });
 
 // Teknisi Dashboard
