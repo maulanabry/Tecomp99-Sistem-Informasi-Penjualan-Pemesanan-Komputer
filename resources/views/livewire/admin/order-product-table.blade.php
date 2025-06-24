@@ -69,8 +69,7 @@
     <div class="mt-4">
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-                <div class="grid grid-cols-10 gap-4 px-6 py-3">
-                    <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 w-[50px]">No</div>
+                <div class="grid grid-cols-9 gap-4 px-6 py-3">
                     <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1 cursor-pointer" wire:click="sortBy('order_product_id')">
                         <div class="flex items-center gap-1">
                             ID Pesanan
@@ -144,10 +143,7 @@
         <div class="bg-white dark:bg-gray-800 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
             @forelse ($orderProducts as $order)
                 <!-- Tampilan Desktop -->
-                <div class="hidden md:grid grid-cols-10 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div class=" w-[50px] text-sm text-gray-900 dark:text-gray-100">
-                        {{ $loop->iteration + ($orderProducts->currentPage() - 1) * $orderProducts->perPage() }}
-                    </div>
+                <div class="hidden md:grid grid-cols-9 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">{{ $order->order_product_id }}</div>
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">{{ $order->customer ? $order->customer->name : '-' }}</div>
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">{{ ucfirst($order->type) }}</div>

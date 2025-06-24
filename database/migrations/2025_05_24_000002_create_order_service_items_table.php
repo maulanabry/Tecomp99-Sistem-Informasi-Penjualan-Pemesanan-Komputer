@@ -12,20 +12,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('order_service_items', function (Blueprint $table) {
-            $table->bigIncrements('order_service_item_id');
+            $table->bigIncrements('order_service_item_id')->primary();
+
+            // Relasi ke order_services
             $table->string('order_service_id', 50);
             $table->foreign('order_service_id')->references('order_service_id')->on('order_services');
-            // Changed service_id to string(50) to match service table primary key type and table name corrected
-            $table->string('service_id', 50);
-            $table->foreign('service_id')->references('service_id')->on('service');
-            // Changed product_id to string(50) to match products table primary key type
-            $table->string('product_id', 50)->nullable();
-            $table->foreign('product_id')->references('product_id')->on('products');
-            $table->text('description');
+
+            // Polymorphic fields
+            $table->string('item_type');     // contoh: App\Models\Product atau App\Models\Service
+            $table->string('item_id', 50);   // ID dari item terkait
+
+            // Informasi item
             $table->integer('price');
             $table->integer('quantity');
             $table->integer('item_total');
+
+            // Timestamps
             $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
         });
     }
 

@@ -57,8 +57,7 @@
     <div class="mt-4">
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-                <div class="grid grid-cols-8 gap-4 px-6 py-3">
-                    <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 w-[50px]">No</div>
+                <div class="grid grid-cols-7 gap-4 px-6 py-3">
                     <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 cursor-pointer" wire:click="sortBy('service_ticket_id')">
                         <div class="flex items-center gap-1">
                             ID Tiket Servis
@@ -101,10 +100,7 @@
         <div class="bg-white dark:bg-gray-800 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
             @forelse ($tickets as $ticket)
                 <!-- Tampilan Desktop -->
-                <div class="hidden md:grid grid-cols-8 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div class="w-[50px] text-sm text-gray-900 dark:text-gray-100">
-                        {{ $loop->iteration + ($tickets->currentPage() - 1) * $tickets->perPage() }}
-                    </div>
+                <div class="hidden md:grid grid-cols-7 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="text-sm text-gray-700 dark:text-gray-300">{{ $ticket->service_ticket_id }}</div>
                     <div class="text-sm text-gray-700 dark:text-gray-300">{{ $ticket->order_service_id }}</div>
                     <div class="text-sm text-gray-700 dark:text-gray-300">{{ $ticket->orderService->customer->name ?? 'N/A' }}</div>

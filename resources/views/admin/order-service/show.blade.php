@@ -1,18 +1,14 @@
 <x-layout-admin>
     <div class="max-w-7xl mx-auto p-6">
         <div class="mb-6">
-            <div class="flex justify-between items-center">
+            <div class="flex justify-start items-center gap-4">
+                <a href="{{ route('order-services.index') }}" 
+                    class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                    aria-label="Kembali ke daftar order servis">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Kembali
+                </a>
                 <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Detail Order Servis</h1>
-                <div class="flex gap-2">
-                    <a href="{{ route('order-services.edit', $orderService->order_service_id) }}" 
-                        class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                        Edit Order
-                    </a>
-                    <a href="{{ route('order-services.index') }}" 
-                        class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-primary-800">
-                        Kembali
-                    </a>
-                </div>
             </div>
         </div>
 
@@ -29,9 +25,10 @@
         @endif
 
         <!-- Order Service Info -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Informasi Order</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+            <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white px-6 pt-6">Informasi Order</h2>
+            <hr class="border-t border-gray-300 dark:border-gray-600" />
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <dl class="space-y-3">
                         <div>
@@ -115,9 +112,10 @@
         </div>
 
         <!-- Customer Info -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Informasi Pelanggan</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+            <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white px-6 pt-6">Informasi Pelanggan</h2>
+            <hr class="border-t border-gray-300 dark:border-gray-600" />
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <dl class="space-y-3">
                         <div>
@@ -151,82 +149,165 @@
             </div>
         </div>
 
-        <!-- Service Tickets -->
-        @if($orderService->tickets->isNotEmpty())
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Tiket Servis</h2>
-            <div class="overflow-x-auto">
+        <!-- Daftar Item Order Service -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+            <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white px-6 pt-6">Daftar Item</h2>
+            <hr class="border-t border-gray-300 dark:border-gray-600" />
+            <div class="p-6 relative overflow-x-auto shadow-md sm:rounded-lg">
                 <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
-                            <th scope="col" class="px-6 py-3">ID Tiket</th>
-                            <th scope="col" class="px-6 py-3">Teknisi</th>
-                            <th scope="col" class="px-6 py-3">Status</th>
-                            <th scope="col" class="px-6 py-3">Jadwal</th>
-                            <th scope="col" class="px-6 py-3">Dibuat</th>
+                            <th scope="col" class="px-6 py-3">Nama Item</th>
+                            <th scope="col" class="px-6 py-3">Kategori</th>
+                            <th scope="col" class="px-6 py-3 text-right">Harga (Rp)</th>
+                            <th scope="col" class="px-6 py-3 text-right">Jumlah</th>
+                            <th scope="col" class="px-6 py-3 text-right">Total (Rp)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($orderService->tickets as $ticket)
+                        @foreach($orderService->items as $item)
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <td class="px-6 py-4">
-                                <a href="{{ route('service-tickets.show', $ticket) }}" class="text-primary-600 hover:underline">
-                                    {{ $ticket->service_ticket_id }}
-                                </a>
+                                {{ $item->item ? $item->item->name : '' }}
                             </td>
-                            <td class="px-6 py-4">{{ $ticket->admin->name }}</td>
                             <td class="px-6 py-4">
-                                <span class="px-2 py-1 text-xs font-medium rounded-full
-                                    @if($ticket->status === 'Menunggu') bg-yellow-100 text-yellow-800
-                                    @elseif($ticket->status === 'Diproses') bg-blue-100 text-blue-800
-                                    @elseif($ticket->status === 'Diantar') bg-purple-100 text-purple-800
-                                    @elseif($ticket->status === 'Perlu Diambil') bg-orange-100 text-orange-800
-                                    @else bg-green-100 text-green-800
-                                    @endif">
-                                    {{ $ticket->status }}
-                                </span>
+                                {{ $item->item_type === 'App\\Models\\Service' ? 'Jasa' : 'Produk' }}
                             </td>
-                            <td class="px-6 py-4">{{ $ticket->schedule_date->format('d/m/Y H:i') }}</td>
-                            <td class="px-6 py-4">{{ $ticket->created_at->format('d/m/Y H:i') }}</td>
+                            <td class="px-6 py-4 text-right">
+                                {{ number_format($item->price, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                {{ $item->quantity }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                {{ number_format($item->item_total, 0, ',', '.') }}
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
         </div>
-        @endif
 
-        <!-- Payment Info -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Informasi Pembayaran</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sub Total</dt>
-                    <dd class="text-lg text-gray-900 dark:text-white">Rp {{ number_format($orderService->sub_total, 0, ',', '.') }}</dd>
-                </div>
-                <div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Diskon</dt>
-                    <dd class="text-lg text-gray-900 dark:text-white">Rp {{ number_format($orderService->discount_amount, 0, ',', '.') }}</dd>
-                </div>
-                <div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total</dt>
-<dd class="text-lg text-gray-900 dark:text-white">Rp {{ number_format($orderService->grand_total_amount, 0, ',', '.') }}</dd>
-                </div>
+        <!-- Service Tickets -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mb-6">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+                    Tiket Servis
+                </h3>
+            </div>
+            <div class="px-4 py-5 sm:p-6">
+                @if($orderService->tickets->isNotEmpty())
+                    @foreach($orderService->tickets as $ticket)
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Tiket</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    <a href="{{ route('service-tickets.show', $ticket) }}" class="text-primary-600 hover:underline">
+                                        {{ $ticket->service_ticket_id }}
+                                    </a>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Teknisi</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $ticket->admin->name }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
+                                <dd class="mt-1">
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full
+                                        @if($ticket->status === 'Menunggu') bg-yellow-100 text-yellow-800
+                                        @elseif($ticket->status === 'Diproses') bg-blue-100 text-blue-800
+                                        @elseif($ticket->status === 'Diantar') bg-purple-100 text-purple-800
+                                        @elseif($ticket->status === 'Perlu Diambil') bg-orange-100 text-orange-800
+                                        @else bg-green-100 text-green-800
+                                        @endif">
+                                        {{ $ticket->status }}
+                                    </span>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jadwal</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $ticket->schedule_date->format('d/m/Y H:i') }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dibuat</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $ticket->created_at->format('d/m/Y H:i') }}</dd>
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <p class="text-sm text-gray-900 dark:text-gray-100">Belum ada tiket servis untuk order ini.</p>
+                @endif
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex justify-end gap-2">
-            @if($orderService->status_order !== 'Dibatalkan' && $orderService->status_payment !== 'lunas')
-                <form action="{{ route('order-services.destroy', $orderService->order_service_id) }}" method="POST" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" onclick="return confirm('Apakah Anda yakin ingin menghapus order servis ini?')"
-                        class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">
-                        Hapus Order
-                    </button>
-                </form>
-            @endif
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+                    Informasi Pembayaran
+                </h3>
+            </div>
+            <div class="px-4 py-5 sm:p-6">
+                @if($orderService->paymentDetails->isNotEmpty())
+                    @foreach($orderService->paymentDetails as $payment)
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                            <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Pembayaran</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                <a href="{{ route('payments.show', $payment) }}" class="text-primary-600 hover:underline">
+                                    {{ $payment->payment_id ?? '-' }}
+                                </a>
+                            </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Metode Pembayaran</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->method }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($payment->amount, 0, ',', '.') }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
+                                <dd class="mt-1">
+                                    @php
+                                        $statusColors = [
+                                            'pending' => 'bg-yellow-500',
+                                            'dibayar' => 'bg-green-500',
+                                            'gagal' => 'bg-red-500',
+                                        ];
+                                        $colorClass = $statusColors[$payment->status] ?? 'bg-gray-500';
+                                    @endphp
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colorClass }} text-white">
+                                        {{ ucfirst($payment->status) }}
+                                    </span>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ $payment->payment_type === 'full' ? 'Full Payment' : 'Down Payment' }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Dibuat</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->created_at->format('d M Y H:i') }}</dd>
+                            </div>
+                            @if($payment->proof_photo)
+                            <div class="col-span-full">
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bukti Pembayaran</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    <img src="{{ asset('storage/' . $payment->proof_photo) }}" alt="Bukti Pembayaran" class="max-w-md rounded-lg shadow-lg">
+                                </dd>
+                            </div>
+                            @endif
+                        </div>
+                    @endforeach
+                @else
+                    <p class="text-sm text-gray-900 dark:text-gray-100">Belum ada pembayaran untuk order ini.</p>
+                @endif
+            </div>
         </div>
     </div>
 </x-layout-admin>

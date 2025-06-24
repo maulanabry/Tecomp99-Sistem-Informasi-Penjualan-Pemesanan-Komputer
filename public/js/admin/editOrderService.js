@@ -138,9 +138,10 @@ function attachAddProductListeners() {
                 type: "product",
             });
 
-            if (typeof addProductModal !== "undefined") {
-                addProductModal.classList.add("hidden");
-            }
+            // Removed modal hiding for addProductModal
+            // if (typeof addProductModal !== "undefined") {
+            //     addProductModal.classList.add("hidden");
+            // }
         });
     });
 }
@@ -175,9 +176,10 @@ function attachAddServiceListeners() {
                 type: "service",
             });
 
-            if (typeof addServiceModal !== "undefined") {
-                addServiceModal.classList.add("hidden");
-            }
+            // Removed modal hiding for addServiceModal
+            // if (typeof addServiceModal !== "undefined") {
+            //     addServiceModal.classList.add("hidden");
+            // }
         });
     });
 }
@@ -190,7 +192,17 @@ function addItemToTable(item) {
     tr.className = "bg-white border-b dark:bg-gray-800 dark:border-gray-700";
     tr.dataset.type = item.type;
     tr.dataset.price = item.price;
-    tr.dataset[`${item.type}Id`] = item.id;
+
+    // For new items, no orderServiceItemId
+    if (item.orderServiceItemId) {
+        tr.dataset.orderServiceItemId = item.orderServiceItemId;
+    }
+
+    if (item.type === "service") {
+        tr.dataset.serviceId = item.id;
+    } else {
+        tr.dataset.productId = item.id;
+    }
 
     tr.innerHTML = `
         <td class="px-6 py-4">${item.name}</td>
@@ -230,25 +242,66 @@ function addItemToTable(item) {
 
     itemsTableBody.appendChild(tr);
     calculateTotals();
+}
 
-    // Log current items JSON after adding item
+// Serialize items for form submission
+function serializeItems() {
     const items = [];
     document.querySelectorAll("#itemsTableBody tr").forEach((row) => {
         const type = row.dataset.type;
-        const id = row.dataset[`${type}Id`];
+        const orderServiceItemId = row.dataset.orderServiceItemId || null;
         const price = parseInt(row.dataset.price);
         const quantity = parseInt(row.querySelector(".quantity-input").value);
 
+        let itemId = null;
+        if (type === "service") {
+            itemId = row.dataset.serviceId;
+        } else {
+            itemId = row.dataset.productId;
+        }
+
         items.push({
-            type: type,
-            [`${type}_id`]: id,
+            order_service_item_id: orderServiceItemId,
+            item_type:
+                type === "service"
+                    ? "App\\Models\\Service"
+                    : "App\\Models\\Product",
+            item_id: itemId,
             quantity: quantity,
             price: price,
-            total: quantity * price,
+            item_total: quantity * price,
         });
     });
-    console.log("Current items JSON:", JSON.stringify(items));
+    return items;
 }
+
+// Form submission handling
+document.getElementById("orderForm").addEventListener("submit", function (e) {
+    // Validate at least one item
+    if (document.querySelectorAll("#itemsTableBody tr").length === 0) {
+        alert("Harap tambahkan setidaknya satu item ke dalam pesanan.");
+        e.preventDefault();
+        return;
+    }
+
+    // Prepare items JSON
+    const items = serializeItems();
+    itemsInput.value = JSON.stringify(items);
+
+    // Update hidden inputs for sub_total and discount_amount from display
+    const subTotalInput = document.getElementById("sub_total");
+    const discountAmountInput = document.getElementById("discount_amount");
+
+    // Get values from display (remove non-digits)
+    const subtotal =
+        parseInt(subtotalDisplay.textContent.replace(/\D/g, "")) || 0;
+    const discount =
+        parseInt(discountDisplay.textContent.replace(/\D/g, "")) || 0;
+    subTotalInput.value = subtotal;
+    discountAmountInput.value = discount;
+});
+
+calculateTotals();
 
 // Promo code handling
 function showPromoError(message) {
@@ -413,35 +466,42 @@ document.getElementById("orderForm").addEventListener("submit", function (e) {
     const items = [];
     document.querySelectorAll("#itemsTableBody tr").forEach((row) => {
         const type = row.dataset.type;
-        const id = row.dataset[`${type}Id`];
+        const orderServiceItemId = row.dataset.orderServiceItemId || null;
         const price = parseInt(row.dataset.price);
         const quantity = parseInt(row.querySelector(".quantity-input").value);
+        let itemId = null;
+        if (type === "service") {
+            itemId = row.dataset.serviceId;
+        } else {
+            itemId = row.dataset.productId;
+        }
 
         items.push({
-            type: type,
-            [`${type}_id`]: id,
+            order_service_item_id: orderServiceItemId,
+            item_type:
+                type === "service"
+                    ? "App\\Models\\Service"
+                    : "App\\Models\\Product",
+            item_id: itemId,
             quantity: quantity,
             price: price,
-            total: quantity * price,
+            item_total: quantity * price,
         });
     });
 
     itemsInput.value = JSON.stringify(items);
 
-    // Also update hidden inputs for sub_total and discount_amount
+    // Update hidden inputs for sub_total and discount_amount from display
     const subTotalInput = document.getElementById("sub_total");
     const discountAmountInput = document.getElementById("discount_amount");
 
-    if (subTotalInput) {
-        // Get the subtotal from the display (remove non-digits)
-        subTotalInput.value =
-            parseInt(subtotalDisplay.textContent.replace(/\D/g, "")) || 0;
-    }
-    if (discountAmountInput) {
-        // Get the discount from the display (remove non-digits)
-        discountAmountInput.value =
-            parseInt(discountDisplay.textContent.replace(/\D/g, "")) || 0;
-    }
+    // Get values from display (remove non-digits)
+    const subtotal =
+        parseInt(subtotalDisplay.textContent.replace(/\D/g, "")) || 0;
+    const discount =
+        parseInt(discountDisplay.textContent.replace(/\D/g, "")) || 0;
+    subTotalInput.value = subtotal;
+    discountAmountInput.value = discount;
 });
 
 // Initialize totals on page load

@@ -33,11 +33,6 @@ class OrderProduct extends Model
      */
     protected $with = ['payments'];
 
-    public function promo()
-    {
-        return $this->belongsTo(Promo::class, 'promo_id', 'promo_id');
-    }
-
     public function shipping()
     {
         return $this->hasOne(Shipping::class, 'order_product_id', 'order_product_id');

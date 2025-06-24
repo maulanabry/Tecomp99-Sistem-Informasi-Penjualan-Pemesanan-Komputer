@@ -1,5 +1,19 @@
 <x-layout-admin>
     <div class="py-6">
+        {{-- Success/Error Alerts --}}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+            @if (session('success'))
+                <div class="mb-4">
+                    <x-alert type="success" :message="session('success')" />
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="mb-4">
+                    <x-alert type="danger" :message="session('error')" />
+                </div>
+            @endif
+        </div>
+
         {{-- Page Header --}}
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <div class="flex items-center justify-between">
@@ -238,70 +252,70 @@
                     </div>
                 </div>
 
-                {{-- Payment Details Section --}}
-                <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-                    <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
-                            Informasi Pembayaran
-                        </h3>
-                    </div>
-                    <div class="px-4 py-5 sm:p-6">
-                        @if($orderProduct->payments->isNotEmpty())
-                            @foreach($orderProduct->payments as $payment)
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <div>
-                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Pembayaran</dt>
-                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->payment_id }}</dd>
-                                    </div>
-                                    <div>
-                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Metode Pembayaran</dt>
-                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->method }}</dd>
-                                    </div>
-                                    <div>
-                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah</dt>
-                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($payment->amount, 0, ',', '.') }}</dd>
-                                    </div>
-                                    <div>
-                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
-                                        <dd class="mt-1">
-                                            @php
-                                                $statusColors = [
-                                                    'pending' => 'bg-yellow-500',
-                                                    'dibayar' => 'bg-green-500',
-                                                    'gagal' => 'bg-red-500',
-                                                ];
-                                                $colorClass = $statusColors[$payment->status] ?? 'bg-gray-500';
-                                            @endphp
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colorClass }} text-white">
-                                                {{ ucfirst($payment->status) }}
-                                            </span>
-                                        </dd>
-                                    </div>
-                                    <div>
-                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
-                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $payment->payment_type === 'full' ? 'Full Payment' : 'Down Payment' }}
-                                        </dd>
-                                    </div>
-                                    <div>
-                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Dibuat</dt>
-                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->created_at->format('d M Y H:i') }}</dd>
-                                    </div>
-                                    @if($payment->proof_photo)
-                                    <div class="col-span-full">
-                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bukti Pembayaran</dt>
-                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                            <img src="{{ asset('storage/' . $payment->proof_photo) }}" alt="Bukti Pembayaran" class="max-w-md rounded-lg shadow-lg">
-                                        </dd>
-                                    </div>
-                                    @endif
-                                </div>
-                            @endforeach
-                        @else
-                            <p class="text-sm text-gray-900 dark:text-gray-100">Belum ada pembayaran untuk order ini.</p>
-                        @endif
-                    </div>
-                </div>
+        <!-- Payment Details Section -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+                    Informasi Pembayaran
+                </h3>
+            </div>
+            <div class="px-4 py-5 sm:p-6">
+                @if($orderProduct->payments && $orderProduct->payments->isNotEmpty())
+                    @foreach($orderProduct->payments as $payment)
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Pembayaran</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->payment_id ?? '-' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Metode Pembayaran</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->method }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($payment->amount, 0, ',', '.') }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
+                                <dd class="mt-1">
+                                    @php
+                                        $statusColors = [
+                                            'pending' => 'bg-yellow-500',
+                                            'dibayar' => 'bg-green-500',
+                                            'gagal' => 'bg-red-500',
+                                        ];
+                                        $colorClass = $statusColors[$payment->status] ?? 'bg-gray-500';
+                                    @endphp
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colorClass }} text-white">
+                                        {{ ucfirst($payment->status) }}
+                                    </span>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ $payment->payment_type === 'full' ? 'Full Payment' : 'Down Payment' }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Dibuat</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->created_at->format('d M Y H:i') }}</dd>
+                            </div>
+                            @if($payment->proof_photo)
+                            <div class="col-span-full">
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bukti Pembayaran</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    <img src="{{ asset('storage/' . $payment->proof_photo) }}" alt="Bukti Pembayaran" class="max-w-md rounded-lg shadow-lg">
+                                </dd>
+                            </div>
+                            @endif
+                        </div>
+                    @endforeach
+                @else
+                    <p class="text-sm text-gray-900 dark:text-gray-100">Belum ada pembayaran untuk order ini.</p>
+                @endif
+            </div>
+        </div>
                 @endif
             </div>
         </div>

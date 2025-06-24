@@ -190,14 +190,151 @@ class OrderProductController extends Controller
 
     public function edit(OrderProduct $orderProduct)
     {
+        // Load relationships for the edit view
+        $orderProduct->load(['customer.addresses', 'items.product', 'shipping']);
+
         // Return view to edit order product
-        return view('admin.order-product-edit', compact('orderProduct'));
+        return view('admin.order-product.edit', compact('orderProduct'));
     }
 
     public function update(Request $request, OrderProduct $orderProduct)
     {
-        // Validate and update order product
-        // Implementation depends on form fields and logic
+        $validated = $request->validate([
+            'customer_id' => 'required|exists:customers,customer_id',
+            'order_type' => 'required|in:Pengiriman,Langsung',
+            'status_order' => 'required|in:menunggu,diproses,dikirim,selesai,dibatalkan',
+            'items' => 'required|json',
+            'shipping_cost' => 'nullable|integer|min:0',
+            'promo_code' => 'nullable|string',
+            'promo_id' => 'nullable|exists:promos,promo_id',
+            'note' => 'nullable|string',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Map order_type to database enum values
+            $typeMapping = [
+                'Pengiriman' => 'pengiriman',
+                'Langsung' => 'langsung',
+            ];
+            $dbType = $typeMapping[$validated['order_type']] ?? 'langsung';
+
+            $items = json_decode($validated['items'], true);
+            if (empty($items)) {
+                throw new \Exception('Minimal satu produk harus dipilih');
+            }
+
+            // Restore stock for existing items before updating
+            foreach ($orderProduct->items as $existingItem) {
+                $product = Product::find($existingItem->product_id);
+                if ($product) {
+                    $product->increment('stock', $existingItem->quantity);
+                    $product->decrement('sold_count', $existingItem->quantity);
+                }
+            }
+
+            // Calculate new totals
+            $subtotal = 0;
+            $totalWeight = 0;
+
+            foreach ($items as $item) {
+                $product = Product::findOrFail($item['product_id']);
+
+                if ($product->stock < $item['quantity']) {
+                    throw new \Exception("Stok tidak mencukupi untuk produk {$product->name}");
+                }
+
+                $subtotal += $item['quantity'] * $product->price;
+                $totalWeight += $item['quantity'] * $product->weight;
+            }
+
+            // Calculate discount
+            $discount = 0;
+            if (!empty($validated['promo_code']) && !empty($validated['promo_id'])) {
+                $promo = Promo::findOrFail($validated['promo_id']);
+
+                if (
+                    !$promo->is_active ||
+                    now() < $promo->start_date ||
+                    now() > $promo->end_date ||
+                    ($promo->minimum_order_amount && $subtotal < $promo->minimum_order_amount)
+                ) {
+                    throw new \Exception('Promo tidak valid');
+                }
+
+                if ($promo->type === 'percentage') {
+                    $discount = intval(($subtotal * $promo->discount_percentage) / 100);
+                } else {
+                    $discount = $promo->discount_amount;
+                }
+
+                if ($discount > $subtotal) {
+                    $discount = $subtotal;
+                }
+            }
+
+            $shippingCost = $validated['order_type'] === 'Pengiriman' ? ($validated['shipping_cost'] ?? 0) : 0;
+            $grandTotal = $subtotal - $discount + $shippingCost;
+
+            // Update order product
+            $orderProduct->update([
+                'customer_id' => $validated['customer_id'],
+                'status_order' => $validated['status_order'],
+                'sub_total' => $subtotal,
+                'discount_amount' => $discount,
+                'shipping_cost' => $shippingCost,
+                'grand_total' => $grandTotal,
+                'type' => $dbType,
+                'note' => $validated['note'] ?? null,
+            ]);
+
+            // Delete existing items
+            $orderProduct->items()->delete();
+
+            // Create new items and update stock
+            foreach ($items as $item) {
+                $product = Product::findOrFail($item['product_id']);
+
+                $orderProduct->items()->create([
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $product->price,
+                    'item_total' => $item['quantity'] * $product->price,
+                ]);
+
+                $product->decrement('stock', $item['quantity']);
+                $product->increment('sold_count', $item['quantity']);
+            }
+
+            // Update or create shipping record
+            if ($validated['order_type'] === 'Pengiriman') {
+                $orderProduct->shipping()->updateOrCreate(
+                    ['order_product_id' => $orderProduct->order_product_id],
+                    [
+                        'courier_name' => 'JNE',
+                        'courier_service' => 'REG',
+                        'status' => 'menunggu',
+                        'shipping_cost' => $shippingCost,
+                        'total_weight' => $totalWeight,
+                    ]
+                );
+            } else {
+                // Delete shipping record if order type is not delivery
+                $orderProduct->shipping()->delete();
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('order-products.show', $orderProduct)
+                ->with('success', 'Order produk berhasil diperbarui');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui order: ' . $e->getMessage());
+        }
     }
 
     public function destroy(OrderProduct $orderProduct)

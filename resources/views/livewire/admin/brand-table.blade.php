@@ -31,8 +31,7 @@
         <!-- Table Headers (Hidden on Mobile) -->
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-                <div class="grid grid-cols-6 gap-4 px-6 py-3">
-                    <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100">No</div>
+                <div class="grid grid-cols-5 gap-4 px-6 py-3">
                     <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Logo</div>
                     <div class="text-left" wire:click="sortBy('name')" role="button">
                         <div class="flex items-center gap-1">
@@ -66,12 +65,6 @@
                 <!-- Mobile View -->
                 <div class="block md:hidden p-4 border-b border-gray-200 dark:border-gray-600">
                     <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">No:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">
-                                {{ $loop->iteration + ($brands->currentPage() - 1) * $brands->perPage() }}
-                            </span>
-                        </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Logo:</span>
                             <div class="text-sm">
@@ -118,10 +111,7 @@
                 </div>
 
                 <!-- Desktop View -->
-                <div class="hidden md:grid md:grid-cols-6 md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600">
-                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {{ $loop->iteration + ($brands->currentPage() - 1) * $brands->perPage() }}
-                    </div>
+                <div class="hidden md:grid md:grid-cols-5 md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600">
                     <div class="text-sm">
                         @if($brand->logo)
                             <img src="{{ asset($brand->logo) }}" alt="{{ $brand->name }}" class="h-10">

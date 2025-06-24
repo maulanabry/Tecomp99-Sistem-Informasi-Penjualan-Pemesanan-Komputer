@@ -136,6 +136,9 @@ $(document).ready(function () {
             });
         }
     });
+
+    // Initialize calculations on page load
+    calculateTotals().catch(console.error);
 });
 
 // Order type and shipping cost logic
@@ -703,7 +706,7 @@ async function calculateTotals() {
 
         if (discountType === "percentage") {
             discount = Math.round(subtotal * (discountValue / 100));
-        } else if (discountType === "fixed") {
+        } else if (discountType === "amount") {
             discount = discountValue;
         }
 
@@ -783,10 +786,12 @@ $("#orderForm").validate({
     rules: {
         customer_id: "required",
         order_type: "required",
+        status_order: "required",
     },
     messages: {
         customer_id: "Silakan pilih pelanggan",
         order_type: "Silakan pilih tipe pesanan",
+        status_order: "Silakan pilih status pesanan",
     },
     errorClass: "text-red-500 text-sm mt-1",
 });

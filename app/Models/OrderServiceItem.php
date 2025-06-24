@@ -6,20 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderServiceItem extends Model
 {
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $primaryKey = 'order_service_item_id';
 
     protected $fillable = [
-        'order_service_item_id',
         'order_service_id',
-        'service_id',
-        'product_id',
-        'description',
+        'item_type',
+        'item_id',
         'price',
         'quantity',
         'item_total',
         'created_at',
+        'updated_at',
     ];
 
     public function orderService()
@@ -27,13 +26,11 @@ class OrderServiceItem extends Model
         return $this->belongsTo(OrderService::class, 'order_service_id', 'order_service_id');
     }
 
-    public function service()
+    /**
+     * Polymorphic relationship to Product or Service
+     */
+    public function item()
     {
-        return $this->belongsTo(Service::class, 'service_id', 'service_id');
-    }
-
-    public function product()
-    {
-        return $this->belongsTo(Product::class, 'product_id', 'product_id');
+        return $this->morphTo();
     }
 }

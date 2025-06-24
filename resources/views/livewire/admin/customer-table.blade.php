@@ -36,8 +36,7 @@
         <!-- Table Headers (Hidden on Mobile) -->
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-                <div class="grid gap-4 px-6 py-3" style="grid-template-columns: 50px 100px 2fr 2fr 1fr 1fr 1.5fr 2fr 100px">
-                    <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100">No</div>
+                <div class="grid gap-4 px-6 py-3" style="grid-template-columns: 100px 2fr 2fr 1fr 1fr 1.5fr 2fr 100px">
                     <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer select-none" wire:click="sortBy('customer_id')" role="button">
                         ID
                         @if($sortField === 'customer_id')
@@ -105,10 +104,6 @@
                 <!-- Mobile View -->
                 <div class="block md:hidden p-4 border-b border-gray-200 dark:border-gray-600">
                     <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">No:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $loop->iteration + ($customers->currentPage() - 1) * $customers->perPage() }}</span>
-                        </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">ID Pelanggan:</span>
                             <span class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->customer_id }}</span>
@@ -195,8 +190,7 @@
                 </div>
 
                 <!-- Desktop View -->
-                <div class="hidden md:grid md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600" style="grid-template-columns: 50px 100px 2fr 2fr 1fr 1fr 1.5fr 2fr 100px">
-                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $loop->iteration + ($customers->currentPage() - 1) * $customers->perPage() }}</div>
+                <div class="hidden md:grid md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600" style="grid-template-columns: 100px 2fr 2fr 1fr 1fr 1.5fr 2fr 100px">
                     <div class="text-sm text-gray-900 dark:text-gray-100">{{ $customer->customer_id }}</div>
                     <div class="text-sm text-gray-900 dark:text-gray-100">{{ $customer->name }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->email ?? '-' }}</div>

@@ -48,4 +48,9 @@ class OrderService extends Model
     {
         return $this->hasMany(ServiceTicket::class, 'order_service_id', 'order_service_id');
     }
+
+    public function paymentDetails()
+    {
+        return $this->hasMany(PaymentDetail::class, 'order_service_id', 'order_service_id');
+    }
 }

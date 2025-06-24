@@ -20,9 +20,12 @@
 
             @if ($errors->any())
                 <div class="mb-4">
-                    <x-alert type="danger" :message="implode( $errors->all())" />
+                    <x-alert type="danger" :message="implode('<br>', $errors->all())" />
                 </div>
             @endif
+
+            <input type="hidden" name="sub_total" id="sub_total" value="{{ $orderService->sub_total }}">
+            <input type="hidden" name="discount_amount" id="discount_amount" value="{{ $orderService->discount_amount }}">
 
             <!-- Section 1: Informasi Pelanggan & Detail Servis -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
@@ -61,7 +64,7 @@
                     </div>
                     <div>
                         <label for="status_payment" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Status Pembayaran</label>
-                        <select id="status_payment" name="status_payment" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                        <select id="status_payment" name="status_payment" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" disabled>
                             @php
                                 $statusPaymentOptions = ['belum_dibayar' => 'Belum Dibayar', 'down_payment' => 'Down Payment', 'lunas' => 'Lunas', 'dibatalkan' => 'Dibatalkan'];
                             @endphp
@@ -69,6 +72,7 @@
                                 <option value="{{ $value }}" {{ $orderService->status_payment === $value ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
+                        <input type="hidden" name="status_payment" value="{{ $orderService->status_payment }}">
                     </div>
                     <div>
                         <label for="device" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Device</label>
@@ -128,37 +132,45 @@
                             </tr>
                         </thead>
                         <tbody id="itemsTableBody">
-                            @foreach($orderService->items as $item)
-                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700" 
-                                    data-item-id="{{ $item->order_service_item_id }}"
-                                    data-type="{{ $item->service_id ? 'service' : 'product' }}"
-                                    data-price="{{ $item->price }}">
-                                    <td class="px-6 py-4">
-                                        {{ $item->service_id ? $item->service->name : $item->product->name }}
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        {{ $item->service_id ? 'Jasa' : 'Produk' }}
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        {{ number_format($item->price, 0, ',', '.') }}
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <input type="number" 
-                                               class="quantity-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
-                                               value="{{ $item->quantity }}" 
-                                               min="1" />
-                                    </td>
-                                    <td class="px-6 py-4 text-right item-total">
-                                        {{ number_format($item->item_total, 0, ',', '.') }}
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <button type="button" class="text-red-600 hover:text-red-900 remove-item-btn">
-                                            <span class="sr-only">Hapus item</span>
-                                            🗑️
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endforeach
+@foreach($orderService->items as $item)
+    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700" 
+        data-order-service-item-id="{{ $item->order_service_item_id }}"
+        data-type="{{ $item->item_type === 'App\\Models\\Service' ? 'service' : 'product' }}"
+        data-price="{{ $item->price }}"
+        @if($item->item_type === 'App\\Models\\Service')
+            data-service-id="{{ $item->item_id }}"
+        @else
+            data-product-id="{{ $item->item_id }}"
+        @endif
+    >
+        <td class="px-6 py-4">
+            {{ $item->item ? $item->item->name : '' }}
+        </td>
+        <td class="px-6 py-4">
+            {{ $item->item_type === 'App\\Models\\Service' ? 'Jasa' : 'Produk' }}
+        </td>
+        <td class="px-6 py-4 text-right">
+            {{ number_format($item->price, 0, ',', '.') }}
+        </td>
+<td class="px-6 py-4 text-center align-middle">
+    <div class="flex justify-center">
+        <input type="number" 
+               class="quantity-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+               value="{{ $item->quantity }}" 
+               min="1" />
+    </div>
+</td>
+        <td class="px-6 py-4 text-right item-total">
+            {{ number_format($item->item_total, 0, ',', '.') }}
+        </td>
+        <td class="px-6 py-4 text-center">
+            <button type="button" class="text-red-600 hover:text-red-900 remove-item-btn">
+                <span class="sr-only">Hapus item</span>
+                🗑️
+            </button>
+        </td>
+    </tr>
+@endforeach
                         </tbody>
                     </table>
                 </div>
@@ -208,128 +220,16 @@
                 </div>
             </div>
 
-            <div class="text-center">
+            <div class="flex justify-end gap-4">
+                <a href="{{ route('order-services.index') }}" type="button" class="text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-6 py-2.5 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 focus:outline-none dark:focus:ring-gray-600">
+                    Batalkan
+                </a>
                 <button type="submit" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-8 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                    Simpan Perubahan
+                    Simpan
                 </button>
             </div>
-            <input type="hidden" name="sub_total" id="sub_total" value="{{ $orderService->sub_total }}">
-            <input type="hidden" name="discount_amount" id="discount_amount" value="{{ $orderService->discount_amount }}">
         </form>
 
-        <!-- Modal Tambah Produk -->
-        <div id="addProductModal" class="hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-            <div class="fixed inset-0 z-10 overflow-y-auto">
-                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl">
-                        <div class="bg-white dark:bg-gray-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                            <div class="flex items-center justify-between pb-4 mb-4 border-b border-gray-200 dark:border-gray-600">
-                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modal-title">
-                                    Tambah Produk
-                                </h3>
-                                <button type="button" id="closeAddProductModal" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
-                                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                                    </svg>
-                                    <span class="sr-only">Tutup modal</span>
-                                </button>
-                            </div>
-                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                        <tr>
-                                            <th scope="col" class="px-6 py-3">Produk</th>
-                                            <th scope="col" class="px-6 py-3 text-right">Harga (Rp)</th>
-                                            <th scope="col" class="px-6 py-3 text-right">Stok</th>
-                                            <th scope="col" class="px-6 py-3 text-right">Kuantitas</th>
-                                            <th scope="col" class="px-6 py-3 text-center">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach(\App\Models\Product::where('is_active', true)->get() as $product)
-                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700" 
-                                            data-product-id="{{ $product->product_id }}" 
-                                            data-product-name="{{ $product->name }}" 
-                                            data-product-price="{{ $product->price }}">
-                                            <td class="px-6 py-4">{{ $product->name }}</td>
-                                            <td class="px-6 py-4 text-right">{{ number_format($product->price, 0, ',', '.') }}</td>
-                                            <td class="px-6 py-4 text-right">{{ $product->stock }}</td>
-                                            <td class="px-6 py-4 text-right">
-                                                <input type="number" min="1" max="{{ $product->stock }}" value="1" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 quantity-input" />
-                                            </td>
-                                            <td class="px-6 py-4 text-center">
-                                                <button type="button" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800 add-product-btn">
-                                                    Tambah
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal Tambah Servis -->
-        <div id="addServiceModal" class="hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title-service">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-            <div class="fixed inset-0 z-10 overflow-y-auto">
-                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl">
-                        <div class="bg-white dark:bg-gray-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                            <div class="flex items-center justify-between pb-4 mb-4 border-b border-gray-200 dark:border-gray-600">
-                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modal-title-service">
-                                    Tambah Servis
-                                </h3>
-                                <button type="button" id="closeAddServiceModal" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
-                                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                                    </svg>
-                                    <span class="sr-only">Tutup modal</span>
-                                </button>
-                            </div>
-                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                        <tr>
-                                            <th scope="col" class="px-6 py-3">Servis</th>
-                                            <th scope="col" class="px-6 py-3">Deskripsi</th>
-                                            <th scope="col" class="px-6 py-3 text-right">Harga (Rp)</th>
-                                            <th scope="col" class="px-6 py-3 text-right">Kuantitas</th>
-                                            <th scope="col" class="px-6 py-3 text-center">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach(\App\Models\Service::where('is_active', true)->get() as $service)
-                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700" 
-                                            data-service-id="{{ $service->service_id }}" 
-                                            data-service-name="{{ $service->name }}" 
-                                            data-service-price="{{ $service->price }}">
-                                            <td class="px-6 py-4">{{ $service->name }}</td>
-                                            <td class="px-6 py-4">{{ $service->description }}</td>
-                                            <td class="px-6 py-4 text-right">{{ number_format($service->price, 0, ',', '.') }}</td>
-                                            <td class="px-6 py-4 text-right">
-                                                <input type="number" min="1" value="1" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 quantity-input" />
-                                            </td>
-                                            <td class="px-6 py-4 text-center">
-                                                <button type="button" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800 add-service-btn">
-                                                    Tambah
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

@@ -34,8 +34,7 @@
     <!-- Table Headers (Hidden on Mobile) -->
     <div class="hidden md:block">
         <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg dark:text-gray-100"">
-            <div class="grid grid-cols-11 gap-4 px-6 py-3">
-                <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100">No</div>
+            <div class="grid grid-cols-10 gap-4 px-6 py-3">
                 <div class="text-left cursor-pointer" wire:click="sortBy('name')" role="button">
                     <div class="flex items-center gap-1">
                         <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Nama</span>
@@ -129,12 +128,6 @@
             <div class="block md:hidden p-4 border-b border-gray-200 dark:border-gray-600">
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100">No:</span>
-                        <span class="text-sm text-gray-500 dark:text-gray-300">
-                            {{ $loop->iteration + ($promos->currentPage() - 1) * $promos->perPage() }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-center">
                         <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Nama:</span>
                         <span class="text-sm text-gray-500 dark:text-gray-300" title="{{ $promo->name }}">
                             {{ \Illuminate\Support\Str::limit($promo->name, 30) }}
@@ -216,10 +209,7 @@
             </div>
 
             <!-- Desktop Table View -->
-            <div class="hidden md:grid md:grid-cols-11 md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600">
-                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {{ $loop->iteration + ($promos->currentPage() - 1) * $promos->perPage() }}
-                </div>
+            <div class="hidden md:grid md:grid-cols-10 md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600">
                 <div class="text-sm text-gray-900 dark:text-gray-100" title="{{ $promo->name }}">
                     {{ \Illuminate\Support\Str::limit($promo->name, 30) }}
                 </div>

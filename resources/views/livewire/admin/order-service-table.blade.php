@@ -68,8 +68,7 @@
     <div class="mt-4">
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-                <div class="grid grid-cols-11 gap-4 px-6 py-3">
-                    <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 w-[50px]">No</div>
+                <div class="grid grid-cols-10 gap-4 px-6 py-3">
                     <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1 cursor-pointer" wire:click="sortBy('order_service_id')">
                         <div class="flex items-center gap-1">
                             ID Order
@@ -148,10 +147,7 @@
         <div class="bg-white dark:bg-gray-800 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
             @forelse ($orderServices as $order)
                 <!-- Tampilan Desktop -->
-                <div class="hidden md:grid grid-cols-11 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div class="w-[50px] text-sm text-gray-900 dark:text-gray-100">
-                        {{ $loop->iteration + ($orderServices->currentPage() - 1) * $orderServices->perPage() }}
-                    </div>
+                <div class="hidden md:grid grid-cols-10 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">{{ $order->order_service_id }}</div>
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">{{ $order->customer ? $order->customer->name : '-' }}</div>
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">{{ ucfirst($order->type) }}</div>
@@ -269,7 +265,7 @@
                         <span>Sub-total:</span><span>Rp {{ number_format($order->sub_total, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
-                        <span>Grand Total:</span><span>Rp {{ number_format($order->grand_total_amount, 0, ',', '.') }}</span>
+                        <span>Grand Total:</span><span>Rp {{ number_format($order->grand_total, 0, ',', '.') }}</span>
                     </div>
                      <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
                         <span>Perangkat</span>

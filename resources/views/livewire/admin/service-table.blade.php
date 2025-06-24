@@ -48,8 +48,7 @@
         <!-- Table Headers (Hidden on Mobile) -->
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-                <div class="grid grid-cols-9 gap-4 px-6 py-3">
-                    <div class="col-span-1 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">No</div>
+                <div class="grid grid-cols-8 gap-4 px-6 py-3">
                     <div class="col-span-1 text-left cursor-pointer" wire:click="sortBy('service_id')" role="button">
                         <div class="flex items-center gap-1">
                             <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">ID Service</span>
@@ -184,10 +183,7 @@
                 </div>
 
                 <!-- Desktop Table View -->
-                <div class="hidden md:grid md:grid-cols-9 md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600">
-                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {{ $loop->iteration + ($services->currentPage() - 1) * $services->perPage() }}
-                    </div>
+                <div class="hidden md:grid md:grid-cols-8 md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600">
                     <div class="text-sm text-gray-900 dark:text-gray-100">{{ $service->service_id }}</div>
                     <div class="text-sm text-gray-900 dark:text-gray-100">{{ $service->name }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-300">{{ $service->category ? $service->category->name : 'N/A' }}</div>

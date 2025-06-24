@@ -2,6 +2,7 @@
      data-product-id="{{ $product->product_id }}"
      data-product-name="{{ $product->name }}"
      data-product-price="{{ $product->price }}"
+     data-product-weight="{{ $product->weight }}"
 >
     <div class="aspect-w-3 aspect-h-2">
         <img src="{{ $product->thumbnail_url ?? asset('images/placeholder.png') }}" alt="{{ $product->name }}" class="w-full h-full object-cover">

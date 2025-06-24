@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\OrderService;
+use App\Models\Product;
+use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderServiceController extends Controller
 {
@@ -15,7 +18,7 @@ class OrderServiceController extends Controller
 
     public function show(OrderService $orderService)
     {
-        $orderService->load(['customer.addresses', 'tickets', 'items']);
+        $orderService->load(['customer.addresses', 'tickets', 'items', 'paymentDetails']);
         return view('admin.order-service.show', compact('orderService'));
     }
 
@@ -120,6 +123,34 @@ class OrderServiceController extends Controller
         return view('admin.order-service.edit', compact('orderService'));
     }
 
+    /**
+     * Helper method to update stock and sold count for items
+     */
+    private function updateItemStock($item, $isIncrease = true)
+    {
+        if ($item->item_type === 'App\\Models\\Product') {
+            $product = Product::find($item->item_id);
+            if ($product) {
+                if ($isIncrease) {
+                    $product->decrement('stock', $item->quantity);
+                    $product->increment('sold_count', $item->quantity);
+                } else {
+                    $product->increment('stock', $item->quantity);
+                    $product->decrement('sold_count', $item->quantity);
+                }
+            }
+        } elseif ($item->item_type === 'App\\Models\\Service') {
+            $service = Service::find($item->item_id);
+            if ($service) {
+                if ($isIncrease) {
+                    $service->increment('sold_count', $item->quantity);
+                } else {
+                    $service->decrement('sold_count', $item->quantity);
+                }
+            }
+        }
+    }
+
     public function update(Request $request, OrderService $orderService)
     {
         $request->validate([
@@ -136,6 +167,11 @@ class OrderServiceController extends Controller
         ]);
 
         try {
+            DB::beginTransaction();
+
+            // Store previous status for comparison
+            $previousStatus = $orderService->status_order;
+
             // Calculate grand total
             $grandTotal = $request->sub_total - $request->discount_amount;
             if ($grandTotal < 0) {
@@ -162,10 +198,31 @@ class OrderServiceController extends Controller
             $existingItemIds = $orderService->items()->pluck('order_service_item_id')->toArray();
             $updatedItemIds = [];
 
+            // Handle stock changes based on status transition
+            if ($previousStatus !== 'Selesai' && $request->status_order === 'Selesai') {
+                // Order is being completed - decrease stock and increase sold count
+                foreach ($orderService->items as $item) {
+                    $this->updateItemStock($item, true);
+                }
+            } elseif ($previousStatus !== 'Dibatalkan' && $request->status_order === 'Dibatalkan') {
+                // Order is being cancelled - restore stock and decrease sold count
+                foreach ($orderService->items as $item) {
+                    $this->updateItemStock($item, false);
+                }
+            }
+
             foreach ($items as $itemData) {
                 $itemId = $itemData['order_service_item_id'] ?? null;
                 $quantity = $itemData['quantity'] ?? 1;
                 $price = $itemData['price'] ?? 0;
+                $itemType = $itemData['item_type'] ?? null;
+                $itemIdValue = $itemData['item_id'] ?? null;
+                $itemTotal = $price * $quantity;
+
+                // Validate item_type and item_id
+                if (empty($itemType) || empty($itemIdValue)) {
+                    continue; // Skip invalid item
+                }
 
                 if ($itemId && in_array($itemId, $existingItemIds)) {
                     // Update existing item
@@ -173,6 +230,9 @@ class OrderServiceController extends Controller
                     $orderItem->update([
                         'quantity' => $quantity,
                         'price' => $price,
+                        'item_type' => $itemType,
+                        'item_id' => $itemIdValue,
+                        'item_total' => $itemTotal,
                     ]);
                     $updatedItemIds[] = $itemId;
                 } else {
@@ -180,13 +240,10 @@ class OrderServiceController extends Controller
                     $newItemData = [
                         'quantity' => $quantity,
                         'price' => $price,
+                        'item_type' => $itemType,
+                        'item_id' => $itemIdValue,
+                        'item_total' => $itemTotal,
                     ];
-                    if (isset($itemData['product_id'])) {
-                        $newItemData['product_id'] = $itemData['product_id'];
-                    }
-                    if (isset($itemData['service_id'])) {
-                        $newItemData['service_id'] = $itemData['service_id'];
-                    }
                     $orderService->items()->create($newItemData);
                 }
             }
@@ -197,9 +254,12 @@ class OrderServiceController extends Controller
                 $orderService->items()->whereIn('order_service_item_id', $itemsToDelete)->delete();
             }
 
+            DB::commit();
+
             return redirect()->route('order-services.show', $orderService)
                 ->with('success', 'Order servis berhasil diperbarui.');
         } catch (\Exception $e) {
+            DB::rollback();
             return back()
                 ->with('error', 'Gagal memperbarui order servis: ' . $e->getMessage())
                 ->withInput();
@@ -209,14 +269,27 @@ class OrderServiceController extends Controller
     public function destroy(OrderService $orderService)
     {
         try {
+            DB::beginTransaction();
+
             if ($orderService->status_payment === 'lunas') {
                 throw new \Exception('Order yang sudah lunas tidak dapat dihapus');
             }
 
+            // If order was completed, revert the stock changes
+            if ($orderService->status_order === 'Selesai') {
+                foreach ($orderService->items as $item) {
+                    $this->updateItemStock($item, false);
+                }
+            }
+
             $orderService->delete();
+
+            DB::commit();
+
             return redirect()->route('order-services.index')
                 ->with('success', 'Order servis berhasil dihapus.');
         } catch (\Exception $e) {
+            DB::rollback();
             return redirect()->route('order-services.index')
                 ->with('error', 'Gagal menghapus order servis: ' . $e->getMessage());
         }

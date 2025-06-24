@@ -7,15 +7,16 @@
         @endif
 
         <!-- Header with Back Button -->
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Tiket Servis</h1>
-            <a href="{{ route('service-tickets.index') }}"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-primary-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Kembali
-            </a>
+        <div class="mb-6">
+            <div class="flex justify-start items-center gap-4">
+                <a href="{{ route('service-tickets.index') }}" 
+                    class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                    aria-label="Kembali ke daftar order servis">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Kembali
+                </a>
+                <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Detail Tiket Servis</h1>
+            </div>
         </div>
 
         <!-- Service Ticket Details -->

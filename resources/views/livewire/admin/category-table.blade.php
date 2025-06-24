@@ -39,8 +39,7 @@
         <!-- Table Headers (Hidden on Mobile) -->
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg dark:text-gray-100">
-                <div class="grid grid-cols-12 gap-4 px-6 py-3">
-                    <div class="col-span-1 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">No</div>
+                <div class="grid grid-cols-11 gap-4 px-6 py-3">
                     <div class="col-span-4 text-left" wire:click="sortBy('name')" role="button">
                         <div class="flex items-center gap-1">
                             <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Nama</span>
@@ -74,12 +73,6 @@
                 <!-- Mobile View -->
                 <div class="block md:hidden p-4 border-b border-gray-200 dark:border-gray-600">
                     <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">No:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">
-                                {{ $loop->iteration + ($categories->currentPage() - 1) * $categories->perPage() }}
-                            </span>
-                        </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Nama:</span>
                             <span class="text-sm text-gray-500 dark:text-gray-300">{{ $category->name }}</span>
@@ -120,10 +113,7 @@
                 </div>
 
                 <!-- Desktop View -->
-                <div class="hidden md:grid md:grid-cols-12 md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600">
-                    <div class="col-span-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {{ $loop->iteration + ($categories->currentPage() - 1) * $categories->perPage() }}
-                    </div>
+                <div class="hidden md:grid md:grid-cols-11 md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600">
                     <div class="col-span-4 text-sm text-gray-900 dark:text-gray-100">{{ $category->name }}</div>
                     <div class="col-span-2 text-sm text-gray-500 dark:text-gray-300">{{ ucfirst($category->type) }}</div>
                     <div class="col-span-3 text-sm text-gray-500 dark:text-gray-300">{{ $category->slug }}</div>
