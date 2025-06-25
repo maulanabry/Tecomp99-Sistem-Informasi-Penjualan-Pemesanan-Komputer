@@ -1,142 +1,178 @@
 <x-layout-admin>
     <div class="py-6">
-        @if (session('error'))
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
-                <x-alert type="danger" :message="session('error')" />
-            </div>
-        @endif
-        @if ($errors->any())
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
-                <x-alert type="danger" message="Terdapat kesalahan pada form. Silakan periksa kembali data yang dimasukkan." />
-            </div>
-        @endif
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Tambah Brand</h1>
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Tambah Brand Baru</h1>
             </div>
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="py-4">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                    <form action="{{ route('brands.store') }}" wire:navigate
-                          method="POST" 
-                          enctype="multipart/form-data" 
-                          class="p-6 space-y-6">
-                        @csrf
-                        
-                        <!-- Nama Brand -->
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Brand</label>
-                            <input type="text" 
-                                   name="name" 
-                                   id="name" 
-                                   value="{{ old('name') }}" 
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                                   placeholder="Masukkan nama brand">
-                            @error('name')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Logo Upload with Flowbite Dropzone -->
-                        <div>
-                            <label for="dropzone-file" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Logo</label>
-                            <div class="flex items-center justify-center w-full">
-                                <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <svg class="w-6 h-6 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                                        </svg>
-                                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                <form action="{{ route('brands.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
+                    @csrf
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Logo Upload Section -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Logo Brand</h3>
+                            
+                            <div class="relative">
+                                <!-- Image Preview -->
+                                <div id="imagePreviewContainer" class="hidden mb-4">
+                                    <div class="relative w-full h-64 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600">
+                                        <img id="imagePreview" class="w-full h-full object-contain rounded-lg" src="#" alt="Preview">
+                                        <button type="button" onclick="removeImage()" class="absolute top-2 right-2 p-1.5 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
                                     </div>
-                                    <input id="dropzone-file" name="logo" type="file" class="hidden" accept="image/*" />
-                                </label>
+                                </div>
+
+                                <!-- Upload Area -->
+                                <div id="uploadArea" class="relative">
+                                    <input type="file" id="logo" name="logo" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="previewImage(this)">
+                                    <label for="logo" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <svg class="w-12 h-12 mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                                <span class="font-semibold">Klik untuk unggah</span> atau drag and drop
+                                            </p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">JPEG, PNG, atau WebP (Maks. 2MB)</p>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                @error('logo')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                                @enderror
                             </div>
-                            <!-- Logo Preview with Remove Button -->
-                            <div id="logoPreview" class="mt-2 hidden relative w-40 h-40 bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
-                                <img src="" alt="Preview logo" class="object-contain w-32 h-32">
-                                <!-- New X button style -->
-                                <button type="button" id="removeLogo" class="absolute top-0 right-0 p-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700">
-                                    <span class="sr-only">Close</span>
-                                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            @error('logo')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            @enderror
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Format yang didukung: JPG, PNG, SVG, WebP. Maksimal 2MB.
-                            </p>
                         </div>
 
-                        <!-- Hidden Slug Field -->
-                        <input type="hidden" name="slug" id="slug" value="{{ old('slug') }}">
+                        <!-- Brand Details Section -->
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Informasi Brand</h3>
+                            
+                            <div class="space-y-4">
+                                <!-- Nama Brand -->
+                                <div>
+                                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Brand</label>
+                                    <input type="text" name="name" id="name" value="{{ old('name') }}" 
+                                           class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                           required>
+                                    @error('name')
+                                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                        <!-- Aksi -->
-                        <div class="flex items-center justify-end space-x-3 pt-4">
-                            <a href="{{ route('brands.index') }}" wire:navigate
-                               class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-                                Batal
-                            </a>
-                            <button type="submit"
-                                    class="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-                                Tambah Brand
-                            </button>
+                                <!-- Slug -->
+                                <div>
+                                    <label for="slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Slug</label>
+                                    <input type="text" name="slug" id="slug" value="{{ old('slug') }}" 
+                                           class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                           required>
+                                    @error('slug')
+                                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex items-center justify-end space-x-3 pt-4">
+                                    <a href="{{ route('brands.index') }}"
+                                        class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                                        Batal
+                                    </a>
+                                    <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                        Simpan Brand
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Script for Slug Generation, Logo Preview, and Remove Function -->
     <script>
-        // Slug Generation
-        const nameInput = document.getElementById('name');
-        const slugInput = document.getElementById('slug');
-
-        nameInput.addEventListener('input', function() {
-            const slug = this.value
-                .toLowerCase()
-                .replace(/[^\w\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .trim();
-            slugInput.value = slug;
+        // Auto-generate slug from name
+        document.getElementById('name').addEventListener('input', function() {
+            let slug = this.value.toLowerCase()
+                .replace(/[^\w\s-]/g, '') // Remove special characters
+                .replace(/\s+/g, '-') // Replace spaces with -
+                .replace(/-+/g, '-'); // Replace multiple - with single -
+            document.getElementById('slug').value = slug;
         });
 
-        // Logo Preview
-        const logoInput = document.getElementById('dropzone-file');
-        const logoPreview = document.getElementById('logoPreview');
-        const previewImg = logoPreview.querySelector('img');
-        const removeButton = document.getElementById('removeLogo');
+        // Image preview functionality
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            const uploadArea = document.getElementById('uploadArea');
 
-        logoInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
+            if (input.files && input.files[0]) {
                 const reader = new FileReader();
+                
                 reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    logoPreview.classList.remove('hidden');
+                    preview.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    uploadArea.classList.add('hidden');
                 }
-                reader.readAsDataURL(this.files[0]);
-            } else {
-                logoPreview.classList.add('hidden');
-                previewImg.src = '';
+
+                reader.readAsDataURL(input.files[0]);
             }
+        }
+
+        // Remove image preview
+        function removeImage() {
+            const input = document.getElementById('logo');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            const uploadArea = document.getElementById('uploadArea');
+            
+            input.value = '';
+            previewContainer.classList.add('hidden');
+            uploadArea.classList.remove('hidden');
+        }
+
+        // Drag and drop functionality
+        const dropZone = document.querySelector('label[for="logo"]');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
         });
 
-        // Remove Logo
-        if (removeButton) {
-            removeButton.addEventListener('click', function() {
-                previewImg.src = '';
-                logoPreview.classList.add('hidden');
-                logoInput.value = ''; // Reset the input field
-            });
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            const input = document.getElementById('logo');
+            
+            input.files = files;
+            previewImage(input);
         }
     </script>
 </x-layout-admin>

@@ -1,137 +1,263 @@
 <x-layout-admin>
     <div class="py-6">
-        @if (session('error'))
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
-                <x-alert type="danger" :message="session('error')" />
-            </div>
-        @endif
-        @if ($errors->any())
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
-                <x-alert type="danger" message="Terdapat kesalahan pada form. Silakan periksa kembali data yang dimasukkan." />
-            </div>
-        @endif
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between mb-6">
                 <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Edit Brand</h1>
+                <a href="{{ route('brands.show', $brand) }}" wire:navigate
+                   class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                    Lihat Detail
+                </a>
             </div>
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="py-4">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-    <form action="{{ route('brands.update', $brand) }}" wire:navigate
-          method="POST" 
-          enctype="multipart/form-data" 
-          class="p-6 space-y-6">
-        @csrf
-        @method('PUT')
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                <form action="{{ route('brands.update', $brand) }}" method="POST" enctype="multipart/form-data" class="p-6">
+                    @csrf
+                    @method('PUT')
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Logo Upload Section -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Logo Brand</h3>
+                            
+                            <div class="relative">
+                                <!-- Current Image Display -->
+                                @if($brand->logo)
+                                    <div id="currentImageContainer" class="mb-4">
+                                        <div class="relative w-full h-64 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600">
+                                            <img id="currentImage" class="w-full h-full object-contain rounded-lg" src="{{ asset($brand->logo) }}" alt="Logo {{ $brand->name }}">
+                                            <div class="absolute bottom-2 right-2 flex space-x-2">
+                                                <button type="button" onclick="changeImage()" class="p-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                </button>
+                                                <button type="button" onclick="removeCurrentImage()" class="p-2 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-colors">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2 flex justify-center space-x-4">
+                                            <button type="button" onclick="changeImage()" class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                </svg>
+                                                Ganti Gambar
+                                            </button>
+                                            <button type="button" onclick="removeCurrentImage()" class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                                Hapus Gambar
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
 
-        <!-- Nama Brand -->
-        <div>
-            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Brand</label>
-            <input type="text" 
-                   name="name" 
-                   id="name" 
-                   value="{{ old('name', $brand->name) }}" 
-                   required
-                   class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                   placeholder="Masukkan nama brand">
-            @error('name')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
-        </div>
+                                <!-- New Image Preview -->
+                                <div id="imagePreviewContainer" class="hidden mb-4">
+                                    <div class="relative w-full h-64 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600">
+                                        <img id="imagePreview" class="w-full h-full object-contain rounded-lg" src="#" alt="Preview">
+                                        <button type="button" onclick="cancelImageChange()" class="absolute top-2 right-2 p-1.5 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
 
-        <!-- Hidden Slug Field -->
-        <input type="hidden" name="slug" id="slug" value="{{ old('slug', $brand->slug) }}">
+                                <!-- Upload Area -->
+                                <div id="uploadArea" class="relative {{ $brand->logo ? 'hidden' : '' }}">
+                                    <input type="file" id="logo" name="logo" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="previewImage(this)">
+                                    <label for="logo" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <svg class="w-12 h-12 mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                                <span class="font-semibold">Klik untuk unggah</span> atau drag and drop
+                                            </p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">JPEG, PNG, atau WebP (Maks. 2MB)</p>
+                                        </div>
+                                    </label>
+                                </div>
 
-        <label for="logo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Logo</label>
-<!-- Existing Logo Preview -->
-@if($brand->logo)
-    <div class="mt-2 relative w-40 h-40 bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
-        <!-- Display the current logo -->
-        <img id="currentLogo" src="{{ asset($brand->logo) }}" alt="Current logo" class="object-contain w-32 h-32">
-        
-        <!-- Edit Button for Logo -->
-        <button type="button" id="editLogoBtn" class="absolute top-0 right-0 p-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700">
-            <span class="sr-only">Edit</span>
-            <!-- New Icon -->
-            <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                <path fill-rule="evenodd" d="M11.32 6.176H5c-1.105 0-2 .949-2 2.118v10.588C3 20.052 3.895 21 5 21h11c1.105 0 2-.948 2-2.118v-7.75l-3.914 4.144A2.46 2.46 0 0 1 12.81 16l-2.681.568c-1.75.37-3.292-1.263-2.942-3.115l.536-2.839c.097-.512.335-.983.684-1.352l2.914-3.086Z" clip-rule="evenodd"/>
-                <path fill-rule="evenodd" d="M19.846 4.318a2.148 2.148 0 0 0-.437-.692 2.014 2.014 0 0 0-.654-.463 1.92 1.92 0 0 0-1.544 0 2.014 2.014 0 0 0-.654.463l-.546.578 2.852 3.02.546-.579a2.14 2.14 0 0 0 .437-.692 2.244 2.244 0 0 0 0-1.635ZM17.45 8.721 14.597 5.7 9.82 10.76a.54.54 0 0 0-.137.27l-.536 2.84c-.07.37.239.696.588.622l2.682-.567a.492.492 0 0 0 .255-.145l4.778-5.06Z" clip-rule="evenodd"/>
-            </svg>
-        </button>
-    </div>
-@endif
+                                <!-- Hidden input for remove logo -->
+                                <input type="hidden" id="remove_logo" name="remove_logo" value="0">
 
+                                @error('logo')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
 
-        <!-- Hidden File Upload (Triggered by Edit Button) -->
-        <div id="logoUploadContainer" class="hidden mt-4">
-            <label for="logo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Upload New Logo</label>
-            <input type="file" name="logo" id="logo" class="hidden" accept="image/*" />
-        </div>
+                        <!-- Brand Details Section -->
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Informasi Brand</h3>
+                            
+                            <div class="space-y-4">
+                                <!-- Nama Brand -->
+                                <div>
+                                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Brand</label>
+                                    <input type="text" name="name" id="name" value="{{ old('name', $brand->name) }}" 
+                                           class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                           required>
+                                    @error('name')
+                                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-        @error('logo')
-            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-        @enderror
+                                <!-- Slug -->
+                                <div>
+                                    <label for="slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Slug</label>
+                                    <input type="text" name="slug" id="slug" value="{{ old('slug', $brand->slug) }}" 
+                                           class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                           required>
+                                    @error('slug')
+                                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-        <!-- Aksi -->
-        <div class="flex items-center justify-end space-x-3 pt-4">
-            <a href="{{ route('brands.index') }} " wire:navigate
-               class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-                Batal
-            </a>
-            <button type="submit"
-                    class="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-                Perbarui Brand
-            </button>
-        </div>
-    </form>
-                </div>
+                                <!-- Action Buttons -->
+                                <div class="flex items-center justify-end space-x-3 pt-4">
+                                    <a href="{{ route('brands.index') }}"
+                                        class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                                        Batal
+                                    </a>
+                                    <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                        Perbarui Brand
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Script for Slug Generation and Logo Preview -->
     <script>
-        // Slug Generation
-        const nameInput = document.getElementById('name');
-        const slugInput = document.getElementById('slug');
-
-        nameInput.addEventListener('input', function() {
-            const slug = this.value
-                .toLowerCase()
-                .replace(/[^\w\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .trim();
-            slugInput.value = slug;
-        });
-
-        // Edit Logo Button Functionality
-        const editLogoBtn = document.getElementById('editLogoBtn');
-        const logoUploadContainer = document.getElementById('logoUploadContainer');
-        const logoInput = document.getElementById('logo');
-        const currentLogo = document.getElementById('currentLogo');
-
-        if (editLogoBtn) {
-            editLogoBtn.addEventListener('click', function() {
-                // Show the file input for new logo upload
-                logoUploadContainer.classList.remove('hidden');
-                logoInput.click(); // Open the file explorer
-            });
-        }
-
-        // Handle logo selection
-        logoInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // Replace the current logo with the new one
-                    currentLogo.src = e.target.result;
-                };
-                reader.readAsDataURL(file); // Read the file and update preview
+        // Auto-generate slug from name (only if slug is empty or matches current name)
+        document.getElementById('name').addEventListener('input', function() {
+            const currentSlug = document.getElementById('slug').value;
+            const originalName = "{{ $brand->name }}";
+            const originalSlug = "{{ $brand->slug }}";
+            
+            // Only auto-generate if slug hasn't been manually changed
+            if (currentSlug === originalSlug || currentSlug === '') {
+                let slug = this.value.toLowerCase()
+                    .replace(/[^\w\s-]/g, '') // Remove special characters
+                    .replace(/\s+/g, '-') // Replace spaces with -
+                    .replace(/-+/g, '-'); // Replace multiple - with single -
+                document.getElementById('slug').value = slug;
             }
         });
+
+        // Image preview functionality
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            const uploadArea = document.getElementById('uploadArea');
+            const currentImageContainer = document.getElementById('currentImageContainer');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    uploadArea.classList.add('hidden');
+                    if (currentImageContainer) {
+                        currentImageContainer.classList.add('hidden');
+                    }
+                    document.getElementById('remove_logo').value = '0';
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Change image button
+        function changeImage() {
+            document.getElementById('logo').click();
+        }
+
+        // Remove current image
+        function removeCurrentImage() {
+            const currentImageContainer = document.getElementById('currentImageContainer');
+            const uploadArea = document.getElementById('uploadArea');
+            const input = document.getElementById('logo');
+            
+            if (currentImageContainer) {
+                currentImageContainer.classList.add('hidden');
+            }
+            uploadArea.classList.remove('hidden');
+            input.value = '';
+            document.getElementById('remove_logo').value = '1';
+        }
+
+        // Cancel image change
+        function cancelImageChange() {
+            const input = document.getElementById('logo');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            const uploadArea = document.getElementById('uploadArea');
+            const currentImageContainer = document.getElementById('currentImageContainer');
+            
+            input.value = '';
+            previewContainer.classList.add('hidden');
+            
+            @if($brand->logo)
+                if (currentImageContainer) {
+                    currentImageContainer.classList.remove('hidden');
+                }
+                uploadArea.classList.add('hidden');
+            @else
+                uploadArea.classList.remove('hidden');
+            @endif
+            
+            document.getElementById('remove_logo').value = '0';
+        }
+
+        // Drag and drop functionality
+        const dropZone = document.querySelector('label[for="logo"]');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            const input = document.getElementById('logo');
+            
+            input.files = files;
+            previewImage(input);
+        }
     </script>
 </x-layout-admin>
