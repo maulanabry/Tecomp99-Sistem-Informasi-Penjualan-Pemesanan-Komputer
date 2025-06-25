@@ -6,11 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\OrderService;
 use App\Models\Product;
 use App\Models\Service;
+use App\Models\Admin;
+use App\Services\NotificationService;
+use App\Enums\NotificationType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class OrderServiceController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function index()
     {
         return view('admin.order-service');
@@ -76,7 +86,7 @@ class OrderServiceController extends Controller
             }
 
             // Generate order service ID
-            $date = now()->format('dmy');
+            $date = date('dmy');
             $lastOrder = OrderService::withTrashed()
                 ->where('order_service_id', 'like', "ORS{$date}%")
                 ->orderBy('order_service_id', 'desc')
@@ -107,6 +117,24 @@ class OrderServiceController extends Controller
 
             // Increment service_orders_count for the customer
             $customer->increment('service_orders_count');
+
+            // Create notifications for all admins after order service is saved
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                $this->notificationService->create(
+                    notifiable: $admin,
+                    type: NotificationType::SERVICE_ORDER_CREATED,
+                    subject: $orderService->fresh(), // Ensure we have the saved model with ID
+                    message: "Pesanan servis baru #{$orderServiceId} dari {$customer->name}",
+                    data: [
+                        'order_id' => $orderServiceId,
+                        'customer_name' => $customer->name,
+                        'device' => $request->device,
+                        'type' => $request->type,
+                        'complaints' => $request->complaints
+                    ]
+                );
+            }
 
             return redirect()->route('order-services.show', $orderService)
                 ->with('success', 'Order servis berhasil dibuat.');

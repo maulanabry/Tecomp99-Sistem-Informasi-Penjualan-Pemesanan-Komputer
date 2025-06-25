@@ -189,6 +189,14 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::post('/notification', [\App\Http\Controllers\Admin\SettingsController::class, 'updateNotification'])->name('settings.update.notification');
     });
 
+    // Notifications
+    Route::prefix('admin/notifications')->middleware(['auth:admin'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('admin.notifications.index');
+        Route::post('/{id}/mark-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('admin.notifications.mark-read');
+        Route::post('/mark-all-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('admin.notifications.mark-all-read');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'destroy'])->name('admin.notifications.destroy');
+    });
+
     // Transaksi
     Route::get('/transaksi', function () {
         return view('transaksi');

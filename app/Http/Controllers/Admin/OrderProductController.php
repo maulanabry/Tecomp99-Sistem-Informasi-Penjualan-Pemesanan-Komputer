@@ -9,12 +9,22 @@ use App\Models\OrderProductItem;
 use App\Models\Product;
 use App\Models\Promo;
 use App\Models\Shipping;
+use App\Models\Admin;
+use App\Services\NotificationService;
+use App\Enums\NotificationType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class OrderProductController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function index()
     {
         return view('admin.order-product');
@@ -96,7 +106,7 @@ class OrderProductController extends Controller
             $shippingCost = $validated['order_type'] === 'Pengiriman' ? ($validated['shipping_cost'] ?? 0) : 0;
             $grandTotal = $subtotal - $discount + $shippingCost;
 
-            $orderId = 'ORD' . now()->format('dmy') . str_pad(
+            $orderId = 'ORD' . date('dmy') . str_pad(
                 \App\Models\OrderProduct::withTrashed()->count() + 1, // Count all orders, including soft-deleted ones
                 3,
                 '0',
@@ -164,6 +174,24 @@ class OrderProductController extends Controller
 
             if ($grandTotal >= 100000) {
                 $customer->increment('total_points', 100);
+            }
+
+            // Create notifications for all admins after order is saved
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                $this->notificationService->create(
+                    notifiable: $admin,
+                    type: NotificationType::PRODUCT_ORDER_CREATED,
+                    subject: $order->fresh(), // Ensure we have the saved model with ID
+                    message: "Pesanan produk baru #{$orderId} dari {$customer->name}",
+                    data: [
+                        'order_id' => $orderId,
+                        'customer_name' => $customer->name,
+                        'total' => $grandTotal,
+                        'items_count' => count($items),
+                        'type' => $dbType
+                    ]
+                );
             }
 
             return redirect()

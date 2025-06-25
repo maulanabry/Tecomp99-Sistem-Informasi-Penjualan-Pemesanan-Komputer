@@ -26,8 +26,14 @@
                         <input type="text" class="block w-full p-2 pl-10 text-sm text-neutral-600 border border-neutral-300 rounded-lg bg-neutral-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-neutral-500 dark:border-neutral-400 dark:placeholder-neutral-400 dark:text-white" placeholder="Search...">
                     </div>
                 </div>
-                <!-- Profile and Dark Mode -->
+                <!-- Notifications and Profile -->
                 <div class="flex items-center space-x-3">
+                    <!-- Notification Bell -->
+                    <livewire:admin.notification-dropdown />
+                    
+                    <div class="border-l border-neutral-200 dark:border-neutral-500 h-8 mx-3"></div>
+                    
+                    <!-- Profile and Dark Mode -->
                     <div class="text-left">
                         <div class="text-sm font-medium text-neutral-600 dark:text-white">{{ auth('admin')->user()->name }}</div>
                         <div class="text-xs text-neutral-500 dark:text-neutral-400">{{ auth('admin')->user()->role}}</div>
