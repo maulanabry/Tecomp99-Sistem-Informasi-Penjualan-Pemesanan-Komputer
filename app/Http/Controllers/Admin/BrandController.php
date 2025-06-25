@@ -64,7 +64,16 @@ class BrandController extends Controller
             $validated = $request->validate([
                 'name' => 'required|max:255',
                 'slug' => 'required|max:255|unique:brands',
-                'logo' => 'nullable|image|max:2048',
+                'logo' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
+            ], [
+                'name.required' => 'Nama brand wajib diisi.',
+                'name.max' => 'Nama brand tidak boleh lebih dari 255 karakter.',
+                'slug.required' => 'Slug wajib diisi.',
+                'slug.max' => 'Slug tidak boleh lebih dari 255 karakter.',
+                'slug.unique' => 'Slug sudah digunakan oleh brand lain.',
+                'logo.image' => 'File harus berupa gambar.',
+                'logo.mimes' => 'Format gambar harus JPEG, PNG, atau WebP.',
+                'logo.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
             ]);
 
             // Ensure the directory exists
@@ -79,7 +88,7 @@ class BrandController extends Controller
 
                 // Move the file
                 if (!$file->move($uploadPath, $fileName)) {
-                    throw new \Exception('Failed to upload logo file');
+                    throw new \Exception('Gagal mengunggah file logo');
                 }
 
                 $validated['logo'] = 'images/brand/' . $fileName;
@@ -97,8 +106,13 @@ class BrandController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to create brand: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Gagal membuat brand: ' . $e->getMessage()]);
         }
+    }
+
+    public function show(Brand $brand)
+    {
+        return view('admin.brand.show', compact('brand'));
     }
 
     public function edit(Brand $brand)
@@ -112,7 +126,17 @@ class BrandController extends Controller
             $validated = $request->validate([
                 'name' => 'required|max:255',
                 'slug' => 'required|max:255|unique:brands,slug,' . $brand->brand_id . ',brand_id',
-                'logo' => 'nullable|image|max:2048',
+                'logo' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
+                'remove_logo' => 'nullable|boolean',
+            ], [
+                'name.required' => 'Nama brand wajib diisi.',
+                'name.max' => 'Nama brand tidak boleh lebih dari 255 karakter.',
+                'slug.required' => 'Slug wajib diisi.',
+                'slug.max' => 'Slug tidak boleh lebih dari 255 karakter.',
+                'slug.unique' => 'Slug sudah digunakan oleh brand lain.',
+                'logo.image' => 'File harus berupa gambar.',
+                'logo.mimes' => 'Format gambar harus JPEG, PNG, atau WebP.',
+                'logo.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
             ]);
 
             // Ensure the directory exists
@@ -121,7 +145,18 @@ class BrandController extends Controller
                 mkdir($uploadPath, 0755, true);
             }
 
-            if ($request->hasFile('logo')) {
+            // Handle logo removal
+            if ($request->input('remove_logo') == '1') {
+                if ($brand->logo) {
+                    $oldLogoPath = public_path($brand->logo);
+                    if (file_exists($oldLogoPath)) {
+                        unlink($oldLogoPath);
+                    }
+                }
+                $validated['logo'] = null;
+            }
+            // Handle new logo upload
+            elseif ($request->hasFile('logo')) {
                 // Delete old logo if exists
                 if ($brand->logo) {
                     $oldLogoPath = public_path($brand->logo);
@@ -135,7 +170,7 @@ class BrandController extends Controller
 
                 // Move the file
                 if (!$file->move($uploadPath, $fileName)) {
-                    throw new \Exception('Failed to upload logo file');
+                    throw new \Exception('Gagal mengunggah file logo');
                 }
 
                 $validated['logo'] = 'images/brand/' . $fileName;
@@ -146,6 +181,9 @@ class BrandController extends Controller
                 $validated['slug'] = Str::slug($validated['name']);
             }
 
+            // Remove remove_logo from validated data before updating
+            unset($validated['remove_logo']);
+
             $brand->update($validated);
 
             return redirect()->route('brands.index')
@@ -153,7 +191,7 @@ class BrandController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to update brand: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Gagal memperbarui brand: ' . $e->getMessage()]);
         }
     }
 

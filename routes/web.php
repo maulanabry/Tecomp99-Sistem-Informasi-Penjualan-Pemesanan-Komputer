@@ -42,6 +42,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/recovery', [\App\Http\Controllers\Admin\BrandController::class, 'recovery'])->name('brands.recovery');
         Route::get('/create', [\App\Http\Controllers\Admin\BrandController::class, 'create'])->name('brands.create');
         Route::post('/', [\App\Http\Controllers\Admin\BrandController::class, 'store'])->name('brands.store');
+        Route::get('/{brand}', [\App\Http\Controllers\Admin\BrandController::class, 'show'])->name('brands.show');
         Route::get('/{brand}/edit', [\App\Http\Controllers\Admin\BrandController::class, 'edit'])->name('brands.edit');
         Route::put('/{brand}', [\App\Http\Controllers\Admin\BrandController::class, 'update'])->name('brands.update');
         Route::delete('/{brand}', [\App\Http\Controllers\Admin\BrandController::class, 'destroy'])->name('brands.destroy');
@@ -175,6 +176,17 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/{payment_id}/edit', [\App\Http\Controllers\Admin\PaymentController::class, 'edit'])->name('payments.edit');
         Route::put('/{payment_id}', [\App\Http\Controllers\Admin\PaymentController::class, 'update'])->name('payments.update');
         Route::put('/{payment_id}/cancel', [\App\Http\Controllers\Admin\PaymentController::class, 'cancel'])->name('payments.cancel');
+    });
+
+    // Settings
+    Route::prefix('admin/settings')->middleware(['auth:admin'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
+        Route::get('/general', [\App\Http\Controllers\Admin\SettingsController::class, 'general'])->name('settings.general');
+        Route::get('/system', [\App\Http\Controllers\Admin\SettingsController::class, 'system'])->name('settings.system');
+        Route::get('/notification', [\App\Http\Controllers\Admin\SettingsController::class, 'notification'])->name('settings.notification');
+        Route::post('/general', [\App\Http\Controllers\Admin\SettingsController::class, 'updateGeneral'])->name('settings.update.general');
+        Route::post('/system', [\App\Http\Controllers\Admin\SettingsController::class, 'updateSystem'])->name('settings.update.system');
+        Route::post('/notification', [\App\Http\Controllers\Admin\SettingsController::class, 'updateNotification'])->name('settings.update.notification');
     });
 
     // Transaksi

@@ -143,25 +143,31 @@
                             </label>
                         </div>
 
-                        <!-- Images (Dropzone Upload) -->
+                        <!-- Foto Produk -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Gambar Produk <span id="imageCounter" class="text-sm text-gray-500">(0/6 Images)</span>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
+                                Foto Produk <span id="imageCounter" class="text-sm text-gray-500 dark:text-gray-400">(0/6 Foto)</span>
                             </label>
-                            <div class="mt-1">
-                                <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+
+                            <!-- Tambah Foto -->
+                            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
+                                <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200" id="dropzone-area">
                                     <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                        <svg class="w-10 h-10 mb-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                         </svg>
-                                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF up to 2MB (Max 6 images)</p>
+                                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                            <span class="font-semibold">Klik untuk unggah</span> atau seret dan lepas
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF hingga 2MB (Maksimal 6 foto)</p>
                                     </div>
-                                    <input id="dropzone-file" name="images[]" type="file" class="hidden" multiple accept="image/*" />
+                                    <input id="dropzone-file" name="images[]" type="file" class="hidden" multiple accept="image/*" required />
                                 </label>
-                            </div>
-                         <div id="imagePreview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                <!-- Image previews will be inserted here -->
+                                
+                                <!-- Preview Foto -->
+                                <div id="imagePreview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    <!-- Image previews will be inserted here -->
+                                </div>
                             </div>
                         </div>
 
@@ -183,66 +189,131 @@
 
     <script>
         const dropzoneFile = document.getElementById('dropzone-file');
+        const dropzoneArea = document.getElementById('dropzone-area');
         const imagePreview = document.getElementById('imagePreview');
         const imageCounter = document.getElementById('imageCounter');
         const maxImages = 6;
         const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        let selectedFiles = new DataTransfer();
 
         dropzoneFile.addEventListener('change', handleImageUpload);
 
         function handleImageUpload() {
             const files = Array.from(dropzoneFile.files);
-            const currentImages = imagePreview.getElementsByClassName('image-preview-item').length;
+            const currentImages = document.querySelectorAll('.image-preview-item').length;
             
             // Check if total images would exceed maximum
             if (currentImages + files.length > maxImages) {
-                alert(`You can only upload a maximum of ${maxImages} images.`);
+                showAlert(`Anda hanya dapat mengunggah maksimal ${maxImages} foto secara total.`, 'error');
                 dropzoneFile.value = '';
                 return;
             }
 
             // Process each file
             files.forEach(file => {
-                // Check file size
-                if (file.size > maxSize) {
-                    alert(`Image ${file.name} exceeds 2MB limit.`);
+                // Validate file type
+                if (!allowedTypes.includes(file.type)) {
+                    showAlert(`File ${file.name} bukan tipe gambar yang didukung. Gunakan JPEG, PNG, GIF, atau WebP.`, 'error');
                     return;
                 }
+
+                // Check file size
+                if (file.size > maxSize) {
+                    showAlert(`Gambar ${file.name} melebihi batas 2MB.`, 'error');
+                    return;
+                }
+
+                // Add file to DataTransfer object
+                selectedFiles.items.add(file);
 
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const div = document.createElement('div');
-                    div.className = 'image-preview-item relative';
+                    div.className = 'image-preview-item relative group';
+                    div.dataset.fileName = file.name;
                     div.innerHTML = `
-    <div class="relative w-full h-40 bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
-        <img src="${e.target.result}" alt="Preview" class="object-contain w-32 h-32">
-        <button type="button" onclick="removeImage(this)" class="absolute top-0 right-0 p-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700">
-            <span class="sr-only">Remove</span>
-            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-            </svg>
-        </button>
-    </div>
+                        <div class="relative aspect-square bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                            <img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <button type="button" onclick="removeImage(this)" class="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-300 transition-colors duration-200 shadow-sm" title="Hapus Foto">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     `;
                     imagePreview.appendChild(div);
                     updateImageCounter();
                 };
                 reader.readAsDataURL(file);
             });
+
+            // Update the file input with selected files
+            dropzoneFile.files = selectedFiles.files;
         }
 
         function removeImage(button) {
-            button.closest('.image-preview-item').remove();
+            const item = button.closest('.image-preview-item');
+            const fileName = item.dataset.fileName;
+            
+            // Remove file from DataTransfer object
+            const newDataTransfer = new DataTransfer();
+            Array.from(selectedFiles.files)
+                .filter(file => file.name !== fileName)
+                .forEach(file => newDataTransfer.items.add(file));
+            
+            selectedFiles = newDataTransfer;
+            dropzoneFile.files = selectedFiles.files;
+            
+            item.remove();
             updateImageCounter();
         }
 
         function updateImageCounter() {
-            const currentCount = document.getElementsByClassName('image-preview-item').length;
-            imageCounter.textContent = `(${currentCount}/6 Images)`;
+            const currentCount = document.querySelectorAll('.image-preview-item').length;
+            imageCounter.textContent = `(${currentCount}/6 Foto)`;
         }
 
-        // Drag and drop functionality
-        const dropZone = document.querySelector('form');
+        function showAlert(message, type = 'info') {
+            // Create alert element
+            const alert = document.createElement('div');
+            alert.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${
+                type === 'success' ? 'bg-green-500 text-white' : 
+                type === 'error' ? 'bg-red-500 text-white' : 
+                'bg-blue-500 text-white'
+            }`;
+            alert.textContent = message;
+            
+            document.body.appendChild(alert);
+            
+            // Animate in
+            setTimeout(() => {
+                alert.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                alert.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(alert);
+                }, 300);
+            }, 3000);
+        }
+
+        // Form submission validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (selectedFiles.files.length === 0) {
+                e.preventDefault();
+                showAlert('Silakan pilih minimal satu foto untuk produk.', 'error');
+                return false;
+            }
+            return true;
+        });
+
+        // Enhanced drag and drop functionality
+        const dropZone = dropzoneArea;
         
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropZone.addEventListener(eventName, preventDefaults, false);
@@ -262,39 +333,34 @@
         });
 
         function highlight(e) {
-            dropZone.classList.add('border-primary-500');
+            dropZone.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
         }
 
         function unhighlight(e) {
-            dropZone.classList.remove('border-primary-500');
+            dropZone.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
         }
 
         dropZone.addEventListener('drop', handleDrop, false);
 
         function handleDrop(e) {
             const dt = e.dataTransfer;
-            const files = dt.files;
+            const droppedFiles = Array.from(dt.files).filter(file => allowedTypes.includes(file.type));
             
-            // Create a new FileList-like object
-            const dataTransfer = new DataTransfer();
-            
-            // Add existing files
-            if (dropzoneFile.files) {
-                Array.from(dropzoneFile.files).forEach(file => dataTransfer.items.add(file));
+            if (droppedFiles.length === 0) {
+                showAlert('Silakan lepas hanya file gambar yang didukung (JPEG, PNG, GIF, WebP).', 'error');
+                return;
             }
+
+            // Create a new FileList-like object with dropped files
+            const dataTransfer = new DataTransfer();
+            droppedFiles.forEach(file => dataTransfer.items.add(file));
             
-            // Add new files
-            Array.from(files).forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    dataTransfer.items.add(file);
-                }
-            });
-            
-            // Set the new FileList to the input
+            // Set the files and trigger upload
             dropzoneFile.files = dataTransfer.files;
-            
-            // Trigger the change event handler
             handleImageUpload();
         }
+
+        // Initialize counter on page load
+        document.addEventListener('DOMContentLoaded', updateImageCounter);
     </script>
 </x-layout-admin>

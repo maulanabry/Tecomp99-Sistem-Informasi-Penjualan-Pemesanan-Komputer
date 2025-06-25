@@ -9,6 +9,8 @@ use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class ProductController extends Controller
 {
@@ -85,7 +87,7 @@ class ProductController extends Controller
                 'stock' => 'required|integer|min:0',
                 'is_active' => 'boolean',
                 'images' => 'required|array|min:1|max:6',
-                'images.*' => 'image|max:2048', // 2MB limit per image
+                'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048', // 2MB limit per image
             ]);
 
             // Get the category code
@@ -121,19 +123,24 @@ class ProductController extends Controller
             // Create product
             $product = Product::create($validated);
 
-            // Handle multiple image uploads
+            // Handle multiple image uploads with compression
             if ($request->hasFile('images')) {
                 $images = $request->file('images');
                 foreach ($images as $index => $image) {
                     $extension = $image->getClientOriginalExtension();
                     $fileName = "{$productId}-img-" . ($index + 1) . ".{$extension}";
+                    $imagePath = $uploadPath . DIRECTORY_SEPARATOR . $fileName;
 
-                    if ($image->move($uploadPath, $fileName)) {
-                        $product->images()->create([
-                            'url' => "{$productFolder}/{$fileName}",
-                            'is_main' => $index === 0 // First image is main
-                        ]);
-                    }
+                    // Compress and save image using Intervention Image
+                    $manager = new ImageManager(new Driver());
+                    $img = $manager->read($image->getRealPath());
+                    $img->scaleDown(width: 1024);
+                    $img->toJpeg(75)->save($imagePath);
+
+                    $product->images()->create([
+                        'url' => "{$productFolder}/{$fileName}",
+                        'is_main' => $index === 0 // First image is main
+                    ]);
                 }
             }
 
@@ -166,7 +173,7 @@ class ProductController extends Controller
                 'stock' => 'required|integer|min:0',
                 'is_active' => 'boolean',
                 'images' => 'nullable|array|max:6',
-                'images.*' => 'image|max:2048',
+                'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             ]);
 
             // Generate new slug from name
@@ -179,7 +186,7 @@ class ProductController extends Controller
                 mkdir($uploadPath, 0755, true);
             }
 
-            // Handle multiple image uploads
+            // Handle multiple image uploads with compression
             if ($request->hasFile('images')) {
                 $currentImageCount = $product->images()->count();
                 $newImages = $request->file('images');
@@ -192,13 +199,18 @@ class ProductController extends Controller
                 foreach ($newImages as $index => $image) {
                     $extension = $image->getClientOriginalExtension();
                     $fileName = "{$product->product_id}-img-" . ($currentImageCount + $index + 1) . ".{$extension}";
+                    $imagePath = $uploadPath . DIRECTORY_SEPARATOR . $fileName;
 
-                    if ($image->move($uploadPath, $fileName)) {
-                        $product->images()->create([
-                            'url' => "{$productFolder}/{$fileName}",
-                            'is_main' => $currentImageCount === 0 && $index === 0 // First image is main only if no existing images
-                        ]);
-                    }
+                    // Compress and save image using Intervention Image
+                    $manager = new ImageManager(new Driver());
+                    $img = $manager->read($image->getRealPath());
+                    $img->scaleDown(width: 1024);
+                    $img->toJpeg(75)->save($imagePath);
+
+                    $product->images()->create([
+                        'url' => "{$productFolder}/{$fileName}",
+                        'is_main' => $currentImageCount === 0 && $index === 0 // First image is main only if no existing images
+                    ]);
                 }
             }
 

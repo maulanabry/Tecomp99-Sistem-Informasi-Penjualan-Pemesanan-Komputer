@@ -108,9 +108,9 @@
     <div class="px-4 py-4 border-t border-neutral-200 dark:border-neutral-500">
         <ul class="space-y-2 text-neutral-600 dark:text-neutral-100">
             <li>
-                <a href="{{ ('peraturan') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('peraturan') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
-                    <i class="fas fa-book w-5 h-5 mr-3"></i>
-                    <span>Peraturan</span>
+                <a href="{{ route('settings.index') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/settings*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                    <i class="fas fa-cog w-5 h-5 mr-3"></i>
+                    <span>Pengaturan</span>
                 </a>
             </li>
             <li>

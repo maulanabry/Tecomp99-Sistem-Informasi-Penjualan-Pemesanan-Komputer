@@ -80,6 +80,16 @@ class Breadcrumbs extends Component
                 $breadcrumbs[] = $this->getPaymentBreadcrumb($routeName);
                 break;
 
+            // Settings
+            case str_contains($routeName, 'settings'):
+                if (str_contains($routeName, 'general') || str_contains($routeName, 'system') || str_contains($routeName, 'notification')) {
+                    $breadcrumbs[] = ['title' => 'Pengaturan', 'url' => route('settings.index'), 'active' => false];
+                    $breadcrumbs[] = $this->getSettingsBreadcrumb($routeName);
+                } else {
+                    $breadcrumbs[] = $this->getSettingsBreadcrumb($routeName);
+                }
+                break;
+
             // Dashboard (current page)
             case $routeName === 'admin.dashboard.index':
                 $breadcrumbs[0]['active'] = true;
@@ -94,16 +104,19 @@ class Breadcrumbs extends Component
         $base = ['title' => 'Data Kategori', 'url' => route('categories.index'), 'active' => false];
 
         if (str_contains($routeName, 'create')) {
-            $base['active'] = false;
             return [
                 $base,
                 ['title' => 'Tambah Kategori', 'url' => null, 'active' => true]
             ];
         } elseif (str_contains($routeName, 'edit')) {
-            $base['active'] = false;
             return [
                 $base,
                 ['title' => 'Edit Kategori', 'url' => null, 'active' => true]
+            ];
+        } elseif (str_contains($routeName, 'show')) {
+            return [
+                $base,
+                ['title' => 'Detail Kategori', 'url' => null, 'active' => true]
             ];
         } else {
             $base['active'] = true;
@@ -125,6 +138,11 @@ class Breadcrumbs extends Component
                 $base,
                 ['title' => 'Edit Brand', 'url' => null, 'active' => true]
             ];
+        } elseif (str_contains($routeName, 'show')) {
+            return [
+                $base,
+                ['title' => 'Detail Brand', 'url' => null, 'active' => true]
+            ];
         } else {
             $base['active'] = true;
             return $base;
@@ -144,6 +162,11 @@ class Breadcrumbs extends Component
             return [
                 $base,
                 ['title' => 'Edit Produk', 'url' => null, 'active' => true]
+            ];
+        } elseif (str_contains($routeName, 'show')) {
+            return [
+                $base,
+                ['title' => 'Detail Produk', 'url' => null, 'active' => true]
             ];
         } else {
             $base['active'] = true;
@@ -165,6 +188,11 @@ class Breadcrumbs extends Component
                 $base,
                 ['title' => 'Edit Servis', 'url' => null, 'active' => true]
             ];
+        } elseif (str_contains($routeName, 'show')) {
+            return [
+                $base,
+                ['title' => 'Detail Servis', 'url' => null, 'active' => true]
+            ];
         } else {
             $base['active'] = true;
             return $base;
@@ -184,6 +212,11 @@ class Breadcrumbs extends Component
             return [
                 $base,
                 ['title' => 'Edit Promo', 'url' => null, 'active' => true]
+            ];
+        } elseif (str_contains($routeName, 'show')) {
+            return [
+                $base,
+                ['title' => 'Detail Promo', 'url' => null, 'active' => true]
             ];
         } else {
             $base['active'] = true;
@@ -205,6 +238,11 @@ class Breadcrumbs extends Component
                 $base,
                 ['title' => 'Edit Customer', 'url' => null, 'active' => true]
             ];
+        } elseif (str_contains($routeName, 'show')) {
+            return [
+                $base,
+                ['title' => 'Detail Customer', 'url' => null, 'active' => true]
+            ];
         } else {
             $base['active'] = true;
             return $base;
@@ -219,6 +257,11 @@ class Breadcrumbs extends Component
             return [
                 $base,
                 ['title' => 'Tambah Order Servis', 'url' => null, 'active' => true]
+            ];
+        } elseif (str_contains($routeName, 'edit')) {
+            return [
+                $base,
+                ['title' => 'Edit Order Servis', 'url' => null, 'active' => true]
             ];
         } elseif (str_contains($routeName, 'show')) {
             return [
@@ -240,6 +283,11 @@ class Breadcrumbs extends Component
                 $base,
                 ['title' => 'Tambah Order Produk', 'url' => null, 'active' => true]
             ];
+        } elseif (str_contains($routeName, 'edit')) {
+            return [
+                $base,
+                ['title' => 'Edit Order Produk', 'url' => null, 'active' => true]
+            ];
         } elseif (str_contains($routeName, 'show')) {
             return [
                 $base,
@@ -260,6 +308,11 @@ class Breadcrumbs extends Component
                 $base,
                 ['title' => 'Tambah Tiket Servis', 'url' => null, 'active' => true]
             ];
+        } elseif (str_contains($routeName, 'edit')) {
+            return [
+                $base,
+                ['title' => 'Edit Tiket Servis', 'url' => null, 'active' => true]
+            ];
         } elseif (str_contains($routeName, 'show')) {
             return [
                 $base,
@@ -275,7 +328,17 @@ class Breadcrumbs extends Component
     {
         $base = ['title' => 'Pembayaran', 'url' => route('payments.index'), 'active' => false];
 
-        if (str_contains($routeName, 'show')) {
+        if (str_contains($routeName, 'create')) {
+            return [
+                $base,
+                ['title' => 'Tambah Pembayaran', 'url' => null, 'active' => true]
+            ];
+        } elseif (str_contains($routeName, 'edit')) {
+            return [
+                $base,
+                ['title' => 'Edit Pembayaran', 'url' => null, 'active' => true]
+            ];
+        } elseif (str_contains($routeName, 'show')) {
             return [
                 $base,
                 ['title' => 'Detail Pembayaran', 'url' => null, 'active' => true]
@@ -283,6 +346,19 @@ class Breadcrumbs extends Component
         } else {
             $base['active'] = true;
             return $base;
+        }
+    }
+
+    private function getSettingsBreadcrumb($routeName)
+    {
+        if (str_contains($routeName, 'general')) {
+            return ['title' => 'Pengaturan Umum', 'url' => null, 'active' => true];
+        } elseif (str_contains($routeName, 'system')) {
+            return ['title' => 'Pengaturan Sistem', 'url' => null, 'active' => true];
+        } elseif (str_contains($routeName, 'notification')) {
+            return ['title' => 'Pengaturan Notifikasi', 'url' => null, 'active' => true];
+        } else {
+            return ['title' => 'Pengaturan', 'url' => route('settings.index'), 'active' => true];
         }
     }
 
