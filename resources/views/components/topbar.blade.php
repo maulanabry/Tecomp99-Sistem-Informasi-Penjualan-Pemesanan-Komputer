@@ -17,14 +17,9 @@
                 </div>
             </div>
             <div class="flex items-center space-x-3">
-                <!-- Search Bar, hidden on mobile -->
-                <div class="hidden md:block">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <i class="fas fa-search text-neutral-500 dark:text-neutral-400"></i>
-                        </div>
-                        <input type="text" class="block w-full p-2 pl-10 text-sm text-neutral-600 border border-neutral-300 rounded-lg bg-neutral-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-neutral-500 dark:border-neutral-400 dark:placeholder-neutral-400 dark:text-white" placeholder="Search...">
-                    </div>
+                <!-- Global Search Component -->
+                <div class="hidden md:block w-96">
+                    <livewire:admin.global-search />
                 </div>
                 <!-- Notifications and Profile -->
                 <div class="flex items-center space-x-3">
