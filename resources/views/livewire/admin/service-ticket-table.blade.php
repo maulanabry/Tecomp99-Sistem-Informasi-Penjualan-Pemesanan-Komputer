@@ -81,10 +81,10 @@
                             @endif
                         </div>
                     </div>
-                    <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 cursor-pointer" wire:click="sortBy('schedule_date')">
+                    <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 cursor-pointer" wire:click="sortBy('created_at')">
                         <div class="flex items-center gap-1">
-                            Tanggal Jadwal
-                            @if ($sortField === 'schedule_date')
+                            Tanggal Dibuat (FCFS)
+                            @if ($sortField === 'created_at')
                                 <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
                             @else
                                 <span class="text-xs">˄˅</span>
@@ -98,7 +98,7 @@
 
         <!-- Isi Tabel -->
         <div class="bg-white dark:bg-gray-800 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            @forelse ($tickets as $ticket)
+@forelse ($tickets as $ticket)
                 <!-- Tampilan Desktop -->
                 <div class="hidden md:grid grid-cols-7 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="text-sm text-gray-700 dark:text-gray-300">{{ $ticket->service_ticket_id }}</div>
@@ -113,6 +113,7 @@
                                 'Diantar' => 'bg-purple-500 text-white',
                                 'Perlu Diambil' => 'bg-orange-500 text-white',
                                 'Selesai' => 'bg-green-500 text-white',
+                                'Dibatalkan' => 'bg-red-600 text-white',
                             ];
                             $colorClass = $statusColors[$ticket->status] ?? 'bg-gray-500 text-white';
                         @endphp
@@ -121,7 +122,7 @@
                         </span>
                     </div>
                     <div class="text-sm text-gray-700 dark:text-gray-300">
-                        {{ \Carbon\Carbon::parse($ticket->schedule_date)->format('d/m/Y H:i') }}
+                        {{ \Carbon\Carbon::parse($ticket->created_at)->format('d/m/Y H:i') }}
                     </div>
                     <div class="text-center">
                         <x-action-dropdown>
@@ -154,6 +155,18 @@
                                 </svg>
                                 Hapus
                             </button>
+                            @if ($ticket->status !== 'Dibatalkan' && $ticket->status !== 'Selesai')
+                                <button type="button"
+                                    data-modal-target="cancel-order-{{ $ticket->service_ticket_id }}"
+                                    data-modal-toggle="cancel-order-{{ $ticket->service_ticket_id }}"
+                                    class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-700"
+                                    role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Batalkan
+                                </button>
+                            @endif
                         </x-action-dropdown>
                     </div>
                 </div>
@@ -179,8 +192,8 @@
                         </span>
                     </div>
                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
-                        <span>Jadwal:</span>
-                        <span>{{ \Carbon\Carbon::parse($ticket->schedule_date)->format('d/m/Y H:i') }}</span>
+                        <span>Tanggal Dibuat:</span>
+                        <span>{{ \Carbon\Carbon::parse($ticket->created_at)->format('d/m/Y H:i') }}</span>
                     </div>
                     <div class="text-right">
                         <x-action-dropdown>
@@ -234,4 +247,18 @@
             {{ $tickets->links() }}
         </div>
     </div>
+
+
+    @foreach ($tickets as $ticket)
+        @if ($ticket->status !== 'Dibatalkan' && $ticket->status !== 'Selesai')
+            <x-cancel-order-modal 
+                :id="$ticket->service_ticket_id"
+                :title="'Konfirmasi Pembatalan Tiket'"
+                :action="route('service-tickets.cancel', $ticket)"
+                message="Apakah Anda yakin ingin membatalkan tiket servis ini?"
+                :itemName="$ticket->service_ticket_id"
+                wire:key="cancel-ticket-{{ $ticket->service_ticket_id }}"
+            />
+        @endif
+    @endforeach
 </div>

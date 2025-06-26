@@ -18,6 +18,9 @@ class OrderServiceTable extends Component
     public $typeFilter = '';
     public $perPage = 10;
 
+    public $selectedOrderServiceId = null;
+    public $isCancelModalOpen = false;
+
     protected $listeners = ['orderServiceSummaryToggled' => 'render'];
 
     public function sortBy($field)
@@ -50,10 +53,27 @@ class OrderServiceTable extends Component
         $this->resetPage();
     }
 
-    public function cancelOrder($orderServiceId)
+    public function openCancelModal($orderServiceId)
     {
+        $this->selectedOrderServiceId = $orderServiceId;
+        $this->isCancelModalOpen = true;
+    }
+
+    public function closeCancelModal()
+    {
+        $this->selectedOrderServiceId = null;
+        $this->isCancelModalOpen = false;
+    }
+
+    public function confirmCancelOrder()
+    {
+        if (!$this->selectedOrderServiceId) {
+            session()->flash('error', 'Order servis tidak ditemukan.');
+            return;
+        }
+
         try {
-            $orderService = OrderService::findOrFail($orderServiceId);
+            $orderService = OrderService::findOrFail($this->selectedOrderServiceId);
 
             if ($orderService->status_order !== 'Selesai' && $orderService->status_payment !== 'lunas') {
                 $orderService->update([
@@ -68,6 +88,8 @@ class OrderServiceTable extends Component
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal membatalkan order servis.');
         }
+
+        $this->closeCancelModal();
     }
 
     public function render()

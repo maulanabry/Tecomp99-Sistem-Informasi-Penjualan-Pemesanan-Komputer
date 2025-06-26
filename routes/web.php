@@ -145,6 +145,8 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
     Route::prefix('admin/service-tickets')->middleware(['auth:admin'])->group(function () {
         // Main Service Ticket Routes
         Route::get('/', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'index'])->name('service-tickets.index');
+        Route::get('/calendar', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'calendar'])->name('service-tickets.calendar');
+        Route::get('/calendar/events', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'calendarEvents'])->name('service-tickets.calendar.events');
         Route::get('/create', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'create'])->name('service-tickets.create');
         Route::post('/', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'store'])->name('service-tickets.store');
         Route::get('/{ticket}', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'show'])->name('service-tickets.show');
@@ -159,6 +161,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
 
         // Service Ticket Status Management
         Route::put('/{ticket}/status', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'updateStatus'])->name('service-tickets.update-status');
+        Route::post('/{ticket}/cancel', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'cancel'])->name('service-tickets.cancel');
 
         // Service Ticket Recovery
         Route::get('/recovery', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'recovery'])->name('service-tickets.recovery');

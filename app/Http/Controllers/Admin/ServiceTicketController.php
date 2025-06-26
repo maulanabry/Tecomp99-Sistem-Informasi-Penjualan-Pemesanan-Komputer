@@ -15,6 +15,118 @@ class ServiceTicketController extends Controller
         return view('admin.service-ticket');
     }
 
+    public function calendar()
+    {
+        $tickets = ServiceTicket::with(['orderService.customer'])
+            ->whereHas('orderService', function ($query) {
+                $query->whereNotNull('type');
+            })
+            ->get()
+            ->map(function ($ticket) {
+                $events = [];
+
+                // Add service duration event
+                if ($ticket->schedule_date && $ticket->estimate_date) {
+                    $events[] = [
+                        'id' => 'duration_' . $ticket->id,
+                        'title' => "Service #" . $ticket->service_ticket_id,
+                        'start' => $ticket->schedule_date,
+                        'end' => $ticket->estimate_date,
+                        'backgroundColor' => '#3788d8',
+                        'borderColor' => '#3788d8',
+                        'extendedProps' => [
+                            'ticket_id' => $ticket->service_ticket_id,
+                            'customer_name' => $ticket->orderService->customer->name,
+                            'type' => $ticket->orderService->type,
+                            'device' => $ticket->orderService->device,
+                            'eventType' => 'duration'
+                        ]
+                    ];
+                }
+
+                // Add visit schedule event for onsite services
+                if ($ticket->orderService->type === 'onsite' && $ticket->visit_schedule) {
+                    $events[] = [
+                        'id' => 'visit_' . $ticket->id,
+                        'title' => "Visit #" . $ticket->service_ticket_id,
+                        'start' => $ticket->visit_schedule,
+                        'end' => \Carbon\Carbon::parse($ticket->visit_schedule)->addHour(),
+                        'backgroundColor' => '#dc3545',
+                        'borderColor' => '#dc3545',
+                        'extendedProps' => [
+                            'ticket_id' => $ticket->service_ticket_id,
+                            'customer_name' => $ticket->orderService->customer->name,
+                            'type' => $ticket->orderService->type,
+                            'device' => $ticket->orderService->device,
+                            'eventType' => 'visit'
+                        ]
+                    ];
+                }
+
+                return $events;
+            })
+            ->flatten(1)
+            ->values();
+
+        return view('admin.service-ticket.calendar', compact('tickets'));
+    }
+
+    public function calendarEvents()
+    {
+        $tickets = ServiceTicket::with(['orderService.customer'])
+            ->whereHas('orderService', function ($query) {
+                $query->whereNotNull('type');
+            })
+            ->get()
+            ->map(function ($ticket) {
+                $events = [];
+
+                // Add service duration event
+                if ($ticket->schedule_date && $ticket->estimate_date) {
+                    $events[] = [
+                        'id' => 'duration_' . $ticket->id,
+                        'title' => "Service #" . $ticket->service_ticket_id,
+                        'start' => $ticket->schedule_date,
+                        'end' => $ticket->estimate_date,
+                        'backgroundColor' => '#3788d8',
+                        'borderColor' => '#3788d8',
+                        'extendedProps' => [
+                            'ticket_id' => $ticket->service_ticket_id,
+                            'customer_name' => $ticket->orderService->customer->name,
+                            'type' => $ticket->orderService->type,
+                            'device' => $ticket->orderService->device,
+                            'eventType' => 'duration'
+                        ]
+                    ];
+                }
+
+                // Add visit schedule event for onsite services
+                if ($ticket->orderService->type === 'onsite' && $ticket->visit_schedule) {
+                    $events[] = [
+                        'id' => 'visit_' . $ticket->id,
+                        'title' => "Visit #" . $ticket->service_ticket_id,
+                        'start' => $ticket->visit_schedule,
+                        'end' => \Carbon\Carbon::parse($ticket->visit_schedule)->addHour(),
+                        'backgroundColor' => '#dc3545',
+                        'borderColor' => '#dc3545',
+                        'extendedProps' => [
+                            'ticket_id' => $ticket->service_ticket_id,
+                            'customer_name' => $ticket->orderService->customer->name,
+                            'type' => $ticket->orderService->type,
+                            'device' => $ticket->orderService->device,
+                            'eventType' => 'visit'
+                        ]
+                    ];
+                }
+
+                return $events;
+            })
+            ->flatten(1)
+            ->values();
+
+        return response()->json($tickets);
+    }
+
     public function create()
     {
         $orderServices = \App\Models\OrderService::where('hasTicket', false)
@@ -209,13 +321,26 @@ class ServiceTicketController extends Controller
     public function updateStatus(Request $request, ServiceTicket $ticket)
     {
         $validated = $request->validate([
-            'status' => 'required|in:Menunggu,Diproses,Diantar,Perlu Diambil,Selesai',
+            'status' => 'required|in:Menunggu,Diproses,Diantar,Perlu Diambil,Selesai,Dibatalkan',
         ]);
 
         $ticket->update($validated);
 
         return redirect()->back()
             ->with('success', 'Status tiket servis berhasil diperbarui.');
+    }
+
+    public function cancel(ServiceTicket $ticket)
+    {
+        if ($ticket->status === 'Dibatalkan' || $ticket->status === 'Selesai') {
+            return redirect()->back()
+                ->with('error', 'Tiket tidak dapat dibatalkan.');
+        }
+
+        $ticket->update(['status' => 'Dibatalkan']);
+
+        return redirect()->back()
+            ->with('success', 'Tiket servis berhasil dibatalkan.');
     }
 
     public function recovery()

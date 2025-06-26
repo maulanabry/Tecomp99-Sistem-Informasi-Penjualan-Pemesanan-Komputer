@@ -233,4 +233,12 @@ class PaymentController extends Controller
                 ->with('error', 'Terjadi kesalahan saat membatalkan pembayaran. ' . $e->getMessage());
         }
     }
+
+    /**
+     * Cancel/destroy a payment (same as cancel method for consistency)
+     */
+    public function destroy($payment_id)
+    {
+        return $this->cancel($payment_id);
+    }
 }

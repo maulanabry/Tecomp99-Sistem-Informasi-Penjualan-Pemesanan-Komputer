@@ -11,7 +11,7 @@
         <ul class="space-y-1.5 text-neutral-600 dark:text-neutral-100">
             <!-- Dashboard -->
             <li>
-                <a href="{{ route('admin.dashboard.index') }}" wire:navigate 
+                <a href="{{ route('admin.dashboard.index') }}"  
                    class="flex items-center px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
                           hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
                           {{ request()->is('admin/dashboard') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
@@ -98,11 +98,26 @@
             </li>
 
             <!-- Service Tickets -->
-            <li class="mt-4">
-                <a href="{{ route('service-tickets.index') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/service-tickets*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
-                    <i class="fas fa-ticket-alt w-5 h-5 mr-3"></i>
-                    <span>Tiket Servis</span>
-                </a>
+            <li x-data="{ open: {{ request()->is('admin/service-tickets*') ? 'true' : 'false' }} }" class="mt-4">
+                <button @click="open = !open" class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/service-tickets*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                    <div class="flex items-center">
+                        <i class="fas fa-ticket-alt w-5 h-5 mr-3"></i>
+                        <span>Tiket Servis</span>
+                    </div>
+                    <i class="fas fa-chevron-down w-4 h-4 transition-transform" :class="{ 'transform rotate-180': open }"></i>
+                </button>
+                <ul x-show="open" class="mt-1 space-y-1 pl-10">
+                    <li>
+                        <a href="{{ route('service-tickets.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->routeIs('service-tickets.index') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                            List View
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('service-tickets.calendar') }}"  class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->routeIs('service-tickets.calendar') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                            Calendar View
+                        </a>
+                    </li>
+                </ul>
             </li>
 
             <!-- Payments -->

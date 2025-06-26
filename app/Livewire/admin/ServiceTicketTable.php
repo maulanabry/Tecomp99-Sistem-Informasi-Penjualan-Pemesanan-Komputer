@@ -11,11 +11,13 @@ class ServiceTicketTable extends Component
     use WithPagination;
 
     public $search = '';
-    public $sortField = 'schedule_date';
-    public $sortDirection = 'desc';
+    public $sortField = 'created_at';
+    public $sortDirection = 'asc';
     public $serviceTypeFilter = '';
     public $statusFilter = '';
     public $perPage = 10;
+
+    protected $listeners = ['refreshServiceTicketTable' => '$refresh'];
 
     public function sortBy($field)
     {

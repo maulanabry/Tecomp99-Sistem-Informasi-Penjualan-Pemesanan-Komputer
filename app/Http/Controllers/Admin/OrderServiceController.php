@@ -300,7 +300,7 @@ class OrderServiceController extends Controller
             DB::beginTransaction();
 
             if ($orderService->status_payment === 'lunas') {
-                throw new \Exception('Order yang sudah lunas tidak dapat dihapus');
+                throw new \Exception('Order yang sudah lunas tidak dapat dibatalkan');
             }
 
             // If order was completed, revert the stock changes
@@ -310,16 +310,20 @@ class OrderServiceController extends Controller
                 }
             }
 
-            $orderService->delete();
+            // Update the status_order to 'Dibatalkan' instead of deleting
+            $orderService->update([
+                'status_order' => 'Dibatalkan',
+                'status_payment' => 'dibatalkan',
+            ]);
 
             DB::commit();
 
             return redirect()->route('order-services.index')
-                ->with('success', 'Order servis berhasil dihapus.');
+                ->with('success', 'Order servis berhasil dibatalkan.');
         } catch (\Exception $e) {
             DB::rollback();
             return redirect()->route('order-services.index')
-                ->with('error', 'Gagal menghapus order servis: ' . $e->getMessage());
+                ->with('error', 'Gagal membatalkan order servis: ' . $e->getMessage());
         }
     }
 
