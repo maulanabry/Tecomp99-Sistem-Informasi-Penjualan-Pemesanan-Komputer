@@ -70,17 +70,34 @@ class DashboardStats extends Component
                 ];
             });
 
-        // Mendapatkan jadwal servis hari ini
+        // Mendapatkan jadwal servis hari ini dengan prioritas kunjungan onsite
         $this->serviceTickets = ServiceTicket::with(['orderService.customer'])
-            ->whereDate('schedule_date', Carbon::today())
+            ->where(function ($query) {
+                $query->whereDate('schedule_date', Carbon::today())
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->whereNotNull('visit_schedule')
+                            ->whereDate('visit_schedule', Carbon::today());
+                    });
+            })
+            ->orderByRaw("CASE WHEN visit_schedule IS NOT NULL THEN 0 ELSE 1 END")
+            ->orderBy('visit_schedule')
+            ->orderBy('schedule_date')
             ->get()
             ->map(function ($ticket) {
+                $isVisit = $ticket->visit_schedule && Carbon::parse($ticket->visit_schedule)->isToday();
+
                 return [
                     'id' => $ticket->service_ticket_id,
                     'customer' => $ticket->orderService->customer->name,
                     'status' => $ticket->status,
-                    'schedule' => Carbon::parse($ticket->schedule_date)->format('H:i'),
-                    'type' => $ticket->orderService->type
+                    'schedule' => $isVisit
+                        ? Carbon::parse($ticket->visit_schedule)->format('H:i')
+                        : Carbon::parse($ticket->schedule_date)->format('H:i'),
+                    'type' => $ticket->orderService->type,
+                    'device' => $ticket->orderService->device,
+                    'is_visit' => $isVisit,
+                    'visit_time' => $isVisit ? Carbon::parse($ticket->visit_schedule)->format('H:i') : null,
+                    'address' => $ticket->orderService->customer->addresses->first()?->address ?? null
                 ];
             });
 

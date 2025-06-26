@@ -16,6 +16,14 @@
                     </svg>
                     List View
                 </a>
+                <a href="{{ route('service-tickets.index') }}#visit-schedules" 
+                   class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Jadwal Kunjungan
+                </a>
                 <a href="{{ route('service-tickets.create') }}" 
                    class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,6 +53,37 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div id="calendar"></div>
         </div>
+
+        <!-- Custom CSS for enhanced calendar styling -->
+        <style>
+            .fc-event.visit-schedule {
+                border-left: 4px solid #dc3545 !important;
+                background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+                box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+            }
+            
+            .fc-event.service-duration {
+                border-left: 4px solid #3788d8 !important;
+                background: linear-gradient(135deg, #3788d8 0%, #2c6bc7 100%) !important;
+                box-shadow: 0 2px 4px rgba(55, 136, 216, 0.3);
+            }
+            
+            .fc-event:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+                transition: all 0.2s ease;
+            }
+            
+            .fc-daygrid-event {
+                border-radius: 4px;
+                margin: 1px 0;
+            }
+            
+            .fc-event-title {
+                font-weight: 600;
+                font-size: 0.875rem;
+            }
+        </style>
     </div>
 
     <!-- Event Details Modal -->
@@ -120,13 +159,30 @@
                         timeInfo = `<p><span class="font-medium text-gray-500 dark:text-gray-400">Sampai:</span> ${endDate}</p>`;
                     }
                     
+                    let statusBadge = '';
+                    if (props.status) {
+                        const statusColors = {
+                            'Menunggu': 'bg-yellow-100 text-yellow-800',
+                            'Diproses': 'bg-blue-100 text-blue-800',
+                            'Selesai': 'bg-green-100 text-green-800',
+                            'Dibatalkan': 'bg-red-100 text-red-800'
+                        };
+                        const colorClass = statusColors[props.status] || 'bg-gray-100 text-gray-800';
+                        statusBadge = `<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${colorClass}">${props.status}</span>`;
+                    }
+
                     modalContent.innerHTML = `
-                        <div class="space-y-2 text-sm">
+                        <div class="space-y-3 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium text-gray-500 dark:text-gray-400">Status:</span>
+                                ${statusBadge}
+                            </div>
                             <p><span class="font-medium text-gray-500 dark:text-gray-400">Tipe:</span> ${eventTypeLabel}</p>
                             <p><span class="font-medium text-gray-500 dark:text-gray-400">Tiket ID:</span> ${props.ticket_id}</p>
                             <p><span class="font-medium text-gray-500 dark:text-gray-400">Customer:</span> ${props.customer_name}</p>
                             <p><span class="font-medium text-gray-500 dark:text-gray-400">Device:</span> ${props.device}</p>
                             <p><span class="font-medium text-gray-500 dark:text-gray-400">Layanan:</span> ${props.type === 'onsite' ? 'Onsite' : 'Reguler'}</p>
+                            ${props.address && props.eventType === 'visit' ? `<p><span class="font-medium text-gray-500 dark:text-gray-400">Alamat:</span> ${props.address}</p>` : ''}
                             <p><span class="font-medium text-gray-500 dark:text-gray-400">Tanggal:</span> ${startDate}</p>
                             ${timeInfo}
                         </div>
@@ -135,10 +191,29 @@
                     modal.classList.remove('hidden');
                 },
                 eventDidMount: function(info) {
-                    // Add tooltip
+                    // Enhanced tooltip with more details
                     const props = info.event.extendedProps;
-                    const tooltip = `${info.event.title}\nCustomer: ${props.customer_name}\nDevice: ${props.device}`;
+                    const eventType = props.eventType === 'duration' ? 'Durasi Service' : 'Jadwal Kunjungan';
+                    const startTime = info.event.start.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    
+                    let tooltip = `${info.event.title}\n`;
+                    tooltip += `Tipe: ${eventType}\n`;
+                    tooltip += `Customer: ${props.customer_name}\n`;
+                    tooltip += `Device: ${props.device}\n`;
+                    tooltip += `Status: ${props.status}\n`;
+                    tooltip += `Waktu: ${startTime}`;
+                    
+                    if (props.address && props.eventType === 'visit') {
+                        tooltip += `\nAlamat: ${props.address}`;
+                    }
+                    
                     info.el.setAttribute('title', tooltip);
+                    
+                    // Add custom styling based on event type
+                    if (props.eventType === 'visit') {
+                        info.el.style.fontWeight = 'bold';
+                        info.el.style.borderRadius = '6px';
+                    }
                 },
                 responsive: true,
                 aspectRatio: window.innerWidth < 768 ? 1.0 : 1.35

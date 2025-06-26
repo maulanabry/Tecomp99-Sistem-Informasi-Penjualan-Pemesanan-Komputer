@@ -1,62 +1,103 @@
 <div>
-    <!-- Form Pencarian dan Filter -->
-    <div class="flex flex-col md:flex-row justify-between items-center w-full gap-4 mb-4">
-        <!-- Pencarian -->
-        <div class="w-full md:w-1/2 relative">
-            <input type="text"
-                wire:model.live="search"
-                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 pr-10 focus:border-primary-500 dark:text-gray-200 shadow-sm focus:ring-primary-500 sm:text-sm"
-                placeholder="Cari tiket servis...">
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                    viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                        clip-rule="evenodd" />
-                </svg>
-            </div>
+    <!-- Alert Messages -->
+    @if (session()->has('success'))
+        <x-alert type="success" :message="session('success')" />
+    @endif
+
+    @if (session()->has('error'))
+        <x-alert type="danger" :message="session('error')" />
+    @endif
+
+    <!-- Tabs dan Filter -->
+    <div class="mb-4">
+        <!-- Status Tabs -->
+        <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+                <button wire:click="setActiveTab('all')" 
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'all' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Semua
+                </button>
+                <button wire:click="setActiveTab('Menunggu')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Menunggu' ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Menunggu
+                </button>
+                <button wire:click="setActiveTab('Diproses')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Diproses' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Diproses
+                </button>
+                <button wire:click="setActiveTab('Diantar')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Diantar' ? 'border-purple-500 text-purple-600 dark:text-purple-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Diantar
+                </button>
+                <button wire:click="setActiveTab('Perlu Diambil')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Perlu Diambil' ? 'border-orange-500 text-orange-600 dark:text-orange-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Perlu Diambil
+                </button>
+                <button wire:click="setActiveTab('Selesai')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Selesai' ? 'border-green-500 text-green-600 dark:text-green-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Selesai
+                </button>
+                <button wire:click="setActiveTab('Dibatalkan')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Dibatalkan' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Dibatalkan
+                </button>
+            </nav>
         </div>
 
-        <div class="flex flex-col md:flex-row gap-4 w-full md:w-1/2">
-            <!-- Filter Jenis Servis -->
-            <div class="w-full md:w-1/3">
-                <select wire:model.live="serviceTypeFilter"
-                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                    <option value="">Semua Jenis</option>
-                    <option value="reguler">Reguler</option>
-                    <option value="onsite">Onsite</option>
-                </select>
+        <!-- Search and Filters -->
+        <div class="mt-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- Search -->
+            <div class="w-full md:w-1/2 relative">
+                <input type="text"
+                    wire:model.live="search"
+                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 pr-10 focus:border-primary-500 dark:text-gray-200 shadow-sm focus:ring-primary-500 sm:text-sm"
+                    placeholder="Cari tiket servis...">
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
             </div>
 
-            <!-- Filter Status -->
-            <div class="w-full md:w-1/3">
-                <select wire:model.live="statusFilter"
-                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                    <option value="">Semua Status</option>
-                    <option value="Menunggu">Menunggu</option>
-                    <option value="Diproses">Diproses</option>
-                    <option value="Diantar">Diantar</option>
-                    <option value="Perlu Diambil">Perlu Diambil</option>
-                    <option value="Selesai">Selesai</option>
-                </select>
-            </div>
+            <div class="flex flex-col md:flex-row gap-4 w-full md:w-1/2">
+                <!-- Filter Jenis Servis -->
+                <div class="w-full md:w-1/2">
+                    <select wire:model.live="serviceTypeFilter"
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="">Semua Jenis Servis</option>
+                        <option value="reguler">Reguler</option>
+                        <option value="onsite">Onsite</option>
+                    </select>
+                </div>
 
-            <!-- Jumlah Baris -->
-            <div class="w-full md:w-1/3">
-                <select wire:model.live="perPage"
-                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                    <option value="5">5 Baris</option>
-                    <option value="10">10 Baris</option>
-                    <option value="25">25 Baris</option>
-                </select>
+                <!-- Jumlah Baris -->
+                <div class="w-full md:w-1/2">
+                    <select wire:model.live="perPage"
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="5">5 Baris</option>
+                        <option value="10">10 Baris</option>
+                        <option value="25">25 Baris</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Tabel Tiket Servis -->
     <div class="mt-4">
+        <!-- Header Actions -->
+        <div class="flex justify-end mb-4">
+            <a href="{{ route('service-tickets.calendar') }}" 
+               class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Kalender
+            </a>
+        </div>
+
         <div class="hidden md:block">
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
+            <div class="bg-white dark:bg-gray-800 rounded-t-lg">
                 <div class="grid grid-cols-7 gap-4 px-6 py-3">
                     <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 cursor-pointer" wire:click="sortBy('service_ticket_id')">
                         <div class="flex items-center gap-1">
@@ -98,7 +139,7 @@
 
         <!-- Isi Tabel -->
         <div class="bg-white dark:bg-gray-800 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-@forelse ($tickets as $ticket)
+            @forelse ($tickets as $ticket)
                 <!-- Tampilan Desktop -->
                 <div class="hidden md:grid grid-cols-7 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="text-sm text-gray-700 dark:text-gray-300">{{ $ticket->service_ticket_id }}</div>
@@ -139,12 +180,21 @@
                                 </svg>
                                 Tambah Aksi
                             </a>
-                            <a href="{{ route('service-tickets.edit', $ticket->service_ticket_id) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">
-                                <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Ubah
-                            </a>
+                            @if (!in_array($ticket->status, ['Selesai', 'Dibatalkan']))
+                                <a href="{{ route('service-tickets.edit', $ticket->service_ticket_id) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Ubah
+                                </a>
+                            @else
+                                <span class="flex items-center px-4 py-2 text-sm text-gray-400 dark:text-gray-500 cursor-not-allowed" role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Ubah
+                                </span>
+                            @endif
                             <button type="button"
                                 data-modal-target="delete-ticket-modal-{{ $ticket->service_ticket_id }}"
                                 data-modal-toggle="delete-ticket-modal-{{ $ticket->service_ticket_id }}"
@@ -155,12 +205,8 @@
                                 </svg>
                                 Hapus
                             </button>
-                            @if ($ticket->status !== 'Dibatalkan' && $ticket->status !== 'Selesai')
-                                <button type="button"
-                                    data-modal-target="cancel-order-{{ $ticket->service_ticket_id }}"
-                                    data-modal-toggle="cancel-order-{{ $ticket->service_ticket_id }}"
-                                    class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-700"
-                                    role="menuitem">
+                            @if (!in_array($ticket->status, ['Selesai', 'Dibatalkan']))
+                                <button wire:click="openCancelModal('{{ $ticket->service_ticket_id }}')" class="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">
                                     <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
@@ -210,12 +256,21 @@
                                 </svg>
                                 Tambah Aksi
                             </a>
-                            <a href="{{ route('service-tickets.edit', $ticket->service_ticket_id) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">
-                                <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Ubah
-                            </a>
+                            @if (!in_array($ticket->status, ['Selesai', 'Dibatalkan']))
+                                <a href="{{ route('service-tickets.edit', $ticket->service_ticket_id) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Ubah
+                                </a>
+                            @else
+                                <span class="flex items-center px-4 py-2 text-sm text-gray-400 dark:text-gray-500 cursor-not-allowed" role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Ubah
+                                </span>
+                            @endif
                             <button type="button"
                                 data-modal-target="delete-ticket-modal-{{ $ticket->service_ticket_id }}"
                                 data-modal-toggle="delete-ticket-modal-{{ $ticket->service_ticket_id }}"
@@ -226,6 +281,14 @@
                                 </svg>
                                 Hapus
                             </button>
+                            @if (!in_array($ticket->status, ['Selesai', 'Dibatalkan']))
+                                <button wire:click="openCancelModal('{{ $ticket->service_ticket_id }}')" class="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Batalkan
+                                </button>
+                            @endif
                         </x-action-dropdown>
                     </div>
                 </div>
@@ -248,17 +311,42 @@
         </div>
     </div>
 
-
-    @foreach ($tickets as $ticket)
-        @if ($ticket->status !== 'Dibatalkan' && $ticket->status !== 'Selesai')
-            <x-cancel-order-modal 
-                :id="$ticket->service_ticket_id"
-                :title="'Konfirmasi Pembatalan Tiket'"
-                :action="route('service-tickets.cancel', $ticket)"
-                message="Apakah Anda yakin ingin membatalkan tiket servis ini?"
-                :itemName="$ticket->service_ticket_id"
-                wire:key="cancel-ticket-{{ $ticket->service_ticket_id }}"
-            />
-        @endif
-    @endforeach
+    <!-- Cancel Ticket Modal -->
+    @if($isCancelModalOpen && $selectedServiceTicketId)
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-title">
+                                    Batalkan Tiket Servis
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        Apakah Anda yakin ingin membatalkan tiket servis ini? Tindakan ini tidak dapat dibatalkan.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button wire:click="confirmCancelTicket" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Batalkan
+                        </button>
+                        <button wire:click="closeCancelModal" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Batal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

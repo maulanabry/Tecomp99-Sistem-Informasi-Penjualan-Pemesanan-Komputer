@@ -194,27 +194,74 @@
         <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Jadwal Servis Hari Ini</h3>
-                <a href="{{ route('service-tickets.index') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">Lihat Semua</a>
+                <div class="flex space-x-2">
+                    <a href="{{ route('service-tickets.calendar') }}" class="text-sm text-red-600 hover:text-red-800 dark:text-red-400">Kalender</a>
+                    <span class="text-gray-300">|</span>
+                    <a href="{{ route('service-tickets.index') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">Lihat Semua</a>
+                </div>
             </div>
             <div class="space-y-3">
                 @forelse($serviceTickets as $ticket)
-                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 rounded-full mr-3
-                            @if($ticket['status'] === 'Menunggu') bg-yellow-400
-                            @elseif($ticket['status'] === 'Diproses') bg-blue-400
-                            @elseif($ticket['status'] === 'Selesai') bg-green-400
-                            @else bg-gray-400
-                            @endif">
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $ticket['customer'] }}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Servis {{ ucfirst($ticket['type']) }}</div>
+                <div class="flex items-center justify-between p-3 
+                    @if($ticket['is_visit']) bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800
+                    @else bg-gray-50 dark:bg-gray-700
+                    @endif rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <!-- Priority indicator for visits -->
+                        @if($ticket['is_visit'])
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        @else
+                            <div class="w-3 h-3 rounded-full flex-shrink-0
+                                @if($ticket['status'] === 'Menunggu') bg-yellow-400
+                                @elseif($ticket['status'] === 'Diproses') bg-blue-400
+                                @elseif($ticket['status'] === 'Selesai') bg-green-400
+                                @else bg-gray-400
+                                @endif">
+                            </div>
+                        @endif
+                        
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center space-x-2">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ $ticket['customer'] }}</div>
+                                @if($ticket['is_visit'])
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        </svg>
+                                        Kunjungan
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ $ticket['device'] }} • Servis {{ ucfirst($ticket['type']) }}
+                            </div>
+                            @if($ticket['is_visit'] && $ticket['address'])
+                                <div class="text-xs text-gray-600 dark:text-gray-300 mt-1 truncate">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    </svg>
+                                    {{ $ticket['address'] }}
+                                </div>
+                            @endif
                         </div>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right flex-shrink-0">
                         <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $ticket['schedule'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $ticket['status'] }}</div>
+                        <div class="text-xs 
+                            @if($ticket['status'] === 'Menunggu') text-yellow-600 dark:text-yellow-400
+                            @elseif($ticket['status'] === 'Diproses') text-blue-600 dark:text-blue-400
+                            @elseif($ticket['status'] === 'Selesai') text-green-600 dark:text-green-400
+                            @else text-gray-500 dark:text-gray-400
+                            @endif">
+                            {{ $ticket['status'] }}
+                        </div>
                     </div>
                 </div>
                 @empty

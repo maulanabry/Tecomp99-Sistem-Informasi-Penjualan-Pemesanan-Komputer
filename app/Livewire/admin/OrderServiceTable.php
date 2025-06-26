@@ -13,7 +13,7 @@ class OrderServiceTable extends Component
     public $search = '';
     public $sortField = 'created_at';
     public $sortDirection = 'desc';
-    public $statusOrderFilter = '';
+    public $activeTab = 'all';
     public $statusPaymentFilter = '';
     public $typeFilter = '';
     public $perPage = 10;
@@ -38,8 +38,9 @@ class OrderServiceTable extends Component
         $this->resetPage();
     }
 
-    public function updatingStatusOrderFilter()
+    public function setActiveTab($tab)
     {
+        $this->activeTab = $tab;
         $this->resetPage();
     }
 
@@ -107,8 +108,8 @@ class OrderServiceTable extends Component
                             });
                     });
                 })
-                ->when($this->statusOrderFilter, function ($query) {
-                    $query->where('status_order', $this->statusOrderFilter);
+                ->when($this->activeTab !== 'all', function ($query) {
+                    $query->where('status_order', $this->activeTab);
                 })
                 ->when($this->statusPaymentFilter, function ($query) {
                     $query->where('status_payment', $this->statusPaymentFilter);

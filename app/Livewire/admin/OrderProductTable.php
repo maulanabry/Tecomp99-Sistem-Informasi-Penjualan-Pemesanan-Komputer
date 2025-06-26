@@ -12,22 +12,65 @@ class OrderProductTable extends Component
     use WithPagination;
 
     public $search = '';
-    public $statusOrderFilter = '';
+    public $activeTab = 'all';
     public $statusPaymentFilter = '';
     public $typeFilter = '';
     public $perPage = 10;
     public $sortField = 'created_at';
     public $sortDirection = 'desc';
 
+    public $selectedOrderProductId = null;
+    public $isCancelModalOpen = false;
+
     protected $listeners = ['refreshOrderProductTable' => '$refresh'];
+
+    public function openCancelModal($orderProductId)
+    {
+        $this->selectedOrderProductId = $orderProductId;
+        $this->isCancelModalOpen = true;
+    }
+
+    public function closeCancelModal()
+    {
+        $this->selectedOrderProductId = null;
+        $this->isCancelModalOpen = false;
+    }
+
+    public function confirmCancelOrder()
+    {
+        if (!$this->selectedOrderProductId) {
+            session()->flash('error', 'Order produk tidak ditemukan.');
+            return;
+        }
+
+        try {
+            $orderProduct = OrderProduct::findOrFail($this->selectedOrderProductId);
+
+            if ($orderProduct->status_order !== 'selesai' && $orderProduct->status_payment !== 'lunas') {
+                $orderProduct->update([
+                    'status_order' => 'dibatalkan',
+                    'status_payment' => 'dibatalkan'
+                ]);
+
+                session()->flash('success', 'Order produk berhasil dibatalkan.');
+            } else {
+                session()->flash('error', 'Order produk tidak dapat dibatalkan.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal membatalkan order produk.');
+        }
+
+        $this->closeCancelModal();
+    }
 
     public function updatingSearch()
     {
         $this->resetPage();
     }
 
-    public function updatingStatusOrderFilter()
+    public function setActiveTab($tab)
     {
+        $this->activeTab = $tab;
         $this->resetPage();
     }
 
@@ -65,8 +108,9 @@ class OrderProductTable extends Component
             });
         }
 
-        if ($this->statusOrderFilter) {
-            $query->where('status_order', $this->statusOrderFilter);
+        // Filter by active tab instead of statusOrderFilter
+        if ($this->activeTab !== 'all') {
+            $query->where('status_order', $this->activeTab);
         }
 
         if ($this->statusPaymentFilter) {

@@ -96,6 +96,19 @@
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Customer</dt>
                             <dd class="text-sm text-gray-900 dark:text-gray-100">{{ $ticket->orderService->customer->name }}</dd>
                         </div>
+                        @if($ticket->orderService->customer->addresses)
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Alamat Customer</dt>
+                            <dd class="text-sm text-gray-900 dark:text-gray-100">
+                                {{ $ticket->orderService->customer->addresses->detail_address }}<br>
+                                {{ $ticket->orderService->customer->addresses->subdistrict_name }}, 
+                                {{ $ticket->orderService->customer->addresses->district_name }}<br>
+                                {{ $ticket->orderService->customer->addresses->city_name }}, 
+                                {{ $ticket->orderService->customer->addresses->province_name }} 
+                                {{ $ticket->orderService->customer->addresses->postal_code }}
+                            </dd>
+                        </div>
+                        @endif
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Device</dt>
                             <dd class="text-sm text-gray-900 dark:text-gray-100">{{ $ticket->orderService->device }}</dd>

@@ -33,13 +33,27 @@
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ">
             <div class="py-4">
-                <!-- Livewire Summary Cards -->
-                <livewire:admin.service-ticket-summary-cards />
+                @livewire('admin.service-ticket-summary-cards')
             </div>
-            <div class="py-4">
-                <livewire:admin.service-ticket-table />
+            
+            <!-- Service Tickets Table -->
+            <div class="py-4"> 
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-3 text-gray-900 dark:text-gray-100">
+                        @livewire('admin.service-ticket-table')
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visit Schedules Section -->
+            <div id="visit-schedules" class="py-4">
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900 dark:text-gray-100">
+                        @livewire('admin.visit-schedule-list')
+                    </div>
+                </div>
             </div>
         </div>
     </div>

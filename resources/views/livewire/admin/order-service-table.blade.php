@@ -8,67 +8,81 @@
         <x-alert type="danger" :message="session('error')" />
     @endif
 
-    <!-- Form Pencarian dan Filter -->
-    <div class="flex flex-col md:flex-row justify-between items-center w-full gap-4 mb-4">
-        <!-- Pencarian -->
-        <div class="w-full md:w-1/2 relative">
-            <input type="text"
-                wire:model.live="search"
-                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 pr-10 focus:border-primary-500 dark:text-gray-200 shadow-sm focus:ring-primary-500 sm:text-sm"
-                placeholder="Cari layanan servis...">
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                    viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                        clip-rule="evenodd" />
-                </svg>
-            </div>
+    <!-- Tabs dan Filter -->
+    <div class="mb-4">
+        <!-- Status Tabs -->
+        <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+                <button wire:click="setActiveTab('all')" 
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'all' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Semua
+                </button>
+                <button wire:click="setActiveTab('Menunggu')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Menunggu' ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Menunggu
+                </button>
+                <button wire:click="setActiveTab('Diproses')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Diproses' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Diproses
+                </button>
+                <button wire:click="setActiveTab('Selesai')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Selesai' ? 'border-green-500 text-green-600 dark:text-green-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Selesai
+                </button>
+                <button wire:click="setActiveTab('Dibatalkan')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Dibatalkan' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Dibatalkan
+                </button>
+            </nav>
         </div>
 
-        <div class="flex flex-col md:flex-row gap-4 w-full md:w-1/2">
-            <!-- Filter Status Order -->
-            <div class="w-full md:w-1/3">
-                <select wire:model.live="statusOrderFilter"
-                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                    <option value="">Semua Status Order</option>
-                    <option value="Menunggu">Menunggu</option>
-                    <option value="Diproses">Diproses</option>
-                    <option value="Dibatalkan">Dibatalkan</option>
-                    <option value="Selesai">Selesai</option>
-                </select>
+        <!-- Search and Filters -->
+        <div class="mt-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- Search -->
+            <div class="w-full md:w-1/2 relative">
+                <input type="text"
+                    wire:model.live="search"
+                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 pr-10 focus:border-primary-500 dark:text-gray-200 shadow-sm focus:ring-primary-500 sm:text-sm"
+                    placeholder="Cari layanan servis...">
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                </div>
             </div>
 
-            <!-- Filter Status Pembayaran -->
-            <div class="w-full md:w-1/3">
-                <select wire:model.live="statusPaymentFilter"
-                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                    <option value="">Semua Status Pembayaran</option>
-                    <option value="belum_dibayar">Belum Dibayar</option>
-                    <option value="down_payment">Down Payment</option>
-                    <option value="lunas">Lunas</option>
-                    <option value="dibatalkan">Dibatalkan</option>
-                </select>
-            </div>
+            <div class="flex flex-col md:flex-row gap-4 w-full md:w-1/2">
+                <!-- Filter Status Pembayaran -->
+                <div class="w-full md:w-1/3">
+                    <select wire:model.live="statusPaymentFilter"
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="">Semua Status Pembayaran</option>
+                        <option value="belum_dibayar">Belum Dibayar</option>
+                        <option value="down_payment">Down Payment</option>
+                        <option value="lunas">Lunas</option>
+                        <option value="dibatalkan">Dibatalkan</option>
+                    </select>
+                </div>
 
-            <!-- Filter Tipe Servis -->
-            <div class="w-full md:w-1/3">
-                <select wire:model.live="typeFilter"
-                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                    <option value="">Semua Tipe Servis</option>
-                    <option value="reguler">Reguler</option>
-                    <option value="onsite">Onsite</option>
-                </select>
-            </div>
+                <!-- Filter Tipe Servis -->
+                <div class="w-full md:w-1/3">
+                    <select wire:model.live="typeFilter"
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="">Semua Tipe Servis</option>
+                        <option value="reguler">Reguler</option>
+                        <option value="onsite">Onsite</option>
+                    </select>
+                </div>
 
-            <!-- Jumlah Baris -->
-            <div class="w-full md:w-1/3">
-                <select wire:model.live="perPage"
-                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                    <option value="5">5 Baris</option>
-                    <option value="10">10 Baris</option>
-                    <option value="25">25 Baris</option>
-                </select>
+                <!-- Jumlah Baris -->
+                <div class="w-full md:w-1/3">
+                    <select wire:model.live="perPage"
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="5">5 Baris</option>
+                        <option value="10">10 Baris</option>
+                        <option value="25">25 Baris</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>

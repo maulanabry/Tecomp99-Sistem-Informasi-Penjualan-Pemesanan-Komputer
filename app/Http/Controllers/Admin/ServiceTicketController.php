@@ -25,7 +25,7 @@ class ServiceTicketController extends Controller
             ->map(function ($ticket) {
                 $events = [];
 
-                // Add service duration event
+                // Add service duration event with enhanced styling
                 if ($ticket->schedule_date && $ticket->estimate_date) {
                     $events[] = [
                         'id' => 'duration_' . $ticket->id,
@@ -34,17 +34,20 @@ class ServiceTicketController extends Controller
                         'end' => $ticket->estimate_date,
                         'backgroundColor' => '#3788d8',
                         'borderColor' => '#3788d8',
+                        'textColor' => '#ffffff',
+                        'classNames' => ['service-duration'],
                         'extendedProps' => [
                             'ticket_id' => $ticket->service_ticket_id,
                             'customer_name' => $ticket->orderService->customer->name,
                             'type' => $ticket->orderService->type,
                             'device' => $ticket->orderService->device,
+                            'status' => $ticket->status,
                             'eventType' => 'duration'
                         ]
                     ];
                 }
 
-                // Add visit schedule event for onsite services
+                // Add visit schedule event for onsite services with enhanced styling
                 if ($ticket->orderService->type === 'onsite' && $ticket->visit_schedule) {
                     $events[] = [
                         'id' => 'visit_' . $ticket->id,
@@ -53,12 +56,17 @@ class ServiceTicketController extends Controller
                         'end' => \Carbon\Carbon::parse($ticket->visit_schedule)->addHour(),
                         'backgroundColor' => '#dc3545',
                         'borderColor' => '#dc3545',
+                        'textColor' => '#ffffff',
+                        'classNames' => ['visit-schedule'],
+                        'display' => 'block',
                         'extendedProps' => [
                             'ticket_id' => $ticket->service_ticket_id,
                             'customer_name' => $ticket->orderService->customer->name,
                             'type' => $ticket->orderService->type,
                             'device' => $ticket->orderService->device,
-                            'eventType' => 'visit'
+                            'status' => $ticket->status,
+                            'eventType' => 'visit',
+                            'address' => $ticket->orderService->customer->addresses->first()?->address ?? 'No address'
                         ]
                     ];
                 }
@@ -71,6 +79,7 @@ class ServiceTicketController extends Controller
         return view('admin.service-ticket.calendar', compact('tickets'));
     }
 
+
     public function calendarEvents()
     {
         $tickets = ServiceTicket::with(['orderService.customer'])
@@ -81,7 +90,7 @@ class ServiceTicketController extends Controller
             ->map(function ($ticket) {
                 $events = [];
 
-                // Add service duration event
+                // Add service duration event with enhanced styling
                 if ($ticket->schedule_date && $ticket->estimate_date) {
                     $events[] = [
                         'id' => 'duration_' . $ticket->id,
@@ -90,17 +99,20 @@ class ServiceTicketController extends Controller
                         'end' => $ticket->estimate_date,
                         'backgroundColor' => '#3788d8',
                         'borderColor' => '#3788d8',
+                        'textColor' => '#ffffff',
+                        'classNames' => ['service-duration'],
                         'extendedProps' => [
                             'ticket_id' => $ticket->service_ticket_id,
                             'customer_name' => $ticket->orderService->customer->name,
                             'type' => $ticket->orderService->type,
                             'device' => $ticket->orderService->device,
+                            'status' => $ticket->status,
                             'eventType' => 'duration'
                         ]
                     ];
                 }
 
-                // Add visit schedule event for onsite services
+                // Add visit schedule event for onsite services with enhanced styling
                 if ($ticket->orderService->type === 'onsite' && $ticket->visit_schedule) {
                     $events[] = [
                         'id' => 'visit_' . $ticket->id,
@@ -109,12 +121,17 @@ class ServiceTicketController extends Controller
                         'end' => \Carbon\Carbon::parse($ticket->visit_schedule)->addHour(),
                         'backgroundColor' => '#dc3545',
                         'borderColor' => '#dc3545',
+                        'textColor' => '#ffffff',
+                        'classNames' => ['visit-schedule'],
+                        'display' => 'block',
                         'extendedProps' => [
                             'ticket_id' => $ticket->service_ticket_id,
                             'customer_name' => $ticket->orderService->customer->name,
                             'type' => $ticket->orderService->type,
                             'device' => $ticket->orderService->device,
-                            'eventType' => 'visit'
+                            'status' => $ticket->status,
+                            'eventType' => 'visit',
+                            'address' => $ticket->orderService->customer->addresses->first()?->address ?? 'No address'
                         ]
                     ];
                 }

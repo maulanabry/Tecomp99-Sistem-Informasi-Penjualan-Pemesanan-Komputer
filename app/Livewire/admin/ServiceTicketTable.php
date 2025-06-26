@@ -13,9 +13,12 @@ class ServiceTicketTable extends Component
     public $search = '';
     public $sortField = 'created_at';
     public $sortDirection = 'asc';
+    public $activeTab = 'all';
     public $serviceTypeFilter = '';
-    public $statusFilter = '';
     public $perPage = 10;
+
+    public $selectedServiceTicketId = null;
+    public $isCancelModalOpen = false;
 
     protected $listeners = ['refreshServiceTicketTable' => '$refresh'];
 
@@ -34,14 +37,53 @@ class ServiceTicketTable extends Component
         $this->resetPage();
     }
 
+    public function setActiveTab($tab)
+    {
+        $this->activeTab = $tab;
+        $this->resetPage();
+    }
+
     public function updatingServiceTypeFilter()
     {
         $this->resetPage();
     }
 
-    public function updatingStatusFilter()
+    public function openCancelModal($serviceTicketId)
     {
-        $this->resetPage();
+        $this->selectedServiceTicketId = $serviceTicketId;
+        $this->isCancelModalOpen = true;
+    }
+
+    public function closeCancelModal()
+    {
+        $this->selectedServiceTicketId = null;
+        $this->isCancelModalOpen = false;
+    }
+
+    public function confirmCancelTicket()
+    {
+        if (!$this->selectedServiceTicketId) {
+            session()->flash('error', 'Tiket servis tidak ditemukan.');
+            return;
+        }
+
+        try {
+            $serviceTicket = ServiceTicket::findOrFail($this->selectedServiceTicketId);
+
+            if (!in_array($serviceTicket->status, ['Selesai', 'Dibatalkan'])) {
+                $serviceTicket->update([
+                    'status' => 'Dibatalkan'
+                ]);
+
+                session()->flash('success', 'Tiket servis berhasil dibatalkan.');
+            } else {
+                session()->flash('error', 'Tiket servis tidak dapat dibatalkan.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal membatalkan tiket servis.');
+        }
+
+        $this->closeCancelModal();
     }
 
     public function render()
@@ -58,13 +100,13 @@ class ServiceTicketTable extends Component
                             });
                     });
                 })
+                ->when($this->activeTab !== 'all', function ($query) {
+                    $query->where('status', $this->activeTab);
+                })
                 ->when($this->serviceTypeFilter, function ($query) {
                     $query->whereHas('orderService', function ($q) {
                         $q->where('type', $this->serviceTypeFilter);
                     });
-                })
-                ->when($this->statusFilter, function ($query) {
-                    $query->where('status', $this->statusFilter);
                 })
                 ->orderBy($this->sortField, $this->sortDirection)
                 ->paginate($this->perPage)
