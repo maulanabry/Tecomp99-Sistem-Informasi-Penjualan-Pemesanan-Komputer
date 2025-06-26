@@ -27,8 +27,8 @@
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         <option value="">Pilih order</option>
                         @foreach($orderServices as $order)
-                            <option value="{{ $order->order_service_id }}">
-                                {{ $order->order_service_id }} - {{ $order->customer->name }}
+                            <option value="{{ $order->order_service_id }}" data-type="{{ $order->type }}">
+                                {{ $order->order_service_id }} - {{ $order->customer->name }} ({{ ucfirst($order->type) }})
                             </option>
                         @endforeach
                     </select>
@@ -42,6 +42,7 @@
                             <p><span class="font-medium">Device:</span> <span id="deviceInfo">-</span></p>
                             <p><span class="font-medium">Keluhan:</span> <span id="complaintsInfo">-</span></p>
                             <p><span class="font-medium">Customer:</span> <span id="customerInfo">-</span></p>
+                            <p><span class="font-medium">Tipe Layanan:</span> <span id="typeInfo">-</span></p>
                         </div>
                     </div>
                 </div>
@@ -69,6 +70,14 @@
                             Tanggal Jadwal <span class="text-red-500">*</span>
                         </label>
                         <input type="date" id="schedule_date" name="schedule_date" required
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+
+                    <div id="visitScheduleField" style="display: none;">
+                        <label for="visit_schedule" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                            Jadwal Kunjungan
+                        </label>
+                        <input type="datetime-local" id="visit_schedule" name="visit_schedule"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     </div>
 
@@ -120,18 +129,35 @@
             // Handle order selection
             orderSelect.addEventListener('change', function() {
                 const orderInfo = document.getElementById('orderServiceInfo');
+                const visitScheduleField = document.getElementById('visitScheduleField');
+                
                 if (this.value) {
                     const selectedOrder = orderServices.find(order => order.order_service_id === this.value);
+                    const selectedOption = this.options[this.selectedIndex];
+                    const orderType = selectedOption.getAttribute('data-type');
+                    
                     if (selectedOrder) {
                         document.getElementById('deviceInfo').textContent = selectedOrder.device || '-';
                         document.getElementById('complaintsInfo').textContent = selectedOrder.complaints || '-';
                         document.getElementById('customerInfo').textContent = selectedOrder.customer_name || '-';
+                        document.getElementById('typeInfo').textContent = orderType === 'onsite' ? 'Onsite' : 'Reguler';
                         orderInfo.classList.remove('hidden');
+                        
+                        // Show/hide visit schedule based on order type
+                        if (orderType === 'onsite') {
+                            visitScheduleField.style.display = 'block';
+                        } else {
+                            visitScheduleField.style.display = 'none';
+                            document.getElementById('visit_schedule').value = '';
+                        }
                     } else {
                         orderInfo.classList.add('hidden');
+                        visitScheduleField.style.display = 'none';
                     }
                 } else {
                     orderInfo.classList.add('hidden');
+                    visitScheduleField.style.display = 'none';
+                    document.getElementById('visit_schedule').value = '';
                 }
             });
 
@@ -157,7 +183,8 @@
                 'order_service_id' => $order->order_service_id,
                 'device' => $order->device,
                 'complaints' => $order->complaints,
-                'customer_name' => $order->customer->name
+                'customer_name' => $order->customer->name,
+                'type' => $order->type
             ];
         })->values()) !!};
     </script>

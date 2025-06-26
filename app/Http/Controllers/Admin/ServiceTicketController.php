@@ -28,12 +28,22 @@ class ServiceTicketController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        // Get the order service to check its type
+        $orderService = \App\Models\OrderService::find($request->order_service_id);
+
+        $rules = [
             'order_service_id' => 'required|exists:order_services,order_service_id',
             'admin_id' => 'required|exists:admins,id',
             'schedule_date' => 'required|date|after_or_equal:today',
             'estimation_days' => 'nullable|integer|min:1',
-        ]);
+        ];
+
+        // Add visit_schedule validation only for onsite orders
+        if ($orderService && $orderService->type === 'onsite') {
+            $rules['visit_schedule'] = 'nullable|date_format:Y-m-d\TH:i';
+        }
+
+        $validated = $request->validate($rules);
 
         // Calculate estimate_date if estimation_days is provided
         if (!empty($validated['estimation_days'])) {
@@ -109,11 +119,18 @@ class ServiceTicketController extends Controller
 
     public function update(Request $request, ServiceTicket $ticket)
     {
-        $validated = $request->validate([
+        $rules = [
             'status' => 'required|in:Menunggu,Diproses,Diantar,Perlu Diambil,Selesai',
             'schedule_date' => 'required|date',
             'estimation_days' => 'nullable|integer|min:1',
-        ]);
+        ];
+
+        // Add visit_schedule validation only for onsite orders
+        if ($ticket->orderService->type === 'onsite') {
+            $rules['visit_schedule'] = 'nullable|date_format:Y-m-d\TH:i';
+        }
+
+        $validated = $request->validate($rules);
 
         // Calculate estimate_date if estimation_days is provided
         if (!empty($validated['estimation_days'])) {

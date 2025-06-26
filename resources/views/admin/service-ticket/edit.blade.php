@@ -29,6 +29,16 @@
                 @csrf
                 @method('PUT')
 
+                <!-- Order Type Info -->
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+                        Tipe Layanan
+                    </label>
+                    <div class="text-sm text-gray-900 dark:text-gray-100">
+                        {{ ucfirst($ticket->orderService->type) }}
+                    </div>
+                </div>
+
                 <!-- Status -->
                 <div>
                     <label for="status" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -54,6 +64,18 @@
                         min="{{ date('Y-m-d') }}"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 </div>
+
+                @if($ticket->orderService->type === 'onsite')
+                <!-- Visit Schedule -->
+                <div>
+                    <label for="visit_schedule" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                        Jadwal Kunjungan
+                    </label>
+                    <input type="datetime-local" id="visit_schedule" name="visit_schedule"
+                        value="{{ $ticket->visit_schedule ? $ticket->visit_schedule->format('Y-m-d\TH:i') : '' }}"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                @endif
 
                 <!-- Estimation Days -->
                 <div>

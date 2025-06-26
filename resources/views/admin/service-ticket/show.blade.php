@@ -55,10 +55,20 @@
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Jadwal</dt>
                             <dd class="text-sm text-gray-900 dark:text-gray-100">{{ \Carbon\Carbon::parse($ticket->schedule_date)->format('d/m/Y') }}</dd>
                         </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Layanan</dt>
+                            <dd class="text-sm text-gray-900 dark:text-gray-100">{{ ucfirst($ticket->orderService->type) }}</dd>
+                        </div>
                         @if($ticket->estimation_days)
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Estimasi Pengerjaan</dt>
                             <dd class="text-sm text-gray-900 dark:text-gray-100">{{ $ticket->estimation_days }} hari</dd>
+                        </div>
+                        @endif
+                        @if($ticket->orderService->type === 'onsite' && $ticket->visit_schedule)
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jadwal Kunjungan</dt>
+                            <dd class="text-sm text-gray-900 dark:text-gray-100">{{ \Carbon\Carbon::parse($ticket->visit_schedule)->format('d/m/Y H:i') }}</dd>
                         </div>
                         @endif
                         @if($ticket->estimate_date)

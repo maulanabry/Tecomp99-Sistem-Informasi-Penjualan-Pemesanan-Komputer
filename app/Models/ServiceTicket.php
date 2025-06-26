@@ -19,12 +19,14 @@ class ServiceTicket extends Model
         'admin_id',
         'status',
         'schedule_date',
+        'visit_schedule',  // New field for visit schedule with date and time
         'estimation_days', // New field
         'estimate_date',   // New field
     ];
 
     protected $dates = [
         'schedule_date',
+        'visit_schedule',
         'estimate_date',
         'created_at',
         'updated_at',
@@ -33,6 +35,7 @@ class ServiceTicket extends Model
 
     protected $casts = [
         'schedule_date' => 'datetime',
+        'visit_schedule' => 'datetime',
         'estimate_date' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
