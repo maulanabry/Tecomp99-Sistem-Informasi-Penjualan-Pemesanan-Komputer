@@ -7,25 +7,38 @@
      :class="{'translate-x-0': open, '-translate-x-full': !open}"
      class="fixed md:static md:translate-x-0 w-64 h-[calc(100vh-4rem)] bg-white dark:bg-gray-700 border-r border-neutral-200 dark:border-neutral-500 flex flex-col transition-transform duration-300 ease-in-out shadow-md">
     <!-- Main Navigation -->
-    <nav class="flex-1 px-4 py-4 overflow-y-auto mt-2">
-        <ul class="space-y-2 text-neutral-600 dark:text-neutral-100">
+    <nav class="flex-1 px-3 py-3 overflow-y-auto">
+        <ul class="space-y-1.5 text-neutral-600 dark:text-neutral-100">
             <!-- Dashboard -->
             <li>
-                <a href="{{ route('admin.dashboard.index') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/dashboard') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
-                    <i class="fas fa-home w-5 h-5 mr-3"></i>
-                    <span>Dashboard</span>
+                <a href="{{ route('admin.dashboard.index') }}" wire:navigate 
+                   class="flex items-center px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
+                          hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
+                          {{ request()->is('admin/dashboard') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
+                    <i class="fas fa-home w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium">Dashboard</span>
                 </a>
             </li>
-<!-- Data Master -->
-<li x-data="{ open: {{ request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('admin/produk*') || request()->is('admin/servis*') || request()->is('admin/promo*') || request()->is('admin/customer*') ? 'true' : 'false' }} }" class="mt-4">
-    <button @click="open = !open" :class="{'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300': {{ request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('admin/produk*') || request()->is('admin/servis*') || request()->is('admin/promo*') || request()->is('admin/customer*') ? 'true' : 'false' }} }" class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500">
-        <div class="flex items-center">
-            <i class="fas fa-database w-5 h-5 mr-3"></i>
-            <span>Data Master</span>
-        </div>
-        <i class="fas fa-chevron-down w-4 h-4 transition-transform" :class="{ 'transform rotate-180': open }"></i>
-    </button>
-    <ul x-show="open" class="mt-1 space-y-1 pl-10">
+            <!-- Data Master -->
+            <li x-data="{ open: {{ request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('admin/produk*') || request()->is('admin/servis*') || request()->is('admin/promo*') || request()->is('admin/customer*') ? 'true' : 'false' }} }" class="relative">
+                <button @click="open = !open" 
+                        class="flex items-center justify-between w-full px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
+                               hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
+                               {{ request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('admin/produk*') || request()->is('admin/servis*') || request()->is('admin/promo*') || request()->is('admin/customer*') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
+                    <div class="flex items-center">
+                        <i class="fas fa-database w-5 h-5 mr-3"></i>
+                        <span class="font-medium">Data Master</span>
+                    </div>
+                    <i class="fas fa-chevron-down w-4 h-4 transition-transform duration-200" :class="{ 'transform rotate-180': open }"></i>
+                </button>
+                <ul x-show="open" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                    x-transition:leave-end="opacity-0 transform -translate-y-2"
+                    class="mt-1 space-y-1 px-2">
         <li>
             <a href="{{ route('categories.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/kategori*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                 Data Kategori
