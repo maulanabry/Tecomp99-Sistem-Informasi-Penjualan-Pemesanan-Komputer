@@ -100,6 +100,13 @@
                 </a>
             </li>
 
+            <!-- Notifications -->
+            <li class="mt-4">
+                <a href="{{ route('admin.notifications.index') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/notifications*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                    <i class="fas fa-bell w-5 h-5 mr-3"></i>
+                    <span>Notifikasi</span>
+                </a>
+            </li>
 
         </ul>
     </nav>

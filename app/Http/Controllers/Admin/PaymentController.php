@@ -26,13 +26,14 @@ class PaymentController extends Controller
 
     public function create()
     {
-        // Ensure storage directory exists
+        // Pastikan direktori bukti pembayaran ada
         if (!Storage::disk('public')->exists('payment-proofs')) {
             Storage::disk('public')->makeDirectory('payment-proofs');
         }
 
+        // Ambil order produk yang statusnya belum dibayar atau down_payment saja
         $orderProducts = OrderProduct::with('customer')
-            ->whereIn('status_payment', ['belum_dibayar', 'down_payment'])
+            ->whereNotIn('status_payment', ['dibatalkan', 'lunas', 'selesai'])
             ->get()
             ->map(function ($order) {
                 return [
@@ -45,8 +46,9 @@ class PaymentController extends Controller
                 ];
             });
 
+        // Ambil order servis yang statusnya belum dibayar atau down_payment saja
         $orderServices = OrderService::with('customer')
-            ->whereIn('status_payment', ['belum_dibayar', 'down_payment'])
+            ->whereNotIn('status_payment', ['dibatalkan', 'lunas', 'selesai'])
             ->get()
             ->map(function ($order) {
                 return [
@@ -74,8 +76,21 @@ class PaymentController extends Controller
                 'method' => 'required|in:Tunai,Bank BCA',
                 'amount' => 'required|integer|min:1',
                 'payment_type' => 'required|in:full,down_payment',
-                'proof_photo' => 'nullable|image|max:2048', // max 2MB
+                'proof_photo' => 'nullable|image|max:2048',
             ]);
+
+            // Validasi status order sebelum membuat pembayaran
+            if ($request->order_type === 'produk') {
+                $order = OrderProduct::findOrFail($request->order_id);
+            } else {
+                $order = OrderService::findOrFail($request->order_id);
+            }
+
+            if (in_array($order->status_payment, ['dibatalkan', 'lunas', 'selesai'])) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Pembayaran tidak dapat dilakukan untuk pesanan yang sudah dibatalkan atau sudah lunas/selesai.');
+            }
 
             // Generate payment ID
             $date = now()->format('dmY');

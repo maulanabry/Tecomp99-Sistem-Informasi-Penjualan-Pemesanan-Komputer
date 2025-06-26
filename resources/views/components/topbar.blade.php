@@ -30,7 +30,7 @@
                 <div class="flex items-center space-x-3">
                     <!-- Notification Bell -->
                     <livewire:admin.notification-dropdown />
-                    
+                    <x-dark-mode-toggle size="5" />
                     <div class="border-l border-neutral-200 dark:border-neutral-500 h-8 mx-3"></div>
                     
                     <!-- Profile and Dark Mode -->
@@ -39,7 +39,7 @@
                         <div class="text-xs text-neutral-500 dark:text-neutral-400">{{ auth('admin')->user()->role}}</div>
                     </div>
                     <div class="border-l border-neutral-200 dark:border-neutral-500 h-8 mx-3"></div>
-                    <x-dark-mode-toggle size="5" />
+               
                 </div>
             </div>
         </div>

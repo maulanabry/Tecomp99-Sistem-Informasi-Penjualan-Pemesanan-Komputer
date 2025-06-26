@@ -169,7 +169,7 @@
                     orders.forEach(order => {
                         const option = document.createElement('option');
                         option.value = order.id;
-                        option.textContent = `${order.id} - ${order.customer_name}`;
+                        option.textContent = `${order.id} - ${order.customer_name} (${order.payment_status})`;
                         option.dataset.subTotal = order.sub_total;
                         option.dataset.discount = order.discount_amount;
                         option.dataset.grandTotal = order.grand_total;
