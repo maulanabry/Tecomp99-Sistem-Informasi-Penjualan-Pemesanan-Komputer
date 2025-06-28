@@ -82,66 +82,101 @@ class ServiceTicketController extends Controller
 
     public function calendarEvents()
     {
-        $tickets = ServiceTicket::with(['orderService.customer'])
+        $serviceTickets = ServiceTicket::with(['orderService.customer'])
             ->whereHas('orderService', function ($query) {
                 $query->whereNotNull('type');
             })
-            ->get()
-            ->map(function ($ticket) {
-                $events = [];
+            ->get();
 
-                // Add service duration event with enhanced styling
-                if ($ticket->schedule_date && $ticket->estimate_date) {
-                    $events[] = [
-                        'id' => 'duration_' . $ticket->id,
-                        'title' => "Service #" . $ticket->service_ticket_id,
-                        'start' => $ticket->schedule_date,
-                        'end' => $ticket->estimate_date,
-                        'backgroundColor' => '#3788d8',
-                        'borderColor' => '#3788d8',
-                        'textColor' => '#ffffff',
-                        'classNames' => ['service-duration'],
-                        'extendedProps' => [
-                            'ticket_id' => $ticket->service_ticket_id,
-                            'customer_name' => $ticket->orderService->customer->name,
-                            'type' => $ticket->orderService->type,
-                            'device' => $ticket->orderService->device,
-                            'status' => $ticket->status,
-                            'eventType' => 'duration'
-                        ]
-                    ];
-                }
+        $events = [];
 
-                // Add visit schedule event for onsite services with enhanced styling
-                if ($ticket->orderService->type === 'onsite' && $ticket->visit_schedule) {
-                    $events[] = [
-                        'id' => 'visit_' . $ticket->id,
-                        'title' => "Visit #" . $ticket->service_ticket_id,
-                        'start' => $ticket->visit_schedule,
-                        'end' => \Carbon\Carbon::parse($ticket->visit_schedule)->addHour(),
-                        'backgroundColor' => '#dc3545',
-                        'borderColor' => '#dc3545',
-                        'textColor' => '#ffffff',
-                        'classNames' => ['visit-schedule'],
-                        'display' => 'block',
-                        'extendedProps' => [
-                            'ticket_id' => $ticket->service_ticket_id,
-                            'customer_name' => $ticket->orderService->customer->name,
-                            'type' => $ticket->orderService->type,
-                            'device' => $ticket->orderService->device,
-                            'status' => $ticket->status,
-                            'eventType' => 'visit',
-                            'address' => $ticket->orderService->customer->addresses->first()?->address ?? 'No address'
-                        ]
-                    ];
-                }
+        // Existing events for onsite visits only
+        foreach ($serviceTickets as $ticket) {
+            // Add visit schedule event for onsite services with enhanced styling
+            if ($ticket->orderService->type === 'onsite' && $ticket->visit_schedule) {
+                $events[] = [
+                    'id' => 'visit_' . $ticket->id,
+                    'title' => "Visit #" . $ticket->service_ticket_id,
+                    'start' => $ticket->visit_schedule,
+                    'end' => \Carbon\Carbon::parse($ticket->visit_schedule)->addHour(),
+                    'backgroundColor' => '#dc3545',
+                    'borderColor' => '#dc3545',
+                    'textColor' => '#ffffff',
+                    'classNames' => ['visit-schedule'],
+                    'display' => 'block',
+                    'extendedProps' => [
+                        'ticket_id' => $ticket->service_ticket_id,
+                        'customer_name' => $ticket->orderService->customer->name,
+                        'type' => $ticket->orderService->type,
+                        'device' => $ticket->orderService->device,
+                        'status' => $ticket->status,
+                        'eventType' => 'visit',
+                        'address' => $ticket->orderService->customer->addresses->first()?->address ?? 'No address'
+                    ]
+                ];
+            }
+        }
 
-                return $events;
+        // New logic for reguler queue events with FIFO scheduling from today
+        $regulerTickets = ServiceTicket::with(['orderService.customer'])
+            ->whereHas('orderService', function ($q) {
+                $q->where('type', 'reguler');
             })
-            ->flatten(1)
-            ->values();
+            ->whereIn('status', ['Menunggu', 'Diproses'])
+            ->orderBy('created_at', 'asc')
+            ->get();
 
-        return response()->json($tickets);
+        // FIFO-based distribution starting from today (prioritize all pending tickets)
+        $queueByDate = [];
+        $maxPerDay = 8;
+        $currentDate = \Carbon\Carbon::today();
+        $ticketIndex = 0;
+
+        // Distribute all active reguler tickets starting from today regardless of creation date
+        // This ensures all pending tickets are prioritized and shown starting from today
+        foreach ($regulerTickets as $ticket) {
+            // Calculate which day this ticket should be assigned to (starting from today)
+            $dayOffset = intval($ticketIndex / $maxPerDay);
+            $assignDate = $currentDate->copy()->addDays($dayOffset)->toDateString();
+
+            // Initialize array if not exists
+            if (!isset($queueByDate[$assignDate])) {
+                $queueByDate[$assignDate] = [];
+            }
+
+            // Add ticket to the queue for the assigned date
+            $queueByDate[$assignDate][] = $ticket;
+            $ticketIndex++;
+        }
+
+        // Generate events for reguler queue
+        foreach ($queueByDate as $date => $tickets) {
+            foreach ($tickets as $index => $ticket) {
+                $queueNumber = $index + 1;
+                $events[] = [
+                    'id' => 'reguler_' . $ticket->service_ticket_id,
+                    'title' => "Antrian #{$queueNumber} - " . $ticket->orderService->customer->name,
+                    'start' => $date,
+                    'allDay' => true,
+                    'backgroundColor' => '#f59e0b', // amber-500
+                    'borderColor' => '#f59e0b',
+                    'textColor' => '#000000',
+                    'classNames' => ['reguler-queue'],
+                    'extendedProps' => [
+                        'ticket_id' => $ticket->service_ticket_id,
+                        'customer_name' => $ticket->orderService->customer->name,
+                        'type' => 'reguler',
+                        'device' => $ticket->orderService->device ?? '',
+                        'status' => $ticket->status,
+                        'eventType' => 'reguler',
+                        'order_service_id' => $ticket->order_service_id,
+                        'created_at' => $ticket->created_at->format('Y-m-d H:i:s')
+                    ]
+                ];
+            }
+        }
+
+        return response()->json($events);
     }
 
     public function create()
@@ -278,10 +313,7 @@ class ServiceTicketController extends Controller
 
     public function destroy(ServiceTicket $ticket)
     {
-        $ticket->delete();
-
-        return redirect()->route('service-tickets.index')
-            ->with('success', 'Tiket servis berhasil dihapus.');
+        return $this->cancel($ticket);
     }
 
     public function createAction(ServiceTicket $ticket)

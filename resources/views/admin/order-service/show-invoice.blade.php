@@ -40,7 +40,7 @@
                     <!DOCTYPE html>
                     <html>
                     <head>
-                        <title>Invoice #{{ $orderProduct->order_product_id }} - {{ $orderProduct->customer->name }}</title>
+                        <title>Invoice Servis #{{ $orderService->order_service_id }} - {{ $orderService->customer->name }}</title>
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -74,10 +74,11 @@
         </script>
 
         {{-- Page Header --}}
+        @if(!isset($isPdf))
         <div class="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 mb-6">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="w-full sm:w-auto">
-                    <a href="{{ route('order-products.show', $orderProduct) }}" 
+                    <a href="{{ route('order-services.show', $orderService) }}" 
                         class="no-print w-full sm:w-auto inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700  hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
@@ -95,6 +96,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         {{-- Invoice Content --}}
         <div id="invoice-content" class="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
@@ -104,25 +106,25 @@
                     <img src="{{ asset('images/logo-tecomp99.svg') }}" alt="Logo Tecomp'99" class="h-12">
                     <div class="text-right">
                         <h1 class="text-xl font-bold text-gray-900 mb-1">INVOICE</h1>
-                        <p class="text-sm text-gray-500">Pembelian Produk</p>
+                        <p class="text-sm text-gray-500">Layanan Servis</p>
                     </div>
                 </div>
 
                 {{-- Section 2: Informasi Invoice --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900 mb-2">Invoice #{{ $orderProduct->order_product_id }}</h2>
+                        <h2 class="text-lg font-bold text-gray-900 mb-2">Invoice #{{ $orderService->order_service_id }}</h2>
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Jenis Pembelian:</span>
+                            <span class="text-sm font-medium text-gray-600">Jenis Layanan:</span>
                             <span class="ml-2 inline-flex px-2 py-1 rounded-full text-xs font-medium
-                                {{ $orderProduct->type === 'pengiriman' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
-                                {{ ucfirst($orderProduct->type) }}
+                                {{ $orderService->type === 'reguler' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                                {{ ucfirst($orderService->type) }}
                             </span>
                         </div>
                     </div>
                     <div class="text-left sm:text-right">
                         <p class="text-sm font-medium text-gray-600">Tanggal Pemesanan:</p>
-                        <p class="text-base font-semibold text-gray-900">{{ $orderProduct->created_at->format('d/m/Y') }}</p>
+                        <p class="text-base font-semibold text-gray-900">{{ $orderService->created_at->format('d/m/Y') }}</p>
                     </div>
                 </div>
 
@@ -131,10 +133,10 @@
                     <div class="p-3 bg-gray-50 rounded">
                         <h3 class="text-sm font-bold text-gray-900 mb-2">Data Pelanggan</h3>
                         <div class="text-xs space-y-1">
-                            <p><span class="font-medium">Nama:</span> {{ $orderProduct->customer->name }}</p>
-                            <p><span class="font-medium">Alamat:</span> {{ $orderProduct->customer->addresses?->detail_address ?? 'Alamat tidak tersedia' }}</p>
-                            <p><span class="font-medium">Telepon:</span> {{ $orderProduct->customer->contact }}</p>
-                            <p><span class="font-medium">Email:</span> {{ $orderProduct->customer->email }}</p>
+                            <p><span class="font-medium">Nama:</span> {{ $orderService->customer->name }}</p>
+                            <p><span class="font-medium">Alamat:</span> {{ $orderService->customer->addresses?->detail_address ?? 'Alamat tidak tersedia' }}</p>
+                            <p><span class="font-medium">Telepon:</span> {{ $orderService->customer->contact }}</p>
+                            <p><span class="font-medium">Email:</span> {{ $orderService->customer->email }}</p>
                         </div>
                     </div>
                     <div class="p-3 bg-gray-50 rounded">
@@ -147,20 +149,23 @@
                     </div>
                 </div>
 
-                {{-- Section 4: Tabel Produk --}}
+                {{-- Section 4: Tabel Rincian Servis/Produk --}}
                 <div class="mb-4 -mx-4 sm:mx-0">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead>
                                 <tr>
                                     <th class="px-3 sm:px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Nama Produk
+                                        Nama Item
                                     </th>
-                                    <th class="px-3 sm:px-4 py-2 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Jumlah
+                                    <th class="px-3 sm:px-4 py-2 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Kategori
                                     </th>
                                     <th class="px-3 sm:px-4 py-2 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Harga Satuan
+                                    </th>
+                                    <th class="px-3 sm:px-4 py-2 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Jumlah
                                     </th>
                                     <th class="px-3 sm:px-4 py-2 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Subtotal
@@ -168,16 +173,25 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($orderProduct->items as $item)
+                                @foreach($orderService->items as $item)
                                 <tr>
                                     <td class="px-3 sm:px-4 py-2 text-sm text-gray-900">
-                                        <div class="line-clamp-1">{{ $item->product->name }}</div>
+                                        <div class="line-clamp-1">{{ $item->item->name ?? 'Item tidak ditemukan' }}</div>
                                     </td>
-                                    <td class="px-3 sm:px-4 py-2 text-sm text-gray-900 text-right">
-                                        {{ $item->quantity }}
+                                    <td class="px-3 sm:px-4 py-2 text-sm text-gray-900 text-center">
+                                        @if($item->item_type === 'App\\Models\\Product')
+                                            <span class="inline-flex px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">Produk</span>
+                                        @elseif($item->item_type === 'App\\Models\\Service')
+                                            <span class="inline-flex px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Servis</span>
+                                        @else
+                                            <span class="inline-flex px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">-</span>
+                                        @endif
                                     </td>
                                     <td class="px-3 sm:px-4 py-2 text-sm text-gray-900 text-right">
                                         Rp {{ number_format($item->price, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-3 sm:px-4 py-2 text-sm text-gray-900 text-right">
+                                        {{ $item->quantity }}
                                     </td>
                                     <td class="px-3 sm:px-4 py-2 text-sm text-gray-900 text-right">
                                         Rp {{ number_format($item->item_total, 0, ',', '.') }}
@@ -190,11 +204,11 @@
                 </div>
 
                 {{-- Section 5: Catatan --}}
-                @if($orderProduct->note)
+                @if($orderService->note)
                 <div class="mb-4">
                     <h3 class="text-sm font-semibold mb-1">Catatan:</h3>
                     <p class="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                        {{ $orderProduct->note }}
+                        {{ $orderService->note }}
                     </p>
                 </div>
                 @endif
@@ -205,25 +219,24 @@
                         <div class="mb-3">
                             <h3 class="text-sm font-semibold mb-1">Status Pembayaran</h3>
                             <p class="inline-flex px-2 py-1 rounded-full text-xs
-                                {{ $orderProduct->status_payment === 'belum_dibayar' ? 'bg-red-100 text-red-800' : '' }}
-                                {{ $orderProduct->status_payment === 'down_payment' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                {{ $orderProduct->status_payment === 'lunas' ? 'bg-green-100 text-green-800' : '' }}
-                                {{ $orderProduct->status_payment === 'dibatalkan' ? 'bg-gray-100 text-gray-800' : '' }}">
-                                {{ str_replace('_', ' ', ucfirst($orderProduct->status_payment)) }}
+                                {{ $orderService->status_payment === 'belum_dibayar' ? 'bg-red-100 text-red-800' : '' }}
+                                {{ $orderService->status_payment === 'down_payment' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                {{ $orderService->status_payment === 'lunas' ? 'bg-green-100 text-green-800' : '' }}
+                                {{ $orderService->status_payment === 'dibatalkan' ? 'bg-gray-100 text-gray-800' : '' }}">
+                                {{ str_replace('_', ' ', ucfirst($orderService->status_payment)) }}
                             </p>
                         </div>
 
-                        @if($orderProduct->type === 'pengiriman')
                         <div>
-                            <h3 class="text-sm font-semibold mb-1">Status Pengiriman</h3>
-                            <p class="text-xs text-gray-600">
-                                @php
-                                    $shipping = $orderProduct->shipping;
-                                @endphp
-                                {{ $shipping ? $shipping->courier_name . ' - ' . $shipping->courier_service : '-' }}
+                            <h3 class="text-sm font-semibold mb-1">Status Order</h3>
+                            <p class="inline-flex px-2 py-1 rounded-full text-xs
+                                {{ $orderService->status_order === 'Menunggu' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                {{ $orderService->status_order === 'Diproses' ? 'bg-blue-100 text-blue-800' : '' }}
+                                {{ $orderService->status_order === 'Selesai' ? 'bg-green-100 text-green-800' : '' }}
+                                {{ $orderService->status_order === 'Dibatalkan' ? 'bg-red-100 text-red-800' : '' }}">
+                                {{ $orderService->status_order }}
                             </p>
                         </div>
-                        @endif
                     </div>
 
                     <div class="border-t md:border-t-0 pt-2 md:pt-0 print:border-t-0 print:pt-0">
@@ -231,20 +244,15 @@
                             <div class="text-sm font-semibold mb-2">Ringkasan Harga</div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div class="text-xs text-gray-600">Subtotal:</div>
-                                <div class="text-xs text-right">Rp {{ number_format($orderProduct->sub_total, 0, ',', '.') }}</div>
+                                <div class="text-xs text-right">Rp {{ number_format($orderService->sub_total, 0, ',', '.') }}</div>
                                 
-                                @if($orderProduct->discount_amount > 0)
+                                @if($orderService->discount_amount > 0)
                                 <div class="text-xs text-gray-600">Diskon:</div>
-                                <div class="text-xs text-right">Rp {{ number_format($orderProduct->discount_amount, 0, ',', '.') }}</div>
-                                @endif
-                                
-                                @if($orderProduct->shipping_cost > 0)
-                                <div class="text-xs text-gray-600">Ongkir:</div>
-                                <div class="text-xs text-right">Rp {{ number_format($orderProduct->shipping_cost, 0, ',', '.') }}</div>
+                                <div class="text-xs text-right">Rp {{ number_format($orderService->discount_amount, 0, ',', '.') }}</div>
                                 @endif
                                 
                                 <div class="text-sm font-semibold">Grand Total:</div>
-                                <div class="text-sm font-semibold text-right">Rp {{ number_format($orderProduct->grand_total, 0, ',', '.') }}</div>
+                                <div class="text-sm font-semibold text-right">Rp {{ number_format($orderService->grand_total, 0, ',', '.') }}</div>
                             </div>
                         </div>
                     </div>

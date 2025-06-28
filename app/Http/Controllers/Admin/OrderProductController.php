@@ -365,7 +365,7 @@ class OrderProductController extends Controller
         }
     }
 
-    public function destroy(OrderProduct $orderProduct)
+    public function cancel(OrderProduct $orderProduct)
     {
         try {
             // Restock products and decrement sold count for each order item
@@ -380,11 +380,17 @@ class OrderProductController extends Controller
             // Update the status_order to 'dibatalkan'
             $orderProduct->update([
                 'status_order' => 'dibatalkan',
+                'status_payment' => 'dibatalkan',
             ]);
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal membatalkan order: ' . $e->getMessage());
         }
         return redirect()->route('order-products.index')->with('success', 'Order produk berhasil dibatalkan.');
+    }
+
+    public function destroy(OrderProduct $orderProduct)
+    {
+        return $this->cancel($orderProduct);
     }
 
     public function recovery()

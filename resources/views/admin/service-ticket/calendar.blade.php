@@ -39,12 +39,12 @@
             <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Keterangan:</h3>
             <div class="flex flex-wrap gap-4">
                 <div class="flex items-center">
-                    <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Durasi Service</span>
-                </div>
-                <div class="flex items-center">
                     <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
                     <span class="text-sm text-gray-700 dark:text-gray-300">Jadwal Kunjungan (Onsite)</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-amber-500 rounded mr-2"></div>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Antrian Reguler (In-Store)</span>
                 </div>
             </div>
         </div>
@@ -66,6 +66,18 @@
                 border-left: 4px solid #3788d8 !important;
                 background: linear-gradient(135deg, #3788d8 0%, #2c6bc7 100%) !important;
                 box-shadow: 0 2px 4px rgba(55, 136, 216, 0.3);
+            }
+
+            .fc-event.reguler-queue {
+                border-left: 4px solid #f59e0b !important;
+                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+                box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+                color: #000000 !important;
+                font-weight: 600;
+                font-size: 0.875rem;
+                white-space: normal;
+                padding: 2px 6px;
+                margin: 2px 0;
             }
             
             .fc-event:hover {
@@ -102,7 +114,7 @@
                     <!-- Content will be populated by JavaScript -->
                 </div>
                 <div class="flex justify-end mt-6">
-                    <button id="viewTicket" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    <button id="viewTicket" class="hidden px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
                         Lihat Tiket
                     </button>
                 </div>
@@ -138,7 +150,15 @@
                     
                     modalTitle.textContent = event.title;
                     
-                    const eventTypeLabel = props.eventType === 'duration' ? 'Durasi Service' : 'Jadwal Kunjungan';
+                    let eventTypeLabel = '';
+                    if (props.eventType === 'duration') {
+                        eventTypeLabel = 'Durasi Service';
+                    } else if (props.eventType === 'visit') {
+                        eventTypeLabel = 'Jadwal Kunjungan';
+                    } else if (props.eventType === 'reguler') {
+                        eventTypeLabel = 'Antrian Reguler';
+                    }
+                    
                     const startDate = event.start.toLocaleDateString('id-ID', {
                         weekday: 'long',
                         year: 'numeric',
@@ -149,7 +169,7 @@
                     let timeInfo = '';
                     if (props.eventType === 'visit') {
                         timeInfo = `<p><span class="font-medium text-gray-500 dark:text-gray-400">Waktu:</span> ${event.start.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>`;
-                    } else if (event.end) {
+                    } else if (event.end && props.eventType !== 'reguler') {
                         const endDate = event.end.toLocaleDateString('id-ID', {
                             weekday: 'long',
                             year: 'numeric',
@@ -171,6 +191,30 @@
                         statusBadge = `<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${colorClass}">${props.status}</span>`;
                     }
 
+                    let ticketIdRow = '';
+                    if (props.ticket_id) {
+                        ticketIdRow = `<p><span class="font-medium text-gray-500 dark:text-gray-400">Tiket ID:</span> ${props.ticket_id}</p>`;
+                    }
+
+                    let orderServiceIdRow = '';
+                    if (props.order_service_id) {
+                        orderServiceIdRow = `<p><span class="font-medium text-gray-500 dark:text-gray-400">Order ID:</span> ${props.order_service_id}</p>`;
+                    }
+
+                    let createdAtRow = '';
+                    if (props.created_at && props.eventType === 'reguler') {
+                        const createdDate = new Date(props.created_at);
+                        const formattedCreatedDate = createdDate.toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        createdAtRow = `<p><span class="font-medium text-gray-500 dark:text-gray-400">Dibuat:</span> ${formattedCreatedDate}</p>`;
+                    }
+
                     modalContent.innerHTML = `
                         <div class="space-y-3 text-sm">
                             <div class="flex items-center justify-between">
@@ -178,30 +222,49 @@
                                 ${statusBadge}
                             </div>
                             <p><span class="font-medium text-gray-500 dark:text-gray-400">Tipe:</span> ${eventTypeLabel}</p>
-                            <p><span class="font-medium text-gray-500 dark:text-gray-400">Tiket ID:</span> ${props.ticket_id}</p>
+                            ${ticketIdRow}
+                            ${orderServiceIdRow}
                             <p><span class="font-medium text-gray-500 dark:text-gray-400">Customer:</span> ${props.customer_name}</p>
                             <p><span class="font-medium text-gray-500 dark:text-gray-400">Device:</span> ${props.device}</p>
                             <p><span class="font-medium text-gray-500 dark:text-gray-400">Layanan:</span> ${props.type === 'onsite' ? 'Onsite' : 'Reguler'}</p>
                             ${props.address && props.eventType === 'visit' ? `<p><span class="font-medium text-gray-500 dark:text-gray-400">Alamat:</span> ${props.address}</p>` : ''}
-                            <p><span class="font-medium text-gray-500 dark:text-gray-400">Tanggal:</span> ${startDate}</p>
+                            <p><span class="font-medium text-gray-500 dark:text-gray-400">Tanggal Terjadwal:</span> ${startDate}</p>
+                            ${createdAtRow}
                             ${timeInfo}
                         </div>
                     `;
+                    
+                    // Show/hide view ticket button based on whether ticket_id exists
+                    if (props.ticket_id) {
+                        viewTicketBtn.classList.remove('hidden');
+                    } else {
+                        viewTicketBtn.classList.add('hidden');
+                    }
                     
                     modal.classList.remove('hidden');
                 },
                 eventDidMount: function(info) {
                     // Enhanced tooltip with more details
                     const props = info.event.extendedProps;
-                    const eventType = props.eventType === 'duration' ? 'Durasi Service' : 'Jadwal Kunjungan';
-                    const startTime = info.event.start.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    let eventTypeLabel = '';
+                    if (props.eventType === 'duration') {
+                        eventTypeLabel = 'Durasi Service';
+                    } else if (props.eventType === 'visit') {
+                        eventTypeLabel = 'Jadwal Kunjungan';
+                    } else if (props.eventType === 'reguler') {
+                        eventTypeLabel = 'Antrian Reguler';
+                    }
                     
                     let tooltip = `${info.event.title}\n`;
-                    tooltip += `Tipe: ${eventType}\n`;
+                    tooltip += `Tipe: ${eventTypeLabel}\n`;
                     tooltip += `Customer: ${props.customer_name}\n`;
                     tooltip += `Device: ${props.device}\n`;
-                    tooltip += `Status: ${props.status}\n`;
-                    tooltip += `Waktu: ${startTime}`;
+                    tooltip += `Status: ${props.status}`;
+                    
+                    if (props.eventType !== 'reguler') {
+                        const startTime = info.event.start.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                        tooltip += `\nWaktu: ${startTime}`;
+                    }
                     
                     if (props.address && props.eventType === 'visit') {
                         tooltip += `\nAlamat: ${props.address}`;
@@ -212,6 +275,8 @@
                     // Add custom styling based on event type
                     if (props.eventType === 'visit') {
                         info.el.style.fontWeight = 'bold';
+                        info.el.style.borderRadius = '6px';
+                    } else if (props.eventType === 'reguler') {
                         info.el.style.borderRadius = '6px';
                     }
                 },

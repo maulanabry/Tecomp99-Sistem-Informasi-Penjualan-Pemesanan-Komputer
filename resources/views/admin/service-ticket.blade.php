@@ -47,6 +47,15 @@
                 </div>
             </div>
 
+            <!-- Reguler Queue Section -->
+            <div id="reguler-queue" class="py-4">
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900 dark:text-gray-100">
+                        @livewire('admin.reguler-queue-list')
+                    </div>
+                </div>
+            </div>
+
             <!-- Visit Schedules Section -->
             <div id="visit-schedules" class="py-4">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">

@@ -296,9 +296,10 @@
                 <!-- Delete Confirmation Modal -->
                 <x-delete-confirmation-modal 
                     :id="$ticket->service_ticket_id"
-                    :title="'Hapus Tiket Servis'"
-                    :message="'Apakah Anda yakin ingin menghapus tiket servis ini?'"
-                    :action="route('service-tickets.destroy', $ticket->service_ticket_id)"
+                    :title="'Batalkan Tiket Servis'"
+                    :message="'Apakah Anda yakin ingin membatalkan tiket servis ini?'"
+                    :action="route('service-tickets.cancel', $ticket->service_ticket_id)"
+                    method="PUT"
                 />
             @empty
                 <div class="p-4 text-center text-sm text-gray-600 dark:text-gray-300">Tidak ada tiket servis ditemukan.</div>

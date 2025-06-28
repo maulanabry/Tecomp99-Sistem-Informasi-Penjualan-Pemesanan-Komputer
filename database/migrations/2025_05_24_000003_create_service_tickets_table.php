@@ -22,6 +22,7 @@ return new class extends Migration
             $table->date('schedule_date');
             $table->integer('estimation_days')->nullable(); // New column for estimation days
             $table->date('estimate_date')->nullable(); // New column for estimate date
+            $table->dateTime('visit_schedule')->nullable()->after('schedule_date');
             $table->timestamps();
             $table->softDeletes();
         });

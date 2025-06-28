@@ -123,6 +123,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/{orderProduct}/edit-shipping', [\App\Http\Controllers\Admin\OrderProductController::class, 'editShipping'])->name('order-products.edit-shipping');
         Route::put('/{orderProduct}/shipping', [\App\Http\Controllers\Admin\OrderProductController::class, 'updateShipping'])->name('order-products.update-shipping');
         Route::put('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'update'])->name('order-products.update');
+        Route::put('/{orderProduct}/cancel', [\App\Http\Controllers\Admin\OrderProductController::class, 'cancel'])->name('order-products.cancel');
         Route::delete('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'destroy'])->name('order-products.destroy');
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderProductController::class, 'recovery'])->name('order-products.recovery');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderProductController::class, 'restore'])->name('order-products.restore');
@@ -135,8 +136,10 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/create', [\App\Http\Controllers\Admin\OrderServiceController::class, 'create'])->name('order-services.create');
         Route::post('/', [\App\Http\Controllers\Admin\OrderServiceController::class, 'store'])->name('order-services.store');
         Route::get('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'show'])->name('order-services.show');
+        Route::get('/{orderService}/invoice', [\App\Http\Controllers\Admin\OrderServiceController::class, 'showInvoice'])->name('order-services.invoice');
         Route::get('/{orderService}/edit', [\App\Http\Controllers\Admin\OrderServiceController::class, 'edit'])->name('order-services.edit');
         Route::put('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'update'])->name('order-services.update');
+        Route::put('/{orderService}/cancel', [\App\Http\Controllers\Admin\OrderServiceController::class, 'cancel'])->name('order-services.cancel');
         Route::delete('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'destroy'])->name('order-services.destroy');
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderServiceController::class, 'recovery'])->name('order-services.recovery');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderServiceController::class, 'restore'])->name('order-services.restore');
@@ -162,7 +165,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
 
         // Service Ticket Status Management
         Route::put('/{ticket}/status', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'updateStatus'])->name('service-tickets.update-status');
-        Route::post('/{ticket}/cancel', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'cancel'])->name('service-tickets.cancel');
+        Route::put('/{ticket}/cancel', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'cancel'])->name('service-tickets.cancel');
 
         // Service Ticket Recovery
         Route::get('/recovery', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'recovery'])->name('service-tickets.recovery');

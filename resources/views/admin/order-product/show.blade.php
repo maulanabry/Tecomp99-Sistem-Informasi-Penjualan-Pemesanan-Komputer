@@ -14,37 +14,85 @@
             @endif
         </div>
 
+        {{-- Breadcrumbs --}}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+            <nav class="flex mb-6" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="{{ route('admin.dashboard.index') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
+                            <i class="fas fa-home mr-2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                            <a href="{{ route('order-products.index') }}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2 dark:text-gray-400 dark:hover:text-white">Order Produk</a>
+                        </div>
+                    </li>
+                    <li aria-current="page">
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2 dark:text-gray-400">{{ $orderProduct->order_product_id }}</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+
         {{-- Page Header --}}
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('order-products.index') }}" 
+            <div class="flex items-center gap-4 mb-4">
+                <a href="{{ route('order-products.index') }}" 
+                    class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Kembali
+                </a>
+                <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Order Produk</h1>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 mb-6">
+                <!-- Edit Button -->
+                <a href="{{ route('order-products.edit', $orderProduct) }}"
+                    class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                    <i class="fas fa-edit mr-2"></i>
+                    Edit Order
+                </a>
+
+                @if($orderProduct->type === 'pengiriman')
+                    <a href="{{ route('order-products.edit-shipping', $orderProduct) }}" 
                         class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Kembali
+                        <i class="fas fa-truck mr-2"></i>
+                        Ubah Pengiriman
                     </a>
-                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Order Produk</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    @if($orderProduct->type === 'pengiriman')
-                        <a href="{{ route('order-products.edit-shipping', $orderProduct) }}" 
-                            class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                            <i class="fas fa-truck mr-2"></i>
-                            Ubah Pengiriman
-                        </a>
-                    @endif
-                    <a href="{{ route('order-products.invoice', $orderProduct) }}" 
-                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                        <i class="fas fa-file-invoice mr-2"></i>
-                        Lihat Invoice
+                @endif
+
+                <!-- Add Payment Button (if no payments exist) -->
+                @if($orderProduct->payments->isEmpty())
+                    <a href="{{ route('payments.create') }}?order_product_id={{ $orderProduct->id }}"
+                        class="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:w-auto">
+                        <i class="fas fa-credit-card mr-2"></i>
+                        Tambah Pembayaran
                     </a>
+                @endif
+
+                <!-- Invoice Button -->
+                <a href="{{ route('order-products.invoice', $orderProduct) }}" 
+                    class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                    <i class="fas fa-file-invoice mr-2"></i>
+                    Lihat Invoice
+                </a>
+
+                <!-- Cancel Button -->
+                @if($orderProduct->status_order !== 'dibatalkan' && $orderProduct->status_order !== 'selesai')
                     <button type="button"
-                        onclick="confirmDelete(this)"
+                        data-modal-target="cancel-order-cancel-order"
+                        data-modal-toggle="cancel-order-cancel-order"
                         class="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto">
                         <i class="fas fa-times mr-2"></i>
                         Batalkan Pesanan
                     </button>
-                </div>
+                @endif
             </div>
         </div>
 
@@ -104,29 +152,33 @@
                                     {{ $orderProduct->created_at->format('d/m/Y H:i') }}
                                 </dd>
                             </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Subtotal</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    Rp {{ number_format($orderProduct->sub_total, 0, ',', '.') }}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Diskon</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    Rp {{ number_format($orderProduct->discount_amount ?? 0, 0, ',', '.') }}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Ongkir</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    Rp {{ number_format($orderProduct->shipping_cost ?? 0, 0, ',', '.') }}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Grand Total</dt>
-                                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                    Rp {{ number_format($orderProduct->grand_total, 0, ',', '.') }}
-                                </dd>
+                            <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <dl class="space-y-3">
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Subtotal</dt>
+                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                            Rp {{ number_format($orderProduct->sub_total, 0, ',', '.') }}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Diskon</dt>
+                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                            Rp {{ number_format($orderProduct->discount_amount ?? 0, 0, ',', '.') }}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Ongkir</dt>
+                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                            Rp {{ number_format($orderProduct->shipping_cost ?? 0, 0, ',', '.') }}
+                                        </dd>
+                                    </div>
+                                    <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Grand Total</dt>
+                                        <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                            Rp {{ number_format($orderProduct->grand_total, 0, ',', '.') }}
+                                        </dd>
+                                    </div>
+                                </dl>
                             </div>
                         </div>
                     </div>
@@ -321,22 +373,11 @@
         </div>
     </div>
 
-    {{-- Delete Confirmation Modal --}}
-    <x-delete-confirmation-modal
+    {{-- Cancel Order Confirmation Modal --}}
+    <x-cancel-order-modal
         id="cancel-order"
-        title="Batalkan Pesanan"
-        message="Apakah Anda yakin ingin membatalkan pesanan ini? Tindakan ini akan mengembalikan stok produk."
-        :action="route('order-products.destroy', $orderProduct)"
+        title="Batalkan Order Produk"
+        message="Apakah Anda yakin ingin membatalkan order produk ini? Tindakan ini akan mengembalikan stok produk."
+        :action="route('order-products.cancel', $orderProduct)"
     />
-
-    @push('scripts')
-    <script>
-        function confirmDelete(button) {
-            // Show the delete confirmation modal using Flowbite
-            const modalElement = document.getElementById('delete-modal-cancel-order');
-            const modal = new Modal(modalElement);
-            modal.show();
-        }
-    </script>
-    @endpush
 </x-layout-admin>

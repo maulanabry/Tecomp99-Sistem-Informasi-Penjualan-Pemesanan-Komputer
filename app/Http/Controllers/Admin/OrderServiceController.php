@@ -32,6 +32,13 @@ class OrderServiceController extends Controller
         return view('admin.order-service.show', compact('orderService'));
     }
 
+    public function showInvoice(OrderService $orderService)
+    {
+        $orderService->load(['customer.addresses', 'items.item', 'paymentDetails']);
+        return view('admin.order-service.show-invoice', compact('orderService'));
+    }
+
+
     public function create()
     {
         $customers = \App\Models\Customer::select('customer_id', 'name', 'email', 'contact')
@@ -294,7 +301,7 @@ class OrderServiceController extends Controller
         }
     }
 
-    public function destroy(OrderService $orderService)
+    public function cancel(OrderService $orderService)
     {
         try {
             DB::beginTransaction();
@@ -310,6 +317,11 @@ class OrderServiceController extends Controller
                 }
             }
 
+            // Cancel all related service tickets
+            $orderService->tickets()->update([
+                'status' => 'Dibatalkan'
+            ]);
+
             // Update the status_order to 'Dibatalkan' instead of deleting
             $orderService->update([
                 'status_order' => 'Dibatalkan',
@@ -319,12 +331,17 @@ class OrderServiceController extends Controller
             DB::commit();
 
             return redirect()->route('order-services.index')
-                ->with('success', 'Order servis berhasil dibatalkan.');
+                ->with('success', 'Order servis dan tiket terkait berhasil dibatalkan.');
         } catch (\Exception $e) {
             DB::rollback();
             return redirect()->route('order-services.index')
                 ->with('error', 'Gagal membatalkan order servis: ' . $e->getMessage());
         }
+    }
+
+    public function destroy(OrderService $orderService)
+    {
+        return $this->cancel($orderService);
     }
 
     public function recovery()
