@@ -6,15 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Models\PaymentDetail;
 use App\Models\OrderService;
 use App\Models\OrderProduct;
+use App\Models\Admin;
+use App\Services\NotificationService;
+use App\Enums\NotificationType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     public function index()
     {
         return view('admin.payment');
@@ -160,6 +170,11 @@ class PaymentController extends Controller
                     $order->save();
                 }
 
+                // Create notification for payment received
+                if ($payment->status === 'dibayar') {
+                    $this->createPaymentNotification($payment, NotificationType::PAYMENT_RECEIVED);
+                }
+
                 DB::commit();
 
                 // Redirect to payment details with success message
@@ -241,6 +256,7 @@ class PaymentController extends Controller
                 $payment->change_returned = null;
             }
 
+            $oldStatus = $payment->status;
             $payment->save();
 
             // Get the related order
@@ -261,6 +277,15 @@ class PaymentController extends Controller
             // Auto-update payment status for related order
             if ($order) {
                 $order->updatePaymentStatus();
+            }
+
+            // Create notification if payment status changed
+            if ($oldStatus !== $payment->status) {
+                if ($payment->status === 'dibayar') {
+                    $this->createPaymentNotification($payment, NotificationType::PAYMENT_RECEIVED);
+                } elseif ($payment->status === 'gagal') {
+                    $this->createPaymentNotification($payment, NotificationType::PAYMENT_FAILED);
+                }
             }
 
             return redirect()
@@ -297,6 +322,9 @@ class PaymentController extends Controller
                     $order->updatePaymentStatus();
                 }
             }
+
+            // Create notification for payment failure
+            $this->createPaymentNotification($payment, NotificationType::PAYMENT_FAILED);
 
             return redirect()
                 ->back()
@@ -381,6 +409,63 @@ class PaymentController extends Controller
             return response()->json(['success' => true, 'message' => 'Gambar berhasil dihapus']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Gagal menghapus gambar: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Create payment notification for all admins
+     */
+    private function createPaymentNotification(PaymentDetail $payment, NotificationType $type)
+    {
+        try {
+            // Get the related order
+            $order = $payment->order_type === 'produk' ? $payment->orderProduct : $payment->orderService;
+
+            if (!$order) {
+                return;
+            }
+
+            // Get customer information
+            $customer = $order->customer;
+
+            // Prepare notification message
+            $message = match ($type) {
+                NotificationType::PAYMENT_RECEIVED => "Pembayaran diterima untuk {$payment->order_type} #{$order->getKey()}",
+                NotificationType::PAYMENT_FAILED => "Pembayaran gagal untuk {$payment->order_type} #{$order->getKey()}",
+                default => "Update pembayaran untuk {$payment->order_type} #{$order->getKey()}"
+            };
+
+            // Prepare notification data
+            $data = [
+                'payment_id' => $payment->payment_id,
+                'order_id' => $order->getKey(),
+                'order_type' => $payment->order_type,
+                'customer_name' => $customer->name,
+                'amount' => $payment->amount,
+                'method' => $payment->method,
+                'payment_type' => $payment->payment_type,
+                'status' => $payment->status
+            ];
+
+            // Add device info for service orders
+            if ($payment->order_type === 'servis' && isset($order->device)) {
+                $data['device'] = $order->device;
+            }
+
+            // Create notifications for all admins
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                $this->notificationService->create(
+                    notifiable: $admin,
+                    type: $type,
+                    subject: $payment,
+                    message: $message,
+                    data: $data
+                );
+            }
+        } catch (\Exception $e) {
+            // Log error but don't break the payment flow
+            Log::error('Failed to create payment notification: ' . $e->getMessage());
         }
     }
 }

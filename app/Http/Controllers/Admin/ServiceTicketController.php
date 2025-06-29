@@ -5,11 +5,21 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceTicket;
 use App\Models\ServiceAction;
+use App\Models\Admin;
+use App\Services\NotificationService;
+use App\Enums\NotificationType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ServiceTicketController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     public function index()
     {
         return view('admin.service-ticket');
@@ -280,6 +290,17 @@ class ServiceTicketController extends Controller
 
             DB::commit();
 
+            // Create notification for new service ticket
+            try {
+                $this->createTicketNotification(
+                    $ticket,
+                    NotificationType::SERVICE_TICKET_CREATED,
+                    "Tiket servis baru dibuat untuk {$ticket->orderService->device}"
+                );
+            } catch (\Exception $e) {
+                Log::error('Failed to create service ticket notification: ' . $e->getMessage());
+            }
+
             return redirect()->route('service-tickets.index')
                 ->with('success', 'Tiket servis berhasil dibuat.');
         } catch (\Exception $e) {
@@ -342,7 +363,30 @@ class ServiceTicketController extends Controller
             unset($validated['visit_date'], $validated['visit_time_slot']);
         }
 
+        $oldStatus = $ticket->status;
         $ticket->update($validated);
+
+        // Create notification for ticket update if status changed
+        if ($oldStatus !== $ticket->status) {
+            try {
+                $type = match ($ticket->status) {
+                    'Selesai' => NotificationType::SERVICE_TICKET_COMPLETED,
+                    default => NotificationType::SERVICE_TICKET_UPDATED
+                };
+
+                $message = match ($ticket->status) {
+                    'Selesai' => "Tiket servis #{$ticket->service_ticket_id} telah selesai",
+                    'Diproses' => "Tiket servis #{$ticket->service_ticket_id} sedang diproses",
+                    'Diantar' => "Tiket servis #{$ticket->service_ticket_id} sedang diantar",
+                    'Perlu Diambil' => "Tiket servis #{$ticket->service_ticket_id} siap diambil",
+                    default => "Status tiket servis #{$ticket->service_ticket_id} diubah menjadi {$ticket->status}"
+                };
+
+                $this->createTicketNotification($ticket, $type, $message);
+            } catch (\Exception $e) {
+                Log::error('Failed to create service ticket update notification: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->route('service-tickets.show', $ticket)
             ->with('success', 'Tiket servis berhasil diperbarui.');
@@ -472,7 +516,30 @@ class ServiceTicketController extends Controller
             'status' => 'required|in:Menunggu,Diproses,Diantar,Perlu Diambil,Selesai,Dibatalkan',
         ]);
 
+        $oldStatus = $ticket->status;
         $ticket->update($validated);
+
+        // Create notification for ticket update if status changed
+        if ($oldStatus !== $ticket->status) {
+            try {
+                $type = match ($ticket->status) {
+                    'Selesai' => NotificationType::SERVICE_TICKET_COMPLETED,
+                    default => NotificationType::SERVICE_TICKET_UPDATED
+                };
+
+                $message = match ($ticket->status) {
+                    'Selesai' => "Tiket servis #{$ticket->service_ticket_id} telah selesai",
+                    'Diproses' => "Tiket servis #{$ticket->service_ticket_id} sedang diproses",
+                    'Diantar' => "Tiket servis #{$ticket->service_ticket_id} sedang diantar",
+                    'Perlu Diambil' => "Tiket servis #{$ticket->service_ticket_id} siap diambil",
+                    default => "Status tiket servis #{$ticket->service_ticket_id} diubah menjadi {$ticket->status}"
+                };
+
+                $this->createTicketNotification($ticket, $type, $message);
+            } catch (\Exception $e) {
+                Log::error('Failed to create service ticket update notification: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->back()
             ->with('success', 'Status tiket servis berhasil diperbarui.');
@@ -513,5 +580,52 @@ class ServiceTicketController extends Controller
 
         return redirect()->route('service-tickets.recovery')
             ->with('success', 'Tiket servis berhasil dihapus permanen.');
+    }
+
+    /**
+     * Create service ticket notification for all admins
+     */
+    private function createTicketNotification(ServiceTicket $ticket, NotificationType $type, string $message)
+    {
+        try {
+            $orderService = $ticket->orderService;
+            if (!$orderService) {
+                return;
+            }
+
+            $customer = $orderService->customer;
+            if (!$customer) {
+                return;
+            }
+
+            // Prepare notification data
+            $data = [
+                'ticket_id' => $ticket->service_ticket_id,
+                'order_id' => $orderService->order_service_id,
+                'customer_name' => $customer->name,
+                'device' => $orderService->device,
+                'status' => $ticket->status,
+                'type' => $orderService->type // reguler/onsite
+            ];
+
+            // Add visit schedule for onsite service
+            if ($orderService->type === 'onsite' && $ticket->visit_schedule) {
+                $data['visit_schedule'] = $ticket->visit_schedule->format('Y-m-d H:i:s');
+            }
+
+            // Create notifications for all admins
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                $this->notificationService->create(
+                    notifiable: $admin,
+                    type: $type,
+                    subject: $ticket,
+                    message: $message,
+                    data: $data
+                );
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to create ticket notification: ' . $e->getMessage());
+        }
     }
 }
