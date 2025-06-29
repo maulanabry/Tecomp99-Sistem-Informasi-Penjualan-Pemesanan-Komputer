@@ -37,6 +37,7 @@ class PaymentDetail extends Model
         'order_service_id',
         'method',
         'amount',
+        'cash_received',
         'change_returned',
         'name',
         'status',
@@ -47,6 +48,7 @@ class PaymentDetail extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'cash_received' => 'decimal:2',
         'change_returned' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -61,14 +63,33 @@ class PaymentDetail extends Model
         parent::boot();
 
         static::saving(function ($payment) {
-            // Calculate change only for cash payments
-            if ($payment->method === 'Tunai' && $payment->isDirty('amount')) {
-                $order = $payment->order_type === 'produk' ? $payment->orderProduct : $payment->orderService;
-                if ($order && $payment->amount > $order->remaining_balance) {
-                    $payment->change_returned = $payment->amount - $order->remaining_balance;
+            // For cash payments, calculate change based on cash_received
+            if ($payment->method === 'Tunai') {
+                if ($payment->cash_received) {
+                    // Set amount to the actual payment (what goes to revenue)
+                    $order = $payment->order_type === 'produk' ? $payment->orderProduct : $payment->orderService;
+                    if ($order) {
+                        // Amount is either the remaining balance or the cash received, whichever is smaller
+                        $payment->amount = min($payment->cash_received, $order->remaining_balance);
+                        // Change is cash_received minus actual amount paid
+                        $payment->change_returned = $payment->cash_received - $payment->amount;
+                    }
                 } else {
-                    $payment->change_returned = 0;
+                    // If cash_received is not set, use amount as cash_received (backward compatibility)
+                    $payment->cash_received = $payment->amount;
+                    $order = $payment->order_type === 'produk' ? $payment->orderProduct : $payment->orderService;
+                    if ($order && $payment->amount > $order->remaining_balance) {
+                        // Adjust amount to actual payment and calculate change
+                        $payment->change_returned = $payment->amount - $order->remaining_balance;
+                        $payment->amount = $order->remaining_balance;
+                    } else {
+                        $payment->change_returned = 0;
+                    }
                 }
+            } else {
+                // For non-cash payments, amount is the actual payment and no change
+                $payment->cash_received = null;
+                $payment->change_returned = null;
             }
         });
 
@@ -166,6 +187,14 @@ class PaymentDetail extends Model
     public function getFormattedAmountAttribute()
     {
         return 'Rp ' . number_format($this->amount, 0, ',', '.');
+    }
+
+    /**
+     * Get formatted cash received
+     */
+    public function getFormattedCashReceivedAttribute()
+    {
+        return $this->cash_received ? 'Rp ' . number_format($this->cash_received, 0, ',', '.') : '-';
     }
 
     /**

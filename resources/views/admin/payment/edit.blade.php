@@ -35,6 +35,12 @@
                                         <option value="Bank BCA" {{ $payment->method === 'Bank BCA' ? 'selected' : '' }}>Bank BCA</option>
                                     </select>
                                 </div>
+                                @if($payment->method === 'Tunai')
+                                <div>
+                                    <label for="cash_received" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Uang Diterima</label>
+                                    <input type="number" name="cash_received" id="cash_received" value="{{ $payment->cash_received }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                                </div>
+                                @endif
                                 <div>
                                     <label for="amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount</label>
                                     <input type="number" name="amount" id="amount" value="{{ $payment->amount }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
@@ -133,9 +139,36 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const methodSelect = document.getElementById('method');
+            const amountInput = document.getElementById('amount');
+            const cashReceivedInput = document.getElementById('cash_received');
             const warrantyInput = document.getElementById('warranty_period_months');
             const warrantyEstimation = document.getElementById('warrantyEstimation');
             const warrantyEstimationText = document.getElementById('warrantyEstimationText');
+
+            // Handle payment method change
+            methodSelect.addEventListener('change', function() {
+                const isCash = this.value === 'Tunai';
+                const cashReceivedContainer = document.querySelector('[for="cash_received"]').parentElement;
+                
+                if (isCash) {
+                    cashReceivedContainer.classList.remove('hidden');
+                    cashReceivedInput.required = true;
+                } else {
+                    cashReceivedContainer.classList.add('hidden');
+                    cashReceivedInput.required = false;
+                    cashReceivedInput.value = '';
+                }
+            });
+
+            // Update amount when cash received changes
+            if (cashReceivedInput) {
+                cashReceivedInput.addEventListener('input', function() {
+                    const cashReceived = parseFloat(this.value) || 0;
+                    // Amount is either the current amount or cash received, whichever is smaller
+                    amountInput.value = Math.min(cashReceived, parseFloat(amountInput.value) || 0);
+                });
+            }
 
             function updateWarrantyEstimation() {
                 const months = parseInt(warrantyInput.value);

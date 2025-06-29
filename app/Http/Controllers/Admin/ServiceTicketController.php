@@ -202,12 +202,30 @@ class ServiceTicketController extends Controller
             'estimation_days' => 'nullable|integer|min:1',
         ];
 
-        // Add visit_schedule validation only for onsite orders
+        // Add visit schedule validation only for onsite orders
         if ($orderService && $orderService->type === 'onsite') {
-            $rules['visit_schedule'] = 'nullable|date_format:Y-m-d\TH:i';
+            $rules['visit_date'] = 'required|date';
+            $rules['visit_time_slot'] = 'required|in:08:00,09:30,11:00,13:00,14:30,16:00';
         }
 
         $validated = $request->validate($rules);
+
+        // Handle visit schedule for onsite orders
+        if ($orderService && $orderService->type === 'onsite') {
+            // Check slot availability
+            $isSlotAvailable = $this->checkSlotAvailabilityInternal(
+                $validated['admin_id'],
+                $validated['visit_date'],
+                $validated['visit_time_slot']
+            );
+
+            if (!$isSlotAvailable['available']) {
+                return back()->withErrors(['visit_time_slot' => $isSlotAvailable['message']])->withInput();
+            }
+
+            $validated['visit_schedule'] = $validated['visit_date'] . ' ' . $validated['visit_time_slot'] . ':00';
+            unset($validated['visit_date'], $validated['visit_time_slot']);
+        }
 
         // Calculate estimate_date if estimation_days is provided
         if (!empty($validated['estimation_days'])) {
@@ -272,7 +290,7 @@ class ServiceTicketController extends Controller
 
     public function show(ServiceTicket $ticket)
     {
-        $ticket->load(['orderService.customer', 'actions']);
+        $ticket->load(['orderService.customer.defaultAddress', 'actions']);
         return view('admin.service-ticket.show', compact('ticket'));
     }
 
@@ -289,9 +307,10 @@ class ServiceTicketController extends Controller
             'estimation_days' => 'nullable|integer|min:1',
         ];
 
-        // Add visit_schedule validation only for onsite orders
+        // Add visit schedule validation only for onsite orders
         if ($ticket->orderService->type === 'onsite') {
-            $rules['visit_schedule'] = 'nullable|date_format:Y-m-d\TH:i';
+            $rules['visit_date'] = 'required|date';
+            $rules['visit_time_slot'] = 'required|in:08:00,09:30,11:00,13:00,14:30,16:00';
         }
 
         $validated = $request->validate($rules);
@@ -305,10 +324,90 @@ class ServiceTicketController extends Controller
             $validated['estimation_days'] = null;
         }
 
+        // Handle visit schedule for onsite orders
+        if ($ticket->orderService->type === 'onsite') {
+            // Check slot availability
+            $isSlotAvailable = $this->checkSlotAvailabilityInternal(
+                $ticket->admin_id,
+                $validated['visit_date'],
+                $validated['visit_time_slot'],
+                $ticket->service_ticket_id
+            );
+
+            if (!$isSlotAvailable['available']) {
+                return back()->withErrors(['visit_time_slot' => $isSlotAvailable['message']])->withInput();
+            }
+
+            $validated['visit_schedule'] = $validated['visit_date'] . ' ' . $validated['visit_time_slot'] . ':00';
+            unset($validated['visit_date'], $validated['visit_time_slot']);
+        }
+
         $ticket->update($validated);
 
         return redirect()->route('service-tickets.show', $ticket)
             ->with('success', 'Tiket servis berhasil diperbarui.');
+    }
+
+    public function checkSlotAvailability(Request $request)
+    {
+        $validated = $request->validate([
+            'admin_id' => 'required|exists:admins,id',
+            'visit_date' => 'required|date',
+            'visit_time_slot' => 'required|in:08:00,09:30,11:00,13:00,14:30,16:00',
+            'exclude_ticket_id' => 'nullable|string'
+        ]);
+
+        $result = $this->checkSlotAvailabilityInternal(
+            $validated['admin_id'],
+            $validated['visit_date'],
+            $validated['visit_time_slot'],
+            $validated['exclude_ticket_id'] ?? null
+        );
+
+        return response()->json($result);
+    }
+
+    private function checkSlotAvailabilityInternal($adminId, $visitDate, $timeSlot, $excludeTicketId = null)
+    {
+        // Check if slot is already taken
+        $query = ServiceTicket::where('admin_id', $adminId)
+            ->whereDate('visit_schedule', $visitDate)
+            ->whereTime('visit_schedule', $timeSlot);
+
+        if ($excludeTicketId) {
+            $query->where('service_ticket_id', '!=', $excludeTicketId);
+        }
+
+        $isSlotTaken = $query->exists();
+
+        if ($isSlotTaken) {
+            return [
+                'available' => false,
+                'message' => 'Slot sudah diambil'
+            ];
+        }
+
+        // Check daily visit limit (max 4 visits per technician per day)
+        $dailyVisits = ServiceTicket::where('admin_id', $adminId)
+            ->whereDate('visit_schedule', $visitDate);
+
+        if ($excludeTicketId) {
+            $dailyVisits->where('service_ticket_id', '!=', $excludeTicketId);
+        }
+
+        $dailyVisitsCount = $dailyVisits->count();
+
+        if ($dailyVisitsCount >= 4) {
+            return [
+                'available' => false,
+                'message' => 'Teknisi sudah mencapai batas maksimal kunjungan hari ini'
+            ];
+        }
+
+        return [
+            'available' => true,
+            'remaining_slots' => 4 - $dailyVisitsCount
+        ];
     }
 
     public function destroy(ServiceTicket $ticket)

@@ -67,6 +67,12 @@
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah</dt>
                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($payment->amount, 0, ',', '.') }}</dd>
                             </div>
+                            @if($payment->method === 'Tunai')
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Uang Diterima</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->formatted_cash_received }}</dd>
+                            </div>
+                            @endif
                             <div>
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nama</dt>
                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->name }}</dd>

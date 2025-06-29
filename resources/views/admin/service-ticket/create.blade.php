@@ -74,11 +74,35 @@
                     </div>
 
                     <div id="visitScheduleField" style="display: none;">
-                        <label for="visit_schedule" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                        <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Jadwal Kunjungan
                         </label>
-                        <input type="datetime-local" id="visit_schedule" name="visit_schedule"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="visit_date" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                    Tanggal Kunjungan
+                                </label>
+                                <input type="date" id="visit_date" name="visit_date"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                            <div>
+                                <label for="visit_time_slot" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                    Slot Waktu
+                                </label>
+                                <select id="visit_time_slot" name="visit_time_slot"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <option value="">Pilih slot waktu</option>
+                                    <option value="08:00">08:00 - 09:30</option>
+                                    <option value="09:30">09:30 - 11:00</option>
+                                    <option value="11:00">11:00 - 12:30</option>
+                                    <option value="13:00">13:00 - 14:30</option>
+                                    <option value="14:30">14:30 - 16:00</option>
+                                    <option value="16:00">16:00 - 17:30</option>
+                                </select>
+                                <div id="slotAvailability" class="mt-2 text-sm"></div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="visit_schedule" name="visit_schedule">
                     </div>
 
                     <div>
@@ -121,10 +145,18 @@
             const scheduleDate = document.getElementById('schedule_date');
             const estimationDays = document.getElementById('estimation_days');
             const estimateDate = document.getElementById('estimate_date');
+            const adminSelect = document.getElementById('admin_id');
+            const visitDate = document.getElementById('visit_date');
+            const visitTimeSlot = document.getElementById('visit_time_slot');
+            const visitScheduleHidden = document.getElementById('visit_schedule');
+            const slotAvailability = document.getElementById('slotAvailability');
 
-            // Set minimum date as today for schedule_date
+            // Set minimum date as today for schedule_date and visit_date
             const today = new Date().toISOString().split('T')[0];
             scheduleDate.min = today;
+            if (visitDate) {
+                visitDate.min = today;
+            }
 
             // Handle order selection
             orderSelect.addEventListener('change', function() {
@@ -148,7 +180,7 @@
                             visitScheduleField.style.display = 'block';
                         } else {
                             visitScheduleField.style.display = 'none';
-                            document.getElementById('visit_schedule').value = '';
+                            clearVisitSchedule();
                         }
                     } else {
                         orderInfo.classList.add('hidden');
@@ -157,9 +189,67 @@
                 } else {
                     orderInfo.classList.add('hidden');
                     visitScheduleField.style.display = 'none';
-                    document.getElementById('visit_schedule').value = '';
+                    clearVisitSchedule();
                 }
             });
+
+            // Clear visit schedule fields
+            function clearVisitSchedule() {
+                if (visitDate) visitDate.value = '';
+                if (visitTimeSlot) visitTimeSlot.value = '';
+                if (visitScheduleHidden) visitScheduleHidden.value = '';
+                if (slotAvailability) slotAvailability.innerHTML = '';
+            }
+
+            // Check slot availability
+            async function checkSlotAvailability() {
+                if (!adminSelect.value || !visitDate.value || !visitTimeSlot.value) {
+                    slotAvailability.innerHTML = '';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/admin/service-tickets/check-slot-availability', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            admin_id: adminSelect.value,
+                            visit_date: visitDate.value,
+                            visit_time_slot: visitTimeSlot.value
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.available) {
+                        slotAvailability.innerHTML = `<span class="text-green-600">✓ Slot tersedia (${data.remaining_slots} slot tersisa hari ini)</span>`;
+                        updateVisitScheduleHidden();
+                    } else {
+                        slotAvailability.innerHTML = `<span class="text-red-600">✗ ${data.message}</span>`;
+                        visitScheduleHidden.value = '';
+                    }
+                } catch (error) {
+                    console.error('Error checking slot availability:', error);
+                    slotAvailability.innerHTML = '<span class="text-red-600">Error checking availability</span>';
+                }
+            }
+
+            // Update hidden visit_schedule field
+            function updateVisitScheduleHidden() {
+                if (visitDate.value && visitTimeSlot.value) {
+                    visitScheduleHidden.value = visitDate.value + 'T' + visitTimeSlot.value + ':00';
+                } else {
+                    visitScheduleHidden.value = '';
+                }
+            }
+
+            // Event listeners for slot checking
+            if (adminSelect) adminSelect.addEventListener('change', checkSlotAvailability);
+            if (visitDate) visitDate.addEventListener('change', checkSlotAvailability);
+            if (visitTimeSlot) visitTimeSlot.addEventListener('change', checkSlotAvailability);
 
             // Calculate estimate date when schedule date or estimation days change
             function updateEstimateDate() {

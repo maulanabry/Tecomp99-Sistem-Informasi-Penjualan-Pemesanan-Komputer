@@ -105,6 +105,15 @@
                         </select>
                     </div>
 
+                    <div id="cashReceivedContainer" class="hidden">
+                        <label for="cash_received" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                            Uang Diterima <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" id="cash_received" name="cash_received"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                            placeholder="Masukkan jumlah uang yang diterima dari customer">
+                    </div>
+
                     <div>
                         <label for="amount" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Jumlah Pembayaran <span class="text-red-500">*</span>
@@ -211,9 +220,11 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const methodSelect = document.getElementById('method');
                 const amountInput = document.getElementById('amount');
+                const cashReceivedInput = document.getElementById('cash_received');
                 const paymentTypeSelect = document.getElementById('payment_type');
                 const changeReturnedInput = document.getElementById('change_returned');
                 const cashChangeContainer = document.getElementById('cashChangeContainer');
+                const cashReceivedContainer = document.getElementById('cashReceivedContainer');
                 const paymentValidationAlert = document.getElementById('paymentValidationAlert');
                 const paymentSuccessAlert = document.getElementById('paymentSuccessAlert');
                 const paymentValidationMessage = document.getElementById('paymentValidationMessage');
@@ -221,15 +232,32 @@
                 
                 let currentOrder = null;
 
-                // Show/hide cash change field based on payment method
+                // Show/hide cash fields based on payment method
                 methodSelect.addEventListener('change', function() {
                     if (this.value === 'Tunai') {
+                        cashReceivedContainer.classList.remove('hidden');
                         cashChangeContainer.classList.remove('hidden');
+                        cashReceivedInput.required = true;
                         calculateChange();
                     } else {
+                        cashReceivedContainer.classList.add('hidden');
                         cashChangeContainer.classList.add('hidden');
+                        cashReceivedInput.required = false;
+                        cashReceivedInput.value = '';
                         changeReturnedInput.value = '';
                     }
+                });
+
+                // Update amount when cash received changes
+                cashReceivedInput.addEventListener('input', function() {
+                    if (!currentOrder) return;
+                    
+                    const cashReceived = parseFloat(this.value) || 0;
+                    const remainingBalance = currentOrder.remaining_balance;
+                    
+                    // Amount is either remaining balance or cash received, whichever is smaller
+                    amountInput.value = Math.min(cashReceived, remainingBalance);
+                    calculateChange();
                 });
 
                 // Validate payment and calculate change
@@ -276,9 +304,9 @@
                 function calculateChange() {
                     if (!currentOrder || methodSelect.value !== 'Tunai') return;
                     
+                    const cashReceived = parseFloat(cashReceivedInput.value) || 0;
                     const amount = parseFloat(amountInput.value) || 0;
-                    const remainingBalance = currentOrder.remaining_balance || currentOrder.grand_total;
-                    const change = Math.max(0, amount - remainingBalance);
+                    const change = Math.max(0, cashReceived - amount);
                     changeReturnedInput.value = change;
                 }
 

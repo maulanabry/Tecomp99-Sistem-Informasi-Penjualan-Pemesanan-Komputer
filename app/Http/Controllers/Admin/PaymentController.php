@@ -87,6 +87,7 @@ class PaymentController extends Controller
                 'order_id' => 'required|string',
                 'method' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_METHODS)),
                 'amount' => 'required|numeric|min:1',
+                'cash_received' => 'nullable|numeric|min:1',
                 'payment_type' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_TYPES)),
                 'proof_photo' => 'nullable|image|max:2048',
                 'warranty_period_months' => 'nullable|integer|min:1|max:60',
@@ -118,6 +119,7 @@ class PaymentController extends Controller
                 'name' => 'admin',
                 'method' => $request->method,
                 'amount' => $request->amount,
+                'cash_received' => $request->cash_received,
                 'payment_type' => $request->payment_type,
                 'status' => 'pending', // Start as pending until validation passes
             ]);
@@ -187,6 +189,7 @@ class PaymentController extends Controller
             $request->validate([
                 'method' => 'required|in:Tunai,Bank BCA',
                 'amount' => 'required|integer|min:1',
+                'cash_received' => 'nullable|numeric|min:1',
                 'status' => 'required|in:pending,dibayar,gagal',
                 'payment_type' => 'required|in:full,down_payment',
                 'proof_photo' => 'nullable|image|max:2048', // max 2MB
@@ -227,6 +230,7 @@ class PaymentController extends Controller
             // Update payment record
             $payment->method = $request->method;
             $payment->amount = $request->amount;
+            $payment->cash_received = $request->cash_received;
             $payment->status = $request->status;
             $payment->payment_type = $request->payment_type;
 

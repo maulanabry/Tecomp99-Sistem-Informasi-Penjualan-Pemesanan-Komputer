@@ -43,6 +43,22 @@
                     Edit Order
                 </a>
 
+                <!-- Customer Detail Button -->
+                <a href="{{ route('customers.show', $orderService->customer) }}"
+                    class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                    <i class="fas fa-user mr-2"></i>
+                    Detail Customer
+                </a>
+
+                <!-- WhatsApp Button -->
+                @if($orderService->customer->contact)
+                    <a href="{{ $orderService->customer->whatsapp_link }}" target="_blank"
+                        class="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:w-auto">
+                        <i class="fab fa-whatsapp mr-2"></i>
+                        WhatsApp Customer
+                    </a>
+                @endif
+
                 <!-- Create Service Ticket Button (if no tickets exist) -->
                 @if($orderService->tickets->isEmpty())
                     <a href="{{ route('service-tickets.create') }}?order_service_id={{ $orderService->id }}"
@@ -55,7 +71,7 @@
                 <!-- Add Payment Button (if no payments exist) -->
                 @if($orderService->paymentDetails->isEmpty())
                     <a href="{{ route('payments.create') }}?order_service_id={{ $orderService->id }}"
-                        class="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:w-auto">
+                        class="inline-flex items-center justify-center rounded-md border border-transparent bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 sm:w-auto">
                         <i class="fas fa-credit-card mr-2"></i>
                         Tambah Pembayaran
                     </a>
@@ -411,7 +427,10 @@
                             <div class="col-span-full">
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bukti Pembayaran</dt>
                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    <img src="{{ asset('storage/' . $payment->proof_photo) }}" alt="Bukti Pembayaran" class="max-w-md rounded-lg shadow-lg">
+                                    <div class="mt-2">
+                                        <img src="{{ $payment->proof_photo_url }}" alt="Bukti Pembayaran" class="max-w-md rounded-lg shadow-lg cursor-pointer" onclick="openImageModal('{{ $payment->proof_photo_url }}')">
+                                        <p class="text-xs text-gray-500 mt-1">Klik gambar untuk memperbesar</p>
+                                    </div>
                                 </dd>
                             </div>
                             @endif
@@ -431,4 +450,42 @@
         message="Apakah Anda yakin ingin membatalkan order servis ini?"
         :action="route('order-services.cancel', $orderService)"
     />
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 z-50 hidden overflow-auto bg-black bg-opacity-75 flex items-center justify-center p-4">
+        <div class="relative max-w-4xl w-full">
+            <button onclick="closeImageModal()" class="absolute top-0 right-0 m-4 text-white hover:text-gray-300">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <img id="modalImage" src="" alt="Bukti Pembayaran" class="w-full h-auto rounded-lg">
+        </div>
+    </div>
+
+    <script>
+        function openImageModal(imageUrl) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imageUrl;
+            modal.classList.remove('hidden');
+            
+            // Close modal when clicking outside the image
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeImageModal();
+                }
+            });
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('hidden');
+        }
+
+        // Close modal with escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+    </script>
 </x-layout-admin>

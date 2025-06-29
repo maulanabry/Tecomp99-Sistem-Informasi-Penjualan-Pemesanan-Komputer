@@ -57,7 +57,7 @@ class OrderService extends Model
         static::saving(function ($order) {
             // Auto-calculate warranty expiration when warranty_period_months is set
             if ($order->warranty_period_months && $order->isDirty('warranty_period_months')) {
-                $order->warranty_expired_at = Carbon::now()->addMonths($order->warranty_period_months);
+                $order->warranty_expired_at = Carbon::now()->addMonths((int) $order->warranty_period_months);
             }
 
             // Initialize payment tracking fields for new orders
@@ -74,7 +74,7 @@ class OrderService extends Model
     public function updateWarrantyExpiration(\DateTimeInterface $completionDate)
     {
         if ($this->warranty_period_months) {
-            $this->warranty_expired_at = Carbon::parse($completionDate)->addMonths($this->warranty_period_months);
+            $this->warranty_expired_at = Carbon::parse($completionDate)->addMonths((int) $this->warranty_period_months);
             $this->save();
         }
     }

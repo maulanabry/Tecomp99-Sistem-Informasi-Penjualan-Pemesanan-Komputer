@@ -158,6 +158,9 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::put('/{ticket}', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'update'])->name('service-tickets.update');
         Route::delete('/{ticket}', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'destroy'])->name('service-tickets.destroy');
 
+        // Slot Availability Check
+        Route::post('/check-slot-availability', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'checkSlotAvailability'])->name('service-tickets.check-slot');
+
         // Service Ticket Actions
         Route::get('/{ticket}/actions/create', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'createAction'])->name('service-tickets.actions.create');
         Route::post('/{ticket}/actions', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'storeAction'])->name('service-tickets.actions.store');
