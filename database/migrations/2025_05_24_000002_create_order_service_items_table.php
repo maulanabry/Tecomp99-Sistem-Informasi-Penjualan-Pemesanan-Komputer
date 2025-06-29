@@ -16,7 +16,7 @@ return new class extends Migration
 
             // Relasi ke order_services
             $table->string('order_service_id', 50);
-            $table->foreign('order_service_id')->references('order_service_id')->on('order_services');
+            $table->foreign('order_service_id')->references('order_service_id')->on('order_services')->onDelete('cascade');
 
             // Polymorphic fields
             $table->string('item_type');     // contoh: App\Models\Product atau App\Models\Service
@@ -30,6 +30,8 @@ return new class extends Migration
             // Timestamps
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
+
+            $table->foreign('order_service_id')->references('order_service_id')->on('order_services')->onDelete('cascade');
         });
     }
 

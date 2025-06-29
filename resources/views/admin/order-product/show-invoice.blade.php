@@ -201,17 +201,57 @@
 
                 {{-- Section 6 & 7: Status & Ringkasan Harga --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 print-grid">
-                    <div class="flex flex-col justify-start">
-                        <div class="mb-3">
-                            <h3 class="text-sm font-semibold mb-1">Status Pembayaran</h3>
-                            <p class="inline-flex px-2 py-1 rounded-full text-xs
-                                {{ $orderProduct->status_payment === 'belum_dibayar' ? 'bg-red-100 text-red-800' : '' }}
-                                {{ $orderProduct->status_payment === 'down_payment' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                {{ $orderProduct->status_payment === 'lunas' ? 'bg-green-100 text-green-800' : '' }}
-                                {{ $orderProduct->status_payment === 'dibatalkan' ? 'bg-gray-100 text-gray-800' : '' }}">
-                                {{ str_replace('_', ' ', ucfirst($orderProduct->status_payment)) }}
-                            </p>
+                    <div class="flex flex-col justify-start space-y-4">
+                        <!-- Payment Status -->
+                        <div>
+                            <h3 class="text-sm font-semibold mb-2">Status & Rincian Pembayaran</h3>
+                            <div class="space-y-2">
+                                <p class="inline-flex px-2 py-1 rounded-full text-xs
+                                    {{ $orderProduct->status_payment === 'belum_dibayar' ? 'bg-red-100 text-red-800' : '' }}
+                                    {{ $orderProduct->status_payment === 'down_payment' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                    {{ $orderProduct->status_payment === 'lunas' ? 'bg-green-100 text-green-800' : '' }}
+                                    {{ $orderProduct->status_payment === 'dibatalkan' ? 'bg-gray-100 text-gray-800' : '' }}">
+                                    {{ str_replace('_', ' ', ucfirst($orderProduct->status_payment)) }}
+                                </p>
+                                <div class="text-xs space-y-1">
+                                    <p><span class="font-medium">Sudah Dibayar:</span> Rp {{ number_format($orderProduct->paid_amount, 0, ',', '.') }}</p>
+                                    @if($orderProduct->remaining_balance > 0)
+                                        <p class="text-red-600"><span class="font-medium">Sisa Pembayaran:</span> Rp {{ number_format($orderProduct->remaining_balance, 0, ',', '.') }}</p>
+                                    @endif
+                                    @if($orderProduct->last_payment_at)
+                                        <p class="text-gray-500"><span class="font-medium">Pembayaran Terakhir:</span> {{ \Carbon\Carbon::parse($orderProduct->last_payment_at)->format('d/m/Y H:i') }}</p>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Warranty Information -->
+                        @if($orderProduct->warranty_period_months)
+                        <div>
+                            <h3 class="text-sm font-semibold mb-2">Informasi Garansi</h3>
+                            <div class="space-y-2">
+                                <p class="text-xs"><span class="font-medium">Masa Garansi:</span> {{ $orderProduct->warranty_period_months }} Bulan</p>
+                                @if($orderProduct->warranty_expired_at)
+                                    @php
+                                        $warrantyStatus = $orderProduct->warrantyStatus;
+                                        $statusColors = [
+                                            'active' => 'bg-green-100 text-green-800',
+                                            'expiring_soon' => 'bg-yellow-100 text-yellow-800',
+                                            'expired' => 'bg-red-100 text-red-800',
+                                            'no_warranty' => 'bg-gray-100 text-gray-800'
+                                        ];
+                                        $colorClass = $statusColors[$warrantyStatus['status']] ?? 'bg-gray-100 text-gray-800';
+                                    @endphp
+                                    <p class="inline-flex px-2 py-1 rounded-full text-xs {{ $colorClass }}">
+                                        {{ $warrantyStatus['message'] }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        <span class="font-medium">Berlaku sampai:</span> {{ \Carbon\Carbon::parse($orderProduct->warranty_expired_at)->format('d/m/Y') }}
+                                    </p>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
 
                         @if($orderProduct->type === 'pengiriman')
                         <div>

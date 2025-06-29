@@ -86,6 +86,10 @@
                         <label for="note" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Note</label>
                         <textarea id="note" name="note" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">{{ $orderService->note }}</textarea>
                     </div>
+                    <div>
+                        <label for="warranty_period_months" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Masa Garansi (Bulan)</label>
+                        <input type="number" id="warranty_period_months" name="warranty_period_months" min="0" max="60" value="{{ $orderService->warranty_period_months ?? '' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                    </div>
                     <div class="flex items-center mt-4">
                         <input type="checkbox" id="hasDevice" name="hasDevice" value="1" class="w-4 h-4 text-primary-600 bg-gray-100 border border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" {{ $orderService->hasDevice ? 'checked' : '' }}>
                         <label for="hasDevice" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Has Device</label>

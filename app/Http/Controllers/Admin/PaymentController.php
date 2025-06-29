@@ -8,6 +8,10 @@ use App\Models\OrderService;
 use App\Models\OrderProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\File;
 
 class PaymentController extends Controller
 {
@@ -27,8 +31,9 @@ class PaymentController extends Controller
     public function create()
     {
         // Pastikan direktori bukti pembayaran ada
-        if (!Storage::disk('public')->exists('payment-proofs')) {
-            Storage::disk('public')->makeDirectory('payment-proofs');
+        $paymentDir = public_path('images/payment');
+        if (!File::exists($paymentDir)) {
+            File::makeDirectory($paymentDir, 0755, true);
         }
 
         // Ambil order produk yang statusnya belum dibayar atau down_payment saja
@@ -42,6 +47,9 @@ class PaymentController extends Controller
                     'sub_total' => (float) $order->sub_total,
                     'discount_amount' => (float) $order->discount_amount,
                     'grand_total' => (float) $order->grand_total,
+                    'paid_amount' => (float) $order->paid_amount,
+                    'remaining_balance' => (float) $order->remaining_balance,
+                    'last_payment_at' => $order->last_payment_at ? $order->last_payment_at->toISOString() : null,
                     'payment_status' => $order->status_payment
                 ];
             });
@@ -57,6 +65,9 @@ class PaymentController extends Controller
                     'sub_total' => (float) $order->sub_total,
                     'discount_amount' => (float) $order->discount_amount,
                     'grand_total' => (float) $order->grand_total,
+                    'paid_amount' => (float) $order->paid_amount,
+                    'remaining_balance' => (float) $order->remaining_balance,
+                    'last_payment_at' => $order->last_payment_at ? $order->last_payment_at->toISOString() : null,
                     'payment_status' => $order->status_payment
                 ];
             });
@@ -70,27 +81,21 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
         try {
+            // Basic request validation
             $request->validate([
                 'order_type' => 'required|in:produk,servis',
                 'order_id' => 'required|string',
-                'method' => 'required|in:Tunai,Bank BCA',
-                'amount' => 'required|integer|min:1',
-                'payment_type' => 'required|in:full,down_payment',
+                'method' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_METHODS)),
+                'amount' => 'required|numeric|min:1',
+                'payment_type' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_TYPES)),
                 'proof_photo' => 'nullable|image|max:2048',
+                'warranty_period_months' => 'nullable|integer|min:1|max:60',
             ]);
 
-            // Validasi status order sebelum membuat pembayaran
-            if ($request->order_type === 'produk') {
-                $order = OrderProduct::findOrFail($request->order_id);
-            } else {
-                $order = OrderService::findOrFail($request->order_id);
-            }
-
-            if (in_array($order->status_payment, ['dibatalkan', 'lunas', 'selesai'])) {
-                return back()
-                    ->withInput()
-                    ->with('error', 'Pembayaran tidak dapat dilakukan untuk pesanan yang sudah dibatalkan atau sudah lunas/selesai.');
-            }
+            // Get the order
+            $order = $request->order_type === 'produk'
+                ? OrderProduct::findOrFail($request->order_id)
+                : OrderService::findOrFail($request->order_id);
 
             // Generate payment ID
             $date = now()->format('dmY');
@@ -106,49 +111,67 @@ class PaymentController extends Controller
 
             $paymentId = "PYM{$date}{$sequence}";
 
-            // Handle file upload
-            $proofPhotoPath = null;
-            if ($request->hasFile('proof_photo')) {
-                // Ensure directory exists
-                if (!Storage::disk('public')->exists('payment-proofs')) {
-                    Storage::disk('public')->makeDirectory('payment-proofs');
-                }
-                $proofPhotoPath = $request->file('proof_photo')->store('payment-proofs', 'public');
-            }
+            // Create payment instance
+            $payment = new PaymentDetail([
+                'payment_id' => $paymentId,
+                'order_type' => $request->order_type,
+                'name' => 'admin',
+                'method' => $request->method,
+                'amount' => $request->amount,
+                'payment_type' => $request->payment_type,
+                'status' => 'pending', // Start as pending until validation passes
+            ]);
 
-            // Create payment record
-            $payment = new PaymentDetail();
-            $payment->payment_id = $paymentId;
-            $payment->order_type = $request->order_type;
-            $payment->name = 'admin';
-            $payment->method = $request->method;
-            $payment->amount = $request->amount;
-            $payment->payment_type = $request->payment_type;
-            $payment->status = 'dibayar';
-            $payment->proof_photo = $proofPhotoPath;
-
-            // Update order and set payment details
+            // Set the appropriate order relationship
             if ($request->order_type === 'produk') {
-                $order = OrderProduct::findOrFail($request->order_id);
                 $payment->order_product_id = $request->order_id;
             } else {
-                $order = OrderService::findOrFail($request->order_id);
                 $payment->order_service_id = $request->order_id;
             }
 
-            // Update order payment status
-            $order->status_payment = $request->payment_type === 'full' ? 'lunas' : 'down_payment';
-            $order->save();
+            // Validate payment business rules
+            $validationErrors = $payment->validate();
+            if (!empty($validationErrors)) {
+                return back()
+                    ->withInput()
+                    ->with('error', implode(' ', $validationErrors));
+            }
 
-            $payment->save();
+            // Handle file upload if provided
+            if ($request->hasFile('proof_photo')) {
+                $payment->proof_photo = $this->handleImageUpload($request->file('proof_photo'), $paymentId);
+            }
 
-            return redirect()
-                ->route('payments.show', $payment)
-                ->with('success', 'Pembayaran berhasil disimpan.');
+            // Set payment as dibayar after all validations pass
+            $payment->status = 'dibayar';
+
+            // Save the payment
+            DB::beginTransaction();
+            try {
+                $payment->save();
+
+                // Update warranty information if provided and payment is successful
+                if ($payment->status === 'dibayar' && $request->warranty_period_months) {
+                    $warrantyMonths = (int) $request->warranty_period_months;
+                    $order->warranty_period_months = $warrantyMonths;
+                    $order->warranty_expired_at = now()->addMonths($warrantyMonths);
+                    $order->save();
+                }
+
+                DB::commit();
+
+                // Redirect to payment details with success message
+                return redirect()
+                    ->route('payments.show', $payment)
+                    ->with('success', 'Pembayaran berhasil disimpan.');
+            } catch (\Exception $e) {
+                DB::rollback();
+                throw $e;
+            }
         } catch (\Exception $e) {
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan pembayaran. ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat menyimpan pembayaran: ' . $e->getMessage());
         }
     }
 
@@ -167,18 +190,38 @@ class PaymentController extends Controller
                 'status' => 'required|in:pending,dibayar,gagal',
                 'payment_type' => 'required|in:full,down_payment',
                 'proof_photo' => 'nullable|image|max:2048', // max 2MB
+                'change_returned' => 'nullable|numeric|min:0',
+                'warranty_period_months' => 'nullable|integer|min:1|max:60',
             ]);
+
+            // Validate change_returned only for cash payments
+            if ($request->method === 'Tunai' && $request->change_returned !== null && $request->change_returned < 0) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Kembalian tidak boleh bernilai negatif.');
+            }
 
             $payment = PaymentDetail::where('payment_id', $payment_id)->firstOrFail();
 
-            // Handle file upload
-            if ($request->hasFile('proof_photo')) {
+            // Handle image deletion request
+            if ($request->has('delete_current_image') && $payment->proof_photo) {
+                $oldImagePath = public_path('images/payment/' . $payment->proof_photo);
+                if (File::exists($oldImagePath)) {
+                    File::delete($oldImagePath);
+                }
+                $payment->proof_photo = null;
+            }
+            // Handle new file upload
+            elseif ($request->hasFile('proof_photo')) {
                 // Delete old photo if exists
                 if ($payment->proof_photo) {
-                    Storage::delete($payment->proof_photo);
+                    $oldImagePath = public_path('images/payment/' . $payment->proof_photo);
+                    if (File::exists($oldImagePath)) {
+                        File::delete($oldImagePath);
+                    }
                 }
 
-                $payment->proof_photo = $request->file('proof_photo')->store('payment-proofs', 'public');
+                $payment->proof_photo = $this->handleImageUpload($request->file('proof_photo'), $payment->payment_id);
             }
 
             // Update payment record
@@ -186,7 +229,35 @@ class PaymentController extends Controller
             $payment->amount = $request->amount;
             $payment->status = $request->status;
             $payment->payment_type = $request->payment_type;
+
+            // Set change_returned only for cash payments
+            if ($request->method === 'Tunai') {
+                $payment->change_returned = $request->change_returned ?? 0;
+            } else {
+                $payment->change_returned = null;
+            }
+
             $payment->save();
+
+            // Get the related order
+            if ($payment->order_type === 'produk') {
+                $order = OrderProduct::where('order_product_id', $payment->order_product_id)->first();
+            } else {
+                $order = OrderService::where('order_service_id', $payment->order_service_id)->first();
+            }
+
+            // Update warranty information if provided and payment is successful
+            if ($order && $payment->status === 'dibayar' && $request->warranty_period_months) {
+                $warrantyMonths = (int) $request->warranty_period_months;
+                $order->warranty_period_months = $warrantyMonths;
+                $order->warranty_expired_at = now()->addMonths($warrantyMonths);
+                $order->save();
+            }
+
+            // Auto-update payment status for related order
+            if ($order) {
+                $order->updatePaymentStatus();
+            }
 
             return redirect()
                 ->route('payments.show', $payment)
@@ -210,18 +281,16 @@ class PaymentController extends Controller
 
             $payment = PaymentDetail::where('payment_id', $payment_id)->firstOrFail();
 
-            // Update related order's payment status to belum_dibayar
+            // Auto-update payment status for related order
             if ($payment->order_type === 'produk') {
                 $order = OrderProduct::where('order_product_id', $payment->order_product_id)->first();
                 if ($order) {
-                    $order->status_payment = 'belum_dibayar';
-                    $order->save();
+                    $order->updatePaymentStatus();
                 }
             } else {
                 $order = OrderService::where('order_service_id', $payment->order_service_id)->first();
                 if ($order) {
-                    $order->status_payment = 'belum_dibayar';
-                    $order->save();
+                    $order->updatePaymentStatus();
                 }
             }
 
@@ -240,5 +309,74 @@ class PaymentController extends Controller
     public function destroy($payment_id)
     {
         return $this->cancel($payment_id);
+    }
+
+    /**
+     * Handle image upload with compression and organized naming
+     */
+    private function handleImageUpload($file, $paymentId)
+    {
+        try {
+            // Validate file
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!in_array($file->getMimeType(), $allowedTypes)) {
+                throw new \Exception('Tipe file tidak didukung. Gunakan JPG, JPEG, atau PNG.');
+            }
+
+            // Check file size (max 2MB)
+            if ($file->getSize() > 2 * 1024 * 1024) {
+                throw new \Exception('Ukuran file terlalu besar. Maksimal 2MB.');
+            }
+
+            // Create payment directory if not exists
+            $paymentDir = public_path('images/payment');
+            if (!File::exists($paymentDir)) {
+                File::makeDirectory($paymentDir, 0755, true);
+            }
+
+            // Generate filename: PYMXXX-img.jpg
+            $filename = $paymentId . '-img.jpg';
+            $imagePath = $paymentDir . '/' . $filename;
+
+            // Process and compress image using Intervention Image
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($file);
+
+            // Resize if too large (max width/height: 1200px)
+            if ($image->width() > 1200 || $image->height() > 1200) {
+                $image->scale(width: 1200, height: 1200);
+            }
+
+            // Save with compression (quality 80%)
+            $image->toJpeg(80)->save($imagePath);
+
+            return $filename;
+        } catch (\Exception $e) {
+            throw new \Exception('Gagal mengunggah gambar: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete payment image
+     */
+    public function deleteImage($payment_id)
+    {
+        try {
+            $payment = PaymentDetail::where('payment_id', $payment_id)->firstOrFail();
+
+            if ($payment->proof_photo) {
+                $imagePath = public_path('images/payment/' . $payment->proof_photo);
+                if (File::exists($imagePath)) {
+                    File::delete($imagePath);
+                }
+
+                $payment->proof_photo = null;
+                $payment->save();
+            }
+
+            return response()->json(['success' => true, 'message' => 'Gambar berhasil dihapus']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus gambar: ' . $e->getMessage()]);
+        }
     }
 }

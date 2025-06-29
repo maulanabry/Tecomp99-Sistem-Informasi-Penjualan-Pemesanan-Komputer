@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('order_service_id')->references('order_service_id')->on('order_services');
             $table->string('url', 255);
             $table->timestamp('created_at')->nullable();
+            $table->foreign('order_service_id')->references('order_service_id')->on('order_services')->onDelete('cascade');
         });
     }
 

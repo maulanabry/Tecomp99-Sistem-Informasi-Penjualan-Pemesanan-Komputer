@@ -20,6 +20,14 @@ return new class extends Migration {
             $table->integer('shipping_cost')->nullable();
             $table->enum('type', ['langsung', 'pengiriman']);
             $table->text('note')->nullable();
+
+            // Add missing warranty and payment tracking fields
+            $table->integer('warranty_period_months')->nullable();
+            $table->timestamp('warranty_expired_at')->nullable();
+            $table->integer('paid_amount')->default(0);
+            $table->integer('remaining_balance')->default(0);
+            $table->timestamp('last_payment_at')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
 

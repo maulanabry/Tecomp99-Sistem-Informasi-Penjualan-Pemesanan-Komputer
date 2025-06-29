@@ -152,8 +152,38 @@
                                     {{ $orderProduct->created_at->format('d/m/Y H:i') }}
                                 </dd>
                             </div>
+
+                            @if($orderProduct->warranty_period_months)
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Masa Garansi</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ $orderProduct->warranty_period_months }} Bulan
+                                </dd>
+                            </div>
+                            @endif
+
+                            @if($orderProduct->warranty_expired_at)
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Garansi Berlaku Sampai</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ \Carbon\Carbon::parse($orderProduct->warranty_expired_at)->format('d/m/Y') }}
+                                </dd>
+                            </div>
+                            @endif
                             <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <dl class="space-y-3">
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Dibayar</dt>
+                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                            Rp {{ number_format($orderProduct->paid_amount ?? 0, 0, ',', '.') }}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sisa Pembayaran</dt>
+                                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                            Rp {{ number_format($orderProduct->remaining_balance ?? 0, 0, ',', '.') }}
+                                        </dd>
+                                    </div>
                                     <div>
                                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Subtotal</dt>
                                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -353,6 +383,14 @@
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Dibuat</dt>
                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->created_at->format('d M Y H:i') }}</dd>
                             </div>
+                            @if($payment->method === 'Tunai' && $payment->change_returned > 0)
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kembalian</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    Rp {{ number_format($payment->change_returned, 0, ',', '.') }}
+                                </dd>
+                            </div>
+                            @endif
                             @if($payment->proof_photo)
                             <div class="col-span-full">
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bukti Pembayaran</dt>

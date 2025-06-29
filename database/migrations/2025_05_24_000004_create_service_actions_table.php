@@ -14,10 +14,12 @@ return new class extends Migration
         Schema::create('service_actions', function (Blueprint $table) {
             $table->string('service_action_id')->primary();
             $table->string('service_ticket_id');
-            $table->foreign('service_ticket_id')->references('service_ticket_id')->on('service_tickets');
             $table->text('action');
             $table->timestamp('created_at')->nullable();
             $table->integer('number');
+
+            // Foreign key constraint with cascade delete
+            $table->foreign('service_ticket_id')->references('service_ticket_id')->on('service_tickets')->onDelete('cascade');
         });
     }
 

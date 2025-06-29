@@ -14,17 +14,19 @@ return new class extends Migration
         Schema::create('service_tickets', function (Blueprint $table) {
             $table->string('service_ticket_id')->primary();
             $table->string('order_service_id', 50);
-            $table->foreign('order_service_id')->references('order_service_id')->on('order_services');
             $table->unsignedBigInteger('admin_id');
-            $table->foreign('admin_id')->references('id')->on('admins');
             $table->enum('status', ['Menunggu', 'Menuju Lokasi', 'Diproses', 'Diantar', 'Perlu Diambil', 'Selesai', 'Dibatalkan'])
-                ->default('Menunggu'); // Default status is 'Menunggu'
+                ->default('Menunggu');
             $table->date('schedule_date');
-            $table->integer('estimation_days')->nullable(); // New column for estimation days
-            $table->date('estimate_date')->nullable(); // New column for estimate date
-            $table->dateTime('visit_schedule')->nullable()->after('schedule_date');
+            $table->integer('estimation_days')->nullable();
+            $table->date('estimate_date')->nullable();
+            $table->dateTime('visit_schedule')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            // Foreign key constraints
+            $table->foreign('order_service_id')->references('order_service_id')->on('order_services')->onDelete('cascade');
+            $table->foreign('admin_id')->references('id')->on('admins')->onDelete('restrict');
         });
     }
 

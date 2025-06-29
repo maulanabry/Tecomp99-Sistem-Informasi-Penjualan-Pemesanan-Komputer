@@ -143,7 +143,12 @@
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Alamat:</span>
                             <span class="text-sm text-gray-500 dark:text-gray-300">
-                                {{ $customer->addresses ? (strlen($customer->addresses->detail_address) > 30 ? substr($customer->addresses->detail_address, 0, 30) . '...' : $customer->addresses->detail_address) : '-' }}
+                                @php
+                                    $defaultAddress = $customer->addresses->where('is_default', true)->first();
+                                    $firstAddress = $defaultAddress ?: $customer->addresses->first();
+                                    $addressText = $firstAddress ? $firstAddress->detail_address : '-';
+                                @endphp
+                                {{ strlen($addressText) > 30 ? substr($addressText, 0, 30) . '...' : $addressText }}
                             </span>
                         </div>
                         <div class="flex justify-end items-center gap-2 mt-4">
@@ -210,7 +215,12 @@
                         @endif
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-300">
-                        {{ $customer->addresses ? (strlen($customer->addresses->detail_address) > 30 ? substr($customer->addresses->detail_address, 0, 30) . '...' : $customer->addresses->detail_address) : '-' }}
+                        @php
+                            $defaultAddress = $customer->addresses->where('is_default', true)->first();
+                            $firstAddress = $defaultAddress ?: $customer->addresses->first();
+                            $addressText = $firstAddress ? $firstAddress->detail_address : '-';
+                        @endphp
+                        {{ strlen($addressText) > 30 ? substr($addressText, 0, 30) . '...' : $addressText }}
                     </div>
                     <div class="flex justify-center items-center gap-2">
                         <x-action-dropdown>

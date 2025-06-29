@@ -29,8 +29,12 @@
                             data-name="{{ $customer->name }}"
                             data-contact="{{ $customer->contact }}"
                             data-email="{{ $customer->email }}"
-                            data-address="{{ $customer->addresses ? $customer->addresses->detail_address : '' }}"
-                            data-postal-code="{{ $customer->addresses ? $customer->addresses->postal_code : '' }}"
+                            @php
+                                $defaultAddress = $customer->addresses->where('is_default', true)->first();
+                                $firstAddress = $defaultAddress ?: $customer->addresses->first();
+                            @endphp
+                            data-address="{{ $firstAddress ? $firstAddress->detail_address : '' }}"
+                            data-postal-code="{{ $firstAddress ? $firstAddress->postal_code : '' }}"
                             {{ $customer->customer_id == $orderProduct->customer_id ? 'selected' : '' }}>
                             {{ $customer->name }} - {{ $customer->contact }}
                         </option>
@@ -48,8 +52,12 @@
                         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                             <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Alamat</h3>
                             <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <p id="customerFullAddress" class="whitespace-pre-line">{{ $orderProduct->customer->addresses->detail_address ?? '-' }}</p>
-                                <p><span class="font-medium">Kode Pos:</span> <span id="customerPostalCode">{{ $orderProduct->customer->addresses->postal_code ?? '-' }}</span></p>
+                                @php
+                                    $customerDefaultAddress = $orderProduct->customer->addresses->where('is_default', true)->first();
+                                    $customerFirstAddress = $customerDefaultAddress ?: $orderProduct->customer->addresses->first();
+                                @endphp
+                                <p id="customerFullAddress" class="whitespace-pre-line">{{ $customerFirstAddress->detail_address ?? '-' }}</p>
+                                <p><span class="font-medium">Kode Pos:</span> <span id="customerPostalCode">{{ $customerFirstAddress->postal_code ?? '-' }}</span></p>
                             </div>
                         </div>
                     </div>

@@ -703,7 +703,7 @@ async function calculateTotals() {
 
         if (discountType === "percentage") {
             discount = Math.round(subtotal * (discountValue / 100));
-        } else if (discountType === "fixed") {
+        } else if (discountType === "amount") {
             discount = discountValue;
         }
 

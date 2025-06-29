@@ -35,7 +35,13 @@ class Customer extends Model
 
     public function addresses()
     {
-        return $this->hasOne(CustomerAddress::class, 'customer_id', 'customer_id');
+        return $this->hasMany(CustomerAddress::class, 'customer_id', 'customer_id');
+    }
+
+    public function defaultAddress()
+    {
+        return $this->hasOne(CustomerAddress::class, 'customer_id', 'customer_id')
+            ->where('is_default', true);
     }
 
     public static function generateCustomerId(): string

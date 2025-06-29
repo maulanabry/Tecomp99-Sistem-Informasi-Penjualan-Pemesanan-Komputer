@@ -28,8 +28,12 @@
                             data-name="{{ $customer->name }}"
                             data-contact="{{ $customer->contact }}"
                             data-email="{{ $customer->email }}"
-                            data-address="{{ $customer->addresses ? $customer->addresses->detail_address : '' }}"
-                            data-postal-code="{{ $customer->addresses ? $customer->addresses->postal_code : '' }}">
+                            @php
+                                $defaultAddress = $customer->addresses->where('is_default', true)->first();
+                                $firstAddress = $defaultAddress ?: $customer->addresses->first();
+                            @endphp
+                            data-address="{{ $firstAddress ? $firstAddress->detail_address : '' }}"
+                            data-postal-code="{{ $firstAddress ? $firstAddress->postal_code : '' }}">
                             {{ $customer->name }} - {{ $customer->contact }}
                         </option>
                     @endforeach

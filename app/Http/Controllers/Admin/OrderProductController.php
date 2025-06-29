@@ -46,6 +46,7 @@ class OrderProductController extends Controller
             'promo_code' => 'nullable|string',
             'promo_id' => 'nullable|exists:promos,promo_id',
             'note' => 'nullable|string',
+            'warranty_period_months' => 'nullable|integer|min:0|max:60',
         ]);
 
         try {
@@ -78,18 +79,29 @@ class OrderProductController extends Controller
             }
 
             $discount = 0;
-            if (!empty($validated['promo_code']) && !empty($validated['promo_id'])) {
-                $promo = \App\Models\Promo::findOrFail($validated['promo_id']);
+            if (!empty($validated['promo_code'])) {
+                // Find promo by code first, then validate
+                $promo = \App\Models\Promo::where('code', $validated['promo_code'])
+                    ->where('is_active', true)
+                    ->first();
 
-                if (
-                    !$promo->is_active ||
-                    now() < $promo->start_date ||
-                    now() > $promo->end_date ||
-                    ($promo->minimum_order_amount && $subtotal < $promo->minimum_order_amount)
-                ) {
-                    throw new \Exception('Promo tidak valid');
+                if (!$promo) {
+                    throw new \Exception('Kode promo tidak ditemukan atau tidak aktif');
                 }
 
+                // Validate promo conditions
+                if (
+                    now() < $promo->start_date ||
+                    now() > $promo->end_date
+                ) {
+                    throw new \Exception('Promo sudah kedaluwarsa atau belum berlaku');
+                }
+
+                if ($promo->minimum_order_amount && $subtotal < $promo->minimum_order_amount) {
+                    throw new \Exception('Minimal pembelian untuk promo ini adalah Rp ' . number_format($promo->minimum_order_amount, 0, ',', '.'));
+                }
+
+                // Calculate discount
                 if ($promo->type === 'percentage') {
                     $discount = intval(($subtotal * $promo->discount_percentage) / 100);
                 } else {
@@ -279,18 +291,29 @@ class OrderProductController extends Controller
 
             // Calculate discount
             $discount = 0;
-            if (!empty($validated['promo_code']) && !empty($validated['promo_id'])) {
-                $promo = Promo::findOrFail($validated['promo_id']);
+            if (!empty($validated['promo_code'])) {
+                // Find promo by code first, then validate
+                $promo = Promo::where('code', $validated['promo_code'])
+                    ->where('is_active', true)
+                    ->first();
 
-                if (
-                    !$promo->is_active ||
-                    now() < $promo->start_date ||
-                    now() > $promo->end_date ||
-                    ($promo->minimum_order_amount && $subtotal < $promo->minimum_order_amount)
-                ) {
-                    throw new \Exception('Promo tidak valid');
+                if (!$promo) {
+                    throw new \Exception('Kode promo tidak ditemukan atau tidak aktif');
                 }
 
+                // Validate promo conditions
+                if (
+                    now() < $promo->start_date ||
+                    now() > $promo->end_date
+                ) {
+                    throw new \Exception('Promo sudah kedaluwarsa atau belum berlaku');
+                }
+
+                if ($promo->minimum_order_amount && $subtotal < $promo->minimum_order_amount) {
+                    throw new \Exception('Minimal pembelian untuk promo ini adalah Rp ' . number_format($promo->minimum_order_amount, 0, ',', '.'));
+                }
+
+                // Calculate discount
                 if ($promo->type === 'percentage') {
                     $discount = intval(($subtotal * $promo->discount_percentage) / 100);
                 } else {
@@ -306,6 +329,9 @@ class OrderProductController extends Controller
             $grandTotal = $subtotal - $discount + $shippingCost;
 
             // Update order product
+            // Store previous status for comparison
+            $previousStatus = $orderProduct->status_order;
+
             $orderProduct->update([
                 'customer_id' => $validated['customer_id'],
                 'status_order' => $validated['status_order'],
@@ -315,7 +341,16 @@ class OrderProductController extends Controller
                 'grand_total' => $grandTotal,
                 'type' => $dbType,
                 'note' => $validated['note'] ?? null,
+                'warranty_period_months' => $validated['warranty_period_months'] ?? null,
             ]);
+
+            // If order is being completed, set warranty expiration
+            if ($previousStatus !== 'selesai' && $validated['status_order'] === 'selesai') {
+                $orderProduct->updateWarrantyExpiration(now());
+            }
+
+            // Update payment status
+            $orderProduct->updatePaymentStatus();
 
             // Delete existing items
             $orderProduct->items()->delete();

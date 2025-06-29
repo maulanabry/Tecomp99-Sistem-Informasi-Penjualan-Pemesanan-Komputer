@@ -213,6 +213,9 @@ class OrderServiceController extends Controller
                 throw new \Exception('Total setelah diskon tidak boleh kurang dari 0');
             }
 
+            // Store previous status for comparison
+            $previousStatus = $orderService->status_order;
+
             $orderService->update([
                 'status_order' => $request->status_order,
                 'status_payment' => $request->status_payment,
@@ -224,7 +227,16 @@ class OrderServiceController extends Controller
                 'discount_amount' => $request->discount_amount,
                 'grand_total' => $grandTotal,
                 'hasDevice' => $request->boolean('hasDevice'),
+                'warranty_period_months' => $request->warranty_period_months,
             ]);
+
+            // If order is being completed, set warranty expiration
+            if ($previousStatus !== 'Selesai' && $request->status_order === 'Selesai') {
+                $orderService->updateWarrantyExpiration(now());
+            }
+
+            // Update payment status
+            $orderService->updatePaymentStatus();
 
             // Update order service items
             $items = json_decode($request->items, true);
