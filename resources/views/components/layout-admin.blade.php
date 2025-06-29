@@ -1,7 +1,10 @@
 <!doctype html>
-<html x-data="{ darkMode: localStorage.getItem('dark') === 'true'}"
-            x-init="$watch('darkMode', val => localStorage.setItem('dark', val))"
-            x-bind:class="{ 'dark': darkMode }">
+<html x-data="{ 
+        darkMode: localStorage.getItem('dark') === 'true',
+        showLogoutModal: false 
+    }"
+    x-init="$watch('darkMode', val => localStorage.setItem('dark', val))"
+    x-bind:class="{ 'dark': darkMode }">
 
 <head>
     <meta charset="utf-8">

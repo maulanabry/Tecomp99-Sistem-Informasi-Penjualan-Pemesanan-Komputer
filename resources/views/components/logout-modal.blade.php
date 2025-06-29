@@ -1,6 +1,4 @@
-<div x-data="{ show: false }" 
-     @show-logout-modal.window="show = true"
-     x-show="show" 
+<div x-show="showLogoutModal" 
      class="fixed inset-0 z-[100] overflow-y-auto" 
      style="display: none;"
      x-transition:enter="transition ease-out duration-300"
@@ -50,7 +48,7 @@
                     </button>
                 </form>
                 <button type="button"
-                        @click="show = false"
+                        @click="showLogoutModal = false"
                         class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm
                                dark:focus:ring-offset-gray-800">
                     Batal
