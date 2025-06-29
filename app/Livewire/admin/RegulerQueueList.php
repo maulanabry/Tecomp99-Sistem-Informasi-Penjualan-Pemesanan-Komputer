@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\OrderService;
+use App\Models\Admin;
 use Livewire\Component;
 use Carbon\Carbon;
 
@@ -11,11 +12,12 @@ class RegulerQueueList extends Component
     public $search = '';
     public $timeFilter = 'today'; // today, week, month
     public $statusFilter = ''; // all, menunggu, diproses
+    public $teknisiFilter = ''; // Filter by teknisi
 
     public function render()
     {
         // Get all active reguler service tickets sorted by FIFO
-        $query = \App\Models\ServiceTicket::with(['orderService.customer'])
+        $query = \App\Models\ServiceTicket::with(['orderService.customer', 'admin'])
             ->whereHas('orderService', function ($q) {
                 $q->where('type', 'reguler');
             })
@@ -25,6 +27,11 @@ class RegulerQueueList extends Component
         // Apply status filter (based on ticket status)
         if ($this->statusFilter) {
             $query->where('status', ucfirst($this->statusFilter));
+        }
+
+        // Apply teknisi filter
+        if ($this->teknisiFilter) {
+            $query->where('admin_id', $this->teknisiFilter);
         }
 
         // Apply search filter
@@ -86,9 +93,13 @@ class RegulerQueueList extends Component
             $ticketIndex++;
         }
 
+        // Get list of teknisi for filter dropdown
+        $teknisiList = Admin::where('role', 'teknisi')->get();
+
         return view('livewire.admin.reguler-queue-list', [
             'queueByDate' => $queueByDate,
-            'totalServices' => $regulerTickets->count()
+            'totalServices' => $regulerTickets->count(),
+            'teknisiList' => $teknisiList
         ]);
     }
 }

@@ -46,6 +46,15 @@
                 </div>
             </div>
             </div>
+
+            <!-- Shipping Orders Section -->
+            <div class="py-4">
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-3 text-gray-900 dark:text-gray-100">
+                        @livewire('admin.shipping-order-list')
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </x-layout-admin>

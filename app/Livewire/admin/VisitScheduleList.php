@@ -4,6 +4,7 @@ namespace App\Livewire\admin;
 
 use Livewire\Component;
 use App\Models\ServiceTicket;
+use App\Models\Admin;
 use Livewire\WithPagination;
 use Carbon\Carbon;
 
@@ -13,6 +14,7 @@ class VisitScheduleList extends Component
 
     public $search = '';
     public $timeFilter = 'today'; // today, week, month
+    public $teknisiFilter = ''; // Filter by teknisi
 
     public function updatingSearch()
     {
@@ -22,7 +24,7 @@ class VisitScheduleList extends Component
     public function render()
     {
         $query = ServiceTicket::query()
-            ->with(['orderService.customer.addresses'])
+            ->with(['orderService.customer.defaultAddress', 'orderService.customer.addresses', 'admin'])
             ->whereNotNull('visit_schedule')
             ->whereHas('orderService', function ($q) {
                 $q->where('type', 'onsite');
@@ -43,6 +45,11 @@ class VisitScheduleList extends Component
                 break;
         }
 
+        // Apply teknisi filter
+        if ($this->teknisiFilter) {
+            $query->where('admin_id', $this->teknisiFilter);
+        }
+
         // Apply search filter
         if ($this->search) {
             $query->where(function ($q) {
@@ -58,8 +65,12 @@ class VisitScheduleList extends Component
 
         $visitSchedules = $query->orderBy('visit_schedule', 'asc')->get();
 
+        // Get list of teknisi for filter dropdown
+        $teknisiList = Admin::where('role', 'teknisi')->get();
+
         return view('livewire.admin.visit-schedule-list', [
-            'visitSchedules' => $visitSchedules
+            'visitSchedules' => $visitSchedules,
+            'teknisiList' => $teknisiList
         ]);
     }
 }

@@ -31,6 +31,10 @@
      
         </main>
     </div>
+
+    <!-- Logout Modal -->
+    <x-logout-modal />
+
    <livewire:scripts />
 
 </body>

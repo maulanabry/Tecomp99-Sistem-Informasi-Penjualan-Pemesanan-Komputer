@@ -28,7 +28,7 @@
                                     Rp {{ number_format($product['price'], 0, ',', '.') }}
                                 </div>
                             </div>
-                            <a href="{{ route('admin.products.edit', $product['id']) }}" 
+                            <a href="{{ route('products.edit', $product['id']) }}" 
                                class="ml-4 inline-flex items-center px-3 py-1 border border-transparent text-xs leading-4 font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-300 dark:hover:bg-yellow-800 transition">
                                 Update Stok
                             </a>
@@ -68,7 +68,7 @@
                                     Rp {{ number_format($product['price'], 0, ',', '.') }}
                                 </div>
                             </div>
-                            <a href="{{ route('admin.products.edit', $product['id']) }}" 
+                            <a href="{{ route('products.edit', $product['id']) }}" 
                                class="ml-4 inline-flex items-center px-3 py-1 border border-transparent text-xs leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800 transition">
                                 Restock Sekarang
                             </a>

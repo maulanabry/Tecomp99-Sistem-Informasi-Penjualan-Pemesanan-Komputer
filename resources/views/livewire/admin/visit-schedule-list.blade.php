@@ -18,6 +18,15 @@
                            placeholder="Cari tiket, customer, atau device...">
                 </div>
 
+                <!-- Teknisi Filter -->
+                <select wire:model.live="teknisiFilter" 
+                        class="block w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500">
+                    <option value="">Semua Teknisi</option>
+                    @foreach($teknisiList as $teknisi)
+                        <option value="{{ $teknisi->id }}">{{ $teknisi->name }}</option>
+                    @endforeach
+                </select>
+
                 <!-- Time Filter -->
                 <select wire:model.live="timeFilter" 
                         class="block w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500">
@@ -42,6 +51,16 @@
                         <p class="text-sm text-gray-500 dark:text-gray-400">
                             ID: {{ $schedule->service_ticket_id }}
                         </p>
+                        @if($schedule->admin)
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Teknisi: {{ $schedule->admin->name }}
+                                </span>
+                            </p>
+                        @endif
                     </div>
                     <div class="ml-4">
                         @php
@@ -111,7 +130,10 @@
                 </div>
 
                 <!-- Address -->
-                @if($schedule->orderService->customer->addresses)
+                @php
+                    $customerAddress = $schedule->orderService->customer->defaultAddress ?? $schedule->orderService->customer->addresses->first();
+                @endphp
+                @if($customerAddress)
                 <div class="mb-4">
                     <div class="flex items-start text-sm text-gray-600 dark:text-gray-300">
                         <svg class="w-4 h-4 mr-2 mt-0.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,10 +141,10 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         <div class="flex-1">
-                            <div>{{ $schedule->orderService->customer->addresses->detail_address }}</div>
+                            <div>{{ $customerAddress->detail_address }}</div>
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                {{ $schedule->orderService->customer->addresses->subdistrict_name }}, 
-                                {{ $schedule->orderService->customer->addresses->city_name }}
+                                {{ $customerAddress->subdistrict_name }}, 
+                                {{ $customerAddress->city_name }}
                             </div>
                         </div>
                     </div>
@@ -168,6 +190,9 @@
             Menampilkan {{ $visitSchedules->count() }} jadwal kunjungan
             @if($search)
                 untuk pencarian "{{ $search }}"
+            @endif
+            @if($teknisiFilter)
+                dengan teknisi "{{ $teknisiList->firstWhere('id', $teknisiFilter)->name }}"
             @endif
             @if($timeFilter === 'today')
                 hari ini

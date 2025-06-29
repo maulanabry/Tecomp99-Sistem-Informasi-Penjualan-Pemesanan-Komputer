@@ -83,7 +83,14 @@
                     </div>
                     <i class="fas fa-chevron-down w-4 h-4 transition-transform" :class="{ 'transform rotate-180': open }"></i>
                 </button>
-                <ul x-show="open" class="mt-1 space-y-1 pl-10">
+                <ul x-show="open" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                    x-transition:leave-end="opacity-0 transform -translate-y-2"
+                    class="mt-1 space-y-1 pl-10">
                     <li>
                         <a href="{{  route('order-services.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->Is('admin/order-services*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                             Order Servis
@@ -106,7 +113,14 @@
                     </div>
                     <i class="fas fa-chevron-down w-4 h-4 transition-transform" :class="{ 'transform rotate-180': open }"></i>
                 </button>
-                <ul x-show="open" class="mt-1 space-y-1 pl-10">
+                <ul x-show="open" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                    x-transition:leave-end="opacity-0 transform -translate-y-2"
+                    class="mt-1 space-y-1 pl-10">
                     <li>
                         <a href="{{ route('service-tickets.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->routeIs('service-tickets.index') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                             List View
@@ -149,13 +163,16 @@
                 </a>
             </li>
             <li>
-                <form method="POST" action="{{ ('logout') }}">
-                    @csrf
-                    <button type="submit" class="flex items-center w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 text-danger-500 dark:text-danger-300">
-                        <i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i>
-                        <span>Logout</span>
-                    </button>
-                </form>
+                <!-- Logout Button -->
+                <button type="button" 
+                        @click="$dispatch('show-logout-modal')"
+                        class="flex items-center w-full px-2 py-2 rounded-lg transition-colors duration-150 ease-in-out
+                               text-red-600 hover:bg-red-100 hover:text-red-700 
+                               dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300
+                               focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                    <i class="fas fa-sign-out-alt w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium">Keluar</span>
+                </button>
             </li>
         </ul>
     </div>
