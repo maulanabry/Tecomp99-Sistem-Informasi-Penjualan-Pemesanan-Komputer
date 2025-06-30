@@ -10,6 +10,15 @@ class TeknisiDashboardController extends Controller
 {
     public function index(): View
     {
-        return view('teknisi.dashboard');
+        $teknisi = auth('teknisi')->user();
+
+        return view('teknisi.dashboard', [
+            'teknisi' => $teknisi,
+            // Future data points will be added here
+            'todayTasks' => 0,
+            'completedTasks' => 0,
+            'pendingTasks' => 0,
+            'averageRating' => 0
+        ]);
     }
 }
