@@ -5,55 +5,15 @@
     <!-- Main Navigation -->
     <nav class="flex-1 px-3 py-3 overflow-y-auto">
         <ul class="space-y-1.5 text-neutral-500 dark:text-neutral-100">
-            <!-- Dashboard -->
+            <!-- Order Servis -->
             <li>
-                <a href="{{ route('teknisi.dashboard.index') }}"  
+                <a href="{{ route('teknisi.order-services.index') }}" wire:navigate 
                    class="flex items-center px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
                           hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
-                          {{ request()->is('teknisi/dashboard') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
-                    <i class="fas fa-home w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium">Dashboard</span>
+                          {{ request()->is('teknisi/order-services*') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
+                    <i class="fas fa-tools w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium">Order Servis</span>
                 </a>
-            </li>
-
-            <!-- Placeholder for future navigation items -->
-            <li class="mt-4">
-                <div class="px-3 py-2 text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-                    Menu akan ditambahkan
-                </div>
-            </li>
-
-            <!-- Static placeholder items to show the layout -->
-            <li>
-                <div class="flex items-center px-3 py-2 rounded-lg text-neutral-400 dark:text-neutral-500 cursor-not-allowed">
-                    <i class="fas fa-tasks w-5 h-5 mr-3"></i>
-                    <span class="font-medium">Tugas Saya</span>
-                    <span class="ml-auto text-xs bg-neutral-200 dark:bg-neutral-600 px-2 py-1 rounded">Soon</span>
-                </div>
-            </li>
-
-            <li>
-                <div class="flex items-center px-3 py-2 rounded-lg text-neutral-400 dark:text-neutral-500 cursor-not-allowed">
-                    <i class="fas fa-calendar-alt w-5 h-5 mr-3"></i>
-                    <span class="font-medium">Jadwal</span>
-                    <span class="ml-auto text-xs bg-neutral-200 dark:bg-neutral-600 px-2 py-1 rounded">Soon</span>
-                </div>
-            </li>
-
-            <li>
-                <div class="flex items-center px-3 py-2 rounded-lg text-neutral-400 dark:text-neutral-500 cursor-not-allowed">
-                    <i class="fas fa-tools w-5 h-5 mr-3"></i>
-                    <span class="font-medium">Riwayat Servis</span>
-                    <span class="ml-auto text-xs bg-neutral-200 dark:bg-neutral-600 px-2 py-1 rounded">Soon</span>
-                </div>
-            </li>
-
-            <li>
-                <div class="flex items-center px-3 py-2 rounded-lg text-neutral-400 dark:text-neutral-500 cursor-not-allowed">
-                    <i class="fas fa-chart-bar w-5 h-5 mr-3"></i>
-                    <span class="font-medium">Laporan</span>
-                    <span class="ml-auto text-xs bg-neutral-200 dark:bg-neutral-600 px-2 py-1 rounded">Soon</span>
-                </div>
             </li>
         </ul>
     </nav>
@@ -62,11 +22,10 @@
     <div class="px-4 py-4 border-t border-neutral-200 dark:border-neutral-500">
         <ul class="space-y-2 text-neutral-500 dark:text-neutral-100">
             <li>
-                <div class="flex items-center px-2 py-2 rounded text-neutral-400 dark:text-neutral-500 cursor-not-allowed">
+                <a href="{{ route('settings.index') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('settings*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                     <i class="fas fa-cog w-5 h-5 mr-3"></i>
                     <span>Pengaturan</span>
-                    <span class="ml-auto text-xs bg-neutral-200 dark:bg-neutral-600 px-2 py-1 rounded">Soon</span>
-                </div>
+                </a>
             </li>
             <li>
                 <!-- Logout Button -->

@@ -235,6 +235,12 @@ Route::middleware('auth:admin')->group(function () {
 // Teknisi Dashboard
 Route::middleware('auth:teknisi')->group(function () {
     Route::get('/teknisi/dashboard', [TeknisiDashboardController::class, 'index'])->name('teknisi.dashboard.index');
+
+    // Teknisi Order Services
+    Route::prefix('teknisi/order-servis')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'index'])->name('teknisi.order-services.index');
+        Route::get('/{orderService}', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'show'])->name('teknisi.order-services.show');
+    });
 });
 
 // Pemilik Dashboard
