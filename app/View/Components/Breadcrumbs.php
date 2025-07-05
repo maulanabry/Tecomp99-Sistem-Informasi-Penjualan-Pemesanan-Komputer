@@ -39,6 +39,11 @@ class Breadcrumbs extends Component
                 $breadcrumbs[] = $this->getOrderProductBreadcrumb($routeName);
                 break;
 
+            // Jadwal Servis (check before service tickets)
+            case str_contains($routeName, 'jadwal-servis'):
+                $breadcrumbs[] = $this->getJadwalServisBreadcrumb($routeName);
+                break;
+
             // Service Tickets (check before services)
             case str_contains($routeName, 'service-tickets'):
                 $breadcrumbs[] = $this->getServiceTicketBreadcrumb($routeName);
@@ -292,6 +297,21 @@ class Breadcrumbs extends Component
             return [
                 $base,
                 ['title' => 'Detail Order Produk', 'url' => null, 'active' => true]
+            ];
+        } else {
+            $base['active'] = true;
+            return $base;
+        }
+    }
+
+    private function getJadwalServisBreadcrumb($routeName)
+    {
+        $base = ['title' => 'Jadwal Servis', 'url' => route('teknisi.jadwal-servis.index'), 'active' => false];
+
+        if (str_contains($routeName, 'calendar')) {
+            return [
+                $base,
+                ['title' => 'Kalender', 'url' => null, 'active' => true]
             ];
         } else {
             $base['active'] = true;

@@ -15,6 +15,28 @@
                     <span class="font-medium">Order Servis</span>
                 </a>
             </li>
+
+            <!-- Tiket Servis -->
+            <li>
+                <a href="{{ route('teknisi.service-tickets.index') }}" wire:navigate 
+                   class="flex items-center px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
+                          hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
+                          {{ request()->is('teknisi/service-tickets*') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
+                    <i class="fas fa-ticket-alt w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium">Tiket Servis</span>
+                </a>
+            </li>
+
+            <!-- Jadwal Servis -->
+            <li>
+                <a href="{{ route('teknisi.jadwal-servis.index') }}" 
+                   class="flex items-center px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
+                          hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
+                          {{ request()->is('teknisi/jadwal-servis*') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
+                    <i class="fas fa-calendar-alt w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium">Jadwal Servis</span>
+                </a>
+            </li>
         </ul>
     </nav>
 
@@ -22,7 +44,7 @@
     <div class="px-4 py-4 border-t border-neutral-200 dark:border-neutral-500">
         <ul class="space-y-2 text-neutral-500 dark:text-neutral-100">
             <li>
-                <a href="{{ route('settings.index') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('settings*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                <a href="{{ route('teknisi.settings.index') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('teknisi/settings*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
                     <i class="fas fa-cog w-5 h-5 mr-3"></i>
                     <span>Pengaturan</span>
                 </a>

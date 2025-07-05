@@ -149,6 +149,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
     Route::prefix('admin/service-tickets')->middleware(['auth:admin'])->group(function () {
         // Main Service Ticket Routes
         Route::get('/', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'index'])->name('service-tickets.index');
+        Route::get('/cards', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'cards'])->name('service-tickets.cards');
         Route::get('/calendar', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'calendar'])->name('service-tickets.calendar');
         Route::get('/calendar/events', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'calendarEvents'])->name('service-tickets.calendar.events');
         Route::get('/create', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'create'])->name('service-tickets.create');
@@ -240,6 +241,49 @@ Route::middleware('auth:teknisi')->group(function () {
     Route::prefix('teknisi/order-servis')->group(function () {
         Route::get('/', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'index'])->name('teknisi.order-services.index');
         Route::get('/{orderService}', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'show'])->name('teknisi.order-services.show');
+        Route::get('/{orderService}/edit', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'edit'])->name('teknisi.order-service.edit');
+        Route::put('/{orderService}', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'update'])->name('teknisi.order-service.update');
+        Route::post('/validate-promo', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'validatePromoCode'])->name('teknisi.order-services.validate-promo');
+    });
+
+    // Teknisi Payments
+    Route::prefix('teknisi/payments')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Teknisi\PaymentController::class, 'index'])->name('teknisi.payments.index');
+        Route::get('/{payment_id}', [\App\Http\Controllers\Teknisi\PaymentController::class, 'show'])->name('teknisi.payments.show');
+    });
+
+    // Teknisi Customers
+    Route::prefix('teknisi/customers')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Teknisi\CustomerController::class, 'index'])->name('teknisi.customers.index');
+        Route::get('/{customer}', [\App\Http\Controllers\Teknisi\CustomerController::class, 'show'])->name('teknisi.customers.show');
+    });
+
+    // Teknisi Service Tickets
+    Route::prefix('teknisi/service-tickets')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'index'])->name('teknisi.service-tickets.index');
+        Route::get('/create', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'create'])->name('teknisi.service-tickets.create');
+        Route::post('/', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'store'])->name('teknisi.service-tickets.store');
+        Route::get('/calendar', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'calendar'])->name('teknisi.service-tickets.calendar');
+        Route::get('/calendar/events', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'calendarEvents'])->name('teknisi.service-tickets.calendar.events');
+        Route::post('/check-slot-availability', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'checkSlotAvailability'])->name('teknisi.service-tickets.check-slot');
+        Route::get('/{ticket}', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'show'])->name('teknisi.service-tickets.show');
+        Route::put('/{ticket}/status', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'updateStatus'])->name('teknisi.service-tickets.update-status');
+        Route::post('/{ticket}/actions', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'storeAction'])->name('teknisi.service-tickets.actions.store');
+        Route::delete('/{ticket}/actions/{action}', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'destroyAction'])->name('teknisi.service-tickets.actions.destroy');
+    });
+
+    // Teknisi Jadwal Servis
+    Route::prefix('teknisi/jadwal-servis')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Teknisi\JadwalServisController::class, 'index'])->name('teknisi.jadwal-servis.index');
+        Route::get('/calendar', [\App\Http\Controllers\Teknisi\JadwalServisController::class, 'calendar'])->name('teknisi.jadwal-servis.calendar');
+        Route::get('/calendar/events', [\App\Http\Controllers\Teknisi\JadwalServisController::class, 'calendarEvents'])->name('teknisi.jadwal-servis.calendar.events');
+    });
+
+    // Teknisi Settings
+    Route::prefix('teknisi/settings')->group(function () {
+        Route::get('/', function () {
+            return view('teknisi.settings');
+        })->name('teknisi.settings.index');
     });
 });
 

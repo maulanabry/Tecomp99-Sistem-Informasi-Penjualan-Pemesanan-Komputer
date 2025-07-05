@@ -117,11 +117,11 @@ class OrderServiceCards extends Component
         });
 
         $tabCounts = [
-            'all' => $baseQuery->count(),
-            'Menunggu' => $baseQuery->where('status_order', 'Menunggu')->count(),
-            'Diproses' => $baseQuery->where('status_order', 'Diproses')->count(),
-            'Selesai' => $baseQuery->where('status_order', 'Selesai')->count(),
-            'Dibatalkan' => $baseQuery->where('status_order', 'Dibatalkan')->count(),
+            'all' => (clone $baseQuery)->count(),
+            'Menunggu' => (clone $baseQuery)->where('status_order', 'Menunggu')->count(),
+            'Diproses' => (clone $baseQuery)->where('status_order', 'Diproses')->count(),
+            'Selesai' => (clone $baseQuery)->where('status_order', 'Selesai')->count(),
+            'Dibatalkan' => (clone $baseQuery)->where('status_order', 'Dibatalkan')->count(),
         ];
 
         return view('livewire.teknisi.order-service-cards', [

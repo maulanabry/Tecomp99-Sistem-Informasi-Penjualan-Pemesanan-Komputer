@@ -44,10 +44,14 @@
 
             <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 <div class="py-4">
-                    @livewire('teknisi.order-service-summary')
+                       @livewire('teknisi.order-service-summary')
                 </div>
                 <div class="py-4">
-                    @livewire('teknisi.order-service-cards')
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-3 text-gray-900 dark:text-gray-100">
+                      @livewire('teknisi.order-service-cards')
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

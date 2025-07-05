@@ -25,6 +25,11 @@ class ServiceTicketController extends Controller
         return view('admin.service-ticket');
     }
 
+    public function cards()
+    {
+        return view('admin.service-ticket-cards');
+    }
+
     public function calendar()
     {
         $tickets = ServiceTicket::with(['orderService.customer'])
@@ -284,9 +289,12 @@ class ServiceTicketController extends Controller
                 'created_at' => now(),
             ]);
 
-            // Update order service hasTicket status
+            // Update order service hasTicket status and set status to Diproses
             \App\Models\OrderService::where('order_service_id', $validated['order_service_id'])
-                ->update(['hasTicket' => true]);
+                ->update([
+                    'hasTicket' => true,
+                    'status_order' => 'Diproses'
+                ]);
 
             DB::commit();
 

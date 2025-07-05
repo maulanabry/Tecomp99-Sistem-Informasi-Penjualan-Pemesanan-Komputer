@@ -7,7 +7,7 @@
             </svg>
         </button>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6" wire:poll.60000ms>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6" wire:poll.30000ms>
         <!-- Total Order Servis -->
         <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between">
@@ -71,7 +71,37 @@
         </div>
 
         @if($showAllCards)
-        <!-- Completed Orders -->
+        <!-- Order Menunggu -->
+        <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Menunggu</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $orderMenunggu }}</h3>
+                </div>
+                <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Diproses -->
+        <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Diproses</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $orderDiproses }}</h3>
+                </div>
+                <div class="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Selesai -->
         <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between">
                 <div>
@@ -86,7 +116,7 @@
             </div>
         </div>
 
-        <!-- Canceled Orders -->
+        <!-- Order Dibatalkan -->
         <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between">
                 <div>
@@ -101,7 +131,7 @@
             </div>
         </div>
 
-        <!-- Unpaid Orders -->
+        <!-- Order Belum Dibayar -->
         <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between">
                 <div>
@@ -116,7 +146,7 @@
             </div>
         </div>
 
-        <!-- Paid Orders -->
+        <!-- Order Sudah Dibayar -->
         <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between">
                 <div>

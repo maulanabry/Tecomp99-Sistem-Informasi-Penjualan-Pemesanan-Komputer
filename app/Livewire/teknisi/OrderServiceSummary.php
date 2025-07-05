@@ -20,21 +20,37 @@ class OrderServiceSummary extends Component
 
     public function render()
     {
-        // Get order services that have tickets assigned to the current teknisi
-        $assignedOrderServices = OrderService::whereHas('tickets', function ($query) {
-            $query->where('admin_id', Auth::id());
-        });
+        // Create base query for assigned order services
+        $baseQuery = OrderService::query()
+            ->whereHas('tickets', function ($query) {
+                $query->where('admin_id', Auth::id());
+            })
+            ->with(['tickets' => function ($query) {
+                $query->where('admin_id', Auth::id());
+            }]);
 
-        $totalOrderService = $assignedOrderServices->count();
-        $reguler = $assignedOrderServices->where('type', 'reguler')->count();
-        $onsite = $assignedOrderServices->where('type', 'onsite')->count();
-        $orderMenunggu = $assignedOrderServices->where('status_order', 'Menunggu')->count();
-        $orderDiproses = $assignedOrderServices->where('status_order', 'Diproses')->count();
-        $orderSelesai = $assignedOrderServices->where('status_order', 'Selesai')->count();
-        $orderDibatalkan = $assignedOrderServices->where('status_order', 'Dibatalkan')->count();
-        $orderBelumDibayar = $assignedOrderServices->where('status_payment', 'belum_dibayar')->count();
-        $orderLunas = $assignedOrderServices->where('status_payment', 'lunas')->count();
-        $pendapatan = $assignedOrderServices->where('status_payment', 'lunas')->sum('grand_total');
+        // Clone the base query for different counts to prevent query pollution
+        $totalOrderService = (clone $baseQuery)->count();
+
+        // Type counts
+        $reguler = (clone $baseQuery)->where('type', 'reguler')->count();
+        $onsite = (clone $baseQuery)->where('type', 'onsite')->count();
+
+        // Order status counts
+        $orderMenunggu = (clone $baseQuery)->where('status_order', 'Menunggu')->count();
+        $orderDiproses = (clone $baseQuery)->where('status_order', 'Diproses')->count();
+        $orderSelesai = (clone $baseQuery)->where('status_order', 'Selesai')->count();
+        $orderDibatalkan = (clone $baseQuery)->where('status_order', 'Dibatalkan')->count();
+
+        // Payment status counts
+        $orderBelumDibayar = (clone $baseQuery)->where('status_payment', 'belum_dibayar')->count();
+        $orderLunas = (clone $baseQuery)->where('status_payment', 'lunas')->count();
+
+        // Calculate total income from completed and paid orders
+        $pendapatan = (clone $baseQuery)
+            ->where('status_payment', 'lunas')
+            ->where('status_order', 'Selesai')
+            ->sum('grand_total');
 
         return view('livewire.teknisi.order-service-summary', [
             'totalOrderService' => $totalOrderService,

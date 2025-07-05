@@ -20,6 +20,10 @@ class ServiceAction extends Model
         'created_at',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
+
     public function serviceTicket()
     {
         return $this->belongsTo(ServiceTicket::class, 'service_ticket_id', 'service_ticket_id');
