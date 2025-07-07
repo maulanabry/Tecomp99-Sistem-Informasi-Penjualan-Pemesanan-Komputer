@@ -297,4 +297,9 @@ Route::middleware('auth:teknisi')->group(function () {
 // Pemilik Dashboard
 Route::middleware('auth:pemilik')->group(function () {
     Route::get('/pemilik/dashboard', [PemilikDashboardController::class, 'index'])->name('pemilik.dashboard.index');
+
+    // Settings
+    Route::get('/pemilik/settings', function () {
+        return view('owner.settings');
+    })->name('pemilik.settings');
 });

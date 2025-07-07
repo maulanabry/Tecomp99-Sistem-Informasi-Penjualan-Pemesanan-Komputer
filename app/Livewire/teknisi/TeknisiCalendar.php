@@ -95,13 +95,13 @@ class TeknisiCalendar extends Component
 
         return ServiceTicket::where('admin_id', $teknisiId)
             ->whereDate('visit_schedule', $this->selectedDate)
-            ->with(['orderService.customer', 'orderService.orderServiceItems.service'])
+            ->with(['orderService.customer.addresses', 'orderService.items.service'])
             ->orderBy('visit_schedule')
             ->get()
             ->map(function ($ticket) {
                 $orderService = $ticket->orderService;
-                $customer = $orderService->customer ?? null;
-                $serviceItems = $orderService->orderServiceItems ?? collect();
+                $customer = $orderService ? $orderService->customer : null;
+                $serviceItems = $orderService ? $orderService->items : collect();
                 $firstServiceItem = $serviceItems->first();
                 $service = $firstServiceItem ? $firstServiceItem->service : null;
 
@@ -111,9 +111,9 @@ class TeknisiCalendar extends Component
                     'customer' => $customer ? $customer->name : 'Unknown',
                     'service' => $service ? $service->name : 'Service',
                     'status' => $ticket->status,
-                    'type' => $orderService->type ?? 'reguler',
-                    'address' => ($orderService->type === 'onsite' && $customer) ?
-                        ($customer->customerAddresses->first()->address ?? '') : null
+                    'type' => $orderService ? $orderService->type : 'reguler',
+                    'address' => ($orderService && $orderService->type === 'onsite' && $customer) ?
+                        ($customer->addresses->first()->detail_address ?? '') : null
                 ];
             });
     }

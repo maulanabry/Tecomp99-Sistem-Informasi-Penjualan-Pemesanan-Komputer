@@ -1,4 +1,5 @@
-<!doctype html>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><!doctype html>
 <html x-data="{ 
         darkMode: localStorage.getItem('dark') === 'true',
         showLogoutModal: false 
@@ -14,8 +15,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-</head>
+    <!-- Chart.js CDN -->
 
 <body class="font-body bg-neutral-100 dark:bg-neutral-600 min-h-screen">
     <!-- Top Navigation Bar Component -->

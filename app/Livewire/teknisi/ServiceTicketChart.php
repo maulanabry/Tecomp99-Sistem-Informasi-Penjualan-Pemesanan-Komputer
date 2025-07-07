@@ -88,7 +88,9 @@ class ServiceTicketChart extends Component
     public function render()
     {
         return view('livewire.teknisi.service-ticket-chart', [
-            'statistics' => $this->getStatistics()
+            'statistics' => $this->getStatistics(),
+            'chartData' => $this->chartData,
+            'chartLabels' => $this->chartLabels,
         ]);
     }
 }

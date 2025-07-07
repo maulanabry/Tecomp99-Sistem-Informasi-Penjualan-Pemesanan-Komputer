@@ -10,6 +10,6 @@ class PemilikDashboardController extends Controller
 {
     public function index(): View
     {
-        return view('pemilik.dashboard');
+        return view('owner.dashboard');
     }
 }

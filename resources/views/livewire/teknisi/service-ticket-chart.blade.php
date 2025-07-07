@@ -18,169 +18,185 @@
     </div>
 
     <!-- Chart Container -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-        <div class="h-64">
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <div class="h-48">
             <canvas id="serviceTicketChart" width="400" height="200"></canvas>
         </div>
     </div>
 
     <!-- Statistics -->
-    <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
-            <div class="flex items-center">
-                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-2">
-                    <i class="fas fa-ticket-alt text-white text-xs"></i>
-                </div>
-                <div>
-                    <p class="text-lg font-bold text-blue-900 dark:text-blue-100">{{ $statistics['total_tickets'] }}</p>
-                    <p class="text-xs text-blue-700 dark:text-blue-300">Total Tiket</p>
-                </div>
+    <div class="mt-4 grid grid-cols-2 gap-2">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 border border-blue-200 dark:border-blue-700">
+            <div class="text-center">
+                <p class="text-xl font-bold text-blue-900 dark:text-blue-100">{{ $statistics['total_tickets'] }}</p>
+                <p class="text-xs text-blue-700 dark:text-blue-300">Total Tiket</p>
             </div>
         </div>
 
-        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-700">
-            <div class="flex items-center">
-                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-2">
-                    <i class="fas fa-chart-bar text-white text-xs"></i>
-                </div>
-                <div>
-                    <p class="text-lg font-bold text-green-900 dark:text-green-100">{{ $statistics['average_per_day'] }}</p>
-                    <p class="text-xs text-green-700 dark:text-green-300">Rata-rata/Hari</p>
-                </div>
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-2 border border-green-200 dark:border-green-700">
+            <div class="text-center">
+                <p class="text-xl font-bold text-green-900 dark:text-green-100">{{ $statistics['average_per_day'] }}</p>
+                <p class="text-xs text-green-700 dark:text-green-300">Rata-rata/Hari</p>
             </div>
         </div>
 
-        <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-700">
-            <div class="flex items-center">
-                <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-2">
-                    <i class="fas fa-crown text-white text-xs"></i>
-                </div>
-                <div>
-                    <p class="text-lg font-bold text-purple-900 dark:text-purple-100">{{ $statistics['max_day'] }}</p>
-                    <p class="text-xs text-purple-700 dark:text-purple-300">Tertinggi ({{ $statistics['max_day_date'] }})</p>
-                </div>
+        <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2 border border-purple-200 dark:border-purple-700">
+            <div class="text-center">
+                <p class="text-xl font-bold text-purple-900 dark:text-purple-100">{{ $statistics['max_day'] }}</p>
+                <p class="text-xs text-purple-700 dark:text-purple-300">Tertinggi ({{ $statistics['max_day_date'] }})</p>
             </div>
         </div>
 
-        <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 border border-orange-200 dark:border-orange-700">
-            <div class="flex items-center">
-                <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center mr-2">
-                    <i class="fas fa-percentage text-white text-xs"></i>
-                </div>
-                <div>
-                    <p class="text-lg font-bold text-orange-900 dark:text-orange-100">{{ $statistics['completion_rate'] }}%</p>
-                    <p class="text-xs text-orange-700 dark:text-orange-300">Tingkat Selesai</p>
-                </div>
+        <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-2 border border-orange-200 dark:border-orange-700">
+            <div class="text-center">
+                <p class="text-xl font-bold text-orange-900 dark:text-orange-100">{{ $statistics['completion_rate'] }}%</p>
+                <p class="text-xs text-orange-700 dark:text-orange-300">Tingkat Selesai</p>
             </div>
         </div>
     </div>
 
     <!-- Chart Script -->
     <script>
-        document.addEventListener('livewire:load', function () {
-            initChart();
-        });
+        let serviceTicketChartInstance = null;
 
-        document.addEventListener('livewire:update', function () {
-            initChart();
-        });
-
-        function initChart() {
+        function initServiceTicketChart() {
             const ctx = document.getElementById('serviceTicketChart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.log('Chart canvas not found');
+                return;
+            }
 
             // Destroy existing chart if it exists
-            if (window.serviceTicketChartInstance) {
-                window.serviceTicketChartInstance.destroy();
+            if (serviceTicketChartInstance) {
+                serviceTicketChartInstance.destroy();
+                serviceTicketChartInstance = null;
             }
 
             const chartData = @json($chartData);
             const chartLabels = @json($chartLabels);
 
-            window.serviceTicketChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: chartLabels,
-                    datasets: [{
-                        label: 'Jumlah Tiket Servis',
-                        data: chartData,
-                        borderColor: '#3B82F6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#3B82F6',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleColor: '#ffffff',
-                            bodyColor: '#ffffff',
+            console.log('Chart Data:', chartData);
+            console.log('Chart Labels:', chartLabels);
+
+            if (!chartData || !chartLabels || chartData.length === 0) {
+                console.log('No chart data available');
+                return;
+            }
+
+            try {
+                serviceTicketChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            label: 'Jumlah Tiket Servis',
+                            data: chartData,
                             borderColor: '#3B82F6',
-                            borderWidth: 1,
-                            callbacks: {
-                                title: function(context) {
-                                    return 'Tanggal: ' + context[0].label;
-                                },
-                                label: function(context) {
-                                    return 'Tiket: ' + context.parsed.y + ' tiket';
-                                }
-                            }
-                        }
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#3B82F6',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 8
+                        }]
                     },
-                    scales: {
-                        x: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Tanggal',
-                                color: '#6B7280'
-                            },
-                            grid: {
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
                                 display: false
                             },
-                            ticks: {
-                                color: '#6B7280',
-                                maxTicksLimit: 10
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#ffffff',
+                                borderColor: '#3B82F6',
+                                borderWidth: 1,
+                                callbacks: {
+                                    title: function(context) {
+                                        return 'Tanggal: ' + context[0].label;
+                                    },
+                                    label: function(context) {
+                                        return 'Tiket: ' + context.parsed.y + ' tiket';
+                                    }
+                                }
                             }
                         },
-                        y: {
-                            display: true,
-                            title: {
+                        scales: {
+                            x: {
                                 display: true,
-                                text: 'Jumlah Tiket',
-                                color: '#6B7280'
+                                title: {
+                                    display: true,
+                                    text: 'Tanggal',
+                                    color: '#6B7280'
+                                },
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: '#6B7280',
+                                    maxTicksLimit: 10
+                                }
                             },
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(107, 114, 128, 0.1)'
-                            },
-                            ticks: {
-                                color: '#6B7280',
-                                stepSize: 1
+                            y: {
+                                display: true,
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah Tiket',
+                                    color: '#6B7280'
+                                },
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(107, 114, 128, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#6B7280',
+                                    stepSize: 1
+                                }
                             }
+                        },
+                        interaction: {
+                            mode: 'nearest',
+                            axis: 'x',
+                            intersect: false
                         }
-                    },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
                     }
-                }
-            });
+                });
+                console.log('Chart initialized successfully');
+            } catch (error) {
+                console.error('Error initializing chart:', error);
+            }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for Chart.js to be loaded
+            if (typeof Chart === 'undefined') {
+                setTimeout(function() {
+                    initServiceTicketChart();
+                }, 100);
+            } else {
+                initServiceTicketChart();
+            }
+        });
+
+        // Listen for Livewire updates
+        document.addEventListener('livewire:updated', function () {
+            setTimeout(function() {
+                initServiceTicketChart();
+            }, 100);
+        });
+
+        // Also listen for the older event name for compatibility
+        document.addEventListener('livewire:update', function () {
+            setTimeout(function() {
+                initServiceTicketChart();
+            }, 100);
+        });
     </script>
 </div>

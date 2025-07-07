@@ -10,16 +10,6 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardSummaryCards extends Component
 {
-    public $compactView = false;
-
-    /**
-     * Toggle between compact and full view
-     */
-    public function toggleView()
-    {
-        $this->compactView = !$this->compactView;
-    }
-
     /**
      * Get dashboard summary data for technician
      */
