@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center mb-6">
         <div>
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Notifikasi</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Kelola semua notifikasi sistem</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Kelola semua notifikasi teknisi</p>
         </div>
 
         @if($unreadCount > 0)
@@ -181,8 +181,13 @@
                             <!-- Additional Data -->
                             @if($notification->data)
                                 <div class="mb-2 flex flex-wrap gap-2">
-                                    @if(isset($notification->data['order_id']))
+                                    @if(isset($notification->data['ticket_id']))
                                         <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-600 text-white text-xs font-medium">
+                                            <i class="fas fa-ticket-alt mr-1"></i>#{{ $notification->data['ticket_id'] }}
+                                        </span>
+                                    @endif
+                                    @if(isset($notification->data['order_id']))
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-green-600 text-white text-xs font-medium">
                                             <i class="fas fa-hashtag mr-1"></i>{{ $notification->data['order_id'] }}
                                         </span>
                                     @endif
@@ -196,18 +201,13 @@
                                             <i class="fas fa-laptop mr-1"></i>{{ $notification->data['device'] }}
                                         </span>
                                     @endif
-                                    @if(isset($notification->data['total']))
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-green-600 text-white text-xs font-medium">
-                                            <i class="fas fa-money-bill mr-1"></i>Rp {{ number_format($notification->data['total'], 0, ',', '.') }}
-                                        </span>
-                                    @endif
-                                    @if(isset($notification->data['type']))
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-yellow-400 text-gray-900 text-xs font-medium">
-                                            <i class="fas fa-tag mr-1"></i>{{ ucfirst($notification->data['type']) }}
+                                    @if(isset($notification->data['visit_time']))
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-yellow-500 text-white text-xs font-medium">
+                                            <i class="fas fa-clock mr-1"></i>{{ $notification->data['visit_time'] }}
                                         </span>
                                     @endif
                                     @if(isset($notification->data['teknisi_name']))
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-purple-600 text-white text-xs font-medium">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-purple-500 text-white text-xs font-medium">
                                             <i class="fas fa-user-cog mr-1"></i>{{ $notification->data['teknisi_name'] }}
                                         </span>
                                     @endif

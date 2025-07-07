@@ -5,6 +5,17 @@
     <!-- Main Navigation -->
     <nav class="flex-1 px-3 py-3 overflow-y-auto">
         <ul class="space-y-1.5 text-neutral-500 dark:text-neutral-100">
+            <!-- Dashboard -->
+            <li>
+                <a href="{{ route('teknisi.dashboard.index') }}" wire:navigate 
+                   class="flex items-center px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
+                          hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
+                          {{ request()->is('teknisi/dashboard*') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
+                    <i class="fas fa-home w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+            </li>
+
             <!-- Order Servis -->
             <li>
                 <a href="{{ route('teknisi.order-services.index') }}" wire:navigate 
@@ -35,6 +46,17 @@
                           {{ request()->is('teknisi/jadwal-servis*') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
                     <i class="fas fa-calendar-alt w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
                     <span class="font-medium">Jadwal Servis</span>
+                </a>
+            </li>
+
+            <!-- Notifications -->
+            <li>
+                <a href="{{ route('teknisi.notifications.index') }}" wire:navigate 
+                   class="flex items-center px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
+                          hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
+                          {{ request()->is('teknisi/notifications*') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
+                    <i class="fas fa-bell w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium">Notifikasi</span>
                 </a>
             </li>
         </ul>

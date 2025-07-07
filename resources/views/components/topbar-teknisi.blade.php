@@ -17,8 +17,17 @@
                 </div>
             </div>
             <div class="flex items-center">
-                <!-- Profile and Settings -->
+                <!-- Global Search Component -->
+                <div class="hidden md:block w-96 mr-4">
+                    <livewire:teknisi.global-search />
+                </div>
+                <!-- Notifications and Profile -->
                 <div class="flex items-center space-x-4">
+                    <!-- Notification Bell -->
+                    <div class="relative">
+                        <livewire:teknisi.notification-dropdown />
+                    </div>
+
                     <!-- Dark Mode Toggle -->
                     <div class="flex items-center">
                         <x-dark-mode-toggle size="5" />

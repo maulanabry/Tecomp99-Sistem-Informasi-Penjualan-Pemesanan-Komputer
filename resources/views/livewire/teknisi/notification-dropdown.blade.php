@@ -72,24 +72,29 @@
                                 
                                 @if($notification->data)
                                     <div class="mt-2 flex flex-wrap gap-1">
+                                        @if(isset($notification->data['ticket_id']))
+                                            <span class="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
+                                                <i class="fas fa-ticket-alt mr-1"></i>#{{ $notification->data['ticket_id'] }}
+                                            </span>
+                                        @endif
+                                        @if(isset($notification->data['order_id']))
+                                            <span class="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">
+                                                <i class="fas fa-hashtag mr-1"></i>{{ $notification->data['order_id'] }}
+                                            </span>
+                                        @endif
                                         @if(isset($notification->data['device']))
                                             <span class="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
                                                 <i class="fas fa-laptop mr-1"></i>{{ $notification->data['device'] }}
                                             </span>
                                         @endif
-                                        @if(isset($notification->data['total']))
-                                            <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                                                <i class="fas fa-money-bill mr-1"></i>Rp {{ number_format($notification->data['total'], 0, ',', '.') }}
+                                        @if(isset($notification->data['customer_name']))
+                                            <span class="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">
+                                                <i class="fas fa-user mr-1"></i>{{ $notification->data['customer_name'] }}
                                             </span>
                                         @endif
-                                        @if(isset($notification->data['type']))
-                                            <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                                                <i class="fas fa-tag mr-1"></i>{{ ucfirst($notification->data['type']) }}
-                                            </span>
-                                        @endif
-                                        @if(isset($notification->data['teknisi_name']))
-                                            <span class="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
-                                                <i class="fas fa-user-cog mr-1"></i>{{ $notification->data['teknisi_name'] }}
+                                        @if(isset($notification->data['visit_time']))
+                                            <span class="inline-block bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">
+                                                <i class="fas fa-clock mr-1"></i>{{ $notification->data['visit_time'] }}
                                             </span>
                                         @endif
                                     </div>
@@ -122,7 +127,8 @@
         @if($notifications && $notifications->count() > 0)
             <div class="p-4 border-t border-neutral-200 dark:border-gray-600">
                 <a 
-                    href="{{ route('admin.notifications.index') }}" 
+                    href="{{ route('teknisi.notifications.index') }}" 
+                    wire:navigate
                     class="block text-center text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
                     @click="open = false"
                 >

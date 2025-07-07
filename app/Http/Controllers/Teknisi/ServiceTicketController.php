@@ -137,12 +137,13 @@ class ServiceTicketController extends Controller
 
             DB::commit();
 
-            // Create notification for new service ticket
+            // Create notification for new service ticket created by teknisi
             try {
-                $this->createTicketNotification(
+                $teknisi = auth('teknisi')->user();
+                $this->createTicketNotificationForAdmin(
                     $ticket,
-                    NotificationType::SERVICE_TICKET_CREATED,
-                    "Tiket servis baru dibuat untuk {$ticket->orderService->device}"
+                    NotificationType::TEKNISI_TICKET_CREATED,
+                    "Tiket servis berhasil dibuat oleh Teknisi {$teknisi->name} untuk order #{$ticket->orderService->order_service_id}"
                 );
             } catch (\Exception $e) {
                 Log::error('Failed to create service ticket notification: ' . $e->getMessage());
@@ -397,9 +398,24 @@ class ServiceTicketController extends Controller
             'status' => 'required|in:Menunggu,Diproses,Diantar,Perlu Diambil,Selesai'
         ]);
 
+        $oldStatus = $ticket->status;
         $ticket->update([
             'status' => $request->status
         ]);
+
+        // Create notification for status update by teknisi
+        if ($oldStatus !== $request->status) {
+            try {
+                $teknisi = auth('teknisi')->user();
+                $this->createTicketNotificationForAdmin(
+                    $ticket,
+                    NotificationType::TEKNISI_ORDER_UPDATED,
+                    "Tiket #{$ticket->service_ticket_id} telah diperbarui oleh Teknisi {$teknisi->name} - Status: {$request->status}"
+                );
+            } catch (\Exception $e) {
+                Log::error('Failed to create status update notification: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->back()->with('success', 'Status tiket berhasil diperbarui.');
     }
@@ -449,9 +465,9 @@ class ServiceTicketController extends Controller
     }
 
     /**
-     * Create service ticket notification for all admins
+     * Create service ticket notification for all admins (when teknisi creates/updates)
      */
-    private function createTicketNotification(ServiceTicket $ticket, NotificationType $type, string $message)
+    private function createTicketNotificationForAdmin(ServiceTicket $ticket, NotificationType $type, string $message)
     {
         try {
             $orderService = $ticket->orderService;
@@ -471,16 +487,18 @@ class ServiceTicketController extends Controller
                 'customer_name' => $customer->name,
                 'device' => $orderService->device,
                 'status' => $ticket->status,
-                'type' => $orderService->type // reguler/onsite
+                'type' => $orderService->type, // reguler/onsite
+                'teknisi_name' => auth('teknisi')->user()->name
             ];
 
             // Add visit schedule for onsite service
             if ($orderService->type === 'onsite' && $ticket->visit_schedule) {
                 $data['visit_schedule'] = $ticket->visit_schedule->format('Y-m-d H:i:s');
+                $data['visit_time'] = $ticket->visit_schedule->format('H:i');
             }
 
             // Create notifications for all admins
-            $admins = Admin::all();
+            $admins = Admin::where('role', 'admin')->get();
             foreach ($admins as $admin) {
                 $this->notificationService->create(
                     notifiable: $admin,
@@ -492,6 +510,50 @@ class ServiceTicketController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Failed to create ticket notification: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Create notification for teknisi about their assignments or schedules
+     */
+    private function createTeknisiNotification(Admin $teknisi, NotificationType $type, ServiceTicket $ticket, string $message, array $additionalData = [])
+    {
+        try {
+            $orderService = $ticket->orderService;
+            if (!$orderService) {
+                return;
+            }
+
+            $customer = $orderService->customer;
+            if (!$customer) {
+                return;
+            }
+
+            // Prepare notification data
+            $data = array_merge([
+                'ticket_id' => $ticket->service_ticket_id,
+                'order_id' => $orderService->order_service_id,
+                'customer_name' => $customer->name,
+                'device' => $orderService->device,
+                'status' => $ticket->status,
+                'type' => $orderService->type
+            ], $additionalData);
+
+            // Add visit schedule for onsite service
+            if ($orderService->type === 'onsite' && $ticket->visit_schedule) {
+                $data['visit_schedule'] = $ticket->visit_schedule->format('Y-m-d H:i:s');
+                $data['visit_time'] = $ticket->visit_schedule->format('H:i');
+            }
+
+            $this->notificationService->create(
+                notifiable: $teknisi,
+                type: $type,
+                subject: $ticket,
+                message: $message,
+                data: $data
+            );
+        } catch (\Exception $e) {
+            Log::error('Failed to create teknisi notification: ' . $e->getMessage());
         }
     }
 }

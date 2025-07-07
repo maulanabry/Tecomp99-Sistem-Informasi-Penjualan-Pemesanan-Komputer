@@ -24,6 +24,13 @@ enum NotificationType: string
     case SERVICE_TICKET_UPDATED = 'service.ticket.updated';
     case SERVICE_TICKET_COMPLETED = 'service.ticket.completed';
 
+        // Teknisi Notifications
+    case TEKNISI_TICKET_CREATED = 'teknisi.ticket.created';
+    case TEKNISI_ORDER_UPDATED = 'teknisi.order.updated';
+    case TEKNISI_VISIT_TODAY = 'teknisi.visit.today';
+    case TEKNISI_VISIT_OVERDUE = 'teknisi.visit.overdue';
+    case TEKNISI_ASSIGNED_TICKET = 'teknisi.assigned.ticket';
+
     /**
      * Get human-readable label for the notification type
      */
@@ -42,6 +49,11 @@ enum NotificationType: string
             self::SERVICE_TICKET_CREATED => 'Tiket Servis Baru',
             self::SERVICE_TICKET_UPDATED => 'Tiket Servis Diperbarui',
             self::SERVICE_TICKET_COMPLETED => 'Tiket Servis Selesai',
+            self::TEKNISI_TICKET_CREATED => 'Tiket Dibuat oleh Teknisi',
+            self::TEKNISI_ORDER_UPDATED => 'Order Diperbarui oleh Teknisi',
+            self::TEKNISI_VISIT_TODAY => 'Kunjungan Hari Ini',
+            self::TEKNISI_VISIT_OVERDUE => 'Kunjungan Terlambat',
+            self::TEKNISI_ASSIGNED_TICKET => 'Tiket Ditugaskan',
         };
     }
 
@@ -65,6 +77,12 @@ enum NotificationType: string
             self::SERVICE_TICKET_CREATED,
             self::SERVICE_TICKET_UPDATED,
             self::SERVICE_TICKET_COMPLETED => 'fas fa-ticket-alt',
+
+            self::TEKNISI_TICKET_CREATED => 'fas fa-plus-circle',
+            self::TEKNISI_ORDER_UPDATED => 'fas fa-edit',
+            self::TEKNISI_VISIT_TODAY => 'fas fa-calendar-day',
+            self::TEKNISI_VISIT_OVERDUE => 'fas fa-exclamation-triangle',
+            self::TEKNISI_ASSIGNED_TICKET => 'fas fa-user-tag',
         };
     }
 
@@ -89,6 +107,12 @@ enum NotificationType: string
             self::SERVICE_TICKET_CREATED => 'bg-blue-500',
             self::SERVICE_TICKET_UPDATED => 'bg-yellow-500',
             self::SERVICE_TICKET_COMPLETED => 'bg-green-500',
+
+            self::TEKNISI_TICKET_CREATED => 'bg-blue-500',
+            self::TEKNISI_ORDER_UPDATED => 'bg-yellow-500',
+            self::TEKNISI_VISIT_TODAY => 'bg-green-500',
+            self::TEKNISI_VISIT_OVERDUE => 'bg-red-500',
+            self::TEKNISI_ASSIGNED_TICKET => 'bg-purple-500',
         };
     }
 }

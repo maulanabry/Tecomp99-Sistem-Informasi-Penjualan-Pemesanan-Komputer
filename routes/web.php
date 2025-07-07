@@ -236,6 +236,8 @@ Route::middleware('auth:admin')->group(function () {
 // Teknisi Dashboard
 Route::middleware('auth:teknisi')->group(function () {
     Route::get('/teknisi/dashboard', [TeknisiDashboardController::class, 'index'])->name('teknisi.dashboard.index');
+    Route::get('/teknisi/dashboard/stats', [TeknisiDashboardController::class, 'getStats'])->name('teknisi.dashboard.stats');
+    Route::get('/teknisi/dashboard/overview', [TeknisiDashboardController::class, 'getQuickOverview'])->name('teknisi.dashboard.overview');
 
     // Teknisi Order Services
     Route::prefix('teknisi/order-servis')->group(function () {
@@ -277,6 +279,11 @@ Route::middleware('auth:teknisi')->group(function () {
         Route::get('/', [\App\Http\Controllers\Teknisi\JadwalServisController::class, 'index'])->name('teknisi.jadwal-servis.index');
         Route::get('/calendar', [\App\Http\Controllers\Teknisi\JadwalServisController::class, 'calendar'])->name('teknisi.jadwal-servis.calendar');
         Route::get('/calendar/events', [\App\Http\Controllers\Teknisi\JadwalServisController::class, 'calendarEvents'])->name('teknisi.jadwal-servis.calendar.events');
+    });
+
+    // Teknisi Notifications
+    Route::prefix('teknisi/notifications')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Teknisi\NotificationController::class, 'index'])->name('teknisi.notifications.index');
     });
 
     // Teknisi Settings
