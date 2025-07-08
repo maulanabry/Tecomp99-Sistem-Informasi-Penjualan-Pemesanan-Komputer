@@ -21,6 +21,7 @@ return new class extends Migration
             $table->enum('role', ['admin', 'teknisi', 'pemilik'])->default('admin');
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         // Token reset password untuk ADMIN

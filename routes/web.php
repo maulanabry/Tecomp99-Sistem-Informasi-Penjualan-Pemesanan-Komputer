@@ -298,6 +298,16 @@ Route::middleware('auth:teknisi')->group(function () {
 Route::middleware('auth:pemilik')->group(function () {
     Route::get('/pemilik/dashboard', [PemilikDashboardController::class, 'index'])->name('pemilik.dashboard.index');
 
+    // Pemilik User Management
+    Route::prefix('pemilik/manajemen-pengguna')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'index'])->name('pemilik.manajemen-pengguna.index');
+        Route::get('/{admin}', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'show'])->name('pemilik.manajemen-pengguna.show');
+        Route::get('/{admin}/edit', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'edit'])->name('pemilik.manajemen-pengguna.edit');
+        Route::put('/{admin}', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'update'])->name('pemilik.manajemen-pengguna.update');
+        Route::delete('/{admin}', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'destroy'])->name('pemilik.manajemen-pengguna.destroy');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'restore'])->name('pemilik.manajemen-pengguna.restore');
+    });
+
     // Settings
     Route::get('/pemilik/settings', function () {
         return view('owner.settings');

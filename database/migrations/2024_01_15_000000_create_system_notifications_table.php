@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('system_notifications', function (Blueprint $table) {
             $table->id();
-            $table->morphs('notifiable'); // notifiable_id, notifiable_type
+            $table->morphs('notifiable'); // notifiable_id, notifiable_type (sudah include index)
             $table->string('type'); // notification type enum
             $table->string('subject_id'); // subject_id as string to support custom primary keys
             $table->string('subject_type'); // subject_type (related model class)
@@ -22,8 +22,7 @@ return new class extends Migration
             $table->timestamp('read_at')->nullable(); // when notification was read
             $table->timestamps();
 
-            // Indexes untuk performa query
-            $table->index(['notifiable_type', 'notifiable_id']);
+            // Indexes untuk performa query (morphs sudah membuat index untuk notifiable)
             $table->index(['subject_type', 'subject_id']);
             $table->index(['type']);
             $table->index(['read_at']);

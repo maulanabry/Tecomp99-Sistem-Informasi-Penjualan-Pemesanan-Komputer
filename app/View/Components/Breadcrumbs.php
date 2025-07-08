@@ -19,12 +19,20 @@ class Breadcrumbs extends Component
         $routeName = Route::currentRouteName();
         $breadcrumbs = [];
 
-        // Always start with Dashboard
-        $breadcrumbs[] = [
-            'title' => 'Dashboard',
-            'url' => route('admin.dashboard.index'),
-            'active' => false
-        ];
+        // Always start with Dashboard - determine which dashboard based on current route
+        if (str_contains($routeName, 'pemilik.') || str_contains($routeName, 'manajemen-pengguna')) {
+            $breadcrumbs[] = [
+                'title' => 'Dashboard',
+                'url' => route('pemilik.dashboard.index'),
+                'active' => false
+            ];
+        } else {
+            $breadcrumbs[] = [
+                'title' => 'Dashboard',
+                'url' => route('admin.dashboard.index'),
+                'active' => false
+            ];
+        }
 
         // Generate breadcrumbs based on current route
         switch (true) {
@@ -80,6 +88,11 @@ class Breadcrumbs extends Component
                 $breadcrumbs[] = $this->getCustomerBreadcrumb($routeName);
                 break;
 
+            // Manajemen Pengguna (Pemilik)
+            case str_contains($routeName, 'manajemen-pengguna'):
+                $breadcrumbs[] = $this->getManajemenPenggunaBreadcrumb($routeName);
+                break;
+
             // Payments
             case str_contains($routeName, 'payments'):
                 $breadcrumbs[] = $this->getPaymentBreadcrumb($routeName);
@@ -96,7 +109,7 @@ class Breadcrumbs extends Component
                 break;
 
             // Dashboard (current page)
-            case $routeName === 'admin.dashboard.index':
+            case $routeName === 'admin.dashboard.index' || $routeName === 'pemilik.dashboard.index':
                 $breadcrumbs[0]['active'] = true;
                 break;
         }
@@ -362,6 +375,26 @@ class Breadcrumbs extends Component
             return [
                 $base,
                 ['title' => 'Detail Pembayaran', 'url' => null, 'active' => true]
+            ];
+        } else {
+            $base['active'] = true;
+            return $base;
+        }
+    }
+
+    private function getManajemenPenggunaBreadcrumb($routeName)
+    {
+        $base = ['title' => 'Manajemen Pengguna', 'url' => route('pemilik.manajemen-pengguna.index'), 'active' => false];
+
+        if (str_contains($routeName, 'edit')) {
+            return [
+                $base,
+                ['title' => 'Edit Pengguna', 'url' => null, 'active' => true]
+            ];
+        } elseif (str_contains($routeName, 'show')) {
+            return [
+                $base,
+                ['title' => 'Detail Pengguna', 'url' => null, 'active' => true]
             ];
         } else {
             $base['active'] = true;

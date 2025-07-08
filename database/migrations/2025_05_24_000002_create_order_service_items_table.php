@@ -30,8 +30,6 @@ return new class extends Migration
             // Timestamps
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
-
-            $table->foreign('order_service_id')->references('order_service_id')->on('order_services')->onDelete('cascade');
         });
     }
 

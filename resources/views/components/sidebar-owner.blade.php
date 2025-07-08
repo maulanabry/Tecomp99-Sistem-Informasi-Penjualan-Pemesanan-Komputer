@@ -16,6 +16,17 @@
                     <span class="font-medium">Dashboard</span>
                 </a>
             </li>
+
+            <!-- Data Admin -->
+            <li>
+                <a href="{{ route('pemilik.manajemen-pengguna.index') }}" wire:navigate
+                   class="flex items-center px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
+                          hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
+                          {{ request()->is('pemilik/manajemen-pengguna*') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
+                    <i class="fas fa-users w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium">Manajemen Pengguna</span>
+                </a>
+            </li>
         </ul>
     </nav>
 

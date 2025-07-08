@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('order_service_images', function (Blueprint $table) {
             $table->integer('media_id')->primary();
             $table->string('order_service_id', 50);
-            $table->foreign('order_service_id')->references('order_service_id')->on('order_services');
+            $table->foreign('order_service_id')->references('order_service_id')->on('order_services')->onDelete('cascade');
             $table->string('url', 255);
             $table->timestamp('created_at')->nullable();
-            $table->foreign('order_service_id')->references('order_service_id')->on('order_services')->onDelete('cascade');
         });
     }
 
