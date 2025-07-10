@@ -6,7 +6,7 @@ use App\Models\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class ManajemenPenggunaTable extends Component
+class AdminRecoveryTable extends Component
 {
     use WithPagination;
 
@@ -14,12 +14,14 @@ class ManajemenPenggunaTable extends Component
     public $search = '';
     public $roleFilter = '';
     public $perPage = 10;
-    public $sortField = 'created_at';
+    public $sortField = 'deleted_at';
     public $sortDirection = 'desc';
 
-    // Properties untuk modal konfirmasi hapus
-    public $isDeleteModalOpen = false;
-    public $adminToDelete = null;
+    // Properties untuk modal konfirmasi
+    public $isRestoreModalOpen = false;
+    public $isForceDeleteModalOpen = false;
+    public $adminToRestore = null;
+    public $adminToForceDelete = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -67,43 +69,78 @@ class ManajemenPenggunaTable extends Component
     }
 
     /**
-     * Buka modal konfirmasi hapus
+     * Buka modal konfirmasi restore
      */
-    public function openDeleteModal($adminId)
+    public function openRestoreModal($adminId)
     {
-        $this->adminToDelete = $adminId;
-        $this->isDeleteModalOpen = true;
+        $this->adminToRestore = $adminId;
+        $this->isRestoreModalOpen = true;
     }
 
     /**
-     * Tutup modal konfirmasi hapus
+     * Tutup modal konfirmasi restore
      */
-    public function closeDeleteModal()
+    public function closeRestoreModal()
     {
-        $this->isDeleteModalOpen = false;
-        $this->adminToDelete = null;
+        $this->isRestoreModalOpen = false;
+        $this->adminToRestore = null;
     }
 
     /**
-     * Konfirmasi hapus admin
+     * Buka modal konfirmasi force delete
      */
-    public function confirmDelete()
+    public function openForceDeleteModal($adminId)
     {
-        if ($this->adminToDelete) {
-            $admin = Admin::find($this->adminToDelete);
+        $this->adminToForceDelete = $adminId;
+        $this->isForceDeleteModalOpen = true;
+    }
 
-            if ($admin) {
+    /**
+     * Tutup modal konfirmasi force delete
+     */
+    public function closeForceDeleteModal()
+    {
+        $this->isForceDeleteModalOpen = false;
+        $this->adminToForceDelete = null;
+    }
+
+    /**
+     * Konfirmasi restore admin
+     */
+    public function confirmRestore()
+    {
+        if ($this->adminToRestore) {
+            $admin = Admin::withTrashed()->find($this->adminToRestore);
+
+            if ($admin && $admin->trashed()) {
+                $admin->restore();
+                session()->flash('success', 'Admin berhasil dipulihkan.');
+            }
+        }
+
+        $this->closeRestoreModal();
+    }
+
+    /**
+     * Konfirmasi force delete admin
+     */
+    public function confirmForceDelete()
+    {
+        if ($this->adminToForceDelete) {
+            $admin = Admin::withTrashed()->find($this->adminToForceDelete);
+
+            if ($admin && $admin->trashed()) {
                 // Pastikan tidak menghapus diri sendiri
                 if ($admin->id === auth('pemilik')->id()) {
-                    session()->flash('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+                    session()->flash('error', 'Anda tidak dapat menghapus akun Anda sendiri secara permanen.');
                 } else {
-                    $admin->delete();
-                    session()->flash('success', 'Admin berhasil dihapus.');
+                    $admin->forceDelete();
+                    session()->flash('success', 'Admin berhasil dihapus secara permanen.');
                 }
             }
         }
 
-        $this->closeDeleteModal();
+        $this->closeForceDeleteModal();
     }
 
     /**
@@ -111,7 +148,7 @@ class ManajemenPenggunaTable extends Component
      */
     public function render()
     {
-        $query = Admin::query();
+        $query = Admin::onlyTrashed();
 
         // Filter berdasarkan search
         if (!empty($this->search)) {
@@ -129,19 +166,16 @@ class ManajemenPenggunaTable extends Component
         // Exclude role pemilik dari hasil
         $query->where('role', '!=', 'pemilik');
 
-        // Only show active (non-deleted) admins - removed withTrashed()
-        // The recovery page will handle soft-deleted records separately
-
         // Sorting
-        if ($this->sortField === 'name' || $this->sortField === 'email' || $this->sortField === 'role') {
+        if (in_array($this->sortField, ['name', 'email', 'role', 'deleted_at'])) {
             $query->orderBy($this->sortField, $this->sortDirection);
         } else {
-            $query->orderBy('created_at', $this->sortDirection);
+            $query->orderBy('deleted_at', $this->sortDirection);
         }
 
         $admins = $query->paginate($this->perPage);
 
-        return view('livewire.owner.manajemen-pengguna-table', [
+        return view('livewire.owner.admin-recovery-table', [
             'admins' => $admins
         ]);
     }

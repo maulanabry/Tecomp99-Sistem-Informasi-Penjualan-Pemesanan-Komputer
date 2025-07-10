@@ -23,6 +23,7 @@ return new class extends Migration
             $table->enum('payment_type', ['full', 'down_payment']);
             $table->enum('order_type', ['produk', 'servis']);
             $table->string('proof_photo', 255)->nullable();
+            $table->integer('cash_received')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

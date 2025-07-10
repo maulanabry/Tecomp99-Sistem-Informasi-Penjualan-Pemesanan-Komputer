@@ -27,6 +27,68 @@
                     <span class="font-medium">Manajemen Pengguna</span>
                 </a>
             </li>
+
+            <!-- Order -->
+            <li x-data="{ open: {{ request()->is('pemilik/order-produk*') || request()->is('pemilik/order-service*') ? 'true' : 'false' }} }" class="mt-4">
+                <button @click="open = !open" 
+                        class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500
+                               {{ request()->is('pemilik/order-produk*') || request()->is('pemilik/order-service*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                    <div class="flex items-center">
+                        <i class="fas fa-shopping-cart w-5 h-5 mr-3"></i>
+                        <span>Order</span>
+                    </div>
+                    <i class="fas fa-chevron-down w-4 h-4 transition-transform" :class="{ 'transform rotate-180': open }"></i>
+                </button>
+                <ul x-show="open" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                    x-transition:leave-end="opacity-0 transform -translate-y-2"
+                    class="mt-1 space-y-1 pl-10">
+                    <li>
+                        <a href="{{ route('pemilik.order-produk.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('pemilik/order-produk*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}"
+                           title="Lihat, batalkan dan ubah pesanan produk">
+                            Order Produk
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('pemilik.order-service.index') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('pemilik/order-service*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}"
+                           title="Lihat, batalkan dan ubah pesanan servis">
+                            Order Servis
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Laporan Order -->
+            <li x-data="{ open: {{ request()->is('pemilik/laporan*') ? 'true' : 'false' }} }" class="mt-2">
+                <button @click="open = !open" 
+                        class="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500
+                               {{ request()->is('pemilik/laporan*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                    <div class="flex items-center">
+                        <i class="fas fa-chart-bar w-5 h-5 mr-3"></i>
+                        <span>Laporan Order</span>
+                    </div>
+                    <i class="fas fa-chevron-down w-4 h-4 transition-transform" :class="{ 'transform rotate-180': open }"></i>
+                </button>
+                <ul x-show="open" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                    x-transition:leave-end="opacity-0 transform -translate-y-2"
+                    class="mt-1 space-y-1 pl-10">
+                    <li>
+                        <a href="{{ route('pemilik.laporan.penjualan-produk') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('pemilik/laporan/penjualan-produk*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}"
+                           title="Laporan penjualan produk dengan analisis dan statistik">
+                            Penjualan Produk
+                        </a>
+                    </li>
+                </ul>
+            </li>
         </ul>
     </nav>
 

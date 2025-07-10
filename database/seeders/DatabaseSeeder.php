@@ -26,7 +26,9 @@ class DatabaseSeeder extends Seeder
             PromoSeeder::class,
             CustomerSeeder::class,
             CustomerAddressSeeder::class,
-
+            OrderProductSeeder::class,
+            ShippingSeeder::class,
+            PaymentSeeder::class,
         ]);
     }
 }

@@ -23,6 +23,7 @@ class Admin extends Authenticatable
         'role',
         'theme',
         'email_verified_at',
+        'last_seen_at',
     ];
 
     protected $hidden = [
@@ -32,6 +33,7 @@ class Admin extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'last_seen_at' => 'datetime',
     ];
 
     /**
@@ -65,5 +67,14 @@ class Admin extends Authenticatable
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
+    }
+
+    /**
+     * Check if admin is currently online
+     * An admin is considered online if they were active within the last 5 minutes
+     */
+    public function isOnline()
+    {
+        return $this->last_seen_at && $this->last_seen_at->gt(now()->subMinutes(5));
     }
 }

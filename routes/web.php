@@ -301,11 +301,40 @@ Route::middleware('auth:pemilik')->group(function () {
     // Pemilik User Management
     Route::prefix('pemilik/manajemen-pengguna')->group(function () {
         Route::get('/', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'index'])->name('pemilik.manajemen-pengguna.index');
+        Route::get('/recovery', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'recovery'])->name('pemilik.manajemen-pengguna.recovery');
+        Route::get('/create', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'create'])->name('pemilik.manajemen-pengguna.create');
+        Route::post('/', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'store'])->name('pemilik.manajemen-pengguna.store');
         Route::get('/{admin}', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'show'])->name('pemilik.manajemen-pengguna.show');
         Route::get('/{admin}/edit', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'edit'])->name('pemilik.manajemen-pengguna.edit');
         Route::put('/{admin}', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'update'])->name('pemilik.manajemen-pengguna.update');
         Route::delete('/{admin}', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'destroy'])->name('pemilik.manajemen-pengguna.destroy');
         Route::post('/{id}/restore', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'restore'])->name('pemilik.manajemen-pengguna.restore');
+        Route::delete('/{id}/force', [\App\Http\Controllers\Owner\ManajemenPenggunaController::class, 'forceDelete'])->name('pemilik.manajemen-pengguna.force-delete');
+    });
+
+    // Pemilik Order Products
+    Route::prefix('pemilik/order-produk')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Owner\OrderProductController::class, 'index'])->name('pemilik.order-produk.index');
+        Route::get('/{orderProduct}', [\App\Http\Controllers\Owner\OrderProductController::class, 'show'])->name('pemilik.order-produk.show');
+        Route::get('/{orderProduct}/edit', [\App\Http\Controllers\Owner\OrderProductController::class, 'edit'])->name('pemilik.order-produk.edit');
+        Route::put('/{orderProduct}', [\App\Http\Controllers\Owner\OrderProductController::class, 'update'])->name('pemilik.order-produk.update');
+        Route::put('/{orderProduct}/cancel', [\App\Http\Controllers\Owner\OrderProductController::class, 'cancel'])->name('pemilik.order-produk.cancel');
+    });
+
+    // Pemilik Order Services
+    Route::prefix('pemilik/order-service')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Owner\OrderServiceController::class, 'index'])->name('pemilik.order-service.index');
+        Route::get('/{orderService}', [\App\Http\Controllers\Owner\OrderServiceController::class, 'show'])->name('pemilik.order-service.show');
+        Route::get('/{orderService}/edit', [\App\Http\Controllers\Owner\OrderServiceController::class, 'edit'])->name('pemilik.order-service.edit');
+        Route::put('/{orderService}', [\App\Http\Controllers\Owner\OrderServiceController::class, 'update'])->name('pemilik.order-service.update');
+        Route::put('/{orderService}/cancel', [\App\Http\Controllers\Owner\OrderServiceController::class, 'cancel'])->name('pemilik.order-service.cancel');
+    });
+
+    // Pemilik Laporan
+    Route::prefix('pemilik/laporan')->group(function () {
+        Route::get('/penjualan-produk', [\App\Http\Controllers\Owner\LaporanController::class, 'penjualanProduk'])->name('pemilik.laporan.penjualan-produk');
+        Route::get('/penjualan-produk/export-pdf', [\App\Http\Controllers\Owner\LaporanController::class, 'exportPdf'])->name('pemilik.laporan.penjualan-produk.export-pdf');
+        Route::get('/penjualan-produk/export-excel', [\App\Http\Controllers\Owner\LaporanController::class, 'exportExcel'])->name('pemilik.laporan.penjualan-produk.export-excel');
     });
 
     // Settings

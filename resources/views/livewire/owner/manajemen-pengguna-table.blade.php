@@ -117,9 +117,11 @@
                     <div class="col-span-2 text-sm text-gray-700 dark:text-gray-300">{{ $admin->created_at->format('d M Y') }}</div>
                     <div class="col-span-2 text-sm">
                         @if($admin->deleted_at)
-                            <span class="px-2 py-1 rounded text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Dihapus</span>
+                            <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Dihapus</span>
                         @else
-                            <span class="px-2 py-1 rounded text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Aktif</span>
+                            <span class="px-2 py-1 rounded-full text-xs {{ $admin->isOnline() ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' }}">
+                                {{ $admin->isOnline() ? 'Online' : 'Offline' }}
+                            </span>
                         @endif
                     </div>
                     <div class="col-span-1 text-center">
@@ -202,7 +204,9 @@
                         @if($admin->deleted_at)
                             <span class="px-2 py-1 rounded text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Dihapus</span>
                         @else
-                            <span class="px-2 py-1 rounded text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Aktif</span>
+                            <span class="text-xs {{ $admin->isOnline() ? 'text-green-500' : 'text-gray-400' }}">
+                                {{ $admin->isOnline() ? 'Online' : 'Offline' }}
+                            </span>
                         @endif
                     </div>
                     <div class="text-right">

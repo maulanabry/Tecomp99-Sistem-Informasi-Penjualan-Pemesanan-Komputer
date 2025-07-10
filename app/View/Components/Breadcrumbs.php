@@ -386,7 +386,12 @@ class Breadcrumbs extends Component
     {
         $base = ['title' => 'Manajemen Pengguna', 'url' => route('pemilik.manajemen-pengguna.index'), 'active' => false];
 
-        if (str_contains($routeName, 'edit')) {
+        if (str_contains($routeName, 'create')) {
+            return [
+                $base,
+                ['title' => 'Tambah Pengguna', 'url' => null, 'active' => true]
+            ];
+        } elseif (str_contains($routeName, 'edit')) {
             return [
                 $base,
                 ['title' => 'Edit Pengguna', 'url' => null, 'active' => true]

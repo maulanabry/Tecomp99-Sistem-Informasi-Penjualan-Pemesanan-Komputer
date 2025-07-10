@@ -13,6 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'track.admin.activity' => \App\Http\Middleware\TrackAdminActivity::class,
+        ]);
+
+        // Apply activity tracking to web routes for authenticated users
+        $middleware->web(append: [
+            \App\Http\Middleware\TrackAdminActivity::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

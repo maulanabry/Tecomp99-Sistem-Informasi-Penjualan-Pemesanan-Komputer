@@ -11,6 +11,7 @@ class ManajemenPenggunaSummaryCards extends Component
     public $totalAdmin;
     public $totalTeknisi;
     public $totalPemilik;
+    public $onlineAdmin;
 
     /**
      * Mount component dan load data awal
@@ -33,6 +34,11 @@ class ManajemenPenggunaSummaryCards extends Component
 
         // Hitung total pemilik (tidak termasuk yang dihapus)
         $this->totalPemilik = Admin::where('role', 'pemilik')->count();
+
+        // Hitung admin yang sedang online (aktif dalam 5 menit terakhir)
+        $this->onlineAdmin = Admin::whereIn('role', ['admin', 'teknisi', 'pemilik'])
+            ->where('last_seen_at', '>', now()->subMinutes(5))
+            ->count();
     }
 
     /**
