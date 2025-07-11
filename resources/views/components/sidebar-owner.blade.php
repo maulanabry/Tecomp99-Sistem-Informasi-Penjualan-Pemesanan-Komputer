@@ -87,6 +87,12 @@
                             Penjualan Produk
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('pemilik.laporan.pemesanan-servis') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('pemilik/laporan/pemesanan-servis*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}"
+                           title="Laporan pemesanan servis dengan analisis dan statistik">
+                            Pemesanan Servis
+                        </a>
+                    </li>
                 </ul>
             </li>
         </ul>

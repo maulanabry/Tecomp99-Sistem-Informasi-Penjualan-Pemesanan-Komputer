@@ -26,26 +26,30 @@
             color: #666;
         }
         .summary-cards {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+            margin-bottom: 20px;
         }
-        .summary-card {
-            width: 18%;
-            border: 1px solid #ddd;
-            padding: 15px;
-            text-align: center;
+        .summary-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px;
             margin-bottom: 10px;
         }
+        .summary-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            background-color: #f8f9fa;
+            width: 23%;
+        }
         .summary-card h3 {
-            margin: 0 0 5px 0;
-            font-size: 14px;
+            margin: 0 0 3px 0;
+            font-size: 11px;
             color: #333;
+            font-weight: bold;
         }
         .summary-card p {
             margin: 0;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #2563eb;
         }
@@ -107,26 +111,48 @@
 
     <!-- Summary Cards -->
     <div class="summary-cards">
-        <div class="summary-card">
-            <h3>Total Order Produk</h3>
-            <p>{{ number_format($salesSummary['total_orders']) }}</p>
-        </div>
-        <div class="summary-card">
-            <h3>Total Produk Terjual</h3>
-            <p>{{ number_format($salesSummary['total_products_sold']) }}</p>
-        </div>
-        <div class="summary-card">
-            <h3>Total Pendapatan</h3>
-            <p>Rp {{ number_format($salesSummary['total_revenue'], 0, ',', '.') }}</p>
-        </div>
-        <div class="summary-card">
-            <h3>Total Diskon</h3>
-            <p>Rp {{ number_format($salesSummary['total_discounts'], 0, ',', '.') }}</p>
-        </div>
-        <div class="summary-card">
-            <h3>Total Ongkir</h3>
-            <p>Rp {{ number_format($salesSummary['total_shipping'], 0, ',', '.') }}</p>
-        </div>
+        <!-- First Row -->
+        <table class="summary-table">
+            <tr>
+                <td class="summary-card">
+                    <h3>Total Order Produk</h3>
+                    <p>{{ number_format($salesSummary['total_orders']) }}</p>
+                </td>
+                <td class="summary-card">
+                    <h3>Total Produk Terjual</h3>
+                    <p>{{ number_format($salesSummary['total_products_sold']) }}</p>
+                </td>
+                <td class="summary-card">
+                    <h3>Total Pendapatan</h3>
+                    <p>Rp {{ number_format($salesSummary['total_revenue'], 0, ',', '.') }}</p>
+                </td>
+                <td class="summary-card">
+                    <h3>Total Diskon</h3>
+                    <p>Rp {{ number_format($salesSummary['total_discounts'], 0, ',', '.') }}</p>
+                </td>
+            </tr>
+        </table>
+        <!-- Second Row -->
+        <table class="summary-table">
+            <tr>
+                <td class="summary-card">
+                    <h3>Total Ongkir</h3>
+                    <p>Rp {{ number_format($salesSummary['total_shipping'], 0, ',', '.') }}</p>
+                </td>
+                <td class="summary-card">
+                    <h3>Rata-rata per Order</h3>
+                    <p>Rp {{ $salesSummary['total_orders'] > 0 ? number_format($salesSummary['total_revenue'] / $salesSummary['total_orders'], 0, ',', '.') : '0' }}</p>
+                </td>
+                <td class="summary-card">
+                    <h3>Margin Keuntungan</h3>
+                    <p>{{ $salesSummary['total_revenue'] > 0 ? number_format((($salesSummary['total_revenue'] - $salesSummary['total_discounts']) / $salesSummary['total_revenue']) * 100, 1) : '0' }}%</p>
+                </td>
+                <td class="summary-card">
+                    <h3>Total Transaksi</h3>
+                    <p>Rp {{ number_format($salesSummary['total_revenue'] + $salesSummary['total_shipping'], 0, ',', '.') }}</p>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <!-- Detailed Sales Table -->

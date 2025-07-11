@@ -335,6 +335,10 @@ Route::middleware('auth:pemilik')->group(function () {
         Route::get('/penjualan-produk', [\App\Http\Controllers\Owner\LaporanController::class, 'penjualanProduk'])->name('pemilik.laporan.penjualan-produk');
         Route::get('/penjualan-produk/export-pdf', [\App\Http\Controllers\Owner\LaporanController::class, 'exportPdf'])->name('pemilik.laporan.penjualan-produk.export-pdf');
         Route::get('/penjualan-produk/export-excel', [\App\Http\Controllers\Owner\LaporanController::class, 'exportExcel'])->name('pemilik.laporan.penjualan-produk.export-excel');
+
+        Route::get('/pemesanan-servis', [\App\Http\Controllers\Owner\LaporanController::class, 'pemesananServis'])->name('pemilik.laporan.pemesanan-servis');
+        Route::get('/pemesanan-servis/export-pdf', [\App\Http\Controllers\Owner\LaporanController::class, 'exportServicePdf'])->name('pemilik.laporan.pemesanan-servis.export-pdf');
+        Route::get('/pemesanan-servis/export-excel', [\App\Http\Controllers\Owner\LaporanController::class, 'exportServiceExcel'])->name('pemilik.laporan.pemesanan-servis.export-excel');
     });
 
     // Settings
