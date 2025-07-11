@@ -110,8 +110,8 @@ class LaporanController extends Controller
 
     private function getChartData($start, $end)
     {
-        // Sales per day
-        $salesPerDay = OrderProduct::selectRaw('DATE(created_at) as date, SUM(grand_total) as total, COUNT(*) as orders')
+        // Sales per day with discount and shipping
+        $salesPerDay = OrderProduct::selectRaw('DATE(created_at) as date, SUM(grand_total) as total, SUM(discount_amount) as discount, SUM(CASE WHEN type = \'pengiriman\' THEN shipping_cost ELSE 0 END) as shipping, COUNT(*) as orders')
             ->whereBetween('created_at', [$start, $end])
             ->whereIn('status_payment', ['lunas', 'down_payment'])
             ->groupBy('date')
@@ -138,10 +138,33 @@ class LaporanController extends Controller
             ->limit(5)
             ->get();
 
+        // Bottom 5 Lowest-Selling Products
+        $lowProducts = Product::selectRaw('products.name, COALESCE(SUM(order_product_items.quantity), 0) as total_sold')
+            ->leftJoin('order_product_items', 'products.product_id', '=', 'order_product_items.product_id')
+            ->leftJoin('order_products', function ($join) use ($start, $end) {
+                $join->on('order_product_items.order_product_id', '=', 'order_products.order_product_id')
+                    ->whereBetween('order_products.created_at', [$start, $end])
+                    ->whereNotIn('order_products.status_payment', ['dibatalkan']);
+            })
+            ->groupBy('products.product_id', 'products.name')
+            ->orderBy('total_sold', 'asc')
+            ->limit(5)
+            ->get();
+
+        // Order Types Data for chart
+        $orderTypes = OrderProduct::selectRaw('COALESCE(type, "Tidak Diketahui") as order_type, COUNT(*) as total_orders, SUM(grand_total) as total_revenue')
+            ->whereBetween('created_at', [$start, $end])
+            ->whereNotIn('status_payment', ['dibatalkan'])
+            ->groupBy('type')
+            ->orderBy('total_orders', 'desc')
+            ->get();
+
         return [
             'sales_per_day' => $salesPerDay,
             'payment_methods' => $paymentMethods,
-            'top_products' => $topProducts
+            'top_products' => $topProducts,
+            'low_products' => $lowProducts,
+            'order_types' => $orderTypes
         ];
     }
 

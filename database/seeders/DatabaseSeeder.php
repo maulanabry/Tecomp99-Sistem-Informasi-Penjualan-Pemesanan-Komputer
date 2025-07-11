@@ -29,6 +29,13 @@ class DatabaseSeeder extends Seeder
             OrderProductSeeder::class,
             ShippingSeeder::class,
             PaymentSeeder::class,
+
+            // Order Service related seeders
+            OrderServiceSeeder::class,
+            OrderServiceItemSeeder::class,
+            ServiceTicketSeeder::class,
+            ServiceTicketActionSeeder::class,
+            PaymentDetailSeeder::class,
         ]);
     }
 }
