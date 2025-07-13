@@ -67,9 +67,6 @@ class CustomerAuthController extends Controller
         // Login customer
         Auth::guard('customer')->login($customer, $remember);
 
-        // Update last active
-        $customer->update(['last_active' => now()]);
-
         $request->session()->regenerate();
 
         return redirect()->intended('/')->with('success', 'Selamat datang, ' . $customer->name . '!');
@@ -164,12 +161,6 @@ class CustomerAuthController extends Controller
      */
     public function logout(Request $request)
     {
-        // Update last active before logout
-        if (Auth::guard('customer')->check()) {
-            $customer = Auth::guard('customer')->user();
-            $customer->update(['last_active' => now()]);
-        }
-
         Auth::guard('customer')->logout();
 
         $request->session()->invalidate();
