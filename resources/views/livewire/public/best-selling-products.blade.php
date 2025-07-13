@@ -48,9 +48,9 @@
                         </span>
                     </div>
                     
-                    <button class="w-full bg-primary-500 text-white py-2.5 px-4 rounded-full hover:bg-primary-600 transition-all duration-300 font-medium text-sm hover:shadow-lg">
+                    <a href="{{ route('product.overview', $product->slug) }}" class="w-full bg-primary-500 text-white py-2.5 px-4 rounded-full hover:bg-primary-600 transition-all duration-300 font-medium text-sm hover:shadow-lg flex items-center justify-center">
                         <i class="fas fa-shopping-cart mr-2"></i>Beli Sekarang
-                    </button>
+                    </a>
                 </div>
             </div>
             @endforeach

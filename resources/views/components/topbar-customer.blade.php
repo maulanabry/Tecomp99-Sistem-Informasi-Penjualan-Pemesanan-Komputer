@@ -4,11 +4,10 @@
     <div class="border-b border-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo -->
+                <!-- Logo - Topbar disederhanakan untuk tampilan yang lebih modern dan minimalis -->
                 <div class="flex items-center">
-                    <a href="/" class="flex items-center space-x-3">
+                    <a href="/" class="flex items-center">
                         <img src="/images/logo-tecomp99.svg" alt="Tecomp99" class="h-8 w-auto">
-                        <span class="text-xl font-bold text-gray-900 hidden sm:block">Tecomp99</span>
                     </a>
                 </div>
                 
@@ -123,28 +122,8 @@
                         <i class="fas fa-home mr-2"></i>Beranda
                     </a>
                     <a href="{{ route('products.public') }}" class="hover:text-primary-200 transition-colors text-sm">Produk</a>
-                    <a href="{{ route('services.public') }}" class="hover:text-primary-200 transition-colors text-sm">Layanan</a>
-                    
-                    <!-- About Dropdown -->
-                    <div class="relative group">
-                        <button class="flex items-center hover:text-primary-200 transition-colors text-sm">
-                            Tentang
-                            <i class="fas fa-chevron-down ml-1 text-xs group-hover:rotate-180 transition-transform duration-200"></i>
-                        </button>
-                        <div class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 border border-gray-100">
-                            <div class="py-2">
-                                <a href="/about" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm">
-                                    <i class="fas fa-info-circle mr-2 text-primary-500"></i>Tentang Kami
-                                </a>
-                                <a href="/faq" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm">
-                                    <i class="fas fa-question-circle mr-2 text-primary-500"></i>FAQ
-                                </a>
-                                <a href="/contact" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm">
-                                    <i class="fas fa-envelope mr-2 text-primary-500"></i>Kontak
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    <a href="{{ route('services.public') }}" class="hover:text-primary-200 transition-colors text-sm">Servis</a>
+                    <a href="{{ route('tentang-kami') }}" class="hover:text-primary-200 transition-colors text-sm">Tentang Kami</a>
                 </nav>
                 
                 <!-- Right Side -->
@@ -177,27 +156,12 @@
                     </a>
                     <a href="{{ route('services.public') }}" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
                         <i class="fas fa-tools mr-3 text-primary-200"></i>
-                        <span class="font-medium">Layanan</span>
+                        <span class="font-medium">Servis</span>
                     </a>
-                    
-                    <!-- Mobile About Section -->
-                    <div class="border-t border-primary-400 pt-3 mt-3">
-                        <div class="px-4 py-2">
-                            <span class="text-primary-200 text-sm font-medium">Tentang Kami</span>
-                        </div>
-                        <a href="/about" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
-                            <i class="fas fa-info-circle mr-3 text-primary-200"></i>
-                            <span>Tentang Kami</span>
-                        </a>
-                        <a href="/faq" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
-                            <i class="fas fa-question-circle mr-3 text-primary-200"></i>
-                            <span>FAQ</span>
-                        </a>
-                        <a href="/contact" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
-                            <i class="fas fa-envelope mr-3 text-primary-200"></i>
-                            <span>Kontak</span>
-                        </a>
-                    </div>
+                    <a href="{{ route('tentang-kami') }}" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
+                        <i class="fas fa-info-circle mr-3 text-primary-200"></i>
+                        <span class="font-medium">Tentang Kami</span>
+                    </a>
                     
                     <!-- Track Order -->
                     <div class="border-t border-primary-400 pt-3 mt-3">

@@ -51,19 +51,16 @@
         
         <!-- Action Buttons -->
         <div class="flex space-x-2">
-            <button 
-                wire:click="addToCart('{{ $product->product_id }}')"
-                class="flex-1 bg-primary-500 text-white py-2.5 px-4 rounded-full hover:bg-primary-600 transition-all duration-300 font-medium text-sm hover:shadow-lg flex items-center justify-center"
-            >
+            <a href="{{ route('product.overview', $product->slug) }}"
+               class="flex-1 bg-primary-500 text-white py-2.5 px-4 rounded-full hover:bg-primary-600 transition-all duration-300 font-medium text-sm hover:shadow-lg flex items-center justify-center text-center">
                 <i class="fas fa-shopping-cart mr-2"></i>
                 Beli Sekarang
-            </button>
-            <button 
-                class="px-3 py-2.5 border border-gray-300 rounded-full hover:border-primary-500 hover:text-primary-600 transition-all duration-300 text-gray-600"
-                title="Lihat Detail"
-            >
+            </a>
+            <a href="{{ route('product.overview', $product->slug) }}"
+               class="px-3 py-2.5 border border-gray-300 rounded-full hover:border-primary-500 hover:text-primary-600 transition-all duration-300 text-gray-600 flex items-center justify-center"
+               title="Lihat Detail">
                 <i class="fas fa-eye"></i>
-            </button>
+            </a>
         </div>
     </div>
 </div>

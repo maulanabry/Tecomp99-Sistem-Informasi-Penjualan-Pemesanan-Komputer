@@ -23,10 +23,17 @@ Route::get('/produk', function () {
     return view('public.produk');
 })->name('products.public');
 
+// Product Overview Route
+Route::get('/produk/{slug}', [\App\Http\Controllers\Customer\ProductOverviewController::class, 'show'])->name('product.overview');
+
 // Public Service Routes
 Route::get('/servis', function () {
     return view('public.servis');
 })->name('services.public');
+
+// Tentang Kami Routes
+Route::get('/tentang-kami', [\App\Http\Controllers\Customer\TentangKamiController::class, 'index'])->name('tentang-kami');
+Route::post('/tentang-kami/testimonial', [\App\Http\Controllers\Customer\TentangKamiController::class, 'storeTestimonial'])->name('tentang-kami.testimonial');
 
 // Terms and Privacy Routes
 Route::get('/terms', function () {
