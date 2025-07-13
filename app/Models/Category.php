@@ -24,6 +24,11 @@ class Category extends Model
         return $this->hasMany(Product::class, 'categories_id', 'categories_id');
     }
 
+    public function services()
+    {
+        return $this->hasMany(Service::class, 'categories_id', 'categories_id');
+    }
+
     protected static function boot()
     {
         parent::boot();

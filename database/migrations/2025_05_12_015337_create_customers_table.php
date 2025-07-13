@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->unsignedInteger('service_orders_count')->default(0); // jumlah servis
             $table->unsignedInteger('product_orders_count')->default(0); // jumlah produk
             $table->unsignedInteger('total_points')->default(0); // poin total
+            $table->timestamp('email_verified_at')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

@@ -12,13 +12,58 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Livewire\Admin\CreateOrderProduct;
 
 // ==========================
+// Public Routes
+// ==========================
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
+// Public Product Routes
+Route::get('/produk', function () {
+    return view('public.produk');
+})->name('products.public');
+
+// Public Service Routes
+Route::get('/servis', function () {
+    return view('public.servis');
+})->name('services.public');
+
+// Terms and Privacy Routes
+Route::get('/terms', function () {
+    return view('terms');
+})->name('terms');
+
+Route::get('/privacy', function () {
+    return view('privacy');
+})->name('privacy');
+
+// ==========================
 // Authentication Routes
 // ==========================
-Route::get('/login', [AuthController::class, 'index'])
+
+// Admin/Staff Login (changed from /login to /batcave)
+Route::get('/batcave', [AuthController::class, 'index'])
     ->name('login')
     ->middleware('guest:admin,teknisi,pemilik');
-Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('/batcave', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Customer Authentication Routes
+Route::middleware('guest:customer')->group(function () {
+    Route::get('/masuk', [\App\Http\Controllers\CustomerAuthController::class, 'showLoginForm'])->name('customer.login');
+    Route::post('/masuk', [\App\Http\Controllers\CustomerAuthController::class, 'login'])->name('customer.login.submit');
+
+    Route::get('/register', [\App\Http\Controllers\CustomerAuthController::class, 'showRegistrationForm'])->name('customer.register');
+    Route::post('/register', [\App\Http\Controllers\CustomerAuthController::class, 'register'])->name('customer.register.submit');
+
+    Route::get('/lupa-password', [\App\Http\Controllers\CustomerAuthController::class, 'showForgotPasswordForm'])->name('customer.forgot-password');
+    Route::post('/lupa-password', [\App\Http\Controllers\CustomerAuthController::class, 'forgotPassword'])->name('customer.forgot-password.submit');
+});
+
+// Customer Logout (authenticated customers only)
+Route::middleware('auth:customer')->group(function () {
+    Route::post('/keluar', [\App\Http\Controllers\CustomerAuthController::class, 'logout'])->name('customer.logout');
+});
 
 // ==========================
 // Protected Routes

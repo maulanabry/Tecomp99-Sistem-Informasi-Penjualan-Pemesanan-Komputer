@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 
-class Customer extends Model
+class Customer extends Authenticatable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Notifiable;
 
     protected $primaryKey = 'customer_id';
     public $incrementing = false;
@@ -29,8 +31,14 @@ class Customer extends Model
         'total_points',
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected $casts = [
         'last_active' => 'datetime',
+        'password' => 'hashed',
     ];
 
     public function addresses()
@@ -84,5 +92,39 @@ class Customer extends Model
             $phone = '62' . substr($phone, 1);
         }
         return "https://wa.me/{$phone}";
+    }
+
+    /**
+     * Find customer by email or phone number for authentication
+     */
+    public static function findForAuth($identifier)
+    {
+        return static::where('email', $identifier)
+            ->orWhere('contact', $identifier)
+            ->first();
+    }
+
+    /**
+     * Get the name of the unique identifier for the user.
+     */
+    public function getAuthIdentifierName()
+    {
+        return 'customer_id';
+    }
+
+    /**
+     * Get the unique identifier for the user.
+     */
+    public function getAuthIdentifier()
+    {
+        return $this->getAttribute($this->getAuthIdentifierName());
+    }
+
+    /**
+     * Get the password for the user.
+     */
+    public function getAuthPassword()
+    {
+        return $this->password;
     }
 }
