@@ -7,8 +7,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-class Customer extends Authenticatable
+class Customer extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, SoftDeletes, Notifiable;
 
@@ -29,6 +30,7 @@ class Customer extends Authenticatable
         'service_orders_count',
         'product_orders_count',
         'total_points',
+        'email_verified_at',
     ];
 
     protected $hidden = [
@@ -39,6 +41,7 @@ class Customer extends Authenticatable
     protected $casts = [
         'last_active' => 'datetime',
         'password' => 'hashed',
+        'email_verified_at' => 'datetime',
     ];
 
     public function addresses()
@@ -126,5 +129,40 @@ class Customer extends Authenticatable
     public function getAuthPassword()
     {
         return $this->password;
+    }
+
+    /**
+     * Get the email address that should be used for verification.
+     */
+    public function getEmailForVerification()
+    {
+        return $this->email;
+    }
+
+    /**
+     * Determine if the user has verified their email address.
+     */
+    public function hasVerifiedEmail()
+    {
+        return ! is_null($this->email_verified_at);
+    }
+
+    /**
+     * Mark the given user's email as verified.
+     */
+    public function markEmailAsVerified()
+    {
+        return $this->forceFill([
+            'email_verified_at' => $this->freshTimestamp(),
+        ])->save();
+    }
+
+    /**
+     * Send the email verification notification.
+     */
+    public function sendEmailVerificationNotification()
+    {
+        // This method can be implemented if you want to use Laravel's built-in notifications
+        // For now, we're using the custom mail class in the controller
     }
 }

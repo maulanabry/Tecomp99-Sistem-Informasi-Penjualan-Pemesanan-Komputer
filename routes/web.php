@@ -60,6 +60,11 @@ Route::middleware('guest:customer')->group(function () {
     Route::post('/lupa-password', [\App\Http\Controllers\CustomerAuthController::class, 'forgotPassword'])->name('customer.forgot-password.submit');
 });
 
+// Customer Email Verification Routes
+Route::get('/customer/email/verify', [\App\Http\Controllers\CustomerAuthController::class, 'verificationNotice'])->name('verification.notice');
+Route::get('/customer/email/verify/{id}/{hash}', [\App\Http\Controllers\CustomerAuthController::class, 'verifyEmail'])->name('verification.verify')->middleware(['signed']);
+Route::post('/customer/email/verification-notification', [\App\Http\Controllers\CustomerAuthController::class, 'resendVerification'])->name('verification.send');
+
 // Customer Logout (authenticated customers only)
 Route::middleware('auth:customer')->group(function () {
     Route::post('/keluar', [\App\Http\Controllers\CustomerAuthController::class, 'logout'])->name('customer.logout');
