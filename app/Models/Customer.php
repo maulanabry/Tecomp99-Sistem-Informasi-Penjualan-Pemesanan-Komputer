@@ -8,7 +8,28 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property string $customer_id
+ * @property string $name
+ * @property string|null $email
+ * @property string|null $password
+ * @property \Carbon\Carbon|null $last_active
+ * @property bool $hasAccount
+ * @property string|null $photo
+ * @property string|null $gender
+ * @property string $contact
+ * @property int $service_orders_count
+ * @property int $product_orders_count
+ * @property int $total_points
+ * @property \Carbon\Carbon|null $email_verified_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<CustomerAddress> $addresses
+ * @property-read CustomerAddress|null $defaultAddress
+ * @property-read \Illuminate\Database\Eloquent\Collection<OrderProduct> $orderProducts
+ * @property-read \Illuminate\Database\Eloquent\Collection<OrderService> $orderServices
+ */
 class Customer extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, SoftDeletes, Notifiable;
@@ -44,15 +65,25 @@ class Customer extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
     ];
 
-    public function addresses()
+    public function addresses(): HasMany
     {
         return $this->hasMany(CustomerAddress::class, 'customer_id', 'customer_id');
     }
 
-    public function defaultAddress()
+    public function defaultAddress(): HasOne
     {
         return $this->hasOne(CustomerAddress::class, 'customer_id', 'customer_id')
             ->where('is_default', true);
+    }
+
+    public function orderProducts(): HasMany
+    {
+        return $this->hasMany(OrderProduct::class, 'customer_id', 'customer_id');
+    }
+
+    public function orderServices(): HasMany
+    {
+        return $this->hasMany(OrderService::class, 'customer_id', 'customer_id');
     }
 
     public static function generateCustomerId(): string

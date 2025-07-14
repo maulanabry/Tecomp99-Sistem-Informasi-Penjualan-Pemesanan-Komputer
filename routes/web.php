@@ -78,6 +78,37 @@ Route::post('/customer/email/verification-notification', [\App\Http\Controllers\
 // Customer Logout (authenticated customers only)
 Route::middleware('auth:customer')->group(function () {
     Route::post('/keluar', [\App\Http\Controllers\CustomerAuthController::class, 'logout'])->name('customer.logout');
+
+    // Customer Account Management Routes
+    Route::prefix('akun')->name('customer.account.')->group(function () {
+        // Profile Management
+        Route::get('/profil', [\App\Http\Controllers\Customer\AccountController::class, 'profile'])->name('profile');
+        Route::put('/profil', [\App\Http\Controllers\Customer\AccountController::class, 'updateProfile'])->name('profile.update');
+
+        // Password Management
+        Route::get('/kata-sandi', [\App\Http\Controllers\Customer\AccountController::class, 'password'])->name('password');
+        Route::put('/kata-sandi', [\App\Http\Controllers\Customer\AccountController::class, 'updatePassword'])->name('password.update');
+
+        // Address Management
+        Route::get('/alamat', [\App\Http\Controllers\Customer\AccountController::class, 'addresses'])->name('addresses');
+        Route::post('/alamat', [\App\Http\Controllers\Customer\AddressController::class, 'store'])->name('addresses.store');
+        Route::put('/alamat/{address}', [\App\Http\Controllers\Customer\AddressController::class, 'update'])->name('addresses.update');
+        Route::delete('/alamat/{address}', [\App\Http\Controllers\Customer\AddressController::class, 'destroy'])->name('addresses.destroy');
+        Route::post('/alamat/{address}/set-default', [\App\Http\Controllers\Customer\AddressController::class, 'setDefault'])->name('addresses.set-default');
+    });
+
+    // Customer Orders Routes
+    Route::prefix('pesanan')->name('customer.orders.')->group(function () {
+        // Product Orders
+        Route::get('/produk', [\App\Http\Controllers\Customer\OrderController::class, 'products'])->name('products');
+        Route::get('/produk/{order}', [\App\Http\Controllers\Customer\OrderController::class, 'showProduct'])->name('products.show');
+        Route::post('/produk/{order}/batal', [\App\Http\Controllers\Customer\OrderController::class, 'cancelProduct'])->name('products.cancel');
+
+        // Service Orders
+        Route::get('/servis', [\App\Http\Controllers\Customer\OrderController::class, 'services'])->name('services');
+        Route::get('/servis/{order}', [\App\Http\Controllers\Customer\OrderController::class, 'showService'])->name('services.show');
+        Route::post('/servis/{order}/batal', [\App\Http\Controllers\Customer\OrderController::class, 'cancelService'])->name('services.cancel');
+    });
 });
 
 // ==========================

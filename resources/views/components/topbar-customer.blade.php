@@ -51,27 +51,59 @@
                                     <i class="fas fa-chevron-down text-xs group-hover:rotate-180 transition-transform duration-200"></i>
                                 </button>
                                 
-                                <!-- Dropdown Menu -->
-                                <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 border border-gray-100">
+                                <!-- Dropdown Menu - Akun Saya -->
+                                <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 border border-gray-100">
                                     <div class="py-2">
-                                        <div class="px-4 py-2 border-b border-gray-100">
+                                        <!-- Header User Info -->
+                                        <div class="px-4 py-3 border-b border-gray-100">
                                             <p class="text-sm font-medium text-gray-900">{{ Auth::guard('customer')->user()->name }}</p>
                                             <p class="text-xs text-gray-500">{{ Auth::guard('customer')->user()->email }}</p>
                                         </div>
-                                        <a href="/dashboard" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm">
-                                            <i class="fas fa-tachometer-alt mr-2 text-primary-500"></i>Dashboard
-                                        </a>
-                                        <a href="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm">
-                                            <i class="fas fa-user-edit mr-2 text-primary-500"></i>Profil Saya
-                                        </a>
-                                        <a href="/orders" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm">
-                                            <i class="fas fa-shopping-bag mr-2 text-primary-500"></i>Pesanan Saya
-                                        </a>
-                                        <div class="border-t border-gray-100 mt-2 pt-2">
+                                        
+                                        <!-- Akun Saya Section -->
+                                        <div class="px-2 py-1">
+                                            <div class="px-2 py-1">
+                                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Akun Saya</p>
+                                            </div>
+                                            <a href="{{ route('customer.account.profile') }}" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm rounded-md">
+                                                <i class="fas fa-user-edit mr-3 text-primary-500 w-4"></i>Profil
+                                            </a>
+                                            <a href="{{ route('customer.account.password') }}" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm rounded-md">
+                                                <i class="fas fa-key mr-3 text-primary-500 w-4"></i>Ubah Kata Sandi
+                                            </a>
+                                            <a href="{{ route('customer.account.addresses') }}" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm rounded-md">
+                                                <i class="fas fa-map-marker-alt mr-3 text-primary-500 w-4"></i>Alamat
+                                            </a>
+                                        </div>
+                                        
+                                        <!-- Pesanan Section -->
+                                        <div class="px-2 py-1 border-t border-gray-100">
+                                            <div class="px-2 py-1">
+                                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pesanan</p>
+                                            </div>
+                                            <a href="{{ route('customer.orders.products') }}" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm rounded-md">
+                                                <i class="fas fa-shopping-bag mr-3 text-primary-500 w-4"></i>Pesanan Produk
+                                            </a>
+                                            <a href="{{ route('customer.orders.services') }}" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm rounded-md">
+                                                <i class="fas fa-tools mr-3 text-primary-500 w-4"></i>Pesanan Servis
+                                            </a>
+                                        </div>
+                                        
+                                        <!-- Notifikasi (Future) -->
+                                        <div class="px-2 py-1 border-t border-gray-100">
+                                            <a href="#" class="flex items-center px-3 py-2 text-gray-400 cursor-not-allowed text-sm rounded-md">
+                                                <i class="fas fa-bell mr-3 text-gray-400 w-4"></i>
+                                                <span>Notifikasi</span>
+                                                <span class="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full">Segera</span>
+                                            </a>
+                                        </div>
+                                        
+                                        <!-- Logout -->
+                                        <div class="border-t border-gray-100 mt-2 pt-2 px-2">
                                             <form action="{{ route('customer.logout') }}" method="POST" class="block">
                                                 @csrf
-                                                <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors text-sm">
-                                                    <i class="fas fa-sign-out-alt mr-2 text-red-500"></i>Keluar
+                                                <button type="submit" class="w-full flex items-center px-3 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors text-sm rounded-md">
+                                                    <i class="fas fa-sign-out-alt mr-3 text-red-500 w-4"></i>Keluar
                                                 </button>
                                             </form>
                                         </div>
