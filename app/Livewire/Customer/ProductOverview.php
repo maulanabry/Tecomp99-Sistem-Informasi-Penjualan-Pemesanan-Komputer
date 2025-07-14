@@ -11,7 +11,7 @@ class ProductOverview extends Component
     public $quantity = 1;
     public $selectedImageIndex = 0;
     public $wishlist = [];
-    public $showLoginModal = false;
+    public $showLoginAlert = false;
 
     public function mount(Product $product)
     {
@@ -19,6 +19,9 @@ class ProductOverview extends Component
 
         // Inisialisasi wishlist dari session
         $this->wishlist = session()->get('wishlist', []);
+
+        // Ensure login alert is initially hidden
+        $this->showLoginAlert = false;
     }
 
     public function incrementQuantity()
@@ -49,14 +52,46 @@ class ProductOverview extends Component
 
     public function selectImage($index)
     {
-        $this->selectedImageIndex = $index;
+        // This is a public action - no authentication required for viewing images
+        $this->selectedImageIndex = (int) $index;
+
+        // Hide any alert that might be showing
+        $this->showLoginAlert = false;
+
+        // Don't call any other methods or trigger any events
+        return;
+    }
+
+    public function navigateImage($direction)
+    {
+        // Alternative method for image navigation
+        $totalImages = $this->product->images->count();
+
+        if ($direction === 'next') {
+            $this->selectedImageIndex = $this->selectedImageIndex < $totalImages - 1 ? $this->selectedImageIndex + 1 : 0;
+        } else {
+            $this->selectedImageIndex = $this->selectedImageIndex > 0 ? $this->selectedImageIndex - 1 : $totalImages - 1;
+        }
+
+        // Hide any alert that might be showing
+        $this->showLoginAlert = false;
+
+        return;
+    }
+
+    /**
+     * Check if customer is authenticated
+     */
+    private function isCustomerAuthenticated()
+    {
+        return auth()->guard('customer')->check();
     }
 
     public function toggleWishlist()
     {
         // Cek apakah customer sudah login
-        if (!auth()->guard('customer')->check()) {
-            $this->showLoginModal = true;
+        if (!$this->isCustomerAuthenticated()) {
+            $this->showLoginAlert = true;
             return;
         }
 
@@ -80,8 +115,8 @@ class ProductOverview extends Component
     public function addToCart()
     {
         // Cek apakah customer sudah login
-        if (!auth()->guard('customer')->check()) {
-            $this->showLoginModal = true;
+        if (!$this->isCustomerAuthenticated()) {
+            $this->showLoginAlert = true;
             return;
         }
 
@@ -104,8 +139,8 @@ class ProductOverview extends Component
     public function buyNow()
     {
         // Cek apakah customer sudah login
-        if (!auth()->guard('customer')->check()) {
-            $this->showLoginModal = true;
+        if (!$this->isCustomerAuthenticated()) {
+            $this->showLoginAlert = true;
             return;
         }
 
@@ -126,9 +161,9 @@ class ProductOverview extends Component
         ]);
     }
 
-    public function closeLoginModal()
+    public function closeLoginAlert()
     {
-        $this->showLoginModal = false;
+        $this->showLoginAlert = false;
     }
 
     public function render()

@@ -31,6 +31,9 @@ Route::get('/servis', function () {
     return view('public.servis');
 })->name('services.public');
 
+// Service Overview Route
+Route::get('/servis/{slug}', [\App\Http\Controllers\Customer\ServiceOverviewController::class, 'show'])->name('service.overview');
+
 // Tentang Kami Routes
 Route::get('/tentang-kami', [\App\Http\Controllers\Customer\TentangKamiController::class, 'index'])->name('tentang-kami');
 Route::post('/tentang-kami/testimonial', [\App\Http\Controllers\Customer\TentangKamiController::class, 'storeTestimonial'])->name('tentang-kami.testimonial');

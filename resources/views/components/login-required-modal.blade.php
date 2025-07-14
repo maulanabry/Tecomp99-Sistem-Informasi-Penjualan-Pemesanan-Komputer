@@ -1,9 +1,13 @@
 @props(['show' => false])
 
 <!-- Login Required Modal -->
-<div x-data="{ show: @entangle('showLoginModal') }" 
+<div x-data="{ 
+        show: @entangle('showLoginModal') 
+     }" 
      x-show="show" 
      x-cloak
+     @show-login-modal.window="show = true"
+     @close-login-modal.window="show = false"
      class="fixed inset-0 z-50 overflow-y-auto" 
      aria-labelledby="modal-title" 
      role="dialog" 
@@ -20,7 +24,7 @@
              x-transition:leave-end="opacity-0"
              class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" 
              aria-hidden="true"
-             @click="$wire.closeLoginModal()"></div>
+             @click="show = false"></div>
 
         <!-- This element is to trick the browser into centering the modal contents. -->
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -53,7 +57,7 @@
                     Login Sekarang
                 </a>
                 <button type="button" 
-                        @click="$wire.closeLoginModal()"
+                        @click="show = false"
                         class="w-full inline-flex justify-center items-center px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-2xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200">
                     Batal
                 </button>

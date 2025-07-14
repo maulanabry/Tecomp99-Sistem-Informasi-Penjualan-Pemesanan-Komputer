@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('payment_id')->primary();
             $table->string('order_product_id', 50)->nullable();
             $table->string('order_service_id', 50)->nullable();
-            $table->enum('method', ['Tunai', 'Bank BCA', 'QRIS']);
+            $table->string('method', 255)->nullable();
             $table->integer('amount');
             $table->integer('change_returned')->nullable();
             $table->string('name', 255);

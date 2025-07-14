@@ -87,17 +87,20 @@ class ServicePage extends Component
     public function bookService($serviceId)
     {
         // Cek apakah customer sudah login
-        if (!auth()->guard('web')->check()) {
+        if (!auth()->guard('customer')->check()) {
             session()->flash('auth-message', 'Silakan login terlebih dahulu untuk memesan layanan.');
             return;
         }
 
-        // Logic untuk booking servis bisa ditambahkan di sini
-        // Untuk sementara, emit event
+        // Logic untuk booking servis - redirect ke halaman pemesanan
+        // Untuk saat ini, karena halaman order belum ada, tampilkan pesan
+        session()->flash('service-message', 'Fitur pemesanan akan segera tersedia. Silakan hubungi kami langsung untuk memesan layanan ini.');
+
+        // Emit event untuk proses pemesanan (bisa digunakan nanti)
         $this->dispatch('service-booked', $serviceId);
 
-        // Tampilkan pesan sukses
-        session()->flash('service-message', 'Permintaan layanan berhasil dikirim! Kami akan menghubungi Anda segera.');
+        // TODO: Redirect ke halaman order service ketika sudah dibuat
+        // return redirect()->route('order-service.create', ['service_id' => $serviceId]);
     }
 
     public function render()
