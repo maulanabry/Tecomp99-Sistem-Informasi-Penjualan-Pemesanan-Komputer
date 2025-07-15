@@ -32,8 +32,17 @@
                 <p class="text-gray-600 mt-2">Kelola dan pantau semua pesanan produk Anda</p>
             </div>
 
-            <!-- Tab Navigation -->
-            <div class="bg-white rounded-lg shadow-sm mb-6">
+            <!-- Main Content with Sidebar -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <x-account-sidebar active="orders-products" />
+                </div>
+
+                <!-- Main Content -->
+                <div class="lg:col-span-3">
+                    <!-- Tab Navigation -->
+                    <div class="bg-white rounded-lg shadow-sm mb-6">
                 <div class="border-b border-gray-200">
                     <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
                         <a href="{{ route('customer.orders.products', ['status' => 'semua']) }}" 
@@ -271,31 +280,7 @@
                 </div>
             @endif
 
-            <!-- Quick Links -->
-            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <a href="{{ route('customer.orders.services') }}" class="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-tools text-primary-500 text-xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-gray-900">Pesanan Servis</h3>
-                            <p class="text-xs text-gray-500">Lihat pesanan layanan servis Anda</p>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="{{ route('customer.account.profile') }}" class="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-user-edit text-primary-500 text-xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-gray-900">Akun Saya</h3>
-                            <p class="text-xs text-gray-500">Kelola profil dan pengaturan akun</p>
-                        </div>
-                    </div>
-                </a>
+                </div>
             </div>
         </div>
     </div>

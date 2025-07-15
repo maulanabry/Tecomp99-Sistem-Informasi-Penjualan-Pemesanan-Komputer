@@ -3,7 +3,7 @@
     <x-slot name="description">Kelola alamat pengiriman Anda di Tecomp99.</x-slot>
 
     <div class="min-h-screen bg-gray-50 py-8">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Header -->
             <div class="mb-8">
                 <nav class="flex" aria-label="Breadcrumb">
@@ -36,46 +36,18 @@
                 </div>
             </div>
 
-            <!-- Address Manager Livewire Component -->
-            @livewire('customer.address-manager')
+            <!-- Main Content with Sidebar -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <x-account-sidebar active="addresses" />
+                </div>
 
-            <!-- Quick Links -->
-            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <a href="{{ route('customer.account.profile') }}" class="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-user-edit text-primary-500 text-xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-gray-900">Profil Saya</h3>
-                            <p class="text-xs text-gray-500">Edit informasi profil Anda</p>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="{{ route('customer.account.password') }}" class="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-key text-primary-500 text-xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-gray-900">Ubah Kata Sandi</h3>
-                            <p class="text-xs text-gray-500">Perbarui kata sandi akun Anda</p>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="{{ route('customer.orders.products') }}" class="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-shopping-bag text-primary-500 text-xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-gray-900">Pesanan Saya</h3>
-                            <p class="text-xs text-gray-500">Lihat riwayat pesanan Anda</p>
-                        </div>
-                    </div>
-                </a>
+                <!-- Main Content -->
+                <div class="lg:col-span-3">
+                    <!-- Address Manager Livewire Component -->
+                    @livewire('customer.address-manager')
+                </div>
             </div>
         </div>
     </div>
