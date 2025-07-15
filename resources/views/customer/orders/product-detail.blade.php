@@ -358,6 +358,13 @@
                                 </button>
                             @endif
                             
+                            @if($order->status_payment !== 'belum_dibayar')
+                                <a href="{{ route('customer.orders.products.invoice', $order) }}" 
+                                   class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
+                                    <i class="fas fa-file-invoice mr-2"></i>Lihat Invoice
+                                </a>
+                            @endif
+                            
                             @if($order->status_order === 'selesai')
                                 <button class="inline-flex items-center px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors cursor-not-allowed" disabled>
                                     <i class="fas fa-star mr-2"></i>Berikan Penilaian

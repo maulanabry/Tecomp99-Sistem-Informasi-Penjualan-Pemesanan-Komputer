@@ -117,11 +117,13 @@ Route::middleware('auth:customer')->group(function () {
         // Product Orders
         Route::get('/produk', [\App\Http\Controllers\Customer\OrderController::class, 'products'])->name('products');
         Route::get('/produk/{order}', [\App\Http\Controllers\Customer\OrderController::class, 'showProduct'])->name('products.show');
+        Route::get('/produk/{order}/invoice', [\App\Http\Controllers\Customer\OrderController::class, 'showProductInvoice'])->name('products.invoice');
         Route::post('/produk/{order}/batal', [\App\Http\Controllers\Customer\OrderController::class, 'cancelProduct'])->name('products.cancel');
 
         // Service Orders
         Route::get('/servis', [\App\Http\Controllers\Customer\OrderController::class, 'services'])->name('services');
         Route::get('/servis/{order}', [\App\Http\Controllers\Customer\OrderController::class, 'showService'])->name('services.show');
+        Route::get('/servis/{order}/invoice', [\App\Http\Controllers\Customer\OrderController::class, 'showServiceInvoice'])->name('services.invoice');
         Route::post('/servis/{order}/batal', [\App\Http\Controllers\Customer\OrderController::class, 'cancelService'])->name('services.cancel');
     });
 });

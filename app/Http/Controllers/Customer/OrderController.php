@@ -189,4 +189,38 @@ class OrderController extends Controller
         return redirect()->route('customer.orders.services')
             ->with('success', 'Pesanan berhasil dibatalkan.');
     }
+
+    /**
+     * Tampilkan invoice pesanan produk
+     */
+    public function showProductInvoice(OrderProduct $order)
+    {
+        $customer = Auth::guard('customer')->user();
+
+        // Pastikan pesanan milik customer yang sedang login
+        if ($order->customer_id !== $customer->customer_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $order->load(['items.product.brand', 'customer', 'paymentDetails', 'shipping']);
+
+        return view('customer.orders.product-invoice', compact('order'));
+    }
+
+    /**
+     * Tampilkan invoice pesanan servis
+     */
+    public function showServiceInvoice(OrderService $order)
+    {
+        $customer = Auth::guard('customer')->user();
+
+        // Pastikan pesanan milik customer yang sedang login
+        if ($order->customer_id !== $customer->customer_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $order->load(['items.item', 'customer', 'paymentDetails']);
+
+        return view('customer.orders.service-invoice', compact('order'));
+    }
 }
