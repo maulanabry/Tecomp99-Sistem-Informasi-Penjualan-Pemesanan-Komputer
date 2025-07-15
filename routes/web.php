@@ -48,6 +48,21 @@ Route::get('/privacy', function () {
 })->name('privacy');
 
 // ==========================
+// Order Tracking Routes (Public - No Login Required)
+// ==========================
+Route::prefix('lacak')->name('tracking.')->group(function () {
+    // Search form
+    Route::get('/', [\App\Http\Controllers\Public\OrderTrackingController::class, 'search'])->name('search');
+    Route::post('/cari', [\App\Http\Controllers\Public\OrderTrackingController::class, 'handleSearch'])->name('search.handle');
+
+    // Product tracking
+    Route::get('/pesanan-produk/{order_id}', [\App\Http\Controllers\Public\OrderTrackingController::class, 'trackProduct'])->name('product');
+
+    // Service tracking
+    Route::get('/pesanan-servis/{order_id}', [\App\Http\Controllers\Public\OrderTrackingController::class, 'trackService'])->name('service');
+});
+
+// ==========================
 // Authentication Routes
 // ==========================
 

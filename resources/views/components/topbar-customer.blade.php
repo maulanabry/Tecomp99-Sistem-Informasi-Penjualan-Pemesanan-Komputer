@@ -160,7 +160,7 @@
                 
                 <!-- Right Side -->
                 <div>
-                    <a href="/track-order" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full transition-all duration-200 font-medium text-sm backdrop-blur-sm">
+                    <a href="{{ route('tracking.search') }}" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full transition-all duration-200 font-medium text-sm backdrop-blur-sm">
                         <i class="fas fa-search mr-2"></i>Lacak Pesanan
                     </a>
                 </div>
@@ -197,7 +197,7 @@
                     
                     <!-- Track Order -->
                     <div class="border-t border-primary-400 pt-3 mt-3">
-                        <a href="/track-order" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
+                        <a href="{{ route('tracking.search') }}" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
                             <i class="fas fa-search mr-3 text-primary-200"></i>
                             <span class="font-medium">Lacak Pesanan</span>
                         </a>
