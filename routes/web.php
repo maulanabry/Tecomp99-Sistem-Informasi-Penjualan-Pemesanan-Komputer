@@ -208,17 +208,17 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
     });
 
     // Promos
-    Route::prefix('admin/promo')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\PromoController::class, 'index'])->name('promos.index');
-        Route::get('/recovery', [\App\Http\Controllers\Admin\PromoController::class, 'recovery'])->name('promos.recovery');
-        Route::get('/create', [\App\Http\Controllers\Admin\PromoController::class, 'create'])->name('promos.create');
-        Route::post('/', [\App\Http\Controllers\Admin\PromoController::class, 'store'])->name('promos.store');
-        Route::get('/{promo}', [\App\Http\Controllers\Admin\PromoController::class, 'show'])->name('promos.show');
-        Route::get('/{promo}/edit', [\App\Http\Controllers\Admin\PromoController::class, 'edit'])->name('promos.edit');
-        Route::put('/{promo}', [\App\Http\Controllers\Admin\PromoController::class, 'update'])->name('promos.update');
-        Route::delete('/{promo}', [\App\Http\Controllers\Admin\PromoController::class, 'destroy'])->name('promos.destroy');
-        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\PromoController::class, 'restore'])->name('promos.restore');
-        Route::delete('/{id}/force', [\App\Http\Controllers\Admin\PromoController::class, 'forceDelete'])->name('promos.force-delete');
+    Route::prefix('admin/voucher')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\VoucherController::class, 'index'])->name('vouchers.index');
+        Route::get('/recovery', [\App\Http\Controllers\Admin\VoucherController::class, 'recovery'])->name('vouchers.recovery');
+        Route::get('/create', [\App\Http\Controllers\Admin\VoucherController::class, 'create'])->name('vouchers.create');
+        Route::post('/', [\App\Http\Controllers\Admin\VoucherController::class, 'store'])->name('vouchers.store');
+        Route::get('/{voucher}', [\App\Http\Controllers\Admin\VoucherController::class, 'show'])->name('vouchers.show');
+        Route::get('/{voucher}/edit', [\App\Http\Controllers\Admin\VoucherController::class, 'edit'])->name('vouchers.edit');
+        Route::put('/{voucher}', [\App\Http\Controllers\Admin\VoucherController::class, 'update'])->name('vouchers.update');
+        Route::delete('/{voucher}', [\App\Http\Controllers\Admin\VoucherController::class, 'destroy'])->name('vouchers.destroy');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\VoucherController::class, 'restore'])->name('vouchers.restore');
+        Route::delete('/{id}/force', [\App\Http\Controllers\Admin\VoucherController::class, 'forceDelete'])->name('vouchers.force-delete');
     });
 
     // Customers
@@ -253,7 +253,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::delete('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'destroy'])->name('order-products.destroy');
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderProductController::class, 'recovery'])->name('order-products.recovery');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderProductController::class, 'restore'])->name('order-products.restore');
-        Route::post('/validate-promo', [\App\Http\Controllers\Admin\OrderProductController::class, 'validatePromoCode'])->name('order-products.validate-promo');
+        Route::post('/validate-voucher', [\App\Http\Controllers\Admin\OrderProductController::class, 'validateVoucherCode'])->name('order-products.validate-voucher');
     });
 
     // Order Services
@@ -269,7 +269,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::delete('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'destroy'])->name('order-services.destroy');
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderServiceController::class, 'recovery'])->name('order-services.recovery');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderServiceController::class, 'restore'])->name('order-services.restore');
-        Route::post('/validate-promo', [\App\Http\Controllers\Admin\OrderServiceController::class, 'validatePromoCode'])->name('order-services.validate-promo');
+        Route::post('/validate-voucher', [\App\Http\Controllers\Admin\OrderServiceController::class, 'validateVoucherCode'])->name('order-services.validate-voucher');
     });
     // Service Tickets
     Route::prefix('admin/service-tickets')->middleware(['auth:admin'])->group(function () {
@@ -371,7 +371,7 @@ Route::middleware('auth:teknisi')->group(function () {
         Route::get('/{orderService}', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'show'])->name('teknisi.order-services.show');
         Route::get('/{orderService}/edit', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'edit'])->name('teknisi.order-service.edit');
         Route::put('/{orderService}', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'update'])->name('teknisi.order-service.update');
-        Route::post('/validate-promo', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'validatePromoCode'])->name('teknisi.order-services.validate-promo');
+        Route::post('/validate-voucher', [\App\Http\Controllers\Teknisi\OrderServiceController::class, 'validateVoucherCode'])->name('teknisi.order-services.validate-voucher');
     });
 
     // Teknisi Payments

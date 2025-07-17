@@ -7,7 +7,7 @@ use App\Models\Customer;
 use App\Models\OrderProduct;
 use App\Models\OrderProductItem;
 use App\Models\Product;
-use App\Models\Promo;
+use App\Models\Voucher;
 use App\Models\Shipping;
 use App\Models\Admin;
 use App\Services\NotificationService;
@@ -43,8 +43,8 @@ class OrderProductController extends Controller
             'order_type' => 'required|in:Pengiriman,Langsung',
             'items' => 'required|json',
             'shipping_cost' => 'nullable|integer|min:0',
-            'promo_code' => 'nullable|string',
-            'promo_id' => 'nullable|exists:promos,promo_id',
+            'voucher_code' => 'nullable|string',
+            'voucher_id' => 'nullable|exists:vouchers,voucher_id',
             'note' => 'nullable|string',
             'warranty_period_months' => 'nullable|integer|min:0|max:60',
         ]);
@@ -79,40 +79,40 @@ class OrderProductController extends Controller
             }
 
             $discount = 0;
-            if (!empty($validated['promo_code'])) {
-                // Find promo by code first, then validate
-                $promo = \App\Models\Promo::where('code', $validated['promo_code'])
+            if (!empty($validated['voucher_code'])) {
+                // Find voucher by code first, then validate
+                $voucher = \App\Models\Voucher::where('code', $validated['voucher_code'])
                     ->where('is_active', true)
                     ->first();
 
-                if (!$promo) {
-                    throw new \Exception('Kode promo tidak ditemukan atau tidak aktif');
+                if (!$voucher) {
+                    throw new \Exception('Kode voucher tidak ditemukan atau tidak aktif');
                 }
 
-                // Validate promo conditions
+                // Validate voucher conditions
                 if (
-                    now() < $promo->start_date ||
-                    now() > $promo->end_date
+                    now() < $voucher->start_date ||
+                    now() > $voucher->end_date
                 ) {
-                    throw new \Exception('Promo sudah kedaluwarsa atau belum berlaku');
+                    throw new \Exception('Voucher sudah kedaluwarsa atau belum berlaku');
                 }
 
-                if ($promo->minimum_order_amount && $subtotal < $promo->minimum_order_amount) {
-                    throw new \Exception('Minimal pembelian untuk promo ini adalah Rp ' . number_format($promo->minimum_order_amount, 0, ',', '.'));
+                if ($voucher->minimum_order_amount && $subtotal < $voucher->minimum_order_amount) {
+                    throw new \Exception('Minimal pembelian untuk voucher ini adalah Rp ' . number_format($voucher->minimum_order_amount, 0, ',', '.'));
                 }
 
                 // Calculate discount
-                if ($promo->type === 'percentage') {
-                    $discount = intval(($subtotal * $promo->discount_percentage) / 100);
+                if ($voucher->type === 'percentage') {
+                    $discount = intval(($subtotal * $voucher->discount_percentage) / 100);
                 } else {
-                    $discount = $promo->discount_amount;
+                    $discount = $voucher->discount_amount;
                 }
 
                 if ($discount > $subtotal) {
                     $discount = $subtotal;
                 }
 
-                $promo->increment('used_count');
+                $voucher->increment('used_count');
             }
 
             $shippingCost = $validated['order_type'] === 'Pengiriman' ? ($validated['shipping_cost'] ?? 0) : 0;
@@ -245,8 +245,8 @@ class OrderProductController extends Controller
             'status_order' => 'required|in:menunggu,diproses,dikirim,selesai,dibatalkan',
             'items' => 'required|json',
             'shipping_cost' => 'nullable|integer|min:0',
-            'promo_code' => 'nullable|string',
-            'promo_id' => 'nullable|exists:promos,promo_id',
+            'voucher_code' => 'nullable|string',
+            'voucher_id' => 'nullable|exists:vouchers,voucher_id',
             'note' => 'nullable|string',
         ]);
 
@@ -291,33 +291,33 @@ class OrderProductController extends Controller
 
             // Calculate discount
             $discount = 0;
-            if (!empty($validated['promo_code'])) {
-                // Find promo by code first, then validate
-                $promo = Promo::where('code', $validated['promo_code'])
+            if (!empty($validated['voucher_code'])) {
+                // Find voucher by code first, then validate
+                $voucher = Voucher::where('code', $validated['voucher_code'])
                     ->where('is_active', true)
                     ->first();
 
-                if (!$promo) {
-                    throw new \Exception('Kode promo tidak ditemukan atau tidak aktif');
+                if (!$voucher) {
+                    throw new \Exception('Kode voucher tidak ditemukan atau tidak aktif');
                 }
 
-                // Validate promo conditions
+                // Validate voucher conditions
                 if (
-                    now() < $promo->start_date ||
-                    now() > $promo->end_date
+                    now() < $voucher->start_date ||
+                    now() > $voucher->end_date
                 ) {
-                    throw new \Exception('Promo sudah kedaluwarsa atau belum berlaku');
+                    throw new \Exception('Voucher sudah kedaluwarsa atau belum berlaku');
                 }
 
-                if ($promo->minimum_order_amount && $subtotal < $promo->minimum_order_amount) {
-                    throw new \Exception('Minimal pembelian untuk promo ini adalah Rp ' . number_format($promo->minimum_order_amount, 0, ',', '.'));
+                if ($voucher->minimum_order_amount && $subtotal < $voucher->minimum_order_amount) {
+                    throw new \Exception('Minimal pembelian untuk voucher ini adalah Rp ' . number_format($voucher->minimum_order_amount, 0, ',', '.'));
                 }
 
                 // Calculate discount
-                if ($promo->type === 'percentage') {
-                    $discount = intval(($subtotal * $promo->discount_percentage) / 100);
+                if ($voucher->type === 'percentage') {
+                    $discount = intval(($subtotal * $voucher->discount_percentage) / 100);
                 } else {
-                    $discount = $promo->discount_amount;
+                    $discount = $voucher->discount_amount;
                 }
 
                 if ($discount > $subtotal) {
@@ -439,42 +439,42 @@ class OrderProductController extends Controller
         $orderProduct->restore();
         return redirect()->route('order-products.recovery')->with('success', 'Order produk berhasil dipulihkan.');
     }
-    public function validatePromoCode(Request $request)
+    public function validateVoucherCode(Request $request)
     {
         $request->validate([
-            'promo_code' => 'required|string',
+            'voucher_code' => 'required|string',
             'subtotal' => 'required|numeric|min:0',
         ]);
 
-        $code = trim($request->input('promo_code'));
+        $code = trim($request->input('voucher_code'));
         $subtotal = $request->input('subtotal');
 
-        $promo = Promo::where('code', $code)
+        $voucher = Voucher::where('code', $code)
             ->where('is_active', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->first();
 
-        if (!$promo) {
+        if (!$voucher) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kode promo tidak valid atau sudah kedaluwarsa',
+                'message' => 'Kode voucher tidak valid atau sudah kedaluwarsa',
             ], 404);
         }
 
-        if ($promo->minimum_order_amount && $subtotal < $promo->minimum_order_amount) {
+        if ($voucher->minimum_order_amount && $subtotal < $voucher->minimum_order_amount) {
             return response()->json([
                 'success' => false,
-                'message' => 'Minimal pembelian untuk promo ini adalah Rp ' . number_format($promo->minimum_order_amount, 0, ',', '.'),
+                'message' => 'Minimal pembelian untuk voucher ini adalah Rp ' . number_format($voucher->minimum_order_amount, 0, ',', '.'),
             ], 400);
         }
 
-        // Calculate discount based on promo type
+        // Calculate discount based on voucher type
         $discount = 0;
-        if ($promo->type === 'percentage' && $promo->discount_percentage) {
-            $discount = intval(($subtotal * $promo->discount_percentage) / 100);
-        } elseif ($promo->type === 'amount' && $promo->discount_amount) {
-            $discount = $promo->discount_amount;
+        if ($voucher->type === 'percentage' && $voucher->discount_percentage) {
+            $discount = intval(($subtotal * $voucher->discount_percentage) / 100);
+        } elseif ($voucher->type === 'amount' && $voucher->discount_amount) {
+            $discount = $voucher->discount_amount;
         }
 
         // Cap discount at subtotal
@@ -484,11 +484,11 @@ class OrderProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'promo_id' => $promo->promo_id,
-            'promo_name' => $promo->name,
+            'voucher_id' => $voucher->voucher_id,
+            'voucher_name' => $voucher->name,
             'discount' => $discount,
-            'discount_type' => $promo->type,
-            'discount_value' => $promo->type === 'percentage' ? $promo->discount_percentage : $promo->discount_amount,
+            'discount_type' => $voucher->type,
+            'discount_value' => $voucher->type === 'percentage' ? $voucher->discount_percentage : $voucher->discount_amount,
         ]);
     }
     public function editShipping(OrderProduct $orderProduct)

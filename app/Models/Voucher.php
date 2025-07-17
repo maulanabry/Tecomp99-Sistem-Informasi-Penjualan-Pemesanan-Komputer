@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Promo extends Model
+class Voucher extends Model
 {
     use SoftDeletes;
 
-    protected $primaryKey = 'promo_id';
+    protected $primaryKey = 'voucher_id';
 
     protected $fillable = [
         'code',

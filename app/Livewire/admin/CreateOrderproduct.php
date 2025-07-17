@@ -5,7 +5,7 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use App\Models\Customer;
 use App\Models\Product;
-use App\Models\Promo;
+use App\Models\Voucher;
 use App\Models\OrderProduct;
 use App\Models\OrderProductItem;
 use Illuminate\Support\Facades\DB;
@@ -13,16 +13,16 @@ use Illuminate\Support\Facades\DB;
 class CreateOrderProduct extends Component
 {
     public $customers = [];
-    public $promos = [];
+    public $vouchers = [];
     public $customer_id = null;
     public $order_type = 'langsung';
     public $payment_status = 'belum_dibayar';
     public $note = '';
     public $shipping_cost = 0;
-    public $promo_id = null;
+    public $voucher_id = null;
     public $discount = 0;
-    public $promo_code = '';
-    public $promoError = null;
+    public $voucher_code = '';
+    public $voucherError = null;
 
     public $orderItems = [];
     public $subtotal = 0;
@@ -51,7 +51,7 @@ class CreateOrderProduct extends Component
         'orderItems' => 'required|array|min:1',
         'orderItems.*.product_id' => 'required|exists:products,product_id',
         'orderItems.*.quantity' => 'required|integer|min:1',
-        'promo_code' => 'nullable|string|max:50',
+        'voucher_code' => 'nullable|string|max:50',
     ];
 
     protected $listeners = ['productSelected' => 'onProductSelected'];
@@ -59,7 +59,7 @@ class CreateOrderProduct extends Component
     public function mount()
     {
         $this->customers = Customer::with('addresses')->get();
-        $this->promos = Promo::where('is_active', true)->valid()->get();
+        $this->vouchers = Voucher::where('is_active', true)->valid()->get();
 
         // Initialize customer details if customer_id is set
         if ($this->customer_id) {
@@ -215,48 +215,48 @@ class CreateOrderProduct extends Component
         $this->grandTotal = max(0, $this->subtotal - $discount + $this->shipping_cost);
     }
 
-    public function applyPromoCode()
+    public function applyVoucherCode()
     {
-        $this->promoError = null;
+        $this->voucherError = null;
         $this->discount = 0;
-        $this->promo_id = null;
+        $this->voucher_id = null;
 
-        $code = trim($this->promo_code);
+        $code = trim($this->voucher_code);
         if (empty($code)) {
-            $this->promoError = 'Kode promo tidak boleh kosong.';
+            $this->voucherError = 'Kode voucher tidak boleh kosong.';
             return;
         }
 
-        $promo = Promo::where('code', $code)
+        $voucher = Voucher::where('code', $code)
             ->where('is_active', true)
             ->valid()
             ->first();
 
-        if (!$promo) {
-            $this->promoError = 'Kode promo tidak valid atau sudah tidak aktif.';
+        if (!$voucher) {
+            $this->voucherError = 'Kode voucher tidak valid atau sudah tidak aktif.';
             return;
         }
 
-        if ($promo->minimum_order_amount && $this->subtotal < $promo->minimum_order_amount) {
-            $this->promoError = "Minimal pembelian untuk promo ini adalah Rp " . number_format($promo->minimum_order_amount, 0, ',', '.');
+        if ($voucher->minimum_order_amount && $this->subtotal < $voucher->minimum_order_amount) {
+            $this->voucherError = "Minimal pembelian untuk voucher ini adalah Rp " . number_format($voucher->minimum_order_amount, 0, ',', '.');
             return;
         }
 
-        // Calculate discount based on promo type
-        if ($promo->type === 'percentage' && $promo->discount_percentage) {
-            $this->discount = intval(($this->subtotal * $promo->discount_percentage) / 100);
-        } elseif ($promo->type === 'amount' && $promo->discount_amount) {
-            $this->discount = $promo->discount_amount;
+        // Calculate discount based on voucher type
+        if ($voucher->type === 'percentage' && $voucher->discount_percentage) {
+            $this->discount = intval(($this->subtotal * $voucher->discount_percentage) / 100);
+        } elseif ($voucher->type === 'amount' && $voucher->discount_amount) {
+            $this->discount = $voucher->discount_amount;
         } else {
             $this->discount = 0;
         }
 
-        $this->promo_id = $promo->promo_id;
+        $this->voucher_id = $voucher->voucher_id;
         $this->calculateTotals();
 
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => 'Promo berhasil diterapkan.'
+            'message' => 'Voucher berhasil diterapkan.'
         ]);
     }
 

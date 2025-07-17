@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             ServiceSeeder::class,
             ProductImagesSeeder::class,
-            PromoSeeder::class,
+            VoucherSeeder::class,
             CustomerSeeder::class,
             CustomerAddressSeeder::class,
             OrderProductSeeder::class,

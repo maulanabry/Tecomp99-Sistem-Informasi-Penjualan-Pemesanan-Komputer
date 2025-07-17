@@ -373,42 +373,42 @@ class OrderServiceController extends Controller
         }
     }
 
-    public function validatePromoCode(Request $request)
+    public function validateVoucherCode(Request $request)
     {
         $request->validate([
-            'promo_code' => 'required|string',
+            'voucher_code' => 'required|string',
             'subtotal' => 'required|numeric|min:0',
         ]);
 
-        $code = trim($request->input('promo_code'));
+        $code = trim($request->input('voucher_code'));
         $subtotal = $request->input('subtotal');
 
-        $promo = \App\Models\Promo::where('code', $code)
+        $voucher = \App\Models\Voucher::where('code', $code)
             ->where('is_active', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->first();
 
-        if (!$promo) {
+        if (!$voucher) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kode promo tidak valid atau sudah kedaluwarsa',
+                'message' => 'Kode voucher tidak valid atau sudah kedaluwarsa',
             ], 404);
         }
 
-        if ($promo->minimum_order_amount && $subtotal < $promo->minimum_order_amount) {
+        if ($voucher->minimum_order_amount && $subtotal < $voucher->minimum_order_amount) {
             return response()->json([
                 'success' => false,
-                'message' => 'Minimal pembelian untuk promo ini adalah Rp ' . number_format($promo->minimum_order_amount, 0, ',', '.'),
+                'message' => 'Minimal pembelian untuk voucher ini adalah Rp ' . number_format($voucher->minimum_order_amount, 0, ',', '.'),
             ], 400);
         }
 
-        // Calculate discount based on promo type
+        // Calculate discount based on voucher type
         $discount = 0;
-        if ($promo->type === 'percentage' && $promo->discount_percentage) {
-            $discount = intval(($subtotal * $promo->discount_percentage) / 100);
-        } elseif ($promo->type === 'amount' && $promo->discount_amount) {
-            $discount = $promo->discount_amount;
+        if ($voucher->type === 'percentage' && $voucher->discount_percentage) {
+            $discount = intval(($subtotal * $voucher->discount_percentage) / 100);
+        } elseif ($voucher->type === 'amount' && $voucher->discount_amount) {
+            $discount = $voucher->discount_amount;
         }
 
         // Cap discount at subtotal
@@ -418,11 +418,11 @@ class OrderServiceController extends Controller
 
         return response()->json([
             'success' => true,
-            'promo_id' => $promo->promo_id,
-            'promo_name' => $promo->name,
+            'voucher_id' => $voucher->voucher_id,
+            'voucher_name' => $voucher->name,
             'discount' => $discount,
-            'discount_type' => $promo->type,
-            'discount_value' => $promo->type === 'percentage' ? $promo->discount_percentage : $promo->discount_amount,
+            'discount_type' => $voucher->type,
+            'discount_value' => $voucher->type === 'percentage' ? $voucher->discount_percentage : $voucher->discount_amount,
         ]);
     }
 }

@@ -3,21 +3,21 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Promo;
+use App\Models\Voucher;
 use Illuminate\Support\Carbon;
 
-class PromoSeeder extends Seeder
+class VoucherSeeder extends Seeder
 {
     public function run(): void
     {
         $now = Carbon::now();
         $year = $now->year;
 
-        $promos = [
-            // National Holiday Promos
+        $vouchers = [
+            // National Holiday Vouchers
             [
                 'code' => 'MERDEKA77',
-                'name' => 'Promo Kemerdekaan - Diskon 17%',
+                'name' => 'Voucher Kemerdekaan - Diskon 17%',
                 'type' => 'percentage',
                 'discount_percentage' => 17.00,
                 'discount_amount' => null,
@@ -52,10 +52,10 @@ class PromoSeeder extends Seeder
                 'end_date' => Carbon::create($year, 4, 30),
             ],
 
-            // University Enrollment Period Promos
+            // University Enrollment Period Vouchers
             [
                 'code' => 'NEWSTUDENT',
-                'name' => 'Promo Mahasiswa Baru - Diskon 20%',
+                'name' => 'Voucher Mahasiswa Baru - Diskon 20%',
                 'type' => 'percentage',
                 'discount_percentage' => 20.00,
                 'discount_amount' => null,
@@ -107,7 +107,7 @@ class PromoSeeder extends Seeder
             // Monthly Specials
             [
                 'code' => 'GAJIAN50',
-                'name' => 'Promo Gajian - Hemat 50rb',
+                'name' => 'Voucher Gajian - Hemat 50rb',
                 'type' => 'amount',
                 'discount_percentage' => null,
                 'discount_amount' => 50000,
@@ -130,7 +130,7 @@ class PromoSeeder extends Seeder
                 'end_date' => $now->copy()->endOfWeek(),
             ],
 
-            // First-Time Customer Promos
+            // First-Time Customer Vouchers
             [
                 'code' => 'WELCOME100',
                 'name' => 'Welcome Discount 100rb',
@@ -170,7 +170,7 @@ class PromoSeeder extends Seeder
                 'end_date' => Carbon::create($year, 12, 26),
             ],
 
-            // Service-Specific Promos
+            // Service-Specific Vouchers
             [
                 'code' => 'UPGRADE50',
                 'name' => 'PC Upgrade Discount 50rb',
@@ -281,21 +281,21 @@ class PromoSeeder extends Seeder
             ],
         ];
 
-        foreach ($promos as $promoData) {
-            // Validate if promo should be active based on current date
-            $startDate = Carbon::parse($promoData['start_date']);
-            $endDate = Carbon::parse($promoData['end_date']);
+        foreach ($vouchers as $voucherData) {
+            // Validate if voucher should be active based on current date
+            $startDate = Carbon::parse($voucherData['start_date']);
+            $endDate = Carbon::parse($voucherData['end_date']);
             $today = $now->toDateString();
 
-            // Set is_active to false if promo is not within valid date range
+            // Set is_active to false if voucher is not within valid date range
             if ($startDate->toDateString() > $today || $endDate->toDateString() < $today) {
-                $promoData['is_active'] = false;
+                $voucherData['is_active'] = false;
             }
 
             // Use updateOrCreate to avoid duplicate key errors
-            Promo::updateOrCreate(
-                ['code' => $promoData['code']], // Find by code
-                $promoData // Update or create with this data
+            Voucher::updateOrCreate(
+                ['code' => $voucherData['code']], // Find by code
+                $voucherData // Update or create with this data
             );
         }
     }

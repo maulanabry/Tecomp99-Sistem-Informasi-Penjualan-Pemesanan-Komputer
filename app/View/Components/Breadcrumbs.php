@@ -78,9 +78,9 @@ class Breadcrumbs extends Component
                 $breadcrumbs[] = $this->getServiceBreadcrumb($routeName);
                 break;
 
-            case str_contains($routeName, 'promos'):
+            case str_contains($routeName, 'vouchers'):
                 $breadcrumbs[] = ['title' => 'Data Master', 'url' => null, 'active' => false];
-                $breadcrumbs[] = $this->getPromoBreadcrumb($routeName);
+                $breadcrumbs[] = $this->getVoucherBreadcrumb($routeName);
                 break;
 
             case str_contains($routeName, 'customers'):
@@ -217,24 +217,24 @@ class Breadcrumbs extends Component
         }
     }
 
-    private function getPromoBreadcrumb($routeName)
+    private function getVoucherBreadcrumb($routeName)
     {
-        $base = ['title' => 'Data Promo', 'url' => route('promos.index'), 'active' => false];
+        $base = ['title' => 'Data Voucher', 'url' => route('vouchers.index'), 'active' => false];
 
         if (str_contains($routeName, 'create')) {
             return [
                 $base,
-                ['title' => 'Tambah Promo', 'url' => null, 'active' => true]
+                ['title' => 'Tambah Voucher', 'url' => null, 'active' => true]
             ];
         } elseif (str_contains($routeName, 'edit')) {
             return [
                 $base,
-                ['title' => 'Edit Promo', 'url' => null, 'active' => true]
+                ['title' => 'Edit Voucher', 'url' => null, 'active' => true]
             ];
         } elseif (str_contains($routeName, 'show')) {
             return [
                 $base,
-                ['title' => 'Detail Promo', 'url' => null, 'active' => true]
+                ['title' => 'Detail Voucher', 'url' => null, 'active' => true]
             ];
         } else {
             $base['active'] = true;

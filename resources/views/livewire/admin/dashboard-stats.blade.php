@@ -297,9 +297,9 @@
                 <span class="text-sm font-medium text-orange-600 dark:text-orange-400">Tambah Pelanggan</span>
             </a>
             
-            <a href="{{ route('promos.create') }}" class="flex flex-col items-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
-                <i class="fas fa-tag text-red-600 dark:text-red-400 text-2xl mb-2"></i>
-                <span class="text-sm font-medium text-red-600 dark:text-red-400">Tambah Promo</span>
+            <a href="{{ route('vouchers.create') }}" class="flex flex-col items-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
+                <i class="fas fa-ticket-alt text-red-600 dark:text-red-400 text-2xl mb-2"></i>
+                <span class="text-sm font-medium text-red-600 dark:text-red-400">Tambah Voucher</span>
             </a>
             
             <a href="{{ route('payments.index') }}" class="flex flex-col items-center p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors">

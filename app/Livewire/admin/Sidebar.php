@@ -15,7 +15,7 @@ class Sidebar extends Component
     public function mount()
     {
         // Initialize open states based on current route
-        $this->isDataMasterOpen = request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('produk.*') || request()->is('admin/servis*') || request()->is('admin/promo*') || request()->is('admin/pelanggan*');
+        $this->isDataMasterOpen = request()->is('admin/kategori*') || request()->is('admin/brand*') || request()->is('produk.*') || request()->is('admin/servis*') || request()->is('admin/voucher*') || request()->is('admin/pelanggan*');
         $this->isOrderOpen = request()->is('order.servis') || request()->is('order.produk');
     }
 
