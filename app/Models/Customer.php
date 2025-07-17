@@ -86,6 +86,11 @@ class Customer extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(OrderService::class, 'customer_id', 'customer_id');
     }
 
+    public function cartItems(): HasMany
+    {
+        return $this->hasMany(Cart::class, 'customer_id', 'customer_id');
+    }
+
     public static function generateCustomerId(): string
     {
         $date = now()->format('dmy');

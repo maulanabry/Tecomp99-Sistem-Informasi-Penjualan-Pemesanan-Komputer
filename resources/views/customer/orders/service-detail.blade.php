@@ -422,27 +422,31 @@
                         </div>
                     @endif
 
-                    <!-- Service Images -->
-                    @if($order->images->count() > 0)
+                    <!-- Service Media -->
+                    @if($order->media->count() > 0)
                         <div class="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                                <h2 class="text-xl font-bold text-gray-900">Foto Perangkat</h2>
+                                <h2 class="text-xl font-bold text-gray-900">Foto & Video Perangkat</h2>
                             </div>
                             <div class="p-6">
                                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                    @foreach($order->images as $image)
+                                    @foreach($order->media as $media)
                                         <div class="relative group">
-                                            <img src="{{ asset('images/service/' . $image->image_path) }}" 
-                                                 alt="Foto perangkat" 
-                                                 class="w-full h-32 object-cover rounded-lg border border-gray-200">
+                                            @if(in_array(strtolower($media->file_type), ['jpg', 'jpeg', 'png', 'gif']))
+                                                <img src="{{ Storage::disk('local')->url($media->media_path) }}" 
+                                                     alt="Foto perangkat" 
+                                                     class="w-full h-32 object-cover rounded-lg border border-gray-200">
+                                            @else
+                                                <div class="w-full h-32 bg-gray-200 rounded-lg border border-gray-200 flex items-center justify-center">
+                                                    <i class="fas fa-file-video text-2xl text-gray-400"></i>
+                                                </div>
+                                            @endif
                                             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
                                                 <button class="opacity-0 group-hover:opacity-100 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded-full transition-all duration-200">
                                                     <i class="fas fa-expand mr-1"></i>Lihat
                                                 </button>
                                             </div>
-                                            @if($image->description)
-                                                <p class="text-xs text-gray-500 mt-1">{{ $image->description }}</p>
-                                            @endif
+                                            <p class="text-xs text-gray-500 mt-1">{{ $media->media_name }}</p>
                                         </div>
                                     @endforeach
                                 </div>

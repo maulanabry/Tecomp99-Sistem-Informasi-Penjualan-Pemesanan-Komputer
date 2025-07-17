@@ -120,20 +120,45 @@ class ProductOverview extends Component
             return;
         }
 
-        // Cek stok
-        if ($this->product->stock < $this->quantity) {
-            session()->flash('error-message', 'Stok tidak mencukupi.');
-            return;
+        try {
+            $customerId = auth()->guard('customer')->id();
+            $productId = $this->product->product_id;
+            $quantity = $this->quantity;
+
+            // Validasi stok
+            if ($quantity > $this->product->stock) {
+                session()->flash('error-message', "Stok tidak mencukupi. Stok tersedia: {$this->product->stock}");
+                return;
+            }
+
+            // Cek apakah produk sudah ada di keranjang
+            $existingCartItem = \App\Models\Cart::where('customer_id', $customerId)
+                ->where('product_id', $productId)
+                ->first();
+
+            if ($existingCartItem) {
+                $totalQuantityAfterAdd = $existingCartItem->quantity + $quantity;
+                if ($totalQuantityAfterAdd > $this->product->stock) {
+                    session()->flash('error-message', "Stok tidak mencukupi. Stok tersedia: {$this->product->stock}, sudah ada di keranjang: {$existingCartItem->quantity}");
+                    return;
+                }
+            }
+
+            // Tambah ke keranjang
+            \App\Models\Cart::addItem($customerId, $productId, $quantity);
+
+            // Emit event untuk update cart counter
+            $totalItems = \App\Models\Cart::getTotalItemsForCustomer($customerId);
+            $this->dispatch('product-added-to-cart', [
+                'product_id' => $productId,
+                'quantity' => $quantity,
+                'total_items' => $totalItems
+            ]);
+
+            session()->flash('success-message', 'Produk berhasil ditambahkan ke keranjang!');
+        } catch (\Exception $e) {
+            session()->flash('error-message', 'Terjadi kesalahan saat menambahkan produk ke keranjang.');
         }
-
-        // Logic untuk menambahkan ke keranjang
-        // Untuk saat ini, hanya emit event dan tampilkan pesan sukses
-        $this->dispatch('product-added-to-cart', [
-            'product_id' => $this->product->product_id,
-            'quantity' => $this->quantity
-        ]);
-
-        session()->flash('success-message', 'Produk berhasil ditambahkan ke keranjang!');
     }
 
     public function buyNow()

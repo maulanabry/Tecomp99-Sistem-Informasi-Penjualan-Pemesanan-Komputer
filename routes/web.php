@@ -15,6 +15,10 @@ use App\Http\Livewire\Admin\CreateOrderProduct;
 // Public Routes
 // ==========================
 Route::get('/', function () {
+    return redirect('/beranda');
+});
+
+Route::get('/beranda', function () {
     return view('welcome');
 })->name('home');
 
@@ -94,6 +98,10 @@ Route::post('/customer/email/verification-notification', [\App\Http\Controllers\
 Route::middleware('auth:customer')->group(function () {
     Route::post('/keluar', [\App\Http\Controllers\CustomerAuthController::class, 'logout'])->name('customer.logout');
 
+    // Service Order Route
+    Route::get('/pesan-servis', [\App\Http\Controllers\Customer\ServiceOrderController::class, 'index'])->name('customer.service-order');
+    Route::post('/pesan-servis', [\App\Http\Controllers\Customer\ServiceOrderController::class, 'store'])->name('customer.service-order.store');
+
     // Customer Account Management Routes
     Route::prefix('akun')->name('customer.account.')->group(function () {
         // Profile Management
@@ -110,6 +118,16 @@ Route::middleware('auth:customer')->group(function () {
         Route::put('/alamat/{address}', [\App\Http\Controllers\Customer\AddressController::class, 'update'])->name('addresses.update');
         Route::delete('/alamat/{address}', [\App\Http\Controllers\Customer\AddressController::class, 'destroy'])->name('addresses.destroy');
         Route::post('/alamat/{address}/set-default', [\App\Http\Controllers\Customer\AddressController::class, 'setDefault'])->name('addresses.set-default');
+    });
+
+    // Customer Cart Routes
+    Route::prefix('keranjang')->name('customer.cart.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Customer\CartController::class, 'index'])->name('index');
+        Route::post('/add', [\App\Http\Controllers\Customer\CartController::class, 'addToCart'])->name('add');
+        Route::put('/{cartId}/quantity', [\App\Http\Controllers\Customer\CartController::class, 'updateQuantity'])->name('update-quantity');
+        Route::delete('/{cartId}', [\App\Http\Controllers\Customer\CartController::class, 'removeItem'])->name('remove');
+        Route::delete('/', [\App\Http\Controllers\Customer\CartController::class, 'clearCart'])->name('clear');
+        Route::get('/count', [\App\Http\Controllers\Customer\CartController::class, 'getCartCount'])->name('count');
     });
 
     // Customer Orders Routes

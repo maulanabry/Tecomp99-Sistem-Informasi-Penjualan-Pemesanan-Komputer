@@ -74,6 +74,20 @@
                 </a>
             </li>
 
+            <!-- Cart -->
+            <li>
+                <a href="{{ route('customer.cart.index') }}" 
+                   class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ $active === 'cart' ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500' : 'text-gray-700 hover:bg-gray-50 hover:text-primary-600' }}">
+                    <i class="fas fa-shopping-cart mr-3 {{ $active === 'cart' ? 'text-primary-600' : 'text-gray-400' }}"></i>
+                    Keranjang Belanja
+                    @if($active !== 'cart')
+                        <span class="ml-auto bg-primary-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                            {{ \App\Models\Cart::getTotalItemsForCustomer(auth()->guard('customer')->id()) }}
+                        </span>
+                    @endif
+                </a>
+            </li>
+
             <!-- Divider -->
             <li class="py-2">
                 <hr class="border-gray-200">

@@ -33,10 +33,16 @@
                 <!-- Cart & Login -->
                 <div class="flex items-center space-x-2 sm:space-x-4">
                     <!-- Cart -->
-                    <button class="relative p-2 text-gray-600 hover:text-primary-500 transition-colors group">
+                    <a href="{{ route('customer.cart.index') }}" class="relative p-2 text-gray-600 hover:text-primary-500 transition-colors group">
                         <i class="fas fa-shopping-cart text-lg sm:text-xl group-hover:scale-110 transition-transform"></i>
-                        <span class="absolute -top-1 -right-1 bg-primary-500 text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center font-medium">0</span>
-                    </button>
+                        <span class="cart-counter absolute -top-1 -right-1 bg-primary-500 text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center font-medium" id="cartCounter">
+                            @auth('customer')
+                                {{ \App\Models\Cart::getTotalItemsForCustomer(auth()->guard('customer')->id()) }}
+                            @else
+                                0
+                            @endauth
+                        </span>
+                    </a>
                     
                     <!-- Login/User -->
                     <div class="flex items-center">
@@ -150,11 +156,14 @@
             <div class="hidden lg:flex items-center justify-between h-12">
                 <!-- Left Menu -->
                 <nav class="flex items-center space-x-8">
-                    <a href="/" class="hover:text-primary-200 transition-colors font-medium text-sm">
+                    <a href="/beranda" class="hover:text-primary-200 transition-colors font-medium text-sm">
                         <i class="fas fa-home mr-2"></i>Beranda
                     </a>
                     <a href="{{ route('products.public') }}" class="hover:text-primary-200 transition-colors text-sm">Produk</a>
                     <a href="{{ route('services.public') }}" class="hover:text-primary-200 transition-colors text-sm">Servis</a>
+                    @auth('customer')
+                        <a href="{{ route('customer.service-order') }}" class="hover:text-primary-200 transition-colors text-sm">Pesan Servis Onsite</a>
+                    @endauth
                     <a href="{{ route('tentang-kami') }}" class="hover:text-primary-200 transition-colors text-sm">Tentang Kami</a>
                 </nav>
                 
@@ -190,6 +199,12 @@
                         <i class="fas fa-tools mr-3 text-primary-200"></i>
                         <span class="font-medium">Servis</span>
                     </a>
+                    @auth('customer')
+                        <a href="{{ route('customer.service-order') }}" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
+                            <i class="fas fa-home mr-3 text-primary-200"></i>
+                            <span class="font-medium">Pesan Servis Onsite</span>
+                        </a>
+                    @endauth
                     <a href="{{ route('tentang-kami') }}" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
                         <i class="fas fa-info-circle mr-3 text-primary-200"></i>
                         <span class="font-medium">Tentang Kami</span>

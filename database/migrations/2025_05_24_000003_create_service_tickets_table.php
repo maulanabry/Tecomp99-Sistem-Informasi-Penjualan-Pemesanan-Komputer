@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('service_tickets', function (Blueprint $table) {
             $table->string('service_ticket_id')->primary();
             $table->string('order_service_id', 50);
-            $table->unsignedBigInteger('admin_id');
+            $table->unsignedBigInteger('admin_id')->nullable();
             $table->enum('status', ['Menunggu', 'Menuju Lokasi', 'Diproses', 'Diantar', 'Perlu Diambil', 'Selesai', 'Dibatalkan'])
                 ->default('Menunggu');
             $table->date('schedule_date');

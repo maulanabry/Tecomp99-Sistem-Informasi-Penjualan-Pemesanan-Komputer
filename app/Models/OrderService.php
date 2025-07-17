@@ -204,6 +204,11 @@ class OrderService extends Model
         return $this->hasMany(OrderServiceImage::class, 'order_service_id', 'order_service_id');
     }
 
+    public function media()
+    {
+        return $this->hasMany(OrderServiceMedia::class, 'order_service_id', 'order_service_id');
+    }
+
     public function tickets()
     {
         return $this->hasMany(ServiceTicket::class, 'order_service_id', 'order_service_id');
