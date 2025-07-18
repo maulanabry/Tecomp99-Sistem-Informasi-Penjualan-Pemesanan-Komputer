@@ -130,6 +130,17 @@ Route::middleware('auth:customer')->group(function () {
         Route::get('/count', [\App\Http\Controllers\Customer\CartController::class, 'getCartCount'])->name('count');
     });
 
+    // Customer Checkout Routes
+    Route::prefix('checkout')->name('customer.checkout.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Customer\CheckoutController::class, 'index'])->name('index');
+        Route::post('/process', [\App\Http\Controllers\Customer\CheckoutController::class, 'process'])->name('process');
+    });
+
+    // Customer Payment Order Routes
+    Route::prefix('payment-order')->name('customer.payment-order.')->group(function () {
+        Route::get('/{orderId}', [\App\Http\Controllers\Customer\PaymentOrderController::class, 'show'])->name('show');
+    });
+
     // Customer Orders Routes
     Route::prefix('pesanan')->name('customer.orders.')->group(function () {
         // Product Orders

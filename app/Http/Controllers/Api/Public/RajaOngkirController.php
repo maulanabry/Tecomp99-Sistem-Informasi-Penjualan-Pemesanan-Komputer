@@ -17,12 +17,21 @@ class RajaOngkirController extends Controller
     {
         $response = Http::withHeaders([
             'key' => config('rajaongkir.api_key'),
+        ])->withOptions([
+            'verify' => false, // Disable SSL verification for local development
         ])->get('https://rajaongkir.komerce.id/api/v1/destination/domestic-destination', [
             'search' => $request->input('search'),
             'limit' => $request->input('limit', 10),
             'offset' => $request->input('offset', 0),
         ]);
-        return response()->json($response['data']);
+
+        // Add success indicator to response
+        $responseData = $response['data'] ?? [];
+
+        return response()->json([
+            'success' => $response->successful() && !empty($responseData),
+            'data' => $responseData
+        ]);
     }
 
     // Ongkos Kirim
@@ -30,6 +39,8 @@ class RajaOngkirController extends Controller
     {
         $response = Http::withHeaders([
             'key' => config('rajaongkir.api_key'),
+        ])->withOptions([
+            'verify' => false, // Disable SSL verification for local development
         ])->asForm()->post('https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost', [
             'origin' => $request->input('origin', $this->shipper_postal_code),
             'destination' => $request->input('destination'),
@@ -40,6 +51,13 @@ class RajaOngkirController extends Controller
             'limit' => $request->input('limit', 10),
             'offset' => $request->input('offset', 0),
         ]);
-        return response()->json($response['data']);
+
+        // Add success indicator to response
+        $responseData = $response['data'] ?? [];
+
+        return response()->json([
+            'success' => $response->successful() && !empty($responseData),
+            'data' => $responseData
+        ]);
     }
 }

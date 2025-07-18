@@ -217,7 +217,7 @@ class CartManager extends Component
     }
 
     /**
-     * Proses checkout item yang dipilih (placeholder untuk implementasi selanjutnya)
+     * Proses checkout item yang dipilih - redirect ke halaman checkout
      */
     public function proceedToCheckout()
     {
@@ -241,9 +241,11 @@ class CartManager extends Component
             }
         }
 
-        // Untuk saat ini, hanya tampilkan pesan sukses
-        // Implementasi checkout sebenarnya akan ditambahkan nanti
-        session()->flash('info', 'Fitur checkout akan segera tersedia. Item yang dipilih: ' . count($this->selectedItems));
+        // Simpan selected items ke session untuk checkout
+        session(['checkout_cart_items' => $this->selectedItems]);
+
+        // Redirect ke halaman checkout
+        return redirect()->route('customer.checkout.index');
     }
 
     /**
