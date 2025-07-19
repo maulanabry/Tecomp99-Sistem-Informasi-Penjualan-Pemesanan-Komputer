@@ -214,10 +214,10 @@
                                         </a>
                                         
                                         @if($order->status_payment === 'belum_dibayar')
-                                            <button class="text-sm bg-primary-100 text-primary-700 px-4 py-2 rounded-lg hover:bg-primary-200 transition-colors cursor-not-allowed" disabled>
+                                            <a href="{{ route('customer.payment-order.show', $order->order_product_id) }}" 
+                                               class="text-sm bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
                                                 <i class="fas fa-credit-card mr-2"></i>Lakukan Pembayaran
-                                                <span class="text-xs">(Segera)</span>
-                                            </button>
+                                            </a>
                                         @endif
                                     </div>
                                     

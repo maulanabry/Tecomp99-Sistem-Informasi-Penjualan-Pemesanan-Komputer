@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Model Cart untuk mengelola keranjang belanja pelanggan
@@ -100,15 +101,46 @@ class Cart extends Model
      */
     public static function addItem(string $customerId, string $productId, int $quantity = 1): self
     {
-        return self::updateOrCreate(
-            [
+        // Log untuk debugging
+        Log::info('Cart::addItem called', [
+            'customer_id' => $customerId,
+            'product_id' => $productId,
+            'quantity' => $quantity,
+            'timestamp' => now()
+        ]);
+
+        // Cari item yang sudah ada
+        $existingItem = self::where('customer_id', $customerId)
+            ->where('product_id', $productId)
+            ->first();
+
+        if ($existingItem) {
+            // Update quantity jika item sudah ada
+            $existingItem->quantity += $quantity;
+            $existingItem->save();
+
+            Log::info('Cart item updated', [
+                'cart_id' => $existingItem->id,
+                'old_quantity' => $existingItem->quantity - $quantity,
+                'new_quantity' => $existingItem->quantity
+            ]);
+
+            return $existingItem;
+        } else {
+            // Buat item baru jika belum ada
+            $newItem = self::create([
                 'customer_id' => $customerId,
                 'product_id' => $productId,
-            ],
-            [
-                'quantity' => DB::raw("quantity + {$quantity}"),
-            ]
-        );
+                'quantity' => $quantity,
+            ]);
+
+            Log::info('Cart item created', [
+                'cart_id' => $newItem->id,
+                'quantity' => $newItem->quantity
+            ]);
+
+            return $newItem;
+        }
     }
 
     /**

@@ -139,6 +139,7 @@ Route::middleware('auth:customer')->group(function () {
     // Customer Payment Order Routes
     Route::prefix('payment-order')->name('customer.payment-order.')->group(function () {
         Route::get('/{orderId}', [\App\Http\Controllers\Customer\PaymentOrderController::class, 'show'])->name('show');
+        Route::post('/store', [\App\Http\Controllers\Customer\PaymentOrderController::class, 'store'])->name('store');
     });
 
     // Customer Orders Routes

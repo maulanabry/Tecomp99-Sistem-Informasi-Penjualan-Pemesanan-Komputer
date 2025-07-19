@@ -143,10 +143,22 @@ class CheckoutManager extends Component
      */
     public function updatedOrderType()
     {
+        Log::info('Order type updated to: ' . $this->orderType);
+
+        // Validate order type
+        if (!in_array($this->orderType, ['langsung', 'pengiriman'])) {
+            Log::warning('Invalid order type: ' . $this->orderType);
+            $this->orderType = 'langsung'; // Reset to default
+        }
+
         // Reset shipping cost when changing order type
         if ($this->orderType === 'langsung') {
             $this->shippingCost = 0;
+            Log::info('Shipping cost reset to 0 for langsung order');
+        } else {
+            Log::info('Order type set to pengiriman, shipping cost will be calculated');
         }
+
         $this->calculateTotals();
     }
 
@@ -260,6 +272,9 @@ class CheckoutManager extends Component
                 STR_PAD_LEFT
             );
 
+            // Log order type before saving
+            Log::info('Creating order with type: ' . $this->orderType);
+
             // Buat order product
             $order = OrderProduct::create([
                 'order_product_id' => $orderId,
@@ -273,6 +288,9 @@ class CheckoutManager extends Component
                 'type' => $this->orderType,
                 'note' => $this->note,
             ]);
+
+            // Log the created order type
+            Log::info('Order created with ID: ' . $orderId . ' and type: ' . $order->type);
 
             // Buat order items dan update stok
             foreach ($this->cartItems as $item) {

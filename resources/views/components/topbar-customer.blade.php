@@ -13,16 +13,7 @@
                 
                 <!-- Search Bar - Hidden on mobile -->
                 <div class="hidden md:flex flex-1 max-w-2xl mx-8">
-                    <div class="relative w-full">
-                        <input 
-                            type="text" 
-                            placeholder="Cari produk atau layanan..." 
-                            class="w-full pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-full focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all duration-200 text-sm"
-                        >
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                    </div>
+                    <livewire:customer.global-search />
                 </div>
                 
                 <!-- Mobile Search Button -->
@@ -32,17 +23,8 @@
                 
                 <!-- Cart & Login -->
                 <div class="flex items-center space-x-2 sm:space-x-4">
-                    <!-- Cart -->
-                    <a href="{{ route('customer.cart.index') }}" class="relative p-2 text-gray-600 hover:text-primary-500 transition-colors group">
-                        <i class="fas fa-shopping-cart text-lg sm:text-xl group-hover:scale-110 transition-transform"></i>
-                        <span class="cart-counter absolute -top-1 -right-1 bg-primary-500 text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center font-medium" id="cartCounter">
-                            @auth('customer')
-                                {{ \App\Models\Cart::getTotalItemsForCustomer(auth()->guard('customer')->id()) }}
-                            @else
-                                0
-                            @endauth
-                        </span>
-                    </a>
+                    <!-- Cart - Livewire Component -->
+                    @livewire('customer.cart-topbar')
                     
                     <!-- Login/User -->
                     <div class="flex items-center">
@@ -135,16 +117,7 @@
         <!-- Mobile Search Bar -->
         <div id="mobile-search" class="hidden md:hidden border-t border-gray-100 bg-white">
             <div class="max-w-7xl mx-auto px-4 py-3">
-                <div class="relative">
-                    <input 
-                        type="text" 
-                        placeholder="Cari produk atau layanan..." 
-                        class="w-full pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-full focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all duration-200 text-sm"
-                    >
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="fas fa-search text-gray-400"></i>
-                    </div>
-                </div>
+                <livewire:customer.global-search />
             </div>
         </div>
     </div>

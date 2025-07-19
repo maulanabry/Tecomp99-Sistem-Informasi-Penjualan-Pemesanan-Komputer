@@ -38,5 +38,8 @@
     
     <!-- Flowbite JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
+    
+    <!-- Custom Scripts Stack -->
+    @stack('scripts')
 </body>
 </html>

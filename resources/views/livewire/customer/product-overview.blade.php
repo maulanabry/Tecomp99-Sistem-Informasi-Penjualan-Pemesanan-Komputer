@@ -208,9 +208,18 @@
                         <div class="space-y-3 pt-6">
                             @if($product->stock > 0)
 <button wire:click="addToCart" 
-        class="w-full bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 border border-gray-300/50 group">
-                                    <i class="fas fa-shopping-cart w-4 h-4 group-hover:scale-110 transition-transform"></i>
-                                    <span>Tambah ke Keranjang</span>
+        wire:loading.attr="disabled"
+        wire:target="addToCart"
+        class="w-full bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 border border-gray-300/50 group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+        {{ $isAddingToCart ? 'disabled' : '' }}>
+                                    <div wire:loading.remove wire:target="addToCart">
+                                        <i class="fas fa-shopping-cart w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <div wire:loading wire:target="addToCart">
+                                        <i class="fas fa-spinner fa-spin w-4 h-4"></i>
+                                    </div>
+                                    <span wire:loading.remove wire:target="addToCart">Tambah ke Keranjang</span>
+                                    <span wire:loading wire:target="addToCart">Menambahkan...</span>
                                 </button>
                                 
 <button wire:click="buyNow" 

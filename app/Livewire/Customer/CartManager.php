@@ -61,8 +61,10 @@ class CartManager extends Component
         // Update selected total price
         $this->updateSelectedTotalPrice();
 
-        // Emit event untuk update cart counter di topbar
+        // Emit event untuk update cart counter di topbar dan komponen lain
         $this->dispatch('cartCountUpdated', $this->totalItems);
+        $this->dispatch('cart-updated');
+        $this->dispatch('cart-count-updated', $this->totalItems);
     }
 
     /**

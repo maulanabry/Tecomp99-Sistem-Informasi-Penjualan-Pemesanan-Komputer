@@ -12,6 +12,8 @@ class ProductOverview extends Component
     public $selectedImageIndex = 0;
     public $wishlist = [];
     public $showLoginAlert = false;
+    public $isAddingToCart = false;
+    public $isBuyingNow = false;
 
     public function mount(Product $product)
     {
@@ -114,11 +116,19 @@ class ProductOverview extends Component
 
     public function addToCart()
     {
+        // Prevent double clicks
+        if ($this->isAddingToCart) {
+            return;
+        }
+
         // Cek apakah customer sudah login
         if (!$this->isCustomerAuthenticated()) {
             $this->showLoginAlert = true;
             return;
         }
+
+        // Set loading state
+        $this->isAddingToCart = true;
 
         try {
             $customerId = auth()->guard('customer')->id();
@@ -128,6 +138,7 @@ class ProductOverview extends Component
             // Validasi stok
             if ($quantity > $this->product->stock) {
                 session()->flash('error-message', "Stok tidak mencukupi. Stok tersedia: {$this->product->stock}");
+                $this->isAddingToCart = false;
                 return;
             }
 
@@ -140,6 +151,7 @@ class ProductOverview extends Component
                 $totalQuantityAfterAdd = $existingCartItem->quantity + $quantity;
                 if ($totalQuantityAfterAdd > $this->product->stock) {
                     session()->flash('error-message', "Stok tidak mencukupi. Stok tersedia: {$this->product->stock}, sudah ada di keranjang: {$existingCartItem->quantity}");
+                    $this->isAddingToCart = false;
                     return;
                 }
             }
@@ -149,15 +161,23 @@ class ProductOverview extends Component
 
             // Emit event untuk update cart counter
             $totalItems = \App\Models\Cart::getTotalItemsForCustomer($customerId);
+
+            // Dispatch multiple events untuk memastikan semua komponen terupdate
             $this->dispatch('product-added-to-cart', [
                 'product_id' => $productId,
                 'quantity' => $quantity,
                 'total_items' => $totalItems
             ]);
 
+            $this->dispatch('cartCountUpdated', $totalItems);
+            $this->dispatch('cart-updated');
+
             session()->flash('success-message', 'Produk berhasil ditambahkan ke keranjang!');
         } catch (\Exception $e) {
             session()->flash('error-message', 'Terjadi kesalahan saat menambahkan produk ke keranjang.');
+        } finally {
+            // Reset loading state
+            $this->isAddingToCart = false;
         }
     }
 

@@ -28,6 +28,33 @@
                 </ol>
             </nav>
 
+            <!-- Success/Error Messages -->
+            @if(session('success'))
+                <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-green-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-green-800">{{ session('success') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-red-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-red-800">{{ session('error') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Header -->
             <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
                 <div class="flex items-center justify-between flex-wrap gap-4">
@@ -566,7 +593,15 @@
                         <h2 class="text-xl font-bold text-gray-900 mb-6">Aksi</h2>
                         
                         <div class="space-y-3">
-                            @if($order->status_payment !== 'belum_dibayar')
+                            @if($order->status_payment === 'belum_dibayar')
+                                <a 
+                                    href="{{ route('customer.payment-order.show', $order->order_service_id) }}"
+                                    class="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center justify-center"
+                                >
+                                    <i class="fas fa-credit-card mr-2"></i>
+                                    Lakukan Pembayaran
+                                </a>
+                            @else
                                 <a 
                                     href="{{ route('customer.orders.services.invoice', $order) }}"
                                     class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center"

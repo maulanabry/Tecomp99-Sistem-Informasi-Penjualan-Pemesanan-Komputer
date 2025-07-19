@@ -81,8 +81,10 @@
                     <i class="fas fa-shopping-cart mr-3 {{ $active === 'cart' ? 'text-primary-600' : 'text-gray-400' }}"></i>
                     Keranjang Belanja
                     @if($active !== 'cart')
-                        <span class="ml-auto bg-primary-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                            {{ \App\Models\Cart::getTotalItemsForCustomer(auth()->guard('customer')->id()) }}
+                        <span class="ml-auto bg-primary-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium" 
+                              x-data="{ cartCount: {{ \App\Models\Cart::getTotalItemsForCustomer(auth()->guard('customer')->id()) }} }"
+                              x-text="cartCount"
+                              @cart-count-updated.window="cartCount = $event.detail">
                         </span>
                     @endif
                 </a>
