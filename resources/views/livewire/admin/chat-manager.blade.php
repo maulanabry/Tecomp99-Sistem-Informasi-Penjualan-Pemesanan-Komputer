@@ -55,6 +55,7 @@
                                         <div class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button 
                                                 wire:click.stop="confirmDeleteChat({{ $customer['chat_id'] }})"
+                                                wire:confirm="Apakah Anda yakin ingin menghapus chat ini? Semua pesan akan dihapus secara permanen."
                                                 class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
                                                 title="Hapus Chat"
                                             >
@@ -110,6 +111,7 @@
                         @if($currentChat)
                             <button 
                                 wire:click="confirmDeleteChat({{ $currentChat->id }})"
+                                wire:confirm="Apakah Anda yakin ingin menghapus chat ini? Semua pesan akan dihapus secara permanen."
                                 class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
                                 title="Hapus Chat"
                             >
@@ -205,10 +207,12 @@ document.addEventListener('livewire:initialized', () => {
         }, 100);
     });
 
-    // Konfirmasi hapus chat
-    Livewire.on('confirm-delete-chat', (event) => {
-        if (confirm('Apakah Anda yakin ingin menghapus chat ini? Semua pesan akan dihapus secara permanen.')) {
-            @this.deleteChat(event.chatId);
+    // Clear input field after message sent
+    Livewire.on('messageSent', () => {
+        const input = document.querySelector('input[wire\\:model="newMessage"]');
+        if (input) {
+            input.value = '';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
         }
     });
 });

@@ -174,6 +174,9 @@ class ChatManager extends Component
 
         // Scroll ke bawah
         $this->dispatch('scrollToBottom');
+
+        // Dispatch event to clear input field
+        $this->dispatch('messageSent');
     }
 
     public function markMessagesAsRead()
@@ -246,7 +249,8 @@ class ChatManager extends Component
      */
     public function confirmDeleteChat($chatId)
     {
-        $this->dispatch('confirm-delete-chat', ['chatId' => $chatId]);
+        // Direct deletion with JavaScript confirmation handled in the view
+        $this->deleteChat($chatId);
     }
 
     // Polling untuk real-time updates

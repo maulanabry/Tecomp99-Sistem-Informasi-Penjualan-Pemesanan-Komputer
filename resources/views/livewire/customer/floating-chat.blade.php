@@ -185,5 +185,14 @@ document.addEventListener('livewire:initialized', () => {
             }
         }, 100);
     });
+
+    // Clear input field after message sent
+    Livewire.on('messageSent', () => {
+        const input = document.querySelector('input[wire\\:model="newMessage"]');
+        if (input) {
+            input.value = '';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
 });
 </script>

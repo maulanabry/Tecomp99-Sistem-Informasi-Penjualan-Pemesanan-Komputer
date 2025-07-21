@@ -128,6 +128,9 @@ class ChatManager extends Component
 
         // Scroll ke bawah
         $this->dispatch('scrollToBottom');
+
+        // Dispatch event to clear input field
+        $this->dispatch('messageSent');
     }
 
     public function markMessagesAsRead()
