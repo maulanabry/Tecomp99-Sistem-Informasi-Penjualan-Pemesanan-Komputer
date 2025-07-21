@@ -185,7 +185,7 @@ class ChatManager extends Component
             ->where('is_read_by_admin', false)
             ->update([
                 'is_read_by_admin' => true,
-                'read_at' => now()
+                'read_by_admin_at' => now()
             ]);
     }
 
@@ -203,6 +203,50 @@ class ChatManager extends Component
     public function updatedSearchQuery()
     {
         $this->searchCustomers();
+    }
+
+    /**
+     * Menghapus chat dengan customer tertentu
+     */
+    public function deleteChat($chatId)
+    {
+        try {
+            $admin = Auth::guard('admin')->user();
+            $chat = Chat::where('id', $chatId)
+                ->where('admin_id', $admin->id)
+                ->first();
+
+            if (!$chat) {
+                session()->flash('error', 'Chat tidak ditemukan atau Anda tidak memiliki akses.');
+                return;
+            }
+
+            // Hapus semua pesan dalam chat ini
+            $chat->messages()->delete();
+
+            // Hapus chat
+            $chat->delete();
+
+            // Jika chat yang dihapus adalah chat yang sedang aktif, kembali ke daftar customer
+            if ($this->currentChat && $this->currentChat->id == $chatId) {
+                $this->backToCustomerList();
+            }
+
+            // Refresh daftar customer
+            $this->loadCustomerChats();
+
+            session()->flash('success', 'Chat berhasil dihapus.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal menghapus chat.');
+        }
+    }
+
+    /**
+     * Konfirmasi sebelum menghapus chat
+     */
+    public function confirmDeleteChat($chatId)
+    {
+        $this->dispatch('confirm-delete-chat', ['chatId' => $chatId]);
     }
 
     // Polling untuk real-time updates

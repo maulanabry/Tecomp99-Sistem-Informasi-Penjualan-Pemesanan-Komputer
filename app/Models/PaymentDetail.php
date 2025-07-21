@@ -7,6 +7,54 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
+/**
+ * @property string $payment_id
+ * @property string|null $order_product_id
+ * @property string|null $order_service_id
+ * @property string $method
+ * @property numeric $amount
+ * @property numeric|null $change_returned
+ * @property string $name
+ * @property string $status
+ * @property string $payment_type
+ * @property string $order_type
+ * @property string|null $proof_photo
+ * @property numeric|null $cash_received
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read mixed $formatted_amount
+ * @property-read mixed $formatted_cash_received
+ * @property-read mixed $formatted_change_returned
+ * @property-read mixed $order
+ * @property-read mixed $payment_type_label
+ * @property-read mixed $proof_photo_url
+ * @property-read mixed $status_label
+ * @property-read \App\Models\OrderProduct|null $orderProduct
+ * @property-read \App\Models\OrderService|null $orderService
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereCashReceived($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereChangeReturned($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereMethod($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereOrderProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereOrderServiceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereOrderType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail wherePaymentId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail wherePaymentType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereProofPhoto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentDetail withoutTrashed()
+ * @mixin \Eloquent
+ */
 class PaymentDetail extends Model
 {
     use HasFactory, SoftDeletes;

@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 /**
  * Model ChatMessage untuk pesan individual dalam chat
- * 
+ *
  * @property int $id
  * @property int $chat_id
  * @property string $sender_type
@@ -19,11 +19,42 @@ use Carbon\Carbon;
  * @property string|null $file_path
  * @property string|null $file_name
  * @property bool $is_read
- * @property \Carbon\Carbon|null $read_at
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property-read Chat $chat
- * @property-read Customer|Admin|null $sender
+ * @property bool $is_read_by_customer
+ * @property bool $is_read_by_admin
+ * @property \Illuminate\Support\Carbon|null $read_by_customer_at
+ * @property \Illuminate\Support\Carbon|null $read_by_admin_at
+ * @property \Illuminate\Support\Carbon|null $read_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Chat $chat
+ * @property-read string|null $file_url
+ * @property-read string $formatted_date
+ * @property-read string $formatted_time
+ * @property-read string $sender_name
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage fromAdmin()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage fromCustomer()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage today()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage unread()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereChatId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereFileName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereFilePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereIsRead($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereIsReadByAdmin($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereIsReadByCustomer($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereMessage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereMessageType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereReadAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereReadByAdminAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereReadByCustomerAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereSenderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereSenderType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatMessage whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class ChatMessage extends Model
 {
@@ -39,11 +70,19 @@ class ChatMessage extends Model
         'file_name',
         'is_read',
         'read_at',
+        'is_read_by_customer',
+        'is_read_by_admin',
+        'read_by_customer_at',
+        'read_by_admin_at',
     ];
 
     protected $casts = [
         'is_read' => 'boolean',
         'read_at' => 'datetime',
+        'is_read_by_customer' => 'boolean',
+        'is_read_by_admin' => 'boolean',
+        'read_by_customer_at' => 'datetime',
+        'read_by_admin_at' => 'datetime',
     ];
 
     /**

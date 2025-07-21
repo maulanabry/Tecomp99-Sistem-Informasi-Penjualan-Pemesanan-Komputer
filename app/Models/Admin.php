@@ -17,19 +17,43 @@ use Illuminate\Support\Facades\DB;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string $password
  * @property string $role
  * @property string $theme
- * @property \Carbon\Carbon|null $email_verified_at
- * @property \Carbon\Carbon|null $last_seen_at
- * @property-read \Illuminate\Database\Eloquent\Collection<Chat> $chats
- * @property-read \Illuminate\Database\Eloquent\Collection<ChatMessage> $chatMessages
- * @property-read \Illuminate\Database\Eloquent\Collection<SystemNotification> $notifications
- * @property-read int $unread_notifications_count
+ * @property string|null $remember_token
+ * @property \Illuminate\Support\Carbon|null $last_seen_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ChatMessage> $chatMessages
+ * @property-read int|null $chat_messages_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Chat> $chats
+ * @property-read int|null $chats_count
+ * @property-read mixed $recent_notifications
  * @property-read int $unread_messages_count
- * @method HasMany chats()
- * @method HasMany chatMessages()
- * @method MorphMany notifications()
+ * @property-read int $unread_notifications_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SystemNotification> $notifications
+ * @property-read int|null $notifications_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereEmailVerifiedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereLastSeenAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin wherePassword($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereRememberToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereRole($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereTheme($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin withoutTrashed()
+ * @mixin \Eloquent
  */
 class Admin extends Authenticatable
 {
@@ -101,6 +125,8 @@ class Admin extends Authenticatable
 
     /**
      * Relasi ke model Chat
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Chat>
      */
     public function chats(): HasMany
     {

@@ -5,6 +5,33 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int $order_service_media_id
+ * @property string $order_service_id
+ * @property string $media_path
+ * @property string $media_name
+ * @property string $file_type
+ * @property int $file_size
+ * @property bool $is_main
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $formatted_size
+ * @property-read mixed $url
+ * @property-read \App\Models\OrderService $orderService
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia whereFileSize($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia whereFileType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia whereIsMain($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia whereMediaName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia whereMediaPath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia whereOrderServiceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia whereOrderServiceMediaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceMedia whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class OrderServiceMedia extends Model
 {
     protected $table = 'order_service_media';

@@ -6,6 +6,70 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
+/**
+ * @property string $order_service_id
+ * @property string $customer_id
+ * @property string $status_order
+ * @property string $status_payment
+ * @property string|null $complaints
+ * @property string $type
+ * @property string $device
+ * @property string|null $note
+ * @property bool $hasTicket
+ * @property bool $hasDevice
+ * @property numeric $sub_total
+ * @property numeric $grand_total
+ * @property numeric $discount_amount
+ * @property int|null $warranty_period_months
+ * @property \Illuminate\Support\Carbon|null $warranty_expired_at
+ * @property numeric $paid_amount
+ * @property numeric $remaining_balance
+ * @property \Illuminate\Support\Carbon|null $last_payment_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \App\Models\Customer $customer
+ * @property-read mixed $applied_promo
+ * @property-read mixed $warranty_status
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderServiceImage> $images
+ * @property-read int|null $images_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderServiceItem> $items
+ * @property-read int|null $items_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderServiceMedia> $media
+ * @property-read int|null $media_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PaymentDetail> $paymentDetails
+ * @property-read int|null $payment_details_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ServiceTicket> $tickets
+ * @property-read int|null $tickets_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereComplaints($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereDevice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereDiscountAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereGrandTotal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereHasDevice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereHasTicket($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereLastPaymentAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereOrderServiceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService wherePaidAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereRemainingBalance($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereStatusOrder($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereStatusPayment($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereSubTotal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereWarrantyExpiredAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService whereWarrantyPeriodMonths($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderService withoutTrashed()
+ * @mixin \Eloquent
+ */
 class OrderService extends Model
 {
     use SoftDeletes;

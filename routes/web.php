@@ -372,6 +372,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::post('/mark-read', [\App\Http\Controllers\Admin\ChatController::class, 'markAsRead'])->name('admin.chat.mark-read');
         Route::get('/unread-count', [\App\Http\Controllers\Admin\ChatController::class, 'getUnreadCount'])->name('admin.chat.unread-count');
         Route::get('/search-customers', [\App\Http\Controllers\Admin\ChatController::class, 'searchCustomers'])->name('admin.chat.search-customers');
+        Route::delete('/delete', [\App\Http\Controllers\Admin\ChatController::class, 'deleteChat'])->name('admin.chat.delete');
     });
 
     // Transaksi

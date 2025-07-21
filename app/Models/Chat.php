@@ -9,20 +9,36 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Model Chat untuk percakapan antara Customer dan Admin
- * 
+ *
  * @property int $id
  * @property string $customer_id
  * @property int $admin_id
- * @property \Carbon\Carbon|null $last_message_at
+ * @property \Illuminate\Support\Carbon|null $last_message_at
  * @property bool $is_active
- * @property \Carbon\Carbon|null $customer_last_read_at
- * @property \Carbon\Carbon|null $admin_last_read_at
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property-read Customer $customer
- * @property-read Admin $admin
- * @property-read \Illuminate\Database\Eloquent\Collection<ChatMessage> $messages
- * @property-read ChatMessage|null $lastMessage
+ * @property \Illuminate\Support\Carbon|null $customer_last_read_at
+ * @property \Illuminate\Support\Carbon|null $admin_last_read_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Admin $admin
+ * @property-read \App\Models\Customer $customer
+ * @property-read int $unread_messages_for_admin
+ * @property-read int $unread_messages_for_customer
+ * @property-read \App\Models\ChatMessage|null $lastMessage
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ChatMessage> $messages
+ * @property-read int|null $messages_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat whereAdminId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat whereAdminLastReadAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat whereCustomerLastReadAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat whereLastMessageAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Chat whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class Chat extends Model
 {
@@ -83,7 +99,7 @@ class Chat extends Model
     {
         return $this->messages()
             ->where('sender_type', 'admin')
-            ->where('is_read', false)
+            ->where('is_read_by_customer', false)
             ->count();
     }
 
@@ -94,7 +110,7 @@ class Chat extends Model
     {
         return $this->messages()
             ->where('sender_type', 'customer')
-            ->where('is_read', false)
+            ->where('is_read_by_admin', false)
             ->count();
     }
 
@@ -105,10 +121,10 @@ class Chat extends Model
     {
         $this->messages()
             ->where('sender_type', 'admin')
-            ->where('is_read', false)
+            ->where('is_read_by_customer', false)
             ->update([
-                'is_read' => true,
-                'read_at' => now()
+                'is_read_by_customer' => true,
+                'read_by_customer_at' => now()
             ]);
 
         $this->update(['customer_last_read_at' => now()]);
@@ -121,10 +137,10 @@ class Chat extends Model
     {
         $this->messages()
             ->where('sender_type', 'customer')
-            ->where('is_read', false)
+            ->where('is_read_by_admin', false)
             ->update([
-                'is_read' => true,
-                'read_at' => now()
+                'is_read_by_admin' => true,
+                'read_by_admin_at' => now()
             ]);
 
         $this->update(['admin_last_read_at' => now()]);
@@ -174,7 +190,7 @@ class Chat extends Model
     {
         return static::whereHas('messages', function ($query) {
             $query->where('sender_type', 'customer')
-                ->where('is_read', false);
+                ->where('is_read_by_admin', false);
         })
             ->with(['customer', 'lastMessage'])
             ->orderBy('last_message_at', 'desc')

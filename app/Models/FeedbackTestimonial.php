@@ -5,6 +5,32 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property int $rating Rating 1-5
+ * @property string $message
+ * @property string $status
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $star_rating
+ * @property-read mixed $status_label
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial approved()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial latest()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial whereMessage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial whereRating($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeedbackTestimonial whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class FeedbackTestimonial extends Model
 {
     use HasFactory;

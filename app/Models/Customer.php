@@ -20,24 +20,64 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property string $name
  * @property string|null $email
  * @property string|null $password
- * @property \Carbon\Carbon|null $last_active
- * @property bool $hasAccount
+ * @property \Illuminate\Support\Carbon|null $last_active
+ * @property int $hasAccount
+ * @property int $hasAddress
  * @property string|null $photo
  * @property string|null $gender
  * @property string $contact
  * @property int $service_orders_count
  * @property int $product_orders_count
  * @property int $total_points
- * @property \Carbon\Carbon|null $email_verified_at
- * @property-read \Illuminate\Database\Eloquent\Collection<CustomerAddress> $addresses
- * @property-read CustomerAddress|null $defaultAddress
- * @property-read \Illuminate\Database\Eloquent\Collection<OrderProduct> $orderProducts
- * @property-read \Illuminate\Database\Eloquent\Collection<OrderService> $orderServices
- * @property-read \Illuminate\Database\Eloquent\Collection<Chat> $chats
- * @property-read \Illuminate\Database\Eloquent\Collection<ChatMessage> $chatMessages
- * @property-read \Illuminate\Database\Eloquent\Collection<SystemNotification> $notifications
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property string|null $remember_token
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CustomerAddress> $addresses
+ * @property-read int|null $addresses_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Cart> $cartItems
+ * @property-read int|null $cart_items_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ChatMessage> $chatMessages
+ * @property-read int|null $chat_messages_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Chat> $chats
+ * @property-read int|null $chats_count
+ * @property-read \App\Models\CustomerAddress|null $defaultAddress
+ * @property-read string $formatted_address
  * @property-read int $unread_messages_count
  * @property-read int $unread_notifications_count
+ * @property-read string $whatsapp_link
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SystemNotification> $notifications
+ * @property-read int|null $notifications_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderProduct> $orderProducts
+ * @property-read int|null $order_products_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderService> $orderServices
+ * @property-read int|null $order_services_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereContact($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereEmailVerifiedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereGender($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereHasAccount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereHasAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereLastActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer wherePassword($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer wherePhoto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereProductOrdersCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereRememberToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereServiceOrdersCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereTotalPoints($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer withoutTrashed()
+ * @mixin \Eloquent
  */
 class Customer extends Authenticatable implements MustVerifyEmail
 {
@@ -118,6 +158,8 @@ class Customer extends Authenticatable implements MustVerifyEmail
 
     /**
      * Relasi ke Chat
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Chat>
      */
     public function chats(): HasMany
     {
@@ -126,6 +168,8 @@ class Customer extends Authenticatable implements MustVerifyEmail
 
     /**
      * Relasi ke ChatMessage sebagai pengirim
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<ChatMessage>
      */
     public function chatMessages(): HasMany
     {
@@ -135,6 +179,9 @@ class Customer extends Authenticatable implements MustVerifyEmail
 
     /**
      * Mendapatkan chat aktif dengan admin tertentu
+     * 
+     * @param int $adminId
+     * @return Chat|null
      */
     public function getChatWithAdmin($adminId)
     {

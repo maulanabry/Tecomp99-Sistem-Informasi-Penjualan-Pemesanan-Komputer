@@ -6,6 +6,61 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
+/**
+ * @property string $order_product_id
+ * @property string $customer_id
+ * @property string $status_order
+ * @property string $status_payment
+ * @property numeric $sub_total
+ * @property numeric|null $discount_amount
+ * @property numeric $grand_total
+ * @property numeric|null $shipping_cost
+ * @property string $type
+ * @property string|null $note
+ * @property int|null $warranty_period_months
+ * @property \Illuminate\Support\Carbon|null $warranty_expired_at
+ * @property numeric $paid_amount
+ * @property numeric $remaining_balance
+ * @property \Illuminate\Support\Carbon|null $last_payment_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \App\Models\Customer $customer
+ * @property-read mixed $applied_promo
+ * @property-read mixed $warranty_status
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderProductItem> $items
+ * @property-read int|null $items_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PaymentDetail> $paymentDetails
+ * @property-read int|null $payment_details_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PaymentDetail> $payments
+ * @property-read int|null $payments_count
+ * @property-read \App\Models\Shipping|null $shipping
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereDiscountAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereGrandTotal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereLastPaymentAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereOrderProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct wherePaidAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereRemainingBalance($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereShippingCost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereStatusOrder($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereStatusPayment($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereSubTotal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereWarrantyExpiredAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct whereWarrantyPeriodMonths($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderProduct withoutTrashed()
+ * @mixin \Eloquent
+ */
 class OrderProduct extends Model
 {
     use SoftDeletes;

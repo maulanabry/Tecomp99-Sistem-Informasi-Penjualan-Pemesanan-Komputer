@@ -5,6 +5,41 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property string $service_ticket_id
+ * @property string $order_service_id
+ * @property int|null $admin_id
+ * @property string $status
+ * @property \Illuminate\Support\Carbon $schedule_date
+ * @property int|null $estimation_days
+ * @property \Illuminate\Support\Carbon|null $estimate_date
+ * @property \Illuminate\Support\Carbon|null $visit_schedule
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ServiceAction> $actions
+ * @property-read int|null $actions_count
+ * @property-read \App\Models\Admin|null $admin
+ * @property-read \App\Models\OrderService $orderService
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereAdminId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereEstimateDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereEstimationDays($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereOrderServiceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereScheduleDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereServiceTicketId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket whereVisitSchedule($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ServiceTicket withoutTrashed()
+ * @mixin \Eloquent
+ */
 class ServiceTicket extends Model
 {
     use SoftDeletes;

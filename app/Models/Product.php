@@ -5,6 +5,48 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property string $product_id
+ * @property int $categories_id
+ * @property int $brand_id
+ * @property string $name
+ * @property string|null $description
+ * @property int $price
+ * @property int $weight
+ * @property int $stock
+ * @property bool $is_active
+ * @property int $sold_count
+ * @property string $slug
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \App\Models\Brand $brand
+ * @property-read \App\Models\Category $category
+ * @property-read mixed $thumbnail_url
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductImage> $images
+ * @property-read int|null $images_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereBrandId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereCategoriesId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product wherePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereSoldCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereStock($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereWeight($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Product extends Model
 {
     use SoftDeletes;

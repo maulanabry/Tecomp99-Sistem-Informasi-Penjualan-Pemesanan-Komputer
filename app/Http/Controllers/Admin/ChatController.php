@@ -325,6 +325,45 @@ class ChatController extends Controller
     }
 
     /**
+     * Menghapus chat dengan customer tertentu
+     */
+    public function deleteChat(Request $request): JsonResponse
+    {
+        $request->validate([
+            'chat_id' => 'required|exists:chats,id'
+        ]);
+
+        $admin = Auth::guard('admin')->user();
+        $chat = Chat::findOrFail($request->chat_id);
+
+        // Pastikan admin adalah pemilik chat ini
+        if ($chat->admin_id !== $admin->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        try {
+            // Hapus semua pesan dalam chat ini
+            $chat->messages()->delete();
+
+            // Hapus chat
+            $chat->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Chat berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus chat'
+            ], 500);
+        }
+    }
+
+    /**
      * Menentukan tipe file berdasarkan ekstensi
      */
     private function getFileType($file): string

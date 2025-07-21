@@ -9,15 +9,30 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Model Cart untuk mengelola keranjang belanja pelanggan
- * 
+ *
  * @property int $id
  * @property string $customer_id
  * @property string $product_id
  * @property int $quantity
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property-read Customer $customer
- * @property-read Product $product
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Customer $customer
+ * @property-read string $formatted_total_price
+ * @property-read string $formatted_unit_price
+ * @property-read bool $is_available
+ * @property-read string|null $product_image_url
+ * @property-read int $total_price
+ * @property-read \App\Models\Product $product
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cart newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cart newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cart query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cart whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cart whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cart whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cart whereProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cart whereQuantity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cart whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class Cart extends Model
 {

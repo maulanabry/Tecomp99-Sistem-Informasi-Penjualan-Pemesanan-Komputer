@@ -21,15 +21,15 @@
                 <div class="flex-1 overflow-y-auto">
                     @if(count($customers) > 0)
                         @foreach($customers as $customer)
-                            <div class="p-4 border-b border-gray-100 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors" 
-                                 wire:click="selectCustomer('{{ $customer['id'] }}', {{ $customer['chat_id'] ?? 'null' }})">
+                            <div class="p-4 border-b border-gray-100 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group">
                                 <div class="flex items-center">
                                     <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mr-3">
                                         <span class="text-primary-600 dark:text-primary-400 font-medium">
                                             {{ substr($customer['name'], 0, 1) }}
                                         </span>
                                     </div>
-                                    <div class="flex-1 min-w-0">
+                                    <div class="flex-1 min-w-0 cursor-pointer" 
+                                         wire:click="selectCustomer('{{ $customer['id'] }}', {{ $customer['chat_id'] ?? 'null' }})">
                                         <div class="flex items-center justify-between">
                                             <h4 class="font-semibold text-gray-900 dark:text-white truncate">{{ $customer['name'] }}</h4>
                                             @if($customer['unread_count'] > 0)
@@ -51,6 +51,19 @@
                                             <p class="text-xs text-primary-500">Customer baru - Klik untuk mulai chat</p>
                                         @endif
                                     </div>
+                                    @if($customer['chat_id'] && !isset($customer['is_new']))
+                                        <div class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button 
+                                                wire:click.stop="confirmDeleteChat({{ $customer['chat_id'] }})"
+                                                class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                                                title="Hapus Chat"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -72,26 +85,39 @@
             <div class="w-full flex flex-col">
                 <!-- Chat Header -->
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
-                    <div class="flex items-center">
-                        <button wire:click="backToCustomerList" 
-                                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 mr-3">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </button>
-                        <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mr-3">
-                            <span class="text-primary-600 dark:text-primary-400 font-medium">
-                                {{ $selectedCustomerId ? substr(collect($customers)->firstWhere('id', $selectedCustomerId)['name'] ?? 'C', 0, 1) : 'C' }}
-                            </span>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <button wire:click="backToCustomerList" 
+                                    class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 mr-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+                            <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-primary-600 dark:text-primary-400 font-medium">
+                                    {{ $selectedCustomerId ? substr(collect($customers)->firstWhere('id', $selectedCustomerId)['name'] ?? 'C', 0, 1) : 'C' }}
+                                </span>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900 dark:text-white">
+                                    {{ $selectedCustomerId ? collect($customers)->firstWhere('id', $selectedCustomerId)['name'] ?? 'Customer' : 'Customer' }}
+                                </h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $selectedCustomerId ? collect($customers)->firstWhere('id', $selectedCustomerId)['contact'] ?? '' : '' }}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900 dark:text-white">
-                                {{ $selectedCustomerId ? collect($customers)->firstWhere('id', $selectedCustomerId)['name'] ?? 'Customer' : 'Customer' }}
-                            </h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ $selectedCustomerId ? collect($customers)->firstWhere('id', $selectedCustomerId)['contact'] ?? '' : '' }}
-                            </p>
-                        </div>
+                        @if($currentChat)
+                            <button 
+                                wire:click="confirmDeleteChat({{ $currentChat->id }})"
+                                class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                                title="Hapus Chat"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        @endif
                     </div>
                 </div>
 
@@ -177,6 +203,13 @@ document.addEventListener('livewire:initialized', () => {
                 container.scrollTop = container.scrollHeight;
             }
         }, 100);
+    });
+
+    // Konfirmasi hapus chat
+    Livewire.on('confirm-delete-chat', (event) => {
+        if (confirm('Apakah Anda yakin ingin menghapus chat ini? Semua pesan akan dihapus secara permanen.')) {
+            @this.deleteChat(event.chatId);
+        }
     });
 });
 </script>
