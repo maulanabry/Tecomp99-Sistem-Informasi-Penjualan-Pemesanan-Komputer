@@ -31,6 +31,17 @@ enum NotificationType: string
     case TEKNISI_VISIT_OVERDUE = 'teknisi.visit.overdue';
     case TEKNISI_ASSIGNED_TICKET = 'teknisi.assigned.ticket';
 
+        // Customer Notifications
+    case CUSTOMER_ORDER_PRODUCT_CREATED = 'customer.order.product.created';
+    case CUSTOMER_ORDER_PRODUCT_STATUS_UPDATED = 'customer.order.product.status.updated';
+    case CUSTOMER_ORDER_PRODUCT_PAYMENT_UPDATED = 'customer.order.product.payment.updated';
+    case CUSTOMER_ORDER_SERVICE_CREATED = 'customer.order.service.created';
+    case CUSTOMER_ORDER_SERVICE_STATUS_UPDATED = 'customer.order.service.status.updated';
+    case CUSTOMER_ORDER_SERVICE_PAYMENT_UPDATED = 'customer.order.service.payment.updated';
+    case CUSTOMER_PAYMENT_CREATED = 'customer.payment.created';
+    case CUSTOMER_PAYMENT_CONFIRMED = 'customer.payment.confirmed';
+    case CUSTOMER_PAYMENT_FAILED = 'customer.payment.failed';
+
     /**
      * Get human-readable label for the notification type
      */
@@ -54,6 +65,15 @@ enum NotificationType: string
             self::TEKNISI_VISIT_TODAY => 'Kunjungan Hari Ini',
             self::TEKNISI_VISIT_OVERDUE => 'Kunjungan Terlambat',
             self::TEKNISI_ASSIGNED_TICKET => 'Tiket Ditugaskan',
+            self::CUSTOMER_ORDER_PRODUCT_CREATED => 'Pesanan Produk Dibuat',
+            self::CUSTOMER_ORDER_PRODUCT_STATUS_UPDATED => 'Status Pesanan Produk Diperbarui',
+            self::CUSTOMER_ORDER_PRODUCT_PAYMENT_UPDATED => 'Pembayaran Pesanan Produk Diperbarui',
+            self::CUSTOMER_ORDER_SERVICE_CREATED => 'Pesanan Servis Dibuat',
+            self::CUSTOMER_ORDER_SERVICE_STATUS_UPDATED => 'Status Pesanan Servis Diperbarui',
+            self::CUSTOMER_ORDER_SERVICE_PAYMENT_UPDATED => 'Pembayaran Pesanan Servis Diperbarui',
+            self::CUSTOMER_PAYMENT_CREATED => 'Pembayaran Dibuat',
+            self::CUSTOMER_PAYMENT_CONFIRMED => 'Pembayaran Dikonfirmasi',
+            self::CUSTOMER_PAYMENT_FAILED => 'Pembayaran Gagal',
         };
     }
 
@@ -83,6 +103,16 @@ enum NotificationType: string
             self::TEKNISI_VISIT_TODAY => 'fas fa-calendar-day',
             self::TEKNISI_VISIT_OVERDUE => 'fas fa-exclamation-triangle',
             self::TEKNISI_ASSIGNED_TICKET => 'fas fa-user-tag',
+
+            self::CUSTOMER_ORDER_PRODUCT_CREATED => 'fas fa-shopping-cart',
+            self::CUSTOMER_ORDER_PRODUCT_STATUS_UPDATED => 'fas fa-truck',
+            self::CUSTOMER_ORDER_PRODUCT_PAYMENT_UPDATED => 'fas fa-credit-card',
+            self::CUSTOMER_ORDER_SERVICE_CREATED => 'fas fa-tools',
+            self::CUSTOMER_ORDER_SERVICE_STATUS_UPDATED => 'fas fa-cogs',
+            self::CUSTOMER_ORDER_SERVICE_PAYMENT_UPDATED => 'fas fa-credit-card',
+            self::CUSTOMER_PAYMENT_CREATED => 'fas fa-receipt',
+            self::CUSTOMER_PAYMENT_CONFIRMED => 'fas fa-check-circle',
+            self::CUSTOMER_PAYMENT_FAILED => 'fas fa-times-circle',
         };
     }
 
@@ -113,6 +143,16 @@ enum NotificationType: string
             self::TEKNISI_VISIT_TODAY => 'bg-green-500',
             self::TEKNISI_VISIT_OVERDUE => 'bg-red-500',
             self::TEKNISI_ASSIGNED_TICKET => 'bg-purple-500',
+
+            self::CUSTOMER_ORDER_PRODUCT_CREATED => 'bg-blue-500',
+            self::CUSTOMER_ORDER_PRODUCT_STATUS_UPDATED => 'bg-yellow-500',
+            self::CUSTOMER_ORDER_PRODUCT_PAYMENT_UPDATED => 'bg-green-500',
+            self::CUSTOMER_ORDER_SERVICE_CREATED => 'bg-blue-500',
+            self::CUSTOMER_ORDER_SERVICE_STATUS_UPDATED => 'bg-yellow-500',
+            self::CUSTOMER_ORDER_SERVICE_PAYMENT_UPDATED => 'bg-green-500',
+            self::CUSTOMER_PAYMENT_CREATED => 'bg-blue-500',
+            self::CUSTOMER_PAYMENT_CONFIRMED => 'bg-green-500',
+            self::CUSTOMER_PAYMENT_FAILED => 'bg-red-500',
         };
     }
 }

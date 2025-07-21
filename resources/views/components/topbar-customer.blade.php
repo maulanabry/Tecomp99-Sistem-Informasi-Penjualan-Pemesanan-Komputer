@@ -26,6 +26,13 @@
                     <!-- Cart - Livewire Component -->
                     @livewire('customer.cart-topbar')
                     
+                    <!-- Notifications - Only show for authenticated customers -->
+                    @auth('customer')
+                        <div class="flex items-center">
+                            @livewire('customer.notification-dropdown')
+                        </div>
+                    @endauth
+                    
                     <!-- Login/User -->
                     <div class="flex items-center">
                         @auth('customer')
@@ -77,12 +84,11 @@
                                             </a>
                                         </div>
                                         
-                                        <!-- Notifikasi (Future) -->
+                                        <!-- Notifikasi -->
                                         <div class="px-2 py-1 border-t border-gray-100">
-                                            <a href="#" class="flex items-center px-3 py-2 text-gray-400 cursor-not-allowed text-sm rounded-md">
-                                                <i class="fas fa-bell mr-3 text-gray-400 w-4"></i>
+                                            <a href="{{ route('customer.notifications.index') }}" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors text-sm rounded-md">
+                                                <i class="fas fa-bell mr-3 text-primary-500 w-4"></i>
                                                 <span>Notifikasi</span>
-                                                <span class="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full">Segera</span>
                                             </a>
                                         </div>
                                         

@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Observers;
+
+use App\Models\OrderProduct;
+use App\Models\Customer;
+use App\Enums\NotificationType;
+use App\Services\NotificationService;
+
+class OrderProductObserver
+{
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
+    /**
+     * Handle the OrderProduct "created" event.
+     */
+    public function created(OrderProduct $orderProduct): void
+    {
+        $customer = $orderProduct->customer;
+        if (!$customer) return;
+
+        $this->notificationService->create(
+            notifiable: $customer,
+            type: NotificationType::CUSTOMER_ORDER_PRODUCT_CREATED,
+            subject: $orderProduct,
+            message: "Pesanan produk #{$orderProduct->order_product_id} berhasil dibuat",
+            data: [
+                'order_id' => $orderProduct->order_product_id,
+                'total' => $orderProduct->grand_total,
+                'type' => 'produk',
+                'action_url' => route('customer.orders.product-detail', $orderProduct->order_product_id)
+            ]
+        );
+    }
+
+    /**
+     * Handle the OrderProduct "updated" event.
+     */
+    public function updated(OrderProduct $orderProduct): void
+    {
+        $customer = $orderProduct->customer;
+        if (!$customer) return;
+
+        // Check if status_order changed
+        if ($orderProduct->isDirty('status_order')) {
+            $this->notificationService->create(
+                notifiable: $customer,
+                type: NotificationType::CUSTOMER_ORDER_PRODUCT_STATUS_UPDATED,
+                subject: $orderProduct,
+                message: "Status pesanan produk #{$orderProduct->order_product_id} diperbarui menjadi: {$orderProduct->status_order}",
+                data: [
+                    'order_id' => $orderProduct->order_product_id,
+                    'status' => $orderProduct->status_order,
+                    'type' => 'produk',
+                    'action_url' => route('customer.orders.product-detail', $orderProduct->order_product_id)
+                ]
+            );
+        }
+
+        // Check if status_payment changed
+        if ($orderProduct->isDirty('status_payment')) {
+            $this->notificationService->create(
+                notifiable: $customer,
+                type: NotificationType::CUSTOMER_ORDER_PRODUCT_PAYMENT_UPDATED,
+                subject: $orderProduct,
+                message: "Status pembayaran pesanan produk #{$orderProduct->order_product_id} diperbarui menjadi: {$orderProduct->status_payment}",
+                data: [
+                    'order_id' => $orderProduct->order_product_id,
+                    'payment_status' => $orderProduct->status_payment,
+                    'total' => $orderProduct->grand_total,
+                    'paid_amount' => $orderProduct->paid_amount,
+                    'remaining_balance' => $orderProduct->remaining_balance,
+                    'type' => 'produk',
+                    'action_url' => route('customer.orders.product-detail', $orderProduct->order_product_id)
+                ]
+            );
+        }
+    }
+}

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Chat;
 use App\Models\ChatMessage;
+use App\Models\SystemNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @property string $customer_id
@@ -33,7 +35,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read \Illuminate\Database\Eloquent\Collection<OrderService> $orderServices
  * @property-read \Illuminate\Database\Eloquent\Collection<Chat> $chats
  * @property-read \Illuminate\Database\Eloquent\Collection<ChatMessage> $chatMessages
+ * @property-read \Illuminate\Database\Eloquent\Collection<SystemNotification> $notifications
  * @property-read int $unread_messages_count
+ * @property-read int $unread_notifications_count
  */
 class Customer extends Authenticatable implements MustVerifyEmail
 {
@@ -94,6 +98,22 @@ class Customer extends Authenticatable implements MustVerifyEmail
     public function cartItems(): HasMany
     {
         return $this->hasMany(Cart::class, 'customer_id', 'customer_id');
+    }
+
+    /**
+     * Get all notifications for the customer
+     */
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(SystemNotification::class, 'notifiable');
+    }
+
+    /**
+     * Get unread notifications count
+     */
+    public function getUnreadNotificationsCountAttribute(): int
+    {
+        return $this->notifications()->whereNull('read_at')->count();
     }
 
     /**

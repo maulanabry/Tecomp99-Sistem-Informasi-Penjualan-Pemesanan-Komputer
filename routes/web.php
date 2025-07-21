@@ -167,6 +167,14 @@ Route::middleware('auth:customer')->group(function () {
         Route::post('/mark-read', [\App\Http\Controllers\Customer\ChatController::class, 'markAsRead'])->name('mark-read');
         Route::get('/unread-count', [\App\Http\Controllers\Customer\ChatController::class, 'getUnreadCount'])->name('unread-count');
     });
+
+    // Customer Notification Routes
+    Route::prefix('notifications')->name('customer.notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Customer\NotificationController::class, 'index'])->name('index');
+        Route::post('/mark-as-read/{notification}', [\App\Http\Controllers\Customer\NotificationController::class, 'markAsRead'])->name('mark-as-read');
+        Route::post('/mark-all-as-read', [\App\Http\Controllers\Customer\NotificationController::class, 'markAllAsRead'])->name('mark-all-as-read');
+        Route::delete('/{notification}', [\App\Http\Controllers\Customer\NotificationController::class, 'destroy'])->name('destroy');
+    });
 });
 
 // ==========================
