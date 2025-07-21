@@ -34,6 +34,11 @@
     <!-- Footer Component -->
     <x-footer-customer />
 
+    <!-- Floating Chat Component -->
+    @auth('customer')
+        @livewire('customer.floating-chat')
+    @endauth
+
     @livewireScripts
     
     <!-- Flowbite JS -->

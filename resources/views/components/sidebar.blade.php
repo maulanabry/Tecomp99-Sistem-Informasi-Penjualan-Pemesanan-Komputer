@@ -145,6 +145,23 @@
                 </a>
             </li>
 
+            <!-- Chat -->
+            <li class="mt-4">
+                <a href="{{ route('admin.chat.index') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/chat*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">
+                    <i class="fas fa-comments w-5 h-5 mr-3"></i>
+                    <span>Chat Customer</span>
+                    @php
+                        $admin = Auth::guard('admin')->user();
+                        $unreadCount = $admin ? $admin->unread_messages_count : 0;
+                    @endphp
+                    @if($unreadCount > 0)
+                        <span class="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                            {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                        </span>
+                    @endif
+                </a>
+            </li>
+
             <!-- Notifications -->
             <li class="mt-4">
                 <a href="{{ route('admin.notifications.index') }}" wire:navigate class="flex items-center px-2 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('admin/notifications*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}">

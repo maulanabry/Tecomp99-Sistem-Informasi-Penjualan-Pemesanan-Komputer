@@ -156,6 +156,17 @@ Route::middleware('auth:customer')->group(function () {
         Route::get('/servis/{order}/invoice', [\App\Http\Controllers\Customer\OrderController::class, 'showServiceInvoice'])->name('services.invoice');
         Route::post('/servis/{order}/batal', [\App\Http\Controllers\Customer\OrderController::class, 'cancelService'])->name('services.cancel');
     });
+
+    // Customer Chat Routes
+    Route::prefix('chat')->name('customer.chat.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Customer\ChatController::class, 'index'])->name('index');
+        Route::get('/admins', [\App\Http\Controllers\Customer\ChatController::class, 'getAvailableAdmins'])->name('admins');
+        Route::post('/start', [\App\Http\Controllers\Customer\ChatController::class, 'startChatWithAdmin'])->name('start');
+        Route::post('/send', [\App\Http\Controllers\Customer\ChatController::class, 'sendMessage'])->name('send');
+        Route::get('/history', [\App\Http\Controllers\Customer\ChatController::class, 'getChatHistory'])->name('history');
+        Route::post('/mark-read', [\App\Http\Controllers\Customer\ChatController::class, 'markAsRead'])->name('mark-read');
+        Route::get('/unread-count', [\App\Http\Controllers\Customer\ChatController::class, 'getUnreadCount'])->name('unread-count');
+    });
 });
 
 // ==========================
@@ -341,6 +352,18 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
     // Notifications
     Route::prefix('admin/notifications')->middleware(['auth:admin'])->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('admin.notifications.index');
+    });
+
+    // Admin Chat Routes
+    Route::prefix('admin/chat')->middleware(['auth:admin'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ChatController::class, 'index'])->name('admin.chat.index');
+        Route::get('/customers', [\App\Http\Controllers\Admin\ChatController::class, 'getCustomerChats'])->name('admin.chat.customers');
+        Route::post('/start', [\App\Http\Controllers\Admin\ChatController::class, 'startChatWithCustomer'])->name('admin.chat.start');
+        Route::post('/send', [\App\Http\Controllers\Admin\ChatController::class, 'sendMessage'])->name('admin.chat.send');
+        Route::get('/history', [\App\Http\Controllers\Admin\ChatController::class, 'getChatHistory'])->name('admin.chat.history');
+        Route::post('/mark-read', [\App\Http\Controllers\Admin\ChatController::class, 'markAsRead'])->name('admin.chat.mark-read');
+        Route::get('/unread-count', [\App\Http\Controllers\Admin\ChatController::class, 'getUnreadCount'])->name('admin.chat.unread-count');
+        Route::get('/search-customers', [\App\Http\Controllers\Admin\ChatController::class, 'searchCustomers'])->name('admin.chat.search-customers');
     });
 
     // Transaksi

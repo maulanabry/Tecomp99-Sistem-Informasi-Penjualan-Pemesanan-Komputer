@@ -95,6 +95,38 @@
                 <hr class="border-gray-200">
             </li>
 
+            <!-- Communication Section -->
+            <li>
+                <div class="px-4 py-2">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Komunikasi</h4>
+                </div>
+            </li>
+
+            <!-- Chat -->
+            <li>
+                <button 
+                    onclick="Livewire.dispatch('openChat')"
+                    class="flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ $active === 'chat' ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500' : 'text-gray-700 hover:bg-gray-50 hover:text-primary-600' }}"
+                >
+                    <i class="fas fa-comments mr-3 {{ $active === 'chat' ? 'text-primary-600' : 'text-gray-400' }}"></i>
+                    Chat dengan Admin
+                    @php
+                        $customer = Auth::guard('customer')->user();
+                        $unreadCount = $customer ? $customer->unread_messages_count : 0;
+                    @endphp
+                    @if($unreadCount > 0)
+                        <span class="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                            {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                        </span>
+                    @endif
+                </button>
+            </li>
+
+            <!-- Divider -->
+            <li class="py-2">
+                <hr class="border-gray-200">
+            </li>
+
             <!-- Future Features (Disabled) -->
             <li>
                 <div class="px-4 py-2">

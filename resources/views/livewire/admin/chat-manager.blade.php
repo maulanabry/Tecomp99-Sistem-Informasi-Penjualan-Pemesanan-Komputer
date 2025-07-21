@@ -1,0 +1,182 @@
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 h-[calc(100vh-200px)]"
+     wire:poll.3s="refreshChat">
+    <div class="flex h-full">
+        @if($showCustomerList)
+            <!-- Customer List -->
+            <div class="w-full flex flex-col">
+                <!-- Search Header -->
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            wire:model.live="searchQuery"
+                            placeholder="Cari customer..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                        >
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Customer List -->
+                <div class="flex-1 overflow-y-auto">
+                    @if(count($customers) > 0)
+                        @foreach($customers as $customer)
+                            <div class="p-4 border-b border-gray-100 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors" 
+                                 wire:click="selectCustomer('{{ $customer['id'] }}', {{ $customer['chat_id'] ?? 'null' }})">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-primary-600 dark:text-primary-400 font-medium">
+                                            {{ substr($customer['name'], 0, 1) }}
+                                        </span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="font-semibold text-gray-900 dark:text-white truncate">{{ $customer['name'] }}</h4>
+                                            @if($customer['unread_count'] > 0)
+                                                <span class="bg-danger-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                                                    {{ $customer['unread_count'] > 99 ? '99+' : $customer['unread_count'] }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate">{{ $customer['contact'] }}</p>
+                                        @if($customer['last_message'])
+                                            <p class="text-xs text-gray-400 dark:text-gray-500 truncate mt-1">
+                                                @if($customer['last_message']['sender_type'] === 'admin')
+                                                    Anda: 
+                                                @endif
+                                                {{ $customer['last_message']['message'] }}
+                                            </p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500">{{ $customer['last_message_at'] }}</p>
+                                        @elseif(isset($customer['is_new']))
+                                            <p class="text-xs text-primary-500">Customer baru - Klik untuk mulai chat</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="p-4 text-center text-gray-500 dark:text-gray-400">
+                            @if($searchQuery)
+                                <i class="fas fa-search text-4xl mb-4"></i>
+                                <p>Tidak ada customer yang ditemukan</p>
+                            @else
+                                <i class="fas fa-inbox text-4xl mb-4"></i>
+                                <p>Belum ada percakapan</p>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @else
+            <!-- Chat Interface -->
+            <div class="w-full flex flex-col">
+                <!-- Chat Header -->
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                    <div class="flex items-center">
+                        <button wire:click="backToCustomerList" 
+                                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 mr-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-primary-600 dark:text-primary-400 font-medium">
+                                {{ $selectedCustomerId ? substr(collect($customers)->firstWhere('id', $selectedCustomerId)['name'] ?? 'C', 0, 1) : 'C' }}
+                            </span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white">
+                                {{ $selectedCustomerId ? collect($customers)->firstWhere('id', $selectedCustomerId)['name'] ?? 'Customer' : 'Customer' }}
+                            </h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                {{ $selectedCustomerId ? collect($customers)->firstWhere('id', $selectedCustomerId)['contact'] ?? '' : '' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div class="flex-1 p-4 overflow-y-auto bg-gray-50 dark:bg-gray-900 space-y-4" 
+                     x-data="{ scrollToBottom() { this.$el.scrollTop = this.$el.scrollHeight; } }"
+                     x-init="scrollToBottom()"
+                     x-ref="messagesContainer">
+                    @if(count($messages) > 0)
+                        @php $currentDate = null; @endphp
+                        @foreach($messages as $message)
+                            @if($currentDate !== $message['formatted_date'])
+                                @php $currentDate = $message['formatted_date']; @endphp
+                                <div class="flex justify-center my-4">
+                                    <span class="bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs px-3 py-1 rounded-full">
+                                        {{ $message['formatted_date'] }}
+                                    </span>
+                                </div>
+                            @endif
+
+                            <div class="flex {{ $message['is_from_admin'] ? 'justify-end' : 'justify-start' }}">
+                                <div class="max-w-xs lg:max-w-md">
+                                    @if(!$message['is_from_admin'])
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1 px-3">{{ $message['sender_name'] }}</p>
+                                    @endif
+                                    <div class="p-3 rounded-lg {{ $message['is_from_admin'] 
+                                        ? 'bg-primary-500 text-white rounded-br-none' 
+                                        : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-bl-none' }}">
+                                        <p class="text-sm">{{ $message['message'] }}</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 px-3 {{ $message['is_from_admin'] ? 'text-right' : '' }}">
+                                        {{ $message['formatted_time'] }}
+                                    </p>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                            <div class="text-center">
+                                <i class="fas fa-comments text-4xl mb-4"></i>
+                                <p>Belum ada pesan. Mulai percakapan!</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Message Input -->
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <form wire:submit.prevent="sendMessage" class="flex items-center space-x-2">
+                        <div class="flex-1">
+                            <input 
+                                type="text" 
+                                wire:model="newMessage"
+                                placeholder="Ketik pesan Anda..."
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                maxlength="1000"
+                                @keydown.enter.prevent="$wire.sendMessage()"
+                            >
+                        </div>
+                        <button 
+                            type="submit"
+                            class="bg-primary-500 hover:bg-primary-600 text-white p-2 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            :disabled="!$wire.newMessage.trim()"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        @endif
+    </div>
+</div>
+
+<script>
+document.addEventListener('livewire:initialized', () => {
+    // Auto scroll ke bawah setelah pesan baru
+    Livewire.on('scrollToBottom', () => {
+        setTimeout(() => {
+            const container = document.querySelector('[x-ref="messagesContainer"]');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }, 100);
+    });
+});
+</script>

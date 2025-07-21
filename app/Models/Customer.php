@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Chat;
+use App\Models\ChatMessage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -29,6 +31,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read CustomerAddress|null $defaultAddress
  * @property-read \Illuminate\Database\Eloquent\Collection<OrderProduct> $orderProducts
  * @property-read \Illuminate\Database\Eloquent\Collection<OrderService> $orderServices
+ * @property-read \Illuminate\Database\Eloquent\Collection<Chat> $chats
+ * @property-read \Illuminate\Database\Eloquent\Collection<ChatMessage> $chatMessages
+ * @property-read int $unread_messages_count
  */
 class Customer extends Authenticatable implements MustVerifyEmail
 {
@@ -89,6 +94,74 @@ class Customer extends Authenticatable implements MustVerifyEmail
     public function cartItems(): HasMany
     {
         return $this->hasMany(Cart::class, 'customer_id', 'customer_id');
+    }
+
+    /**
+     * Relasi ke Chat
+     */
+    public function chats(): HasMany
+    {
+        return $this->hasMany(Chat::class, 'customer_id', 'customer_id');
+    }
+
+    /**
+     * Relasi ke ChatMessage sebagai pengirim
+     */
+    public function chatMessages(): HasMany
+    {
+        return $this->hasMany(ChatMessage::class, 'sender_id', 'customer_id')
+            ->where('sender_type', 'customer');
+    }
+
+    /**
+     * Mendapatkan chat aktif dengan admin tertentu
+     */
+    public function getChatWithAdmin($adminId)
+    {
+        return $this->chats()
+            ->where('admin_id', $adminId)
+            ->where('is_active', true)
+            ->first();
+    }
+
+    /**
+     * Mendapatkan semua chat aktif customer
+     */
+    public function getActiveChats()
+    {
+        return $this->chats()
+            ->where('is_active', true)
+            ->with(['admin', 'lastMessage'])
+            ->orderBy('last_message_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Mendapatkan jumlah pesan yang belum dibaca
+     */
+    public function getUnreadMessagesCountAttribute(): int
+    {
+        return ChatMessage::whereHas('chat', function ($query) {
+            $query->where('customer_id', $this->customer_id);
+        })
+            ->where('sender_type', 'admin')
+            ->where('is_read_by_customer', false)
+            ->count();
+    }
+
+    /**
+     * Mendapatkan chat dengan pesan yang belum dibaca
+     */
+    public function getChatsWithUnreadMessages()
+    {
+        return $this->chats()
+            ->whereHas('messages', function ($query) {
+                $query->where('sender_type', 'admin')
+                    ->where('is_read_by_customer', false);
+            })
+            ->with(['admin', 'lastMessage'])
+            ->orderBy('last_message_at', 'desc')
+            ->get();
     }
 
     public static function generateCustomerId(): string
