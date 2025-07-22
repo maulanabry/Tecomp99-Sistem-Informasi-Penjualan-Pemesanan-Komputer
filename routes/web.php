@@ -256,16 +256,27 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
     Route::prefix('admin/customer')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
         Route::get('/recovery', [\App\Http\Controllers\Admin\CustomerController::class, 'recovery'])->name('customers.recovery');
-        Route::get('/create', [\App\Http\Controllers\Admin\CustomerController::class, 'createStep1'])->name('customers.create.step1');
+
+        // New unified create route
+        Route::get('/create', [\App\Http\Controllers\Admin\CustomerController::class, 'create'])->name('customers.create');
+        Route::post('/', [\App\Http\Controllers\Admin\CustomerController::class, 'store'])->name('customers.store');
+
+        // Legacy step-based routes for backward compatibility
+        Route::get('/create-step1', [\App\Http\Controllers\Admin\CustomerController::class, 'createStep1'])->name('customers.create.step1');
         Route::post('/store-step1', [\App\Http\Controllers\Admin\CustomerController::class, 'storeStep1'])->name('customers.store.step1');
         Route::get('/{customer}/create-step2', [\App\Http\Controllers\Admin\CustomerController::class, 'createStep2'])->name('customers.create.step2');
         Route::post('/{customer}/store-step2', [\App\Http\Controllers\Admin\CustomerController::class, 'storeStep2'])->name('customers.store.step2');
+
         Route::get('/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->name('customers.show');
         Route::get('/{customer}/edit', [\App\Http\Controllers\Admin\CustomerController::class, 'edit'])->name('customers.edit');
         Route::put('/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'update'])->name('customers.update');
         Route::delete('/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'destroy'])->name('customers.destroy');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\CustomerController::class, 'restore'])->name('customers.restore');
         Route::delete('/{id}/force', [\App\Http\Controllers\Admin\CustomerController::class, 'forceDelete'])->name('customers.force-delete');
+
+        // Address management routes
+        Route::put('/{customer}/address/{addressId}', [\App\Http\Controllers\Admin\CustomerController::class, 'updateAddress'])->name('customers.address.update');
+        Route::put('/{customer}/address/{addressId}/set-default', [\App\Http\Controllers\Admin\CustomerController::class, 'setDefaultAddress'])->name('customers.address.set-default');
     });
 
     // Order Products

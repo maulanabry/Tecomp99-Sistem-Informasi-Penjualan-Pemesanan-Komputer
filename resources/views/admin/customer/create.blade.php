@@ -1,198 +1,307 @@
 <x-layout-admin>
     <div class="py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Tambah Pelanggan Baru</h1>
-        </div>
+        @if (session('success'))
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
+                <x-alert type="success" :message="session('success')" />
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
+                <x-alert type="danger" :message="session('error')" />
+            </div>
+        @endif
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="py-4">
-                <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-                    <form action="{{ route('customers.store') }}" method="POST" class="space-y-8 p-6">
+            <!-- Breadcrumbs -->
+            <div class="mb-2">
+                <x-breadcrumbs />
+            </div>
+            
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Tambah Pelanggan</h1>
+                <div class="flex space-x-3">
+                    <a href="{{ route('customers.index') }}" 
+                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+                </div>
+            </div>
+
+            <!-- Form Section -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <form action="{{ route('customers.store') }}" method="POST" class="space-y-6">
                         @csrf
-
-                        @if ($errors->any())
-                            <div class="rounded-md bg-red-50 dark:bg-red-900 p-4 mb-4">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
-                                            Terdapat {{ $errors->count() }} kesalahan pada formulir:
-                                        </h3>
-                                        <div class="mt-2 text-sm text-red-700 dark:text-red-300">
-                                            <ul class="list-disc pl-5 space-y-1">
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Informasi Customer Section -->
-                        <div class="space-y-6">
-                            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Informasi Customer</h3>
-                            </div>
-                            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
-                                <!-- Nama -->
+                        
+                        <!-- Basic Information Section -->
+                        <div class="border-b border-gray-200 dark:border-gray-600 pb-6">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                <i class="fas fa-user mr-2 text-primary-500"></i>
+                                Informasi Dasar
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Nama Lengkap -->
                                 <div>
-                                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Nama <span class="text-red-500">*</span>
+                                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Nama Lengkap <span class="text-red-500">*</span>
                                     </label>
-                                    <div class="mt-1">
-                                        <input type="text" name="name" id="name" value="{{ old('name') }}" required
-                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
-                                    </div>
-                                </div>
-
-                                <!-- No HP -->
-                                <div>
-                                    <label for="contact" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        No HP <span class="text-red-500">*</span>
-                                    </label>
-                                    <div class="mt-1">
-                                        <input type="text" name="contact" id="contact" value="{{ old('contact') }}" required
-                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
-                                    </div>
-                                </div>
-
-                                <!-- Email -->
-                                <div>
-                                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Email
-                                    </label>
-                                    <div class="mt-1">
-                                        <input type="email" name="email" id="email" value="{{ old('email') }}"
-                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
-                                    </div>
+                                    <input type="text" name="name" id="name" 
+                                        value="{{ old('name') }}"
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('name') border-red-500 @enderror"
+                                        placeholder="Masukkan nama lengkap"
+                                        required>
+                                    @error('name')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
 
                                 <!-- Jenis Kelamin -->
                                 <div>
-                                    <label for="gender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                         Jenis Kelamin
                                     </label>
-                                    <div class="mt-1">
-                                        <select name="gender" id="gender"
-                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
-                                            <option value="">Pilih Jenis Kelamin</option>
-                                            <option value="pria" {{ old('gender') === 'pria' ? 'selected' : '' }}>Pria</option>
-                                            <option value="wanita" {{ old('gender') === 'wanita' ? 'selected' : '' }}>Wanita</option>
-                                        </select>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="relative">
+                                            <input id="gender_pria" name="gender" type="radio" value="pria" 
+                                                {{ old('gender') === 'pria' ? 'checked' : '' }}
+                                                class="sr-only">
+                                            <label for="gender_pria" 
+                                                class="flex items-center p-3 border-2 rounded-lg cursor-pointer transition-colors border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0">
+                                                        <i class="fas fa-mars text-xl text-blue-500"></i>
+                                                    </div>
+                                                    <div class="ml-3">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Pria</div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="relative">
+                                            <input id="gender_wanita" name="gender" type="radio" value="wanita" 
+                                                {{ old('gender') === 'wanita' ? 'checked' : '' }}
+                                                class="sr-only">
+                                            <label for="gender_wanita" 
+                                                class="flex items-center p-3 border-2 rounded-lg cursor-pointer transition-colors border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0">
+                                                        <i class="fas fa-venus text-xl text-pink-500"></i>
+                                                    </div>
+                                                    <div class="ml-3">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Wanita</div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
                                     </div>
+                                    @error('gender')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Informasi Alamat Section -->
-                        <div class="space-y-6 pt-6">
-                            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Informasi Alamat</h3>
+                        <!-- Contact Information Section -->
+                        <div class="border-b border-gray-200 dark:border-gray-600 pb-6">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                <i class="fas fa-phone mr-2 text-primary-500"></i>
+                                Informasi Kontak
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Nomor Kontak -->
+                                <div>
+                                    <label for="contact" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Nomor Kontak <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fab fa-whatsapp text-green-500"></i>
+                                        </div>
+                                        <input type="text" name="contact" id="contact" 
+                                            value="{{ old('contact') }}"
+                                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('contact') border-red-500 @enderror"
+                                            placeholder="08xxxxxxxxxx"
+                                            required>
+                                    </div>
+                                    @error('contact')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Format: 08xxxxxxxxxx</p>
+                                </div>
+
+                                <!-- Email -->
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Email
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-envelope text-gray-400"></i>
+                                        </div>
+                                        <input type="email" name="email" id="email" 
+                                            value="{{ old('email') }}"
+                                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('email') border-red-500 @enderror"
+                                            placeholder="contoh@email.com">
+                                    </div>
+                                    @error('email')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Opsional - untuk akun login</p>
+                                </div>
                             </div>
-                            <div x-data="addressForm" class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
-                                <!-- Header Image -->
-                                <div class="sm:col-span-2 mb-6">
-                                    <img src="https://images.pexels.com/photos/4386442/pexels-photo-4386442.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-                                         alt="Location Selection" 
-                                         class="w-full h-48 object-cover rounded-lg shadow-md">
-                                </div>
+                        </div>
 
-                                <!-- Provinsi -->
-                                <div>
-                                    <label for="province_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Provinsi <span class="text-red-500">*</span>
+                        <!-- Account Settings Section -->
+                        <div class="border-b border-gray-200 dark:border-gray-600 pb-6" x-data="{ hasAccount: {{ old('hasAccount') ? 'true' : 'false' }} }">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                <i class="fas fa-user-cog mr-2 text-primary-500"></i>
+                                Pengaturan Akun
+                            </h3>
+
+                            <!-- Has Account Toggle -->
+                            <div class="mb-6">
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="hasAccount" id="hasAccount" value="1"
+                                        x-model="hasAccount" {{ old('hasAccount') ? 'checked' : '' }}
+                                        class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded">
+                                    <label for="hasAccount" class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
+                                        Buat akun login untuk pelanggan
                                     </label>
-                                    <div class="mt-1 relative">
-                                        <select name="province_id" id="province_id" x-model="province_id" @change="fetchCities()"
-                                            :class="{'border-red-300': error}"
-                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
-                                            <option value="">Pilih Provinsi</option>
-                                            <template x-for="province in provinces" :key="province.id">
-                                                <option :value="province.id" x-text="province.name"></option>
-                                            </template>
-                                        </select>
-                                        <!-- Loading indicator -->
-                                        <div x-show="loading" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                                            </svg>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Jika dicentang, pelanggan dapat login ke sistem
+                                </p>
+                            </div>
+
+                            <!-- Password Field (shown when hasAccount is true) -->
+                            <div x-show="hasAccount" x-transition class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Password <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-lock text-gray-400"></i>
                                         </div>
+                                        <input type="password" name="password" id="password" 
+                                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('password') border-red-500 @enderror"
+                                            placeholder="Minimal 6 karakter">
                                     </div>
-                                    <!-- Error message -->
-                                    <template x-if="error">
-                                        <p class="mt-2 text-sm text-red-600" x-text="error"></p>
-                                    </template>
+                                    @error('password')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Minimal 6 karakter</p>
                                 </div>
+                            </div>
+                        </div>
 
-                                <!-- Kota/Kabupaten -->
-                                <div>
-                                    <label for="city_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Kota/Kabupaten <span class="text-red-500">*</span>
+                        <!-- Address Section (Optional) -->
+                        <div x-data="{ showAddress: false }">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                <i class="fas fa-map-marker-alt mr-2 text-primary-500"></i>
+                                Alamat (Opsional)
+                            </h3>
+
+                            <div class="mb-4">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="add_address" x-model="showAddress"
+                                        class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded">
+                                    <label for="add_address" class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
+                                        Tambahkan alamat sekarang
                                     </label>
-                                    <div class="mt-1 relative">
-                                        <select name="city_id" id="city_id" x-model="city_id" @change="updateCityName()"
-                                            :class="{'border-red-300': error}"
-                                            :disabled="!province_id || loading"
-                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed">
-                                            <option value="">Pilih Kota/Kabupaten</option>
-                                            <template x-for="city in cities" :key="city.id">
-                                                <option :value="city.id" x-text="city.name"></option>
-                                            </template>
-                                        </select>
-                                        <!-- Loading indicator -->
-                                        <div x-show="loading" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
                                 </div>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Alamat dapat ditambahkan nanti dari halaman edit pelanggan
+                                </p>
+                            </div>
 
-                                <!-- Alamat Lengkap -->
-                                <div class="sm:col-span-2">
-                                    <label for="detail_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Alamat Lengkap
-                                    </label>
-                                    <div class="mt-1">
-                                        <textarea name="detail_address" id="detail_address" rows="3"
-                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">{{ old('detail_address') }}</textarea>
-                                    </div>
-                                </div>
-
-                                <!-- Kode Pos -->
+                            <div x-show="showAddress" x-transition class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Province -->
                                 <div>
-                                    <label for="postal_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label for="province_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Provinsi
+                                    </label>
+                                    <select name="province_id" id="province_id" 
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                        <option value="">Pilih Provinsi</option>
+                                    </select>
+                                    <input type="hidden" name="province_name" id="province_name">
+                                </div>
+
+                                <!-- City -->
+                                <div>
+                                    <label for="city_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Kota/Kabupaten
+                                    </label>
+                                    <select name="city_id" id="city_id" disabled
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                        <option value="">Pilih Kota/Kabupaten</option>
+                                    </select>
+                                    <input type="hidden" name="city_name" id="city_name">
+                                </div>
+
+                                <!-- District -->
+                                <div>
+                                    <label for="district_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Kecamatan
+                                    </label>
+                                    <select name="district_id" id="district_id" disabled
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                        <option value="">Pilih Kecamatan</option>
+                                    </select>
+                                    <input type="hidden" name="district_name" id="district_name">
+                                </div>
+
+                                <!-- Subdistrict -->
+                                <div>
+                                    <label for="subdistrict_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Kelurahan/Desa
+                                    </label>
+                                    <select name="subdistrict_id" id="subdistrict_id" disabled
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                        <option value="">Pilih Kelurahan/Desa</option>
+                                    </select>
+                                    <input type="hidden" name="subdistrict_name" id="subdistrict_name">
+                                </div>
+
+                                <!-- Postal Code -->
+                                <div>
+                                    <label for="postal_code" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                         Kode Pos
                                     </label>
-                                    <div class="mt-1">
-                                        <input type="text" name="postal_code" id="postal_code" value="{{ old('postal_code') }}"
-                                            class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">
-                                    </div>
+                                    <input type="text" name="postal_code" id="postal_code" 
+                                        value="{{ old('postal_code') }}"
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                        placeholder="12345">
+                                </div>
+
+                                <!-- Detail Address -->
+                                <div class="md:col-span-2">
+                                    <label for="detail_address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Alamat Lengkap
+                                    </label>
+                                    <textarea name="detail_address" id="detail_address" rows="3"
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                        placeholder="Jalan, nomor rumah, RT/RW, dll.">{{ old('detail_address') }}</textarea>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Hidden Fields -->
-                        <input type="hidden" name="province_name" id="province_name" value="{{ old('province_name') }}">
-                        <input type="hidden" name="city_name" id="city_name" value="{{ old('city_name') }}">
-
-                        <!-- Form Buttons -->
-                        <div class="flex justify-end space-x-3 pt-6">
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
                             <a href="{{ route('customers.index') }}"
-                                class="inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <i class="fas fa-times mr-2"></i>
                                 Batal
                             </a>
                             <button type="submit"
-                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                                Simpan
+                                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <i class="fas fa-save mr-2"></i>
+                                Simpan Pelanggan
                             </button>
                         </div>
                     </form>
@@ -201,75 +310,232 @@
         </div>
     </div>
 
-    @push('scripts')
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('addressForm', () => ({
-                provinces: [],
-                cities: [],
-                province_id: '',
-                city_id: '',
-                loading: false,
-                error: null,
-
-                async init() {
-                    this.loading = true;
-                    this.error = null;
-                    try {
-                        const response = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
-                        if (!response.ok) {
-                            throw new Error('Gagal mengambil data provinsi dari server');
-                        }
-                        const data = await response.json();
-                        // Sort provinces alphabetically
-                        this.provinces = data.sort((a, b) => a.name.localeCompare(b.name));
-                    } catch (e) {
-                        this.error = 'Gagal memuat data provinsi: ' + (e.message || 'Terjadi kesalahan pada server');
-                        console.error('Error:', e);
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                async fetchCities() {
-                    if (!this.province_id) {
-                        this.cities = [];
-                        return;
-                    }
-                    this.loading = true;
-                    this.error = null;
-                    this.city_id = '';
-                    try {
-                        const response = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${this.province_id}.json`);
-                        if (!response.ok) {
-                            throw new Error('Gagal mengambil data kota dari server');
-                        }
-                        const data = await response.json();
-                        // Sort cities alphabetically
-                        this.cities = data.sort((a, b) => a.name.localeCompare(b.name));
-                        
-                        // Update hidden province name field
-                        const selectedProvince = this.provinces.find(p => p.id === this.province_id);
-                        if (selectedProvince) {
-                            document.getElementById('province_name').value = selectedProvince.name;
-                        }
-                    } catch (e) {
-                        this.error = 'Gagal memuat data kota: ' + (e.message || 'Terjadi kesalahan pada server');
-                        console.error('Error:', e);
-                        this.cities = [];
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                updateCityName() {
-                    const selectedCity = this.cities.find(c => c.id === this.city_id);
-                    if (selectedCity) {
-                        document.getElementById('city_name').value = selectedCity.name;
-                    }
+        // Gender radio button styling
+        document.querySelectorAll('input[name="gender"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Remove active styling from all labels
+                document.querySelectorAll('label[for^="gender_"]').forEach(label => {
+                    label.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
+                    label.classList.add('border-gray-300', 'dark:border-gray-600');
+                });
+                
+                // Add active styling to selected label
+                if (this.checked) {
+                    const label = document.querySelector(`label[for="${this.id}"]`);
+                    label.classList.remove('border-gray-300', 'dark:border-gray-600');
+                    label.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
                 }
-            }));
+            });
+        });
+
+        // Initialize gender styling on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkedGender = document.querySelector('input[name="gender"]:checked');
+            if (checkedGender) {
+                checkedGender.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Indonesian Regions API Integration
+        document.addEventListener('DOMContentLoaded', function() {
+            const provinceSelect = document.getElementById('province_id');
+            const citySelect = document.getElementById('city_id');
+            const districtSelect = document.getElementById('district_id');
+            const subdistrictSelect = document.getElementById('subdistrict_id');
+            
+            const provinceNameInput = document.getElementById('province_name');
+            const cityNameInput = document.getElementById('city_name');
+            const districtNameInput = document.getElementById('district_name');
+            const subdistrictNameInput = document.getElementById('subdistrict_name');
+
+            // Load provinces on page load
+            loadProvinces();
+
+            // Province change handler
+            provinceSelect.addEventListener('change', function() {
+                const provinceId = this.value;
+                const provinceName = this.options[this.selectedIndex].text;
+                
+                if (provinceId) {
+                    provinceNameInput.value = provinceName;
+                    loadCities(provinceId);
+                    citySelect.disabled = false;
+                } else {
+                    provinceNameInput.value = '';
+                    resetSelect(citySelect, 'Pilih Kota/Kabupaten');
+                    resetSelect(districtSelect, 'Pilih Kecamatan');
+                    resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
+                    citySelect.disabled = true;
+                    districtSelect.disabled = true;
+                    subdistrictSelect.disabled = true;
+                }
+            });
+
+            // City change handler
+            citySelect.addEventListener('change', function() {
+                const cityId = this.value;
+                const cityName = this.options[this.selectedIndex].text;
+                
+                if (cityId) {
+                    cityNameInput.value = cityName;
+                    loadDistricts(cityId);
+                    districtSelect.disabled = false;
+                } else {
+                    cityNameInput.value = '';
+                    resetSelect(districtSelect, 'Pilih Kecamatan');
+                    resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
+                    districtSelect.disabled = true;
+                    subdistrictSelect.disabled = true;
+                }
+            });
+
+            // District change handler
+            districtSelect.addEventListener('change', function() {
+                const districtId = this.value;
+                const districtName = this.options[this.selectedIndex].text;
+                
+                if (districtId) {
+                    districtNameInput.value = districtName;
+                    loadSubdistricts(districtId);
+                    subdistrictSelect.disabled = false;
+                } else {
+                    districtNameInput.value = '';
+                    resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
+                    subdistrictSelect.disabled = true;
+                }
+            });
+
+            // Subdistrict change handler
+            subdistrictSelect.addEventListener('change', function() {
+                const subdistrictName = this.options[this.selectedIndex].text;
+                subdistrictNameInput.value = subdistrictName;
+            });
+
+            // Load provinces function
+            function loadProvinces() {
+                showLoading(provinceSelect);
+                
+                fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
+                    .then(response => response.json())
+                    .then(provinces => {
+                        resetSelect(provinceSelect, 'Pilih Provinsi');
+                        
+                        provinces.forEach(province => {
+                            const option = document.createElement('option');
+                            option.value = province.id;
+                            option.textContent = province.name;
+                            provinceSelect.appendChild(option);
+                        });
+                        
+                        hideLoading(provinceSelect);
+                    })
+                    .catch(error => {
+                        console.error('Error loading provinces:', error);
+                        resetSelect(provinceSelect, 'Error loading provinces');
+                        hideLoading(provinceSelect);
+                    });
+            }
+
+            // Load cities function
+            function loadCities(provinceId) {
+                showLoading(citySelect);
+                resetSelect(districtSelect, 'Pilih Kecamatan');
+                resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
+                districtSelect.disabled = true;
+                subdistrictSelect.disabled = true;
+                
+                fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinceId}.json`)
+                    .then(response => response.json())
+                    .then(cities => {
+                        resetSelect(citySelect, 'Pilih Kota/Kabupaten');
+                        
+                        cities.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city.id;
+                            option.textContent = city.name;
+                            citySelect.appendChild(option);
+                        });
+                        
+                        hideLoading(citySelect);
+                    })
+                    .catch(error => {
+                        console.error('Error loading cities:', error);
+                        resetSelect(citySelect, 'Error loading cities');
+                        hideLoading(citySelect);
+                    });
+            }
+
+            // Load districts function
+            function loadDistricts(cityId) {
+                showLoading(districtSelect);
+                resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
+                subdistrictSelect.disabled = true;
+                
+                fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${cityId}.json`)
+                    .then(response => response.json())
+                    .then(districts => {
+                        resetSelect(districtSelect, 'Pilih Kecamatan');
+                        
+                        districts.forEach(district => {
+                            const option = document.createElement('option');
+                            option.value = district.id;
+                            option.textContent = district.name;
+                            districtSelect.appendChild(option);
+                        });
+                        
+                        hideLoading(districtSelect);
+                    })
+                    .catch(error => {
+                        console.error('Error loading districts:', error);
+                        resetSelect(districtSelect, 'Error loading districts');
+                        hideLoading(districtSelect);
+                    });
+            }
+
+            // Load subdistricts function
+            function loadSubdistricts(districtId) {
+                showLoading(subdistrictSelect);
+                
+                fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${districtId}.json`)
+                    .then(response => response.json())
+                    .then(subdistricts => {
+                        resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
+                        
+                        subdistricts.forEach(subdistrict => {
+                            const option = document.createElement('option');
+                            option.value = subdistrict.id;
+                            option.textContent = subdistrict.name;
+                            subdistrictSelect.appendChild(option);
+                        });
+                        
+                        hideLoading(subdistrictSelect);
+                    })
+                    .catch(error => {
+                        console.error('Error loading subdistricts:', error);
+                        resetSelect(subdistrictSelect, 'Error loading subdistricts');
+                        hideLoading(subdistrictSelect);
+                    });
+            }
+
+            // Helper function to reset select options
+            function resetSelect(selectElement, placeholder) {
+                selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+            }
+
+            // Helper function to show loading state
+            function showLoading(selectElement) {
+                const placeholder = selectElement.querySelector('option[value=""]');
+                if (placeholder) {
+                    placeholder.textContent = 'Loading...';
+                }
+                selectElement.disabled = true;
+            }
+
+            // Helper function to hide loading state
+            function hideLoading(selectElement) {
+                selectElement.disabled = false;
+            }
         });
     </script>
-    @endpush
 </x-layout-admin>

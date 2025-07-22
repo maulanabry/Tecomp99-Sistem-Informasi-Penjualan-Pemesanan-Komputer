@@ -4,7 +4,7 @@
         <!-- Search -->
         <div class="w-full md:w-1/2 relative">
             <input type="text" 
-             wire:model.live="search" 
+                wire:model.live="search" 
                 class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 pr-10 focus:border-primary-500 dark:text-gray-200 shadow-sm focus:ring-primary-500 sm:text-sm" 
                 placeholder="Cari pelanggan...">
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
@@ -14,86 +14,94 @@
             </div>
         </div>
 
-        <!-- Has Account Filter -->
-        <div class="w-full md:w-1/2">
-            <select wire:model.live="hasAccountFilter" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                <option value="">Semua Status Akun</option>
-                <option value="1">Memiliki Akun</option>
-                <option value="0">Tidak Memiliki Akun</option>
-            </select>
-        </div>
-                    <div class="w-full md:w-1/3">
+        <div class="flex flex-col md:flex-row gap-4 w-full md:w-1/2">
+            <!-- Account Status Filter -->
+            <div class="w-full md:w-1/3">
+                <select wire:model.live="hasAccountFilter" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                    <option value="">Semua Status Akun</option>
+                    <option value="1">Punya Akun</option>
+                    <option value="0">Belum Punya Akun</option>
+                </select>
+            </div>
+            <!-- Gender Filter -->
+            <div class="w-full md:w-1/3">
+                <select wire:model.live="genderFilter" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                    <option value="">Semua Jenis Kelamin</option>
+                    <option value="pria">Pria</option>
+                    <option value="wanita">Wanita</option>
+                </select>
+            </div>
+            <!-- Row Selector -->
+            <div class="w-full md:w-1/3">
                 <select wire:model.live="perPage" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
                     <option value="5">5 Baris</option>
                     <option value="10">10 Baris</option>
                     <option value="25">25 Baris</option>
                 </select>
             </div>
+        </div>
     </div>
+
+    <!-- Clear Filters Button -->
+    @if($search || $hasAccountFilter !== '' || $genderFilter !== '')
+        <div class="mb-4">
+            <button wire:click="clearFilters" class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                <i class="fas fa-times mr-2"></i>
+                Hapus Filter
+            </button>
+        </div>
+    @endif
 
     <!-- Customers Table -->
     <div class="mt-4">
         <!-- Table Headers (Hidden on Mobile) -->
         <div class="hidden md:block">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-                <div class="grid gap-4 px-6 py-3" style="grid-template-columns: 100px 2fr 2fr 1fr 1fr 1.5fr 2fr 100px">
-                    <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer select-none" wire:click="sortBy('customer_id')" role="button">
-                        ID
-                        @if($sortField === 'customer_id')
-                            <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
-                        @else
-                            <span class="text-xs">˄˅</span>
-                        @endif
+                <div class="grid grid-cols-8 gap-4 px-6 py-3">
+                    <div class="col-span-1 text-left cursor-pointer" wire:click="sortBy('customer_id')" role="button">
+                        <div class="flex items-center gap-1">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">ID Pelanggan</span>
+                            @if ($sortField === 'customer_id')
+                                <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
+                            @else
+                                <span class="text-xs">˄˅</span>
+                            @endif
+                        </div>
                     </div>
-                    <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer select-none" wire:click="sortBy('name')" role="button">
-                        Nama
-                        @if($sortField === 'name')
-                            <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
-                        @else
-                            <span class="text-xs">˄˅</span>
-                        @endif
+                    <div class="col-span-1 text-left cursor-pointer" wire:click="sortBy('name')" role="button">
+                        <div class="flex items-center gap-1">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Nama</span>
+                            @if ($sortField === 'name')
+                                <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
+                            @else
+                                <span class="text-xs">˄˅</span>
+                            @endif
+                        </div>
                     </div>
-                    <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer select-none" wire:click="sortBy('email')" role="button">
-                        Email
-                        @if($sortField === 'email')
-                            <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
-                        @else
-                            <span class="text-xs">˄˅</span>
-                        @endif
+                    <div class="col-span-1 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Kontak</div>
+                    <div class="col-span-1 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Email</div>
+                    <div class="col-span-1 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Alamat</div>
+                    <div class="col-span-1 text-left cursor-pointer" wire:click="sortBy('hasAccount')" role="button">
+                        <div class="flex items-center gap-1">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Status Akun</span>
+                            @if ($sortField === 'hasAccount')
+                                <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
+                            @else
+                                <span class="text-xs">˄˅</span>
+                            @endif
+                        </div>
                     </div>
-                    <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer select-none" wire:click="sortBy('contact')" role="button">
-                        No HP
-                        @if($sortField === 'contact')
-                            <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
-                        @else
-                            <span class="text-xs">˄˅</span>
-                        @endif
+                    <div class="col-span-1 text-left cursor-pointer" wire:click="sortBy('created_at')" role="button">
+                        <div class="flex items-center gap-1">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Terdaftar</span>
+                            @if ($sortField === 'created_at')
+                                <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
+                            @else
+                                <span class="text-xs">˄˅</span>
+                            @endif
+                        </div>
                     </div>
-                    <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer select-none" wire:click="sortBy('hasAccount')" role="button">
-                        Status
-                        @if($sortField === 'hasAccount')
-                            <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
-                        @else
-                            <span class="text-xs">˄˅</span>
-                        @endif
-                    </div>
-                    <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer select-none" wire:click="sortBy('last_active')" role="button">
-                        Terakhir Aktif
-                        @if($sortField === 'last_active')
-                            <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
-                        @else
-                            <span class="text-xs">˄˅</span>
-                        @endif
-                    </div>
-                    <div class="text-left text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer select-none" wire:click="sortBy('address')" role="button">
-                        Alamat
-                        @if($sortField === 'address')
-                            <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
-                        @else
-                            <span class="text-xs">˄˅</span>
-                        @endif
-                    </div>
-                    <div class="text-center text-sm font-semibold text-gray-900 dark:text-gray-100">Aksi</div>
+                    <div class="col-span-1 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">Aksi</div>
                 </div>
             </div>
         </div>
@@ -105,176 +113,168 @@
                 <div class="block md:hidden p-4 border-b border-gray-200 dark:border-gray-600">
                     <div class="space-y-3">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">ID Pelanggan:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->customer_id }}</span>
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">ID:</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-300 font-mono">{{ $customer->customer_id }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Nama:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->name }}</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-300 font-semibold" title="{{ $customer->name }}">
+                                {{ \Illuminate\Support\Str::limit($customer->name, 25) }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Kontak:</span>
+                            <a href="{{ $customer->whatsapp_link }}" target="_blank" class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                                <i class="fab fa-whatsapp mr-1"></i>{{ $customer->contact }}
+                            </a>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Email:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->email ?? '-' }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">No HP:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->contact }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Status Akun:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $customer->hasAccount ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100' }}">
-                                    {{ $customer->hasAccount ? 'Ya' : 'Tidak' }}
+                            @if($customer->email)
+                                <span class="text-sm text-gray-500 dark:text-gray-300 truncate max-w-[150px]" title="{{ $customer->email }}">
+                                    {{ $customer->email }}
                                 </span>
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Terakhir Aktif:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">
-                                @if($customer->last_active instanceof \Illuminate\Support\Carbon)
-                                    {{ $customer->last_active->format('d M Y H:i') }}
-                                @elseif(is_string($customer->last_active))
-                                    {{ \Illuminate\Support\Carbon::parse($customer->last_active)->format('d M Y H:i') }}
-                                @else
-                                    -
-                                @endif
-                            </span>
+                            @else
+                                <span class="text-sm text-gray-500 dark:text-gray-300">-</span>
+                            @endif
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Alamat:</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-300">
-                                @php
-                                    $defaultAddress = $customer->addresses->where('is_default', true)->first();
-                                    $firstAddress = $defaultAddress ?: $customer->addresses->first();
-                                    $addressText = $firstAddress ? $firstAddress->detail_address : '-';
-                                @endphp
-                                {{ strlen($addressText) > 30 ? substr($addressText, 0, 30) . '...' : $addressText }}
+                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->formatted_address }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Status Akun:</span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $customer->hasAccount ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' }}">
+                                <i class="fas {{ $customer->hasAccount ? 'fa-check-circle' : 'fa-user-plus' }} mr-1"></i>
+                                {{ $customer->hasAccount ? 'Punya Akun' : 'Belum Akun' }}
                             </span>
                         </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Terdaftar:</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->created_at->format('d M Y') }}</span>
+                        </div>
+
+                        <!-- Actions -->
                         <div class="flex justify-end items-center gap-2 mt-4">
-                                    <x-action-dropdown>
-                               <a href="{{ route('customers.show', $customer) }}" 
-                                           class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
-                                           role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                            Lihat
-                                        </a>
-                                        <a href="{{ route('customers.edit', $customer) }}" 
-                                           class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
-                                           role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l-3 3H3v-3l9-9 3 3-6 6z" />
-                                            </svg>
-                                            Ubah
-                                        </a>
-                                        <button type="button"
-                                                data-modal-target="delete-modal-{{ $customer->customer_id }}"
-                                                data-modal-toggle="delete-modal-{{ $customer->customer_id }}"
-                                                class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                            Hapus
-                                        </button>
-                                        <a href="{{ $customer->whatsapp_link }}" 
-                                           target="_blank"
-                                           class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
-                                           role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                            </svg>
-                                            Hubungi WhatsApp
-                                        </a>
-                                    </x-action-dropdown>
+                            <x-action-dropdown>
+                                <a href="{{ route('customers.show', $customer) }}" 
+                                   class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
+                                   role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    Lihat
+                                </a>
+                                <a href="{{ route('customers.edit', $customer) }}" 
+                                   class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
+                                   role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l-3 3H3v-3l9-9 3 3-6 6z" />
+                                    </svg>
+                                    Ubah
+                                </a>
+                                <a href="{{ $customer->whatsapp_link }}" target="_blank"
+                                   class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
+                                   role="menuitem">
+                                    <i class="fab fa-whatsapp mr-3 h-4 w-4"></i>
+                                    WhatsApp
+                                </a>
+                                <button type="button"
+                                        data-modal-target="delete-modal-{{ $customer->customer_id }}"
+                                        data-modal-toggle="delete-modal-{{ $customer->customer_id }}"
+                                        class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        role="menuitem">
+                                    <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Hapus
+                                </button>
+                            </x-action-dropdown>
                         </div>
                     </div>
                 </div>
 
                 <!-- Desktop View -->
-                <div class="hidden md:grid md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600" style="grid-template-columns: 100px 2fr 2fr 1fr 1fr 1.5fr 2fr 100px">
-                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $customer->customer_id }}</div>
-                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $customer->name }}</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->email ?? '-' }}</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->contact }}</div>
+                <div class="hidden md:grid md:grid-cols-8 md:gap-4 md:px-6 md:py-3 border-b border-gray-200 dark:border-gray-600">
+                    <div class="text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $customer->customer_id }}</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100 font-semibold" title="{{ $customer->name }}">
+                        {{ \Illuminate\Support\Str::limit($customer->name, 20) }}
+                    </div>
                     <div class="text-sm">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $customer->hasAccount ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100' }}">
-                            {{ $customer->hasAccount ? 'Ya' : 'Tidak' }}
-                        </span>
+                        <a href="{{ $customer->whatsapp_link }}" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline">
+                            <i class="fab fa-whatsapp mr-1"></i>{{ $customer->contact }}
+                        </a>
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-300">
-                        @if($customer->last_active instanceof \Illuminate\Support\Carbon)
-                            {{ $customer->last_active->format('d M Y H:i') }}
-                        @elseif(is_string($customer->last_active))
-                            {{ \Illuminate\Support\Carbon::parse($customer->last_active)->format('d M Y H:i') }}
+                        @if($customer->email)
+                            <span class="truncate block max-w-[120px]" title="{{ $customer->email }}">
+                                {{ $customer->email }}
+                            </span>
                         @else
-                            -
+                            <span>-</span>
                         @endif
                     </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-300">
-                        @php
-                            $defaultAddress = $customer->addresses->where('is_default', true)->first();
-                            $firstAddress = $defaultAddress ?: $customer->addresses->first();
-                            $addressText = $firstAddress ? $firstAddress->detail_address : '-';
-                        @endphp
-                        {{ strlen($addressText) > 30 ? substr($addressText, 0, 30) . '...' : $addressText }}
+                    <div class="text-sm text-gray-500 dark:text-gray-300" title="{{ $customer->defaultAddress ? $customer->defaultAddress->detail_address : '' }}">
+                        {{ $customer->formatted_address }}
                     </div>
+                    <div class="text-sm">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $customer->hasAccount ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' }}">
+                            <i class="fas {{ $customer->hasAccount ? 'fa-check-circle' : 'fa-user-plus' }} mr-1"></i>
+                            {{ $customer->hasAccount ? 'Punya Akun' : 'Belum Akun' }}
+                        </span>
+                    </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-300">{{ $customer->created_at->format('d M Y') }}</div>
+                    
                     <div class="flex justify-center items-center gap-2">
                         <x-action-dropdown>
-                               <a href="{{ route('customers.show', $customer) }}" 
-                                           class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
-                                           role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                            Lihat
-                                        </a>
-                                        <a href="{{ route('customers.edit', $customer) }}" 
-                                           class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
-                                           role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l-3 3H3v-3l9-9 3 3-6 6z" />
-                                            </svg>
-                                            Ubah
-                                        </a>
-                                        <button type="button"
-                                                data-modal-target="delete-modal-{{ $customer->customer_id }}"
-                                                data-modal-toggle="delete-modal-{{ $customer->customer_id }}"
-                                                class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                            Hapus
-                                        </button>
-                                        <a href="{{ $customer->whatsapp_link }}" 
-                                           target="_blank"
-                                           class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
-                                           role="menuitem">
-                                            <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                            </svg>
-                                            Hubungi WhatsApp
-                                        </a>
+                            <a href="{{ route('customers.show', $customer) }}" 
+                               class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
+                               role="menuitem">
+                                <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Lihat
+                            </a>
+                            <a href="{{ route('customers.edit', $customer) }}" 
+                               class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
+                               role="menuitem">
+                                <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l-3 3H3v-3l9-9 3 3-6 6z" />
+                                </svg>
+                                Ubah
+                            </a>
+                            <a href="{{ $customer->whatsapp_link }}" target="_blank"
+                               class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" 
+                               role="menuitem">
+                                <i class="fab fa-whatsapp mr-3 h-4 w-4"></i>
+                                WhatsApp
+                            </a>
+                            <button type="button"
+                                    data-modal-target="delete-modal-{{ $customer->customer_id }}"
+                                    data-modal-toggle="delete-modal-{{ $customer->customer_id }}"
+                                    class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    role="menuitem">
+                                <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Hapus
+                            </button>
                         </x-action-dropdown>
                     </div>
                 </div>
-
+                
                 <x-delete-confirmation-modal 
                     :id="$customer->customer_id"
                     :action="route('customers.destroy', $customer)"
-                    message="Apakah Anda yakin ingin menghapus data pelanggan ini?"
+                    message="Apakah Anda yakin ingin menghapus pelanggan ini?"
                     :itemName="$customer->name"
-                    wire:model="isModalOpen"
                     wire:key="delete-modal-{{ $customer->customer_id }}"
                 />
             @empty
                 <div class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-                    Tidak ada data pelanggan ditemukan.
+                    Tidak ada pelanggan ditemukan.
                 </div>
             @endforelse
         </div>
