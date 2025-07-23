@@ -16,21 +16,21 @@
             <div class="mb-2">
                 <x-breadcrumbs />
             </div>
-            
+
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Brand</h1>
+                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Kategori</h1>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Informasi lengkap brand {{ $brand->name }}
+                        Informasi lengkap kategori {{ $category->name }}
                     </p>
                 </div>
                 <div class="flex space-x-3">
-                    <a href="{{ route('brands.edit', $brand) }}" wire:navigate
+                    <a href="{{ route('categories.edit', $category) }}" wire:navigate
                         class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                         <i class="fas fa-edit mr-2"></i>
-                        Edit Brand
+                        Edit Kategori
                     </a>
-                    <a href="{{ route('brands.index') }}" wire:navigate
+                    <a href="{{ route('categories.index') }}" wire:navigate
                         class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
@@ -38,91 +38,54 @@
                 </div>
             </div>
 
-            <!-- Brand Details -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Information -->
                 <div class="lg:col-span-2">
-                    <!-- Logo Brand Section -->
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                <i class="fas fa-image mr-2 text-primary-500"></i>
-                                Logo Brand
-                            </h3>
-                        </div>
-                        <div class="p-6">
-                            @if($brand->logo)
-                                <div class="relative bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 p-6 shadow-sm">
-                                    <!-- Image Container -->
-                                    <div class="flex items-center justify-center h-64 w-full">
-                                        <img src="{{ asset($brand->logo) }}" 
-                                             alt="Logo {{ $brand->name }}" 
-                                             class="max-h-full max-w-full object-contain rounded-lg shadow-md transition-transform hover:scale-105"
-                                             id="brandLogo">
-                                    </div>
-                                    
-                                    <!-- Action Buttons -->
-                                    <div class="flex justify-center space-x-3 mt-4">
-                                        <!-- Download Button -->
-                                        <a href="{{ asset($brand->logo) }}" 
-                                           download="logo-{{ $brand->slug }}"
-                                           class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                                            <i class="fas fa-download mr-2"></i>
-                                            Unduh Logo
-                                        </a>
-                                        
-                                        <!-- Full Screen Button -->
-                                        <button type="button" 
-                                                onclick="openFullscreen()"
-                                                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                                            <i class="fas fa-expand mr-2"></i>
-                                            Layar Penuh
-                                        </button>
-                                    </div>
-                                </div>
-                            @else
-                                <div class="flex items-center justify-center h-64 w-full bg-gray-100 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-                                    <div class="text-center">
-                                        <i class="fas fa-image text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada logo yang diunggah</p>
-                                        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Klik "Edit Brand" untuk menambahkan logo</p>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- Brand Information -->
-                    <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                                 <i class="fas fa-info-circle mr-2 text-primary-500"></i>
-                                Informasi Brand
+                                Informasi Kategori
                             </h3>
                         </div>
                         <div class="p-6">
                             <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Brand</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $brand->brand_id }}</dd>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Kategori</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $category->categories_id }}</dd>
                                 </div>
                                 <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nama Brand</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $brand->name }}</dd>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nama Kategori</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $category->name }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ ucfirst($category->type) }}</dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $brand->slug }}</dd>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $category->slug }}</dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Produk</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $brand->products->count() }} produk</dd>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $category->products->count() }} produk</dd>
+                                </div>
+                                @if($category->type === 'layanan')
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Layanan</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $category->services->count() }} layanan</dd>
+                                </div>
+                                @endif
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Brand Terkait</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $category->products->pluck('brand')->unique('brand_id')->count() }} brand</dd>
                                 </div>
                             </dl>
                         </div>
                     </div>
 
                     <!-- Product Statistics -->
+                    @if($category->type === 'produk' && $category->products->count() > 0)
                     <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -133,21 +96,61 @@
                         <div class="p-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $brand->products->where('is_active', true)->count() }}</div>
+                                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $category->products->where('is_active', true)->count() }}</div>
                                     <div class="text-sm text-blue-600 dark:text-blue-400">Produk Aktif</div>
                                 </div>
                                 <div class="text-center p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg">
-                                    <div class="text-2xl font-bold text-gray-600 dark:text-gray-400">{{ $brand->products->where('is_active', false)->count() }}</div>
+                                    <div class="text-2xl font-bold text-gray-600 dark:text-gray-400">{{ $category->products->where('is_active', false)->count() }}</div>
                                     <div class="text-sm text-gray-600 dark:text-gray-400">Produk Nonaktif</div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    @endif
+
+                    <!-- Brand Statistics -->
+                    @if($category->type === 'produk' && $category->products->count() > 0)
+                    <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-tags mr-2 text-primary-500"></i>
+                                Statistik Brand
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 gap-4">
+                                @php
+                                    $brands = $category->products->groupBy('brand.name')->map(function($products, $brandName) {
+                                        return [
+                                            'name' => $brandName,
+                                            'count' => $products->count(),
+                                            'active_count' => $products->where('is_active', true)->count()
+                                        ];
+                                    })->sortByDesc('count')->take(5);
+                                @endphp
+                                @forelse($brands as $brand)
+                                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-gray-100">{{ $brand['name'] ?? 'Brand Tidak Diketahui' }}</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ $brand['active_count'] }} aktif dari {{ $brand['count'] }} produk</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-lg font-bold text-primary-600 dark:text-primary-400">{{ $brand['count'] }}</div>
+                                    </div>
+                                </div>
+                                @empty
+                                <div class="text-center text-gray-500 dark:text-gray-400 py-4">
+                                    Tidak ada data brand
+                                </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Sidebar -->
                 <div class="lg:col-span-1">
-                    <!-- Quick Actions -->
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -156,22 +159,15 @@
                             </h3>
                         </div>
                         <div class="p-6 space-y-3">
-                            <a href="{{ route('brands.edit', $brand) }}" wire:navigate
+                            <a href="{{ route('categories.edit', $category) }}" wire:navigate
                                 class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                 <i class="fas fa-edit mr-2"></i>
-                                Edit Brand
+                                Edit Kategori
                             </a>
-                            @if($brand->logo)
-                            <a href="{{ asset($brand->logo) }}" download="logo-{{ $brand->slug }}"
-                                class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
-                                <i class="fas fa-download mr-2"></i>
-                                Unduh Logo
-                            </a>
-                            @endif
-                            <button onclick="confirmDelete('{{ $brand->brand_id }}', '{{ $brand->name }}')"
+                            <button onclick="confirmDelete('{{ $category->categories_id }}', '{{ $category->name }}')"
                                 class="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-gray-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20">
                                 <i class="fas fa-trash mr-2"></i>
-                                Hapus Brand
+                                Hapus Kategori
                             </button>
                         </div>
                     </div>
@@ -189,27 +185,43 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dibuat</dt>
                                     <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                        {{ $brand->created_at ? $brand->created_at->format('d F Y H:i') : '-' }}
+                                        {{ $category->created_at ? $category->created_at->format('d F Y H:i') : '-' }}
                                     </dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Terakhir Diubah</dt>
                                     <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                        {{ $brand->updated_at ? $brand->updated_at->format('d F Y H:i') : '-' }}
+                                        {{ $category->updated_at ? $category->updated_at->format('d F Y H:i') : '-' }}
                                     </dd>
                                 </div>
                                 <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Logo</dt>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Tipe</dt>
                                     <dd class="mt-1">
-                                        @if($brand->logo)
+                                        @if($category->type === 'produk')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                                                <i class="fas fa-box mr-1"></i>
+                                                Kategori Produk
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                                <i class="fas fa-cogs mr-1"></i>
+                                                Kategori Layanan
+                                            </span>
+                                        @endif
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Data</dt>
+                                    <dd class="mt-1">
+                                        @if($category->products->count() > 0 || $category->services->count() > 0)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
                                                 <i class="fas fa-check-circle mr-1"></i>
-                                                Ada Logo
+                                                Ada Data Terkait
                                             </span>
                                         @else
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
                                                 <i class="fas fa-times-circle mr-1"></i>
-                                                Tidak Ada Logo
+                                                Belum Ada Data
                                             </span>
                                         @endif
                                     </dd>
@@ -229,10 +241,10 @@
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900">
                     <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">Hapus Brand</h3>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">Hapus Kategori</h3>
                 <div class="mt-2 px-7 py-3">
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Apakah Anda yakin ingin menghapus brand "<span id="brandName" class="font-semibold"></span>"?
+                        Apakah Anda yakin ingin menghapus kategori "<span id="categoryName" class="font-semibold"></span>"?
                         Data yang dihapus dapat dipulihkan dari menu Pulihkan Data.
                     </p>
                 </div>
@@ -254,46 +266,16 @@
         </div>
     </div>
 
-    <!-- Full Screen Modal -->
-    <div id="fullscreenModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-90 flex items-center justify-center">
-        <div class="relative max-w-full max-h-full p-4">
-            <button onclick="closeFullscreen()" 
-                    class="absolute top-4 right-4 text-white hover:text-gray-300 z-10">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
-            <img src="{{ asset($brand->logo ?? '') }}" 
-                 alt="Logo {{ $brand->name }}" 
-                 class="max-w-full max-h-full object-contain">
-        </div>
-    </div>
-
     <script>
-        function confirmDelete(brandId, brandName) {
-            document.getElementById('brandName').textContent = brandName;
-            document.getElementById('deleteForm').action = `/admin/brand/${brandId}`;
+        function confirmDelete(categoryId, categoryName) {
+            document.getElementById('categoryName').textContent = categoryName;
+            document.getElementById('deleteForm').action = `/admin/category/${categoryId}`;
             document.getElementById('deleteModal').classList.remove('hidden');
         }
 
         function closeDeleteModal() {
             document.getElementById('deleteModal').classList.add('hidden');
         }
-
-        function openFullscreen() {
-            document.getElementById('fullscreenModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeFullscreen() {
-            document.getElementById('fullscreenModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close modal when clicking outside the image
-        document.getElementById('fullscreenModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeFullscreen();
-            }
-        });
 
         // Close modal when clicking outside
         document.getElementById('deleteModal').addEventListener('click', function(e) {
@@ -305,7 +287,6 @@
         // Close modal with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                closeFullscreen();
                 closeDeleteModal();
             }
         });

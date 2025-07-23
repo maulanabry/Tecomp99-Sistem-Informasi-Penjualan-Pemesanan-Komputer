@@ -1,30 +1,55 @@
 <x-layout-admin>
     <div class="py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Tambah Produk Baru</h1>
+        @if (session('success'))
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
+                <x-alert type="success" :message="session('success')" />
             </div>
-        </div>
+        @endif
+        @if (session('error'))
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
+                <x-alert type="danger" :message="session('error')" />
+            </div>
+        @endif
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="py-4">
-                <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-                    <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6 p-6">
+            <!-- Breadcrumbs -->
+            <div class="mb-2">
+                <x-breadcrumbs />
+            </div>
+            
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Tambah Produk</h1>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Buat produk baru untuk toko Anda
+                    </p>
+                </div>
+                <div class="flex space-x-3">
+                    <a href="{{ route('products.index') }}" 
+                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+                </div>
+            </div>
+
+            <!-- Form Section -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
                         @csrf
 
                         @if ($errors->any())
-                            <div class="rounded-md bg-danger-50 p-4 mb-4">
+                            <div class="rounded-md bg-red-50 dark:bg-red-900/20 p-4 mb-6">
                                 <div class="flex">
                                     <div class="flex-shrink-0">
-                                        <svg class="h-5 w-5 text-danger-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                        </svg>
+                                        <i class="fas fa-exclamation-circle text-red-400"></i>
                                     </div>
                                     <div class="ml-3">
-                                        <h3 class="text-sm font-medium text-danger-800">
+                                        <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
                                             Terdapat {{ $errors->count() }} kesalahan pada formulir:
                                         </h3>
-                                        <div class="mt-2 text-sm text-danger-700">
+                                        <div class="mt-2 text-sm text-red-700 dark:text-red-300">
                                             <ul class="list-disc pl-5 space-y-1">
                                                 @foreach ($errors->all() as $error)
                                                     <li>{{ $error }}</li>
@@ -36,120 +61,178 @@
                             </div>
                         @endif
 
-                        <!-- Category -->
-                        <div>
-                            <label for="categories_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Kategori
-                            </label>
-                            <div class="mt-1">
-                                <select name="categories_id" id="categories_id" required
-                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                                    <option value="">Pilih Kategori</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->categories_id }}" {{ old('categories_id') == $category->categories_id ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Brand -->
-                        <div>
-                            <label for="brand_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Brand
-                            </label>
-                            <div class="mt-1">
-                                <select name="brand_id" id="brand_id" required
-                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                                    <option value="">Pilih Brand</option>
-                                    @foreach($brands as $brand)
-                                        <option value="{{ $brand->brand_id }}" {{ old('brand_id') == $brand->brand_id ? 'selected' : '' }}>
-                                            {{ $brand->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Name -->
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Nama Produk
-                            </label>
-                            <div class="mt-1">
-                                <input type="text" name="name" id="name" value="{{ old('name') }}" required
-                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                            </div>
-                        </div>
-
-                        <!-- Description -->
-                        <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Deskripsi
-                            </label>
-                            <div class="mt-1">
-                                <textarea name="description" id="description" rows="4"
-                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">{{ old('description') }}</textarea>
-                            </div>
-                        </div>
-
-                        <!-- Price -->
-                        <div>
-                            <label for="price" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Harga
-                            </label>
-                            <div class="mt-1 relative rounded-md shadow-sm">
-                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <span class="text-gray-500 dark:text-gray-400 sm:text-sm">Rp</span>
+                        <!-- Basic Information Section -->
+                        <div class="border-b border-gray-200 dark:border-gray-600 pb-8">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                <i class="fas fa-info-circle mr-2 text-primary-500"></i>
+                                Informasi Dasar
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Product Name -->
+                                <div class="md:col-span-2">
+                                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Nama Produk <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" name="name" id="name" 
+                                        value="{{ old('name') }}"
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('name') border-red-500 @enderror"
+                                        placeholder="Masukkan nama produk"
+                                        required>
+                                    @error('name')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                <input type="number" name="price" id="price" value="{{ old('price') }}" required
-                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 pl-12 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                                    min="0" step="1000">
+
+                                <!-- Description -->
+                                <div class="md:col-span-2">
+                                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Deskripsi Produk
+                                    </label>
+                                    <textarea name="description" id="description" rows="4"
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('description') border-red-500 @enderror"
+                                        placeholder="Masukkan deskripsi produk">{{ old('description') }}</textarea>
+                                    @error('description')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Weight -->
-                        <div>
-                            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Berat (gram)
-                            </label>
-                            <div class="mt-1">
-                                <input type="number" name="weight" id="weight" value="{{ old('weight', 0) }}" required
-                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                                    min="0">
+                        <!-- Category & Brand Section -->
+                        <div class="border-b border-gray-200 dark:border-gray-600 pb-8">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                <i class="fas fa-tags mr-2 text-primary-500"></i>
+                                Kategori & Merek
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Category -->
+                                <div>
+                                    <label for="categories_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Kategori <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-tag text-gray-400"></i>
+                                        </div>
+                                        <select name="categories_id" id="categories_id" required
+                                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('categories_id') border-red-500 @enderror">
+                                            <option value="">Pilih Kategori</option>
+                                            @foreach($categories as $category)
+                                                <option value="{{ $category->categories_id }}" {{ old('categories_id') == $category->categories_id ? 'selected' : '' }}>
+                                                    {{ $category->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    @error('categories_id')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Brand -->
+                                <div>
+                                    <label for="brand_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Merek <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-crown text-gray-400"></i>
+                                        </div>
+                                        <select name="brand_id" id="brand_id" required
+                                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('brand_id') border-red-500 @enderror">
+                                            <option value="">Pilih Merek</option>
+                                            @foreach($brands as $brand)
+                                                <option value="{{ $brand->brand_id }}" {{ old('brand_id') == $brand->brand_id ? 'selected' : '' }}>
+                                                    {{ $brand->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    @error('brand_id')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Stock -->
-                        <div>
-                            <label for="stock" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Stok
-                            </label>
-                            <div class="mt-1">
-                                <input type="number" name="stock" id="stock" value="{{ old('stock', 0) }}" required
-                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                                    min="0">
+                        <!-- Pricing & Inventory Section -->
+                        <div class="border-b border-gray-200 dark:border-gray-600 pb-8">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                <i class="fas fa-dollar-sign mr-2 text-primary-500"></i>
+                                Harga & Inventori
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Price -->
+                                <div>
+                                    <label for="price" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Harga <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative rounded-md shadow-sm">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 dark:text-gray-400 sm:text-sm">Rp</span>
+                                        </div>
+                                        <input type="number" name="price" id="price" 
+                                            value="{{ old('price') }}" required
+                                            class="block w-full pl-12 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('price') border-red-500 @enderror"
+                                            min="0" step="1000" placeholder="0">
+                                    </div>
+                                    @error('price')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Weight -->
+                                <div>
+                                    <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Berat <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative rounded-md shadow-sm">
+                                        <input type="number" name="weight" id="weight" 
+                                            value="{{ old('weight', 0) }}" required
+                                            class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('weight') border-red-500 @enderror"
+                                            min="0" placeholder="0">
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 dark:text-gray-400 sm:text-sm">gram</span>
+                                        </div>
+                                    </div>
+                                    @error('weight')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Stock -->
+                                <div>
+                                    <label for="stock" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Stok <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative rounded-md shadow-sm">
+                                        <input type="number" name="stock" id="stock" 
+                                            value="{{ old('stock', 0) }}" required
+                                            class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('stock') border-red-500 @enderror"
+                                            min="0" placeholder="0">
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 dark:text-gray-400 sm:text-sm">unit</span>
+                                        </div>
+                                    </div>
+                                    @error('stock')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Status -->
-                        <div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="hidden" name="is_active" value="0">
-                                <input type="checkbox" name="is_active" value="1" class="sr-only peer" {{ old('is_active', true) ? 'checked' : '' }}>
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
-                                <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Status Aktif</span>
-                            </label>
-                        </div>
+                        <!-- Product Images Section -->
+                        <div class="border-b border-gray-200 dark:border-gray-600 pb-8">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                <i class="fas fa-images mr-2 text-primary-500"></i>
+                                Gambar Produk
+                                <span id="imageCounter" class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">(0/6 Foto)</span>
+                            </h3>
 
-                        <!-- Foto Produk -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
-                                Foto Produk <span id="imageCounter" class="text-sm text-gray-500 dark:text-gray-400">(0/6 Foto)</span>
-                            </label>
-
-                            <!-- Tambah Foto -->
+                            <!-- Upload Area -->
                             <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
                                 <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200" id="dropzone-area">
                                     <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -164,20 +247,50 @@
                                     <input id="dropzone-file" name="images[]" type="file" class="hidden" multiple accept="image/*" required />
                                 </label>
                                 
-                                <!-- Preview Foto -->
+                                <!-- Preview Area -->
                                 <div id="imagePreview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                     <!-- Image previews will be inserted here -->
                                 </div>
                             </div>
+                            @error('images')
+                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                            @error('images.*')
+                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
 
-                        <div class="flex items-center justify-end space-x-3 pt-4">
+                        <!-- Product Settings Section -->
+                        <div>
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                <i class="fas fa-cog mr-2 text-primary-500"></i>
+                                Pengaturan Produk
+                            </h3>
+
+                            <div class="flex items-center">
+                                <input type="hidden" name="is_active" value="0">
+                                <input type="checkbox" name="is_active" value="1" id="is_active" 
+                                    {{ old('is_active', true) ? 'checked' : '' }}
+                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded">
+                                <label for="is_active" class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
+                                    Aktifkan produk setelah dibuat
+                                </label>
+                            </div>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Jika dicentang, produk akan langsung tersedia untuk dijual
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
                             <a href="{{ route('products.index') }}"
-                                class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <i class="fas fa-times mr-2"></i>
                                 Batal
                             </a>
                             <button type="submit"
-                                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <i class="fas fa-save mr-2"></i>
                                 Simpan Produk
                             </button>
                         </div>
