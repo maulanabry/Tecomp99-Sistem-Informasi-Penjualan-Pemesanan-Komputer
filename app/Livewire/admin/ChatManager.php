@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\ChatMessage;
 use App\Events\MessageSent;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class ChatManager extends Component
 {
@@ -19,6 +20,13 @@ class ChatManager extends Component
     public $searchQuery = '';
     public $showCustomerList = true;
 
+    // Time filtering properties
+    public $timeFilter = 'all';
+    public $dateFrom = '';
+    public $dateTo = '';
+    public $showDatePicker = false;
+    public $activeFilterCount = 0;
+
     public function mount()
     {
         $this->loadCustomerChats();
@@ -28,12 +36,15 @@ class ChatManager extends Component
     {
         $admin = Auth::guard('admin')->user();
 
-        // Load chats yang sudah ada dengan admin ini
-        $chats = Chat::where('admin_id', $admin->id)
+        // Build query with time filtering
+        $query = Chat::where('admin_id', $admin->id)
             ->where('is_active', true)
-            ->with(['customer'])
-            ->orderBy('last_message_at', 'desc')
-            ->get();
+            ->with(['customer']);
+
+        // Apply time filtering
+        $query = $this->applyTimeFilter($query);
+
+        $chats = $query->orderBy('last_message_at', 'desc')->get();
 
         $this->customers = $chats->map(function ($chat) {
             $unreadCount = ChatMessage::where('chat_id', $chat->id)
@@ -60,6 +71,8 @@ class ChatManager extends Component
                 'last_message_at' => $chat->last_message_at ? $chat->last_message_at->diffForHumans() : null,
             ];
         })->toArray();
+
+        $this->updateActiveFilterCount();
     }
 
     public function searchCustomers()
@@ -126,8 +139,13 @@ class ChatManager extends Component
     {
         if (!$this->currentChat) return;
 
-        $this->messages = $this->currentChat->messages()
-            ->orderBy('created_at', 'asc')
+        // Build query for messages with time filtering
+        $query = $this->currentChat->messages();
+
+        // Apply time filtering to messages
+        $query = $this->applyMessageTimeFilter($query);
+
+        $this->messages = $query->orderBy('created_at', 'asc')
             ->get()
             ->map(function ($message) {
                 return [
@@ -263,6 +281,163 @@ class ChatManager extends Component
 
         if ($this->showCustomerList) {
             $this->loadCustomerChats();
+        }
+    }
+
+    /**
+     * Apply time filter to chat query
+     */
+    private function applyTimeFilter($query)
+    {
+        switch ($this->timeFilter) {
+            case 'today':
+                return $query->whereDate('last_message_at', today());
+
+            case 'yesterday':
+                return $query->whereDate('last_message_at', today()->subDay());
+
+            case 'last_7_days':
+                return $query->where('last_message_at', '>=', now()->subDays(7));
+
+            case 'last_30_days':
+                return $query->where('last_message_at', '>=', now()->subDays(30));
+
+            case 'custom':
+                if ($this->dateFrom && $this->dateTo) {
+                    return $query->whereBetween('last_message_at', [
+                        Carbon::parse($this->dateFrom)->startOfDay(),
+                        Carbon::parse($this->dateTo)->endOfDay()
+                    ]);
+                }
+                return $query;
+
+            case 'all':
+            default:
+                return $query;
+        }
+    }
+
+    /**
+     * Apply time filter to message query
+     */
+    private function applyMessageTimeFilter($query)
+    {
+        switch ($this->timeFilter) {
+            case 'today':
+                return $query->whereDate('created_at', today());
+
+            case 'yesterday':
+                return $query->whereDate('created_at', today()->subDay());
+
+            case 'last_7_days':
+                return $query->where('created_at', '>=', now()->subDays(7));
+
+            case 'last_30_days':
+                return $query->where('created_at', '>=', now()->subDays(30));
+
+            case 'custom':
+                if ($this->dateFrom && $this->dateTo) {
+                    return $query->whereBetween('created_at', [
+                        Carbon::parse($this->dateFrom)->startOfDay(),
+                        Carbon::parse($this->dateTo)->endOfDay()
+                    ]);
+                }
+                return $query;
+
+            case 'all':
+            default:
+                return $query;
+        }
+    }
+
+    /**
+     * Set time filter
+     */
+    public function setTimeFilter($filter)
+    {
+        $this->timeFilter = $filter;
+
+        if ($filter === 'custom') {
+            $this->showDatePicker = true;
+        } else {
+            $this->showDatePicker = false;
+            $this->dateFrom = '';
+            $this->dateTo = '';
+        }
+
+        $this->applyFilters();
+    }
+
+    /**
+     * Apply custom date range filter
+     */
+    public function applyCustomDateFilter()
+    {
+        if ($this->dateFrom && $this->dateTo) {
+            $this->applyFilters();
+            $this->showDatePicker = false;
+        }
+    }
+
+    /**
+     * Clear all filters
+     */
+    public function clearFilters()
+    {
+        $this->timeFilter = 'all';
+        $this->dateFrom = '';
+        $this->dateTo = '';
+        $this->showDatePicker = false;
+        $this->applyFilters();
+    }
+
+    /**
+     * Apply filters and refresh data
+     */
+    public function applyFilters()
+    {
+        if ($this->showCustomerList) {
+            $this->loadCustomerChats();
+        } else {
+            $this->loadMessages();
+        }
+    }
+
+    /**
+     * Update active filter count for UI indication
+     */
+    private function updateActiveFilterCount()
+    {
+        $count = 0;
+
+        if ($this->timeFilter !== 'all') {
+            $count++;
+        }
+
+        $this->activeFilterCount = $count;
+    }
+
+    /**
+     * Get filter label for display
+     */
+    public function getFilterLabel()
+    {
+        switch ($this->timeFilter) {
+            case 'today':
+                return 'Hari ini';
+            case 'yesterday':
+                return 'Kemarin';
+            case 'last_7_days':
+                return '7 hari terakhir';
+            case 'last_30_days':
+                return '30 hari terakhir';
+            case 'custom':
+                if ($this->dateFrom && $this->dateTo) {
+                    return Carbon::parse($this->dateFrom)->format('d/m/Y') . ' - ' . Carbon::parse($this->dateTo)->format('d/m/Y');
+                }
+                return 'Rentang khusus';
+            default:
+                return 'Semua waktu';
         }
     }
 

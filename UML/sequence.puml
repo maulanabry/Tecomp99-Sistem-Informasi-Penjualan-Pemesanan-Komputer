@@ -1,0 +1,10 @@
+@startuml
+actor User
+participant Browser
+participant Server
+
+User -> Browser : Enters login info
+Browser -> Server : POST /login
+Server --> Browser : Response
+Browser --> User : Show dashboard
+@enduml

@@ -1,0 +1,61 @@
+@startuml
+|Admin|
+start
+:Klik Sidebar Data Master;
+|Sistem|
+:Menampilkan dropdown data master;
+|Admin|
+:Memilih Menu Produk;
+|Sistem|
+:Menampilkan Halaman List Produk;
+
+|Admin|
+:Memilih jenis aksi (Tambah / Lihat);
+
+if (Aksi?) then (Tambah)
+  |Sistem|
+  :Menampilkan Halaman Tambah Produk;
+  |Admin|
+  :Mengisi Form Tambah Produk;
+  |Sistem|
+  :Validasi data;
+
+  if (Valid?) then (Ya)
+    |Admin|
+    :Memilih jenis aksi lanjutan (Edit / Hapus);
+    if (Lanjutan?) then (Edit)
+      |Sistem|
+      :Menampilkan Halaman Edit Produk;
+      |Admin|
+      :Mengisi Form Edit Produk;
+      |Sistem|
+      :Validasi data edit;
+      if (Valid edit?) then (Ya)
+        :Simpan pada database;
+        :Redirect ke halaman list dan tampilkan pesan sukses;
+        stop
+      else (Tidak)
+        :Tampilkan error;
+        -> Mengisi Form Edit Produk;
+      endif
+    else (Hapus)
+      |Sistem|
+      :Menampilkan Konfirmasi Hapus Data;
+      |Admin|
+      :Mengonfirmasi Penghapusan;
+      |Sistem|
+      :Simpan pada database;
+      :Redirect ke halaman list dan tampilkan pesan sukses;
+      stop
+    endif
+  else (Tidak)
+    :Tampilkan error;
+    -> Mengisi Form Tambah Produk;
+  endif
+
+elseif (Lihat)
+  |Sistem|
+  :Menampilkan Halaman Detail Produk;
+  stop
+endif
+@enduml

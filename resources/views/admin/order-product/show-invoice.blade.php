@@ -132,7 +132,7 @@
                         <h3 class="text-sm font-bold text-gray-900 mb-2">Data Pelanggan</h3>
                         <div class="text-xs space-y-1">
                             <p><span class="font-medium">Nama:</span> {{ $orderProduct->customer->name }}</p>
-                            <p><span class="font-medium">Alamat:</span> {{ $orderProduct->customer->addresses?->detail_address ?? 'Alamat tidak tersedia' }}</p>
+                            <p><span class="font-medium">Alamat:</span> {{ $orderProduct->customer->defaultAddress?->detail_address ?? $orderProduct->customer->addresses->first()?->detail_address ?? 'Alamat tidak tersedia' }}</p>
                             <p><span class="font-medium">Telepon:</span> {{ $orderProduct->customer->contact }}</p>
                             <p><span class="font-medium">Email:</span> {{ $orderProduct->customer->email }}</p>
                         </div>

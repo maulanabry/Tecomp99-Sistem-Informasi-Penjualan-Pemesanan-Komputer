@@ -38,6 +38,18 @@ class OrderServiceController extends Controller
         return view('admin.order-service.show-invoice', compact('orderService'));
     }
 
+    public function showTandaTerima(OrderService $orderService)
+    {
+        // Hanya tampilkan tanda terima jika device tidak null
+        if (!$orderService->device) {
+            return redirect()->route('order-services.show', $orderService)
+                ->with('error', 'Tanda terima hanya tersedia untuk order servis yang memiliki perangkat.');
+        }
+
+        $orderService->load(['customer.addresses', 'tickets.admin']);
+        return view('admin.order-service.show-tanda-terima', compact('orderService'));
+    }
+
 
     public function create()
     {

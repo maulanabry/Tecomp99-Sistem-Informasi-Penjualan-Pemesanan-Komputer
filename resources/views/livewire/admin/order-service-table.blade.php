@@ -177,40 +177,40 @@
                     <div class="col-span-1 text-sm">
                         @php
                             $statusColors = [
-                                'Menunggu' => 'bg-yellow-500 text-white',
-                                'Diproses' => 'bg-blue-500 text-white',
-                                'Konfirmasi' => 'bg-indigo-500 text-white',
-                                'Diantar' => 'bg-purple-500 text-white',
-                                'Perlu Diambil' => 'bg-orange-500 text-white',
-                                'Dibatalkan' => 'bg-red-500 text-white',
-                                'Selesai' => 'bg-green-500 text-white',
+                                'Menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'Diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+                                'Konfirmasi' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
+                                'Diantar' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
+                                'Perlu Diambil' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                'Dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                'Selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
                             ];
-                            $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-500 text-white';
+                            $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
-                        <span class="px-2 py-1 rounded text-xs {{ $colorClass }}">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
                             {{ $order->status_order }}
                         </span>
                     </div>
                     <div class="col-span-1 text-sm">
                         @php
                             $paymentStatusColors = [
-                                'belum_dibayar' => 'bg-red-500 text-white',
-                                'down_payment' => 'bg-yellow-500 text-white',
-                                'lunas' => 'bg-green-500 text-white',
-                                'dibatalkan' => 'bg-gray-500 text-white',
+                                'belum_dibayar' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                'down_payment' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'lunas' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                'dibatalkan' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
                             ];
-                            $paymentColorClass = $paymentStatusColors[$order->status_payment] ?? 'bg-gray-500 text-white';
+                            $paymentColorClass = $paymentStatusColors[$order->status_payment] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
                         @php
                             $paymentStatusLabels = [
-                                'belum_dibayar' => 'Belum Diba..',
+                                'belum_dibayar' => 'Belum Dibayar',
                                 'down_payment' => 'Down Payment',
                                 'lunas' => 'Lunas',
                                 'dibatalkan' => 'Dibatalkan',
                             ];
                             $paymentLabel = $paymentStatusLabels[$order->status_payment] ?? ucfirst($order->status_payment);
                         @endphp
-                        <span class="px-2 py-1 rounded text-xs {{ $paymentColorClass }}">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $paymentColorClass }}">
                             {{ $paymentLabel }}
                         </span>
                     </div>
@@ -274,13 +274,43 @@
                     </div>
                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
                         <span>Status Order:</span>
-                        <span class="px-2 py-1 rounded text-xs {{ $statusColors[$order->status_order] ?? 'bg-gray-500 text-white' }}">
+                        @php
+                            $statusColors = [
+                                'Menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'Diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+                                'Konfirmasi' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
+                                'Diantar' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
+                                'Perlu Diambil' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                'Dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                'Selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                            ];
+                            $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                        @endphp
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
                             {{ $order->status_order }}
                         </span>
                     </div>
                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
                         <span>Status Pembayaran:</span>
-                        <span class="px-2 py-1 rounded text-xs {{ $paymentColorClass }}">
+                        @php
+                            $paymentStatusColors = [
+                                'belum_dibayar' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                'down_payment' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'lunas' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                'dibatalkan' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
+                            ];
+                            $paymentColorClass = $paymentStatusColors[$order->status_payment] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                        @endphp
+                        @php
+                            $paymentStatusLabels = [
+                                'belum_dibayar' => 'Belum Dibayar',
+                                'down_payment' => 'Down Payment',
+                                'lunas' => 'Lunas',
+                                'dibatalkan' => 'Dibatalkan',
+                            ];
+                            $paymentLabel = $paymentStatusLabels[$order->status_payment] ?? ucfirst($order->status_payment);
+                        @endphp
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $paymentColorClass }}">
                             {{ $paymentLabel }}
                         </span>
                     </div>

@@ -431,4 +431,206 @@
                         <div class="relative aspect-square bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
                             <img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
                             <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <button type="button" onclick="removePreview(this)" class="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring
+                                <button type="button" onclick="removePreview(this)" class="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-300 transition-colors duration-200 shadow-sm" title="Hapus">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    imagePreview.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Update file input with selected files
+            dropzoneFile.files = selectedFiles.files;
+            updateImageCounter();
+        }
+
+        function removePreview(button) {
+            const previewItem = button.closest('.image-preview-item');
+            const fileName = previewItem.dataset.fileName;
+            
+            // Remove from DataTransfer object
+            const dt = new DataTransfer();
+            Array.from(selectedFiles.files).forEach(file => {
+                if (file.name !== fileName) {
+                    dt.items.add(file);
+                }
+            });
+            selectedFiles = dt;
+            dropzoneFile.files = selectedFiles.files;
+            
+            // Remove preview element
+            previewItem.remove();
+            updateImageCounter();
+        }
+
+        function updateImageCounter() {
+            const currentImages = document.querySelectorAll('.image-preview-item, [id^="image-"]').length;
+            currentImageCounter.textContent = `(${currentImages}/${maxImages} Foto)`;
+        }
+
+        function showAlert(message, type = 'info') {
+            // Create alert element
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `fixed top-4 right-4 z-50 max-w-sm p-4 rounded-lg shadow-lg ${
+                type === 'error' ? 'bg-red-100 border border-red-400 text-red-700' : 
+                type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
+                'bg-blue-100 border border-blue-400 text-blue-700'
+            }`;
+            alertDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${
+                        type === 'error' ? 'fa-exclamation-circle' : 
+                        type === 'success' ? 'fa-check-circle' : 
+                        'fa-info-circle'
+                    } mr-2"></i>
+                    <span class="text-sm">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzoneArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzoneArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzoneArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        dropzoneArea.addEventListener('drop', handleDrop, false);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            dropzoneArea.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
+        }
+
+        function unhighlight(e) {
+            dropzoneArea.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            // Add files to input
+            Array.from(files).forEach(file => {
+                selectedFiles.items.add(file);
+            });
+            dropzoneFile.files = selectedFiles.files;
+            
+            handleImageUpload();
+        }
+
+        // Image management functions
+        function setMainImage(productId, imageId) {
+            if (confirm('Jadikan gambar ini sebagai foto utama produk?')) {
+                fetch(`/admin/product/${productId}/image/${imageId}/set-main`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showAlert(data.message || 'Gagal mengubah foto utama', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Terjadi kesalahan saat mengubah foto utama', 'error');
+                });
+            }
+        }
+
+        function confirmDeleteImage(productId, imageId) {
+            pendingDeleteData = { productId, imageId };
+            deleteModal.classList.remove('hidden');
+        }
+
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (pendingDeleteData) {
+                deleteImage(pendingDeleteData.productId, pendingDeleteData.imageId);
+            }
+        });
+
+        cancelDeleteBtn.addEventListener('click', function() {
+            deleteModal.classList.add('hidden');
+            pendingDeleteData = null;
+        });
+
+        function deleteImage(productId, imageId) {
+            fetch(`/admin/product/${productId}/image/${imageId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`image-${imageId}`).remove();
+                    updateImageCounter();
+                    showAlert('Gambar berhasil dihapus', 'success');
+                } else {
+                    showAlert(data.message || 'Gagal menghapus gambar', 'error');
+                }
+                deleteModal.classList.add('hidden');
+                pendingDeleteData = null;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Terjadi kesalahan saat menghapus gambar', 'error');
+                deleteModal.classList.add('hidden');
+                pendingDeleteData = null;
+            });
+        }
+
+        // Close modal when clicking outside
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                deleteModal.classList.add('hidden');
+                pendingDeleteData = null;
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                deleteModal.classList.add('hidden');
+                pendingDeleteData = null;
+            }
+        });
+
+        // Initialize counter on page load
+        updateImageCounter();
+    </script>
+</x-layout-admin>

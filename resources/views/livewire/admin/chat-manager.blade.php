@@ -4,17 +4,150 @@
         @if($showCustomerList)
             <!-- Customer List -->
             <div class="w-full flex flex-col">
-                <!-- Search Header -->
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <div class="relative">
-                        <input 
-                            type="text" 
-                            wire:model.live="searchQuery"
-                            placeholder="Cari customer..."
-                            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                        >
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <!-- Search and Filter Header -->
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700 space-y-3">
+                    <!-- Search Input and Time Filter Controls - Side by Side -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <!-- Search Input -->
+                        <div class="relative flex-1">
+                            <input 
+                                type="text" 
+                                wire:model.live="searchQuery"
+                                placeholder="Cari customer..."
+                                class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            >
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+
+                        <!-- Time Filter Controls -->
+                        <div class="flex items-center gap-2">
+                            <!-- Filter Dropdown -->
+                            <div class="relative" x-data="{ open: false }">
+                                <button 
+                                    @click="open = !open"
+                                    class="flex items-center px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white whitespace-nowrap"
+                                >
+                                    <i class="fas fa-clock mr-2 text-gray-400"></i>
+                                    <span class="hidden sm:inline">{{ $this->getFilterLabel() }}</span>
+                                    <span class="sm:hidden">Filter</span>
+                                    @if($activeFilterCount > 0)
+                                        <span class="ml-2 bg-primary-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{{ $activeFilterCount }}</span>
+                                    @endif
+                                    <i class="fas fa-chevron-down ml-2 text-gray-400"></i>
+                                </button>
+
+                                <div 
+                                    x-show="open" 
+                                    @click.away="open = false"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute z-10 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg right-0"
+                                >
+                                    <div class="py-1">
+                                        <button 
+                                            wire:click="setTimeFilter('all')"
+                                            @click="open = false"
+                                            class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white {{ $timeFilter === 'all' ? 'bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-400' : '' }}"
+                                        >
+                                            <i class="fas fa-globe mr-2"></i>
+                                            Semua waktu
+                                        </button>
+                                        <button 
+                                            wire:click="setTimeFilter('today')"
+                                            @click="open = false"
+                                            class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white {{ $timeFilter === 'today' ? 'bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-400' : '' }}"
+                                        >
+                                            <i class="fas fa-calendar-day mr-2"></i>
+                                            Hari ini
+                                        </button>
+                                        <button 
+                                            wire:click="setTimeFilter('yesterday')"
+                                            @click="open = false"
+                                            class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white {{ $timeFilter === 'yesterday' ? 'bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-400' : '' }}"
+                                        >
+                                            <i class="fas fa-calendar-minus mr-2"></i>
+                                            Kemarin
+                                        </button>
+                                        <button 
+                                            wire:click="setTimeFilter('last_7_days')"
+                                            @click="open = false"
+                                            class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white {{ $timeFilter === 'last_7_days' ? 'bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-400' : '' }}"
+                                        >
+                                            <i class="fas fa-calendar-week mr-2"></i>
+                                            7 hari terakhir
+                                        </button>
+                                        <button 
+                                            wire:click="setTimeFilter('last_30_days')"
+                                            @click="open = false"
+                                            class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white {{ $timeFilter === 'last_30_days' ? 'bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-400' : '' }}"
+                                        >
+                                            <i class="fas fa-calendar-alt mr-2"></i>
+                                            30 hari terakhir
+                                        </button>
+                                        <button 
+                                            wire:click="setTimeFilter('custom')"
+                                            @click="open = false"
+                                            class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white {{ $timeFilter === 'custom' ? 'bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-400' : '' }}"
+                                        >
+                                            <i class="fas fa-calendar-check mr-2"></i>
+                                            Rentang khusus
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Clear Filter Button -->
+                            @if($activeFilterCount > 0)
+                                <button 
+                                    wire:click="clearFilters"
+                                    class="px-3 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors whitespace-nowrap"
+                                    title="Hapus semua filter"
+                                >
+                                    <i class="fas fa-times mr-1"></i>
+                                    <span class="hidden sm:inline">Hapus Filter</span>
+                                    <span class="sm:hidden">Hapus</span>
+                                </button>
+                            @endif
+                        </div>
                     </div>
+
+                    <!-- Custom Date Range Picker -->
+                    @if($showDatePicker)
+                        <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Dari Tanggal</label>
+                                    <input 
+                                        type="date" 
+                                        wire:model="dateFrom"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                                    >
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Sampai Tanggal</label>
+                                    <input 
+                                        type="date" 
+                                        wire:model="dateTo"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                                    >
+                                </div>
+                                <div class="flex items-end">
+                                    <button 
+                                        wire:click="applyCustomDateFilter"
+                                        class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white text-sm rounded-lg transition-colors"
+                                        :disabled="!$wire.dateFrom || !$wire.dateTo"
+                                    >
+                                        <i class="fas fa-check mr-1"></i>
+                                        Terapkan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Customer List -->
@@ -99,7 +232,7 @@
                                     {{ $selectedCustomerId ? substr(collect($customers)->firstWhere('id', $selectedCustomerId)['name'] ?? 'C', 0, 1) : 'C' }}
                                 </span>
                             </div>
-                            <div>
+                            <div class="flex-1">
                                 <h3 class="font-semibold text-gray-900 dark:text-white">
                                     {{ $selectedCustomerId ? collect($customers)->firstWhere('id', $selectedCustomerId)['name'] ?? 'Customer' : 'Customer' }}
                                 </h3>
@@ -108,18 +241,28 @@
                                 </p>
                             </div>
                         </div>
-                        @if($currentChat)
-                            <button 
-                                wire:click="confirmDeleteChat({{ $currentChat->id }})"
-                                wire:confirm="Apakah Anda yakin ingin menghapus chat ini? Semua pesan akan dihapus secara permanen."
-                                class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
-                                title="Hapus Chat"
-                            >
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        @endif
+                        <div class="flex items-center space-x-2">
+                            <!-- Message Filter Indicator -->
+                            @if($timeFilter !== 'all')
+                                <div class="flex items-center px-2 py-1 bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 text-xs rounded-full">
+                                    <i class="fas fa-filter mr-1"></i>
+                                    {{ $this->getFilterLabel() }}
+                                </div>
+                            @endif
+                            
+                            @if($currentChat)
+                                <button 
+                                    wire:click="confirmDeleteChat({{ $currentChat->id }})"
+                                    wire:confirm="Apakah Anda yakin ingin menghapus chat ini? Semua pesan akan dihapus secara permanen."
+                                    class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                                    title="Hapus Chat"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            @endif
+                        </div>
                     </div>
                 </div>
 

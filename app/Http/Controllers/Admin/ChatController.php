@@ -44,14 +44,23 @@ class ChatController extends Controller
     /**
      * Mendapatkan daftar customer yang pernah chat
      */
-    public function getCustomerChats(): JsonResponse
+    public function getCustomerChats(Request $request): JsonResponse
     {
         $admin = Auth::guard('admin')->user();
-        $chats = $admin->chats()
+
+        // Get filter parameters
+        $timeFilter = $request->get('time_filter', 'all');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+
+        $query = $admin->chats()
             ->where('is_active', true)
-            ->with(['customer', 'lastMessage'])
-            ->orderBy('last_message_at', 'desc')
-            ->get();
+            ->with(['customer', 'lastMessage']);
+
+        // Apply time filtering
+        $query = $this->applyTimeFilter($query, $timeFilter, $dateFrom, $dateTo);
+
+        $chats = $query->orderBy('last_message_at', 'desc')->get();
 
         $customerChats = $chats->map(function ($chat) {
             $lastMessage = $chat->messages()->latest()->first();
@@ -360,6 +369,129 @@ class ChatController extends Controller
                 'success' => false,
                 'message' => 'Gagal menghapus chat'
             ], 500);
+        }
+    }
+
+    /**
+     * Apply time filter to chat query
+     */
+    private function applyTimeFilter($query, $timeFilter, $dateFrom = null, $dateTo = null)
+    {
+        switch ($timeFilter) {
+            case 'today':
+                return $query->whereDate('last_message_at', today());
+
+            case 'yesterday':
+                return $query->whereDate('last_message_at', today()->subDay());
+
+            case 'last_7_days':
+                return $query->where('last_message_at', '>=', now()->subDays(7));
+
+            case 'last_30_days':
+                return $query->where('last_message_at', '>=', now()->subDays(30));
+
+            case 'custom':
+                if ($dateFrom && $dateTo) {
+                    return $query->whereBetween('last_message_at', [
+                        \Carbon\Carbon::parse($dateFrom)->startOfDay(),
+                        \Carbon\Carbon::parse($dateTo)->endOfDay()
+                    ]);
+                }
+                return $query;
+
+            case 'all':
+            default:
+                return $query;
+        }
+    }
+
+    /**
+     * Get filtered chat messages
+     */
+    public function getFilteredMessages(Request $request): JsonResponse
+    {
+        $request->validate([
+            'chat_id' => 'required|exists:chats,id',
+            'time_filter' => 'nullable|string|in:all,today,yesterday,last_7_days,last_30_days,custom',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from'
+        ]);
+
+        $admin = Auth::guard('admin')->user();
+        $chat = Chat::findOrFail($request->chat_id);
+
+        // Pastikan admin adalah pemilik chat ini
+        if ($chat->admin_id !== $admin->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $timeFilter = $request->get('time_filter', 'all');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+
+        $query = $chat->messages();
+
+        // Apply time filtering to messages
+        $query = $this->applyMessageTimeFilter($query, $timeFilter, $dateFrom, $dateTo);
+
+        $messages = $query->orderBy('created_at', 'asc')->get();
+
+        // Tandai pesan dari customer sebagai sudah dibaca
+        $chat->markAsReadByAdmin();
+
+        return response()->json([
+            'success' => true,
+            'messages' => $messages->map(function ($message) {
+                return [
+                    'id' => $message->id,
+                    'sender_type' => $message->sender_type,
+                    'sender_name' => $message->sender_name,
+                    'message' => $message->message,
+                    'message_type' => $message->message_type,
+                    'file_url' => $message->file_url,
+                    'file_name' => $message->file_name,
+                    'is_image' => $message->isImage(),
+                    'formatted_time' => $message->formatted_time,
+                    'formatted_date' => $message->formatted_date,
+                    'created_at' => $message->created_at->toISOString(),
+                ];
+            })
+        ]);
+    }
+
+    /**
+     * Apply time filter to message query
+     */
+    private function applyMessageTimeFilter($query, $timeFilter, $dateFrom = null, $dateTo = null)
+    {
+        switch ($timeFilter) {
+            case 'today':
+                return $query->whereDate('created_at', today());
+
+            case 'yesterday':
+                return $query->whereDate('created_at', today()->subDay());
+
+            case 'last_7_days':
+                return $query->where('created_at', '>=', now()->subDays(7));
+
+            case 'last_30_days':
+                return $query->where('created_at', '>=', now()->subDays(30));
+
+            case 'custom':
+                if ($dateFrom && $dateTo) {
+                    return $query->whereBetween('created_at', [
+                        \Carbon\Carbon::parse($dateFrom)->startOfDay(),
+                        \Carbon\Carbon::parse($dateTo)->endOfDay()
+                    ]);
+                }
+                return $query;
+
+            case 'all':
+            default:
+                return $query;
         }
     }
 

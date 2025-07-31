@@ -19,9 +19,9 @@
             
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Tambah Layanan</h1>
+                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Tambah Servis</h1>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Buat layanan baru untuk toko Anda
+                        Buat servis baru untuk toko Anda
                     </p>
                 </div>
                 <div class="flex space-x-3">
@@ -72,12 +72,12 @@
                                 <!-- Service Name -->
                                 <div class="md:col-span-2">
                                     <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                                        Nama Layanan <span class="text-red-500">*</span>
+                                        Nama Servis <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" name="name" id="name" 
                                         value="{{ old('name') }}"
                                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('name') border-red-500 @enderror"
-                                        placeholder="Masukkan nama layanan"
+                                        placeholder="Masukkan nama servis"
                                         required>
                                     @error('name')
                                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
@@ -87,11 +87,11 @@
                                 <!-- Description -->
                                 <div class="md:col-span-2">
                                     <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                                        Deskripsi Layanan <span class="text-red-500">*</span>
+                                        Deskripsi Servis <span class="text-red-500">*</span>
                                     </label>
                                     <textarea name="description" id="description" rows="4" required
                                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('description') border-red-500 @enderror"
-                                        placeholder="Masukkan deskripsi layanan">{{ old('description') }}</textarea>
+                                        placeholder="Masukkan deskripsi servis">{{ old('description') }}</textarea>
                                     @error('description')
                                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                     @enderror
@@ -103,7 +103,7 @@
                         <div class="border-b border-gray-200 dark:border-gray-600 pb-8">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
                                 <i class="fas fa-tag mr-2 text-primary-500"></i>
-                                Kategori Layanan
+                                Kategori Servis
                             </h3>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -144,7 +144,7 @@
                                 <!-- Price -->
                                 <div>
                                     <label for="price" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                                        Harga Layanan <span class="text-red-500">*</span>
+                                        Harga Servis <span class="text-red-500">*</span>
                                     </label>
                                     <div class="relative rounded-md shadow-sm">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -167,7 +167,7 @@
                         <div class="border-b border-gray-200 dark:border-gray-600 pb-8">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
                                 <i class="fas fa-image mr-2 text-primary-500"></i>
-                                Thumbnail Layanan
+                                Thumbnail Servis
                             </h3>
 
                             <!-- Upload Area -->
@@ -206,7 +206,7 @@
                         <div>
                             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
                                 <i class="fas fa-cog mr-2 text-primary-500"></i>
-                                Pengaturan Layanan
+                                Pengaturan Servis
                             </h3>
 
                             <div class="flex items-center">
@@ -215,11 +215,11 @@
                                     {{ old('is_active', true) ? 'checked' : '' }}
                                     class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded">
                                 <label for="is_active" class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
-                                    Aktifkan layanan setelah dibuat
+                                    Aktifkan servis setelah dibuat
                                 </label>
                             </div>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Jika dicentang, layanan akan langsung tersedia untuk dipesan
+                                Jika dicentang, servis akan langsung tersedia untuk dipesan
                             </p>
                         </div>
 
@@ -233,7 +233,7 @@
                             <button type="submit"
                                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                 <i class="fas fa-save mr-2"></i>
-                                Simpan Layanan
+                                Simpan Servis
                             </button>
                         </div>
                     </form>

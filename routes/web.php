@@ -306,6 +306,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::post('/', [\App\Http\Controllers\Admin\OrderServiceController::class, 'store'])->name('order-services.store');
         Route::get('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'show'])->name('order-services.show');
         Route::get('/{orderService}/invoice', [\App\Http\Controllers\Admin\OrderServiceController::class, 'showInvoice'])->name('order-services.invoice');
+        Route::get('/{orderService}/tanda-terima', [\App\Http\Controllers\Admin\OrderServiceController::class, 'showTandaTerima'])->name('order-services.tanda-terima');
         Route::get('/{orderService}/edit', [\App\Http\Controllers\Admin\OrderServiceController::class, 'edit'])->name('order-services.edit');
         Route::put('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'update'])->name('order-services.update');
         Route::put('/{orderService}/cancel', [\App\Http\Controllers\Admin\OrderServiceController::class, 'cancel'])->name('order-services.cancel');

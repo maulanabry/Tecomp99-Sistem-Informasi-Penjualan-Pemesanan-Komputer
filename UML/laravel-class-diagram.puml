@@ -1,0 +1,409 @@
+@startuml Laravel Class Diagram
+
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam classFontSize 10
+skinparam packageStyle rectangle
+
+' Authentication Models
+package "Authentication" {
+    abstract class Authenticatable {
+        +getAuthIdentifierName()
+        +getAuthIdentifier()
+        +getAuthPassword()
+    }
+    
+    class User extends Authenticatable {
+        +id: int
+        +name: string
+        +email: string
+        +email_verified_at: datetime
+        +password: string
+        +remember_token: string
+        +created_at: datetime
+        +updated_at: datetime
+        --
+        +casts(): array
+    }
+    
+    class Customer extends Authenticatable {
+        +customer_id: string {PK}
+        +name: string
+        +email: string
+        +password: string
+        +last_active: datetime
+        +hasAccount: int
+        +hasAddress: int
+        +photo: string
+        +gender: string
+        +contact: string
+        +service_orders_count: int
+        +product_orders_count: int
+        +total_points: int
+        +email_verified_at: datetime
+        +created_at: datetime
+        +updated_at: datetime
+        +deleted_at: datetime
+        --
+        +generateCustomerId(): string
+        +findForAuth(identifier): Customer
+        +getFormattedAddressAttribute(): string
+        +getWhatsappLinkAttribute(): string
+        +getUnreadNotificationsCountAttribute(): int
+        +getUnreadMessagesCountAttribute(): int
+        +getChatWithAdmin(adminId): Chat
+        +getActiveChats()s
+        +getChatsWithUnreadMessages()
+    }
+    
+    class Admin extends Authenticatable {
+        +id: int {PK}
+        +name: string
+        +email: string
+        +email_verified_at: datetime
+        +password: string
+        +role: string
+        +theme: string
+        +remember_token: string
+        +last_seen_at: datetime
+        +created_at: datetime
+        +updated_at: datetime
+        +deleted_at: datetime
+        --
+        +isOnline(): bool
+        +getUnreadNotificationsCountAttribute(): int
+        +getRecentNotificationsAttribute()
+        +getChatWithCustomer(customerId): Chat
+        +getActiveChats()
+        +getUnreadMessagesCountAttribute(): int
+        +getChatsWithUnreadMessages()
+    }
+}
+
+' Product Management
+package "Product Management" {
+    class Category {
+        +categories_id: int {PK}
+        +name: string
+        +description: string
+        +thumbnail: string
+        +slug: string
+        +is_active: bool
+        +created_at: datetime
+        +updated_at: datetime
+        +deleted_at: datetime
+        --
+        +getThumbnailUrlAttribute()
+    }
+    
+    class Brand {
+        +brand_id: int {PK}
+        +name: string
+        +description: string
+        +logo: string
+        +slug: string
+        +is_active: bool
+        +created_at: datetime
+        +updated_at: datetime
+        +deleted_at: datetime
+        --
+        +getLogoUrlAttribute()
+    }
+    
+    class Product {
+        +product_id: string {PK}
+        +categories_id: int {FK}
+        +brand_id: int {FK}
+        +name: string
+        +description: string
+        +price: int
+        +weight: int
+        +stock: int
+        +is_active: bool
+        +sold_count: int
+        +slug: string
+        +created_at: datetime
+        +updated_at: datetime
+        +deleted_at: datetime
+        --
+        +getThumbnailUrlAttribute()
+    }
+    
+    class ProductImage {
+        +id: int {PK}
+        +product_id: string {FK}
+        +url: string
+        +is_main: bool
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class Service {
+        +service_id: string {PK}
+        +categories_id: int {FK}
+        +name: string
+        +description: string
+        +price: int
+        +thumbnail: string
+        +slug: string
+        +is_active: bool
+        +sold_count: int
+        +created_at: datetime
+        +updated_at: datetime
+        +deleted_at: datetime
+        --
+        +getThumbnailUrlAttribute()
+    }
+}
+
+' Order Management
+package "Order Management" {
+    class OrderProduct {
+        +order_product_id: string {PK}
+        +customer_id: string {FK}
+        +status_order: string
+        +status_payment: string
+        +sub_total: decimal
+        +discount_amount: decimal
+        +grand_total: decimal
+        +shipping_cost: decimal
+        +type: string
+        +note: string
+        +warranty_period_months: int
+        +warranty_expired_at: datetime
+        +paid_amount: decimal
+        +remaining_balance: decimal
+        +last_payment_at: datetime
+        +created_at: datetime
+        +updated_at: datetime
+        +deleted_at: datetime
+        --
+        +updateWarrantyExpiration(date)
+        +updatePaymentStatus()
+        +canAcceptPayment(): bool
+        +validatePayment(amount, type): array
+        +processPayment(amount, type): decimal
+        +getWarrantyStatusAttribute()
+        +getAppliedPromoAttribute()
+    }
+    
+    class OrderProductItem {
+        +id: int {PK}
+        +order_product_id: string {FK}
+        +product_id: string {FK}
+        +quantity: int
+        +price: decimal
+        +total: decimal
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class OrderService {
+        +order_service_id: string {PK}
+        +customer_id: string {FK}
+        +status_order: string
+        +status_payment: string
+        +complaints: string
+        +type: string
+        +device: string
+        +note: string
+        +hasTicket: bool
+        +hasDevice: bool
+        +sub_total: decimal
+        +grand_total: decimal
+        +discount_amount: decimal
+        +warranty_period_months: int
+        +warranty_expired_at: datetime
+        +paid_amount: decimal
+        +remaining_balance: decimal
+        +last_payment_at: datetime
+        +created_at: datetime
+        +updated_at: datetime
+        +deleted_at: datetime
+        --
+        +updateWarrantyExpiration(date)
+        +updatePaymentStatus()
+        +canAcceptPayment(): bool
+        +validatePayment(amount, type): array
+        +processPayment(amount, type): decimal
+        +getWarrantyStatusAttribute()
+        +getAppliedPromoAttribute()
+    }
+    
+    class OrderServiceItem {
+        +id: int {PK}
+        +order_service_id: string {FK}
+        +service_id: string {FK}
+        +quantity: int
+        +price: decimal
+        +total: decimal
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class PaymentDetail {
+        +id: int {PK}
+        +order_product_id: string {FK}
+        +order_service_id: string {FK}
+        +amount: decimal
+        +payment_method: string
+        +status: string
+        +payment_date: datetime
+        +proof_image: string
+        +notes: string
+        +created_at: datetime
+        +updated_at: datetime
+        --
+        +getProofImageUrlAttribute()
+    }
+    
+    class ServiceTicket {
+        +id: int {PK}
+        +order_service_id: string {FK}
+        +ticket_number: string
+        +status: string
+        +priority: string
+        +assigned_to: int
+        +description: string
+        +resolution: string
+        +created_at: datetime
+        +updated_at: datetime
+    }
+}
+
+' Chat System
+package "Chat System" {
+    class Chat {
+        +id: int {PK}
+        +customer_id: string {FK}
+        +admin_id: int {FK}
+        +last_message_at: datetime
+        +is_active: bool
+        +customer_last_read_at: datetime
+        +admin_last_read_at: datetime
+        +created_at: datetime
+        +updated_at: datetime
+        --
+        +getUnreadMessagesForCustomerAttribute(): int
+        +getUnreadMessagesForAdminAttribute(): int
+        +markAsReadByCustomer()
+        +markAsReadByAdmin()
+        +findOrCreateChat(customerId, adminId): Chat
+        +getActiveChatsForCustomer(customerId)
+        +getActiveChatsForAdmin(adminId)
+        +getChatsWithUnreadMessagesForAdmin()
+    }
+    
+    class ChatMessage {
+        +id: int {PK}
+        +chat_id: int {FK}
+        +sender_id: string
+        +sender_type: string
+        +message: string
+        +message_type: string
+        +file_path: string
+        +is_read_by_customer: bool
+        +is_read_by_admin: bool
+        +read_by_customer_at: datetime
+        +read_by_admin_at: datetime
+        +created_at: datetime
+        +updated_at: datetime
+        --
+        +getFileUrlAttribute()
+        +markAsReadByCustomer()
+        +markAsReadByAdmin()
+    }
+}
+
+' Supporting Models
+package "Supporting Models" {
+    class Cart {
+        +id: int {PK}
+        +customer_id: string {FK}
+        +product_id: string {FK}
+        +quantity: int
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class CustomerAddress {
+        +id: int {PK}
+        +customer_id: string {FK}
+        +label: string
+        +recipient_name: string
+        +phone: string
+        +detail_address: string
+        +city: string
+        +province: string
+        +postal_code: string
+        +is_default: bool
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class SystemNotification {
+        +id: int {PK}
+        +notifiable_type: string
+        +notifiable_id: string
+        +type: string
+        +title: string
+        +message: string
+        +data: json
+        +read_at: datetime
+        +created_at: datetime
+        +updated_at: datetime
+        --
+        +getIconClassAttribute(): string
+        +getColorClassAttribute(): string
+    }
+    
+    class Voucher {
+        +id: int {PK}
+        +code: string
+        +name: string
+        +description: string
+        +type: string
+        +value: decimal
+        +minimum_amount: decimal
+        +usage_limit: int
+        +used_count: int
+        +start_date: datetime
+        +end_date: datetime
+        +is_active: bool
+        +created_at: datetime
+        +updated_at: datetime
+    }
+}
+
+' Relationships
+Customer ||--o{ OrderProduct : "places"
+Customer ||--o{ OrderService : "places"
+Customer ||--o{ Cart : "has"
+Customer ||--o{ CustomerAddress : "has"
+Customer ||--o{ Chat : "participates"
+Customer ||--o{ SystemNotification : "receives"
+
+Admin ||--o{ Chat : "manages"
+Admin ||--o{ SystemNotification : "receives"
+
+Product }o--|| Category : "belongs to"
+Product }o--|| Brand : "belongs to"
+Product ||--o{ ProductImage : "has"
+Product ||--o{ Cart : "in"
+Product ||--o{ OrderProductItem : "ordered in"
+
+Service }o--|| Category : "belongs to"
+Service ||--o{ OrderServiceItem : "ordered in"
+
+OrderProduct ||--o{ OrderProductItem : "contains"
+OrderProduct ||--o{ PaymentDetail : "has payments"
+
+OrderService ||--o{ OrderServiceItem : "contains"
+OrderService ||--o{ PaymentDetail : "has payments"
+OrderService ||--o{ ServiceTicket : "has tickets"
+
+Chat }o--|| Customer : "belongs to"
+Chat }o--|| Admin : "belongs to"
+Chat ||--o{ ChatMessage : "contains"
+
+@enduml

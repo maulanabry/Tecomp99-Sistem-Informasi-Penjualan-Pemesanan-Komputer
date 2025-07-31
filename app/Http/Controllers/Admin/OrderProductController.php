@@ -224,6 +224,15 @@ class OrderProductController extends Controller
 
     public function showInvoice(OrderProduct $orderProduct)
     {
+        // Eager load necessary relationships to prevent N+1 queries
+        $orderProduct->load([
+            'customer.addresses',
+            'customer.defaultAddress',
+            'items.product',
+            'shipping',
+            'payments'
+        ]);
+
         return view('admin.order-product.show-invoice', compact('orderProduct'));
     }
 

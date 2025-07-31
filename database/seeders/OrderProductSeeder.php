@@ -7,7 +7,7 @@ use App\Models\OrderProduct;
 use App\Models\OrderProductItem;
 use App\Models\Customer;
 use App\Models\Product;
-use App\Models\Promo;
+use App\Models\Voucher;
 use Illuminate\Support\Carbon;
 use Faker\Factory as Faker;
 
@@ -25,8 +25,8 @@ class OrderProductSeeder extends Seeder
         // Get available products
         $products = Product::where('stock', '>', 0)->get();
 
-        // Get active promos with discount_amount (not percentage)
-        $promos = Promo::where('is_active', true)
+        // Get active vouchers with discount_amount (not percentage)
+        $vouchers = Voucher::where('is_active', true)
             ->where('type', 'amount')
             ->whereNotNull('discount_amount')
             ->get();
@@ -104,10 +104,10 @@ class OrderProductSeeder extends Seeder
 
             // Apply discount (30% chance)
             $discountAmount = 0;
-            if ($faker->boolean(30) && !empty($promos)) {
-                $promo = $faker->randomElement($promos);
-                if ($subTotal >= $promo->minimum_order_amount) {
-                    $discountAmount = $promo->discount_amount;
+            if ($faker->boolean(30) && !empty($vouchers)) {
+                $voucher = $faker->randomElement($vouchers);
+                if ($subTotal >= $voucher->minimum_order_amount) {
+                    $discountAmount = $voucher->discount_amount;
                 }
             }
 
@@ -197,10 +197,10 @@ class OrderProductSeeder extends Seeder
 
             // Apply discount (40% chance for shipping orders)
             $discountAmount = 0;
-            if ($faker->boolean(40) && !empty($promos)) {
-                $promo = $faker->randomElement($promos);
-                if ($subTotal >= $promo->minimum_order_amount) {
-                    $discountAmount = $promo->discount_amount;
+            if ($faker->boolean(40) && !empty($vouchers)) {
+                $voucher = $faker->randomElement($vouchers);
+                if ($subTotal >= $voucher->minimum_order_amount) {
+                    $discountAmount = $voucher->discount_amount;
                 }
             }
 

@@ -1,0 +1,404 @@
+@startuml Laravel ERD - Entity Relationship Diagram
+
+!theme plain
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+' Authentication & User Management
+entity "admins" {
+  * id : BIGINT <<PK>>
+  --
+  * name : VARCHAR(255)
+  * email : VARCHAR(255) <<UNIQUE>>
+  email_verified_at : TIMESTAMP
+  * password : VARCHAR(255)
+  * role : ENUM('admin','teknisi','pemilik')
+  theme : ENUM('light','dark','system')
+  remember_token : VARCHAR(100)
+  last_seen_at : TIMESTAMP
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+  deleted_at : TIMESTAMP
+}
+
+entity "customers" {
+  * customer_id : VARCHAR(255) <<PK>>
+  --
+  * name : VARCHAR(255)
+  email : VARCHAR(255) <<UNIQUE>>
+  password : VARCHAR(255)
+  last_active : TIMESTAMP
+  * hasAccount : BOOLEAN
+  * hasAddress : BOOLEAN
+  photo : VARCHAR(255)
+  gender : ENUM('pria','wanita')
+  * contact : VARCHAR(20)
+  * service_orders_count : INT
+  * product_orders_count : INT
+  * total_points : INT
+  email_verified_at : TIMESTAMP
+  remember_token : VARCHAR(100)
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+  deleted_at : TIMESTAMP
+}
+
+entity "users" {
+  * id : BIGINT <<PK>>
+  --
+  * name : VARCHAR(255)
+  * email : VARCHAR(255) <<UNIQUE>>
+  email_verified_at : TIMESTAMP
+  * password : VARCHAR(255)
+  remember_token : VARCHAR(100)
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+' Product Management
+entity "categories" {
+  * categories_id : BIGINT <<PK>>
+  --
+  * name : VARCHAR(255)
+  * type : ENUM('produk','layanan')
+  * slug : VARCHAR(255)
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+  deleted_at : TIMESTAMP
+}
+
+entity "brands" {
+  * brand_id : BIGINT <<PK>>
+  --
+  * name : VARCHAR(255)
+  description : TEXT
+  logo : VARCHAR(255)
+  * slug : VARCHAR(255)
+  * is_active : BOOLEAN
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+  deleted_at : TIMESTAMP
+}
+
+entity "products" {
+  * product_id : VARCHAR(255) <<PK>>
+  --
+  * categories_id : BIGINT <<FK>>
+  * brand_id : BIGINT <<FK>>
+  * name : VARCHAR(255)
+  description : TEXT
+  * price : INT
+  * weight : INT
+  * stock : INT
+  * is_active : BOOLEAN
+  * sold_count : INT
+  * slug : VARCHAR(255) <<UNIQUE>>
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+  deleted_at : TIMESTAMP
+}
+
+entity "product_images" {
+  * id : BIGINT <<PK>>
+  --
+  * product_id : VARCHAR(255) <<FK>>
+  * url : VARCHAR(255)
+  * is_main : BOOLEAN
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "service" {
+  * service_id : VARCHAR(255) <<PK>>
+  --
+  * categories_id : BIGINT <<FK>>
+  * name : VARCHAR(255)
+  * description : TEXT
+  * price : INT
+  * thumbnail : VARCHAR(255)
+  * slug : VARCHAR(255)
+  * is_active : BOOLEAN
+  * sold_count : INT
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+  deleted_at : TIMESTAMP
+}
+
+' Order Management
+entity "order_products" {
+  * order_product_id : VARCHAR(50) <<PK>>
+  --
+  * customer_id : VARCHAR(255) <<FK>>
+  * status_order : ENUM('menunggu','diproses','dikirim','selesai','dibatalkan')
+  * status_payment : ENUM('belum_dibayar','down_payment','lunas','dibatalkan')
+  * sub_total : INT
+  discount_amount : INT
+  * grand_total : INT
+  shipping_cost : INT
+  * type : ENUM('langsung','pengiriman')
+  note : TEXT
+  warranty_period_months : INT
+  warranty_expired_at : TIMESTAMP
+  * paid_amount : INT
+  * remaining_balance : INT
+  last_payment_at : TIMESTAMP
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+  deleted_at : TIMESTAMP
+}
+
+entity "order_product_items" {
+  * order_product_item_id : BIGINT <<PK>>
+  --
+  * order_product_id : VARCHAR(50) <<FK>>
+  * product_id : VARCHAR(255) <<FK>>
+  * quantity : INT
+  * price : DECIMAL(10,2)
+  * total : DECIMAL(10,2)
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "order_services" {
+  * order_service_id : VARCHAR(50) <<PK>>
+  --
+  * customer_id : VARCHAR(50) <<FK>>
+  * status_order : ENUM('Menunggu','Diproses','Dibatalkan','Selesai')
+  * status_payment : ENUM('belum_dibayar','down_payment','lunas','dibatalkan')
+  complaints : TEXT
+  * type : ENUM('reguler','onsite')
+  * device : TEXT
+  note : TEXT
+  * hasTicket : BOOLEAN
+  * hasDevice : BOOLEAN
+  * sub_total : INT
+  * grand_total : INT
+  * discount_amount : INT
+  warranty_period_months : INT
+  warranty_expired_at : TIMESTAMP
+  * paid_amount : INT
+  * remaining_balance : INT
+  last_payment_at : TIMESTAMP
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+  deleted_at : TIMESTAMP
+}
+
+entity "order_service_items" {
+  * order_service_item_id : BIGINT <<PK>>
+  --
+  * order_service_id : VARCHAR(50) <<FK>>
+  * service_id : VARCHAR(255) <<FK>>
+  * quantity : INT
+  * price : DECIMAL(10,2)
+  * total : DECIMAL(10,2)
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "payment_details" {
+  * payment_id : VARCHAR(255) <<PK>>
+  --
+  order_product_id : VARCHAR(50) <<FK>>
+  order_service_id : VARCHAR(50) <<FK>>
+  method : VARCHAR(255)
+  * amount : INT
+  change_returned : INT
+  * name : VARCHAR(255)
+  * status : ENUM('menunggu','diproses','dibayar','gagal')
+  * payment_type : ENUM('full','down_payment')
+  * order_type : ENUM('produk','servis')
+  proof_photo : VARCHAR(255)
+  cash_received : INT
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+  deleted_at : TIMESTAMP
+}
+
+' Service Management
+entity "service_tickets" {
+  * service_ticket_id : VARCHAR(255) <<PK>>
+  --
+  * order_service_id : VARCHAR(50) <<FK>>
+  * ticket_number : VARCHAR(255)
+  * status : VARCHAR(255)
+  * priority : VARCHAR(255)
+  assigned_to : INT
+  * description : TEXT
+  resolution : TEXT
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "service_actions" {
+  * service_action_id : VARCHAR(255) <<PK>>
+  --
+  * service_ticket_id : VARCHAR(255) <<FK>>
+  * action : TEXT
+  * performed_by : INT
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+' Chat System
+entity "chats" {
+  * id : BIGINT <<PK>>
+  --
+  * customer_id : VARCHAR(255) <<FK>>
+  * admin_id : BIGINT <<FK>>
+  last_message_at : TIMESTAMP
+  * is_active : BOOLEAN
+  customer_last_read_at : TIMESTAMP
+  admin_last_read_at : TIMESTAMP
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "chat_messages" {
+  * id : BIGINT <<PK>>
+  --
+  * chat_id : BIGINT <<FK>>
+  * sender_id : VARCHAR(255)
+  * sender_type : VARCHAR(255)
+  * message : TEXT
+  * message_type : VARCHAR(255)
+  file_path : VARCHAR(255)
+  * is_read_by_customer : BOOLEAN
+  * is_read_by_admin : BOOLEAN
+  read_by_customer_at : TIMESTAMP
+  read_by_admin_at : TIMESTAMP
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+' Supporting Tables
+entity "carts" {
+  * id : BIGINT <<PK>>
+  --
+  * customer_id : VARCHAR(255) <<FK>>
+  * product_id : VARCHAR(255) <<FK>>
+  * quantity : INT
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "customer_addresses" {
+  * id : BIGINT <<PK>>
+  --
+  * customer_id : VARCHAR(255) <<FK>>
+  * label : VARCHAR(255)
+  * recipient_name : VARCHAR(255)
+  * phone : VARCHAR(255)
+  * detail_address : TEXT
+  * city : VARCHAR(255)
+  * province : VARCHAR(255)
+  * postal_code : VARCHAR(255)
+  * is_default : BOOLEAN
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "shipping" {
+  * shipping_id : BIGINT <<PK>>
+  --
+  * order_product_id : VARCHAR(50) <<FK>>
+  * courier : VARCHAR(255)
+  * service : VARCHAR(255)
+  * cost : INT
+  * tracking_number : VARCHAR(255)
+  * status : VARCHAR(255)
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "vouchers" {
+  * voucher_id : BIGINT <<PK>>
+  --
+  * code : VARCHAR(255) <<UNIQUE>>
+  * name : VARCHAR(255)
+  * description : TEXT
+  * type : ENUM('fixed','percentage')
+  * value : DECIMAL(10,2)
+  * minimum_amount : DECIMAL(10,2)
+  * usage_limit : INT
+  * used_count : INT
+  * start_date : DATETIME
+  * end_date : DATETIME
+  * is_active : BOOLEAN
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "system_notifications" {
+  * id : BIGINT <<PK>>
+  --
+  * notifiable_type : VARCHAR(255)
+  * notifiable_id : VARCHAR(255)
+  * type : VARCHAR(255)
+  * title : VARCHAR(255)
+  * message : TEXT
+  data : JSON
+  read_at : TIMESTAMP
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "feedback_testimonials" {
+  * id : BIGINT <<PK>>
+  --
+  * customer_id : VARCHAR(255) <<FK>>
+  * rating : INT
+  * feedback : TEXT
+  * is_testimonial : BOOLEAN
+  * is_approved : BOOLEAN
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "settings" {
+  * id : BIGINT <<PK>>
+  --
+  * key : VARCHAR(255) <<UNIQUE>>
+  * value : TEXT
+  * type : VARCHAR(255)
+  * description : TEXT
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+' Relationships
+customers ||--o{ order_products : "places"
+customers ||--o{ order_services : "places"
+customers ||--o{ carts : "has"
+customers ||--o{ customer_addresses : "has"
+customers ||--o{ chats : "participates"
+customers ||--o{ feedback_testimonials : "gives"
+
+admins ||--o{ chats : "manages"
+
+categories ||--o{ products : "categorizes"
+categories ||--o{ service : "categorizes"
+
+brands ||--o{ products : "manufactures"
+
+products ||--o{ product_images : "has"
+products ||--o{ carts : "in"
+products ||--o{ order_product_items : "ordered"
+
+service ||--o{ order_service_items : "ordered"
+
+order_products ||--o{ order_product_items : "contains"
+order_products ||--o{ payment_details : "paid_by"
+order_products ||--o{ shipping : "shipped_via"
+
+order_services ||--o{ order_service_items : "contains"
+order_services ||--o{ payment_details : "paid_by"
+order_services ||--o{ service_tickets : "generates"
+
+service_tickets ||--o{ service_actions : "has"
+
+chats ||--o{ chat_messages : "contains"
+chats }o--|| customers : "belongs_to"
+chats }o--|| admins : "managed_by"
+
+@enduml

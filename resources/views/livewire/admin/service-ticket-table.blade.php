@@ -87,13 +87,6 @@
     <div class="mt-4">
         <!-- Header Actions -->
         <div class="flex justify-end mb-4">
-            <a href="{{ route('service-tickets.calendar') }}" 
-               class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Kalender
-            </a>
         </div>
 
         <div class="hidden md:block">
@@ -149,16 +142,16 @@
                     <div class="text-sm">
                         @php
                             $statusColors = [
-                                'Menunggu' => 'bg-yellow-500 text-white',
-                                'Diproses' => 'bg-blue-500 text-white',
-                                'Diantar' => 'bg-purple-500 text-white',
-                                'Perlu Diambil' => 'bg-orange-500 text-white',
-                                'Selesai' => 'bg-green-500 text-white',
-                                'Dibatalkan' => 'bg-red-600 text-white',
+                                'Menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'Diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+                                'Diantar' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
+                                'Perlu Diambil' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                'Selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                'Dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
                             ];
-                            $colorClass = $statusColors[$ticket->status] ?? 'bg-gray-500 text-white';
+                            $colorClass = $statusColors[$ticket->status] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
-                        <span class="px-2 py-1 rounded text-xs {{ $colorClass }}">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
                             {{ $ticket->status }}
                         </span>
                     </div>
@@ -233,7 +226,18 @@
                     </div>
                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
                         <span>Status:</span>
-                        <span class="px-2 py-1 rounded text-xs {{ $colorClass }}">
+                        @php
+                            $statusColors = [
+                                'Menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'Diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+                                'Diantar' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
+                                'Perlu Diambil' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                'Selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                'Dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                            ];
+                            $colorClass = $statusColors[$ticket->status] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                        @endphp
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
                             {{ $ticket->status }}
                         </span>
                     </div>

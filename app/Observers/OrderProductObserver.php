@@ -33,7 +33,7 @@ class OrderProductObserver
                 'order_id' => $orderProduct->order_product_id,
                 'total' => $orderProduct->grand_total,
                 'type' => 'produk',
-                'action_url' => route('customer.orders.product-detail', $orderProduct->order_product_id)
+                'action_url' => route('customer.orders.products.show', $orderProduct->order_product_id)
             ]
         );
     }
@@ -57,7 +57,7 @@ class OrderProductObserver
                     'order_id' => $orderProduct->order_product_id,
                     'status' => $orderProduct->status_order,
                     'type' => 'produk',
-                    'action_url' => route('customer.orders.product-detail', $orderProduct->order_product_id)
+                    'action_url' => route('customer.orders.products.show', $orderProduct->order_product_id)
                 ]
             );
         }
@@ -76,7 +76,7 @@ class OrderProductObserver
                     'paid_amount' => $orderProduct->paid_amount,
                     'remaining_balance' => $orderProduct->remaining_balance,
                     'type' => 'produk',
-                    'action_url' => route('customer.orders.product-detail', $orderProduct->order_product_id)
+                    'action_url' => route('customer.orders.products.show', $orderProduct->order_product_id)
                 ]
             );
         }

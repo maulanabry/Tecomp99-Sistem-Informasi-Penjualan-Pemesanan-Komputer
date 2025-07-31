@@ -19,16 +19,16 @@
             
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Layanan</h1>
+                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Servis</h1>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Informasi lengkap layanan {{ $service->name }}
+                        Informasi lengkap servis {{ $service->name }}
                     </p>
                 </div>
                 <div class="flex space-x-3">
                     <a href="{{ route('services.edit', $service) }}" 
                         class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                         <i class="fas fa-edit mr-2"></i>
-                        Edit Layanan
+                        Edit Servis
                     </a>
                     <a href="{{ route('services.index') }}" 
                         class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
@@ -47,7 +47,7 @@
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                                 <i class="fas fa-image mr-2 text-primary-500"></i>
-                                Thumbnail Layanan
+                                Thumbnail Servis
                             </h3>
                         </div>
                         <div class="p-6">
@@ -63,7 +63,7 @@
                             @else
                                 <div class="text-center py-8">
                                     <i class="fas fa-image text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada thumbnail untuk layanan ini</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada thumbnail untuk servis ini</p>
                                 </div>
                             @endif
                         </div>
@@ -74,17 +74,17 @@
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                                 <i class="fas fa-info-circle mr-2 text-primary-500"></i>
-                                Informasi Layanan
+                                Informasi Servis
                             </h3>
                         </div>
                         <div class="p-6">
                             <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Layanan</dt>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Servis</dt>
                                     <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $service->service_id }}</dd>
                                 </div>
                                 <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nama Layanan</dt>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nama Servis</dt>
                                     <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $service->name }}</dd>
                                 </div>
                                 <div>
@@ -130,7 +130,7 @@
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                                 <i class="fas fa-chart-bar mr-2 text-primary-500"></i>
-                                Statistik Layanan
+                                Statistik Servis
                             </h3>
                         </div>
                         <div class="p-6">
@@ -162,7 +162,7 @@
                             <a href="{{ route('services.edit', $service) }}" 
                                 class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                 <i class="fas fa-edit mr-2"></i>
-                                Edit Layanan
+                                Edit Servis
                             </a>
                             <button onclick="toggleServiceStatus('{{ $service->service_id }}', {{ $service->is_active ? 'false' : 'true' }})"
                                 class="w-full inline-flex items-center justify-center px-4 py-2 border border-{{ $service->is_active ? 'red' : 'green' }}-300 shadow-sm text-sm font-medium rounded-md text-{{ $service->is_active ? 'red' : 'green' }}-700 bg-white hover:bg-{{ $service->is_active ? 'red' : 'green' }}-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-{{ $service->is_active ? 'red' : 'green' }}-500 dark:bg-gray-700 dark:border-{{ $service->is_active ? 'red' : 'green' }}-600 dark:text-{{ $service->is_active ? 'red' : 'green' }}-400 dark:hover:bg-{{ $service->is_active ? 'red' : 'green' }}-900/20">
@@ -172,7 +172,7 @@
                             <button onclick="confirmDelete('{{ $service->service_id }}', '{{ $service->name }}')"
                                 class="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-gray-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20">
                                 <i class="fas fa-trash mr-2"></i>
-                                Hapus Layanan
+                                Hapus Servis
                             </button>
                         </div>
                     </div>
@@ -220,10 +220,10 @@
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900">
                     <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">Hapus Layanan</h3>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">Hapus Servis</h3>
                 <div class="mt-2 px-7 py-3">
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Apakah Anda yakin ingin menghapus layanan "<span id="serviceName" class="font-semibold"></span>"?
+                        Apakah Anda yakin ingin menghapus servis "<span id="serviceName" class="font-semibold"></span>"?
                         Data yang dihapus dapat dipulihkan dari menu Pulihkan Data.
                     </p>
                 </div>
@@ -262,7 +262,7 @@
                 <div class="sm:flex sm:items-start">
                     <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mb-4" id="modal-title">
-                            Thumbnail Layanan
+                            Thumbnail Servis
                         </h3>
                         <div class="mt-2 flex justify-center">
                             <img id="modalImage" src="" alt="" class="max-w-full max-h-96 object-contain rounded-lg">
@@ -296,7 +296,7 @@
         }
 
         function toggleServiceStatus(serviceId, newStatus) {
-            if (confirm('Apakah Anda yakin ingin mengubah status layanan ini?')) {
+            if (confirm('Apakah Anda yakin ingin mengubah status servis ini?')) {
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';

@@ -134,7 +134,13 @@
                         <h3 class="text-sm font-bold text-gray-900 mb-2">Data Pelanggan</h3>
                         <div class="text-xs space-y-1">
                             <p><span class="font-medium">Nama:</span> {{ $orderService->customer->name }}</p>
-                            <p><span class="font-medium">Alamat:</span> {{ $orderService->customer->addresses?->detail_address ?? 'Alamat tidak tersedia' }}</p>
+                            <p><span class="font-medium">Alamat:</span> 
+                                @php
+                                    $defaultAddress = $orderService->customer->addresses->where('is_default', true)->first() 
+                                        ?? $orderService->customer->addresses->first();
+                                @endphp
+                                {{ $defaultAddress?->detail_address ?? 'Alamat tidak tersedia' }}
+                            </p>
                             <p><span class="font-medium">Telepon:</span> {{ $orderService->customer->contact }}</p>
                             <p><span class="font-medium">Email:</span> {{ $orderService->customer->email }}</p>
                         </div>

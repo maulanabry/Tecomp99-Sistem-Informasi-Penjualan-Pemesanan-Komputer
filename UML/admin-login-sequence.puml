@@ -1,0 +1,149 @@
+@startuml Admin Login Sequence Diagram
+!theme plain
+title Admin Login Implementation - Tecomp99 System
+
+actor User as U
+participant "Browser" as B
+participant "Laravel Router" as R
+participant "AuthController" as AC
+participant "Request Validator" as V
+participant "Auth Guard (admin)" as AG_A
+participant "Auth Guard (teknisi)" as AG_T
+participant "Auth Guard (pemilik)" as AG_P
+participant "Admin Model" as AM
+participant "Database" as DB
+participant "Session Manager" as SM
+participant "TrackAdminActivity\nMiddleware" as TAM
+
+== Login Form Access ==
+U -> B: Access /batcave
+B -> R: GET /batcave
+R -> AC: index()
+AC -> B: Return login-admin.blade.php view
+B -> U: Display login form
+
+== Login Process ==
+U -> B: Submit login form\n(email, password, remember)
+B -> R: POST /batcave
+R -> V: Validate request
+V -> V: Check email format\nCheck password length (min 6)
+
+alt Validation Failed
+    V -> B: Return validation errors
+    B -> U: Show error messages
+else Validation Passed
+    V -> AC: login(Request $request)
+    
+    == Authentication Attempts ==
+    note over AC: Try authentication in sequence:\n1. Admin → 2. Teknisi → 3. Pemilik
+    
+    AC -> AG_A: attempt(['email' => email,\n'password' => password,\n'role' => 'admin'], remember)
+    AG_A -> AM: Find user by email and role='admin'
+    AM -> DB: SELECT * FROM admins\nWHERE email=? AND role='admin'
+    
+    alt Admin Authentication Success
+        DB -> AM: Return admin user
+        AM -> AG_A: User found, verify password
+        AG_A -> AC: Authentication successful
+        
+        AC -> DB: UPDATE admins SET last_seen_at=NOW()\nWHERE id=?
+        AC -> SM: regenerate()
+        AC -> B: redirect()->intended('admin/dashboard')
+        B -> U: Redirect to Admin Dashboard
+        
+    else Admin Authentication Failed
+        AG_A -> AC: Authentication failed
+        
+        AC -> AG_T: attempt(['email' => email,\n'password' => password,\n'role' => 'teknisi'], remember)
+        AG_T -> AM: Find user by email and role='teknisi'
+        AM -> DB: SELECT * FROM admins\nWHERE email=? AND role='teknisi'
+        
+        alt Teknisi Authentication Success
+            DB -> AM: Return teknisi user
+            AM -> AG_T: User found, verify password
+            AG_T -> AC: Authentication successful
+            
+            AC -> DB: UPDATE admins SET last_seen_at=NOW()\nWHERE id=?
+            AC -> SM: regenerate()
+            AC -> B: redirect()->intended('teknisi/dashboard')
+            B -> U: Redirect to Teknisi Dashboard
+            
+        else Teknisi Authentication Failed
+            AG_T -> AC: Authentication failed
+            
+            AC -> AG_P: attempt(['email' => email,\n'password' => password,\n'role' => 'pemilik'], remember)
+            AG_P -> AM: Find user by email and role='pemilik'
+            AM -> DB: SELECT * FROM admins\nWHERE email=? AND role='pemilik'
+            
+            alt Pemilik Authentication Success
+                DB -> AM: Return pemilik user
+                AM -> AG_P: User found, verify password
+                AG_P -> AC: Authentication successful
+                
+                AC -> DB: UPDATE admins SET last_seen_at=NOW()\nWHERE id=?
+                AC -> SM: regenerate()
+                AC -> B: redirect()->intended('pemilik/dashboard')
+                B -> U: Redirect to Pemilik Dashboard
+                
+            else All Authentication Failed
+                AG_P -> AC: Authentication failed
+                AC -> B: back()->withErrors(['email' => 'Email dan Password\nyang dimasukkan tidak sesuai'])
+                B -> U: Show login form with error
+            end
+        end
+    end
+end
+
+== Activity Tracking (Middleware) ==
+note over TAM: TrackAdminActivity middleware runs on\nall authenticated admin routes
+
+U -> B: Access any admin route
+B -> R: Route with auth:admin,teknisi,pemilik middleware
+R -> TAM: handle(Request $request)
+
+alt User is Admin
+    TAM -> AG_A: check()
+    AG_A -> TAM: User authenticated as admin
+    TAM -> DB: UPDATE admins SET last_seen_at=NOW()\nWHERE id=admin_id
+else User is Teknisi
+    TAM -> AG_T: check()
+    AG_T -> TAM: User authenticated as teknisi
+    TAM -> DB: UPDATE admins SET last_seen_at=NOW()\nWHERE id=teknisi_id
+else User is Pemilik
+    TAM -> AG_P: check()
+    AG_P -> TAM: User authenticated as pemilik
+    TAM -> DB: UPDATE admins SET last_seen_at=NOW()\nWHERE id=pemilik_id
+end
+
+TAM -> R: Continue to controller
+R -> B: Return response
+B -> U: Display page
+
+== Logout Process ==
+U -> B: Click logout
+B -> R: POST /logout
+R -> AC: logout()
+
+alt User is Admin
+    AC -> AG_A: check()
+    AG_A -> AC: User is admin
+    AC -> DB: UPDATE admins SET last_seen_at=NOW()\nWHERE id=admin_id
+    AC -> AG_A: logout()
+else User is Teknisi
+    AC -> AG_T: check()
+    AG_T -> AC: User is teknisi
+    AC -> DB: UPDATE admins SET last_seen_at=NOW()\nWHERE id=teknisi_id
+    AC -> AG_T: logout()
+else User is Pemilik
+    AC -> AG_P: check()
+    AG_P -> AC: User is pemilik
+    AC -> DB: UPDATE admins SET last_seen_at=NOW()\nWHERE id=pemilik_id
+    AC -> AG_P: logout()
+end
+
+AC -> SM: invalidate()
+AC -> SM: regenerateToken()
+AC -> B: redirect('/login')
+B -> U: Redirect to login page
+
+@enduml
