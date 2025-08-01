@@ -16,7 +16,7 @@
                 </button>
             </div>
             <!-- Modal body -->
-            <form action="{{ route('teknisi.service-tickets.actions.store', $ticket) }}" method="POST">
+            <form action="{{ route('service-tickets.actions.store', $ticket) }}" method="POST">
                 @csrf
                 <div class="p-6 space-y-6">
                     <div>

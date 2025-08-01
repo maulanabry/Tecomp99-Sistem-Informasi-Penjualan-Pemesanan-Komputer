@@ -1,212 +1,329 @@
 <x-layout-admin>
     <div class="py-6">
-        {{-- Page Header --}}
+        @if (session('success'))
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
+                <x-alert type="success" :message="session('success')" />
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
+                <x-alert type="danger" :message="session('error')" />
+            </div>
+        @endif
+
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('payments.index') }}"
-                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+            <!-- Breadcrumbs -->
+            <div class="mb-2">
+                <x-breadcrumbs />
+            </div>
+            
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Pembayaran</h1>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Informasi lengkap pembayaran {{ $payment->payment_id }}
+                    </p>
+                </div>
+                <div class="flex space-x-3">
+                    @if (!in_array($payment->status, ['dibayar', 'gagal']))
+                        <a href="{{ route('payments.edit', ['payment_id' => $payment->payment_id]) }}" 
+                            class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit Pembayaran
+                        </a>
+                    @endif
+                    <a href="{{ route('payments.index') }}" 
+                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
                     </a>
-                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Detail Pembayaran</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('payments.edit', ['payment_id' => $payment->payment_id]) }}"
-                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                        <i class="fas fa-edit mr-2"></i>
-                        Edit Payment
-                    </a>
-                    @if($payment->status !== 'gagal')
-                        <button type="button"
-                            data-modal-target="cancel-payment-modal-{{ $payment->payment_id }}"
-                            data-modal-toggle="cancel-payment-modal-{{ $payment->payment_id }}"
-                            class="inline-flex items-center justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto dark:bg-gray-800 dark:border-red-600 dark:text-red-400 dark:hover:bg-gray-700">
-                            <i class="fas fa-times-circle mr-2"></i>
-                            Batalkan Pembayaran
-                        </button>
-                    @endif
                 </div>
             </div>
-        </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="py-4 space-y-6">
-                {{-- Payment Details Section --}}
-                <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-                    <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
-                            Informasi Pembayaran
-                        </h3>
+            <!-- Payment Details -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main Information -->
+                <div class="lg:col-span-2">
+                    <!-- Basic Payment Information -->
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-credit-card mr-2 text-primary-500"></i>
+                                Informasi Pembayaran
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Pembayaran</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $payment->payment_id }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Order</dt>
+                                    <dd class="mt-1">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $payment->order_type === 'produk' ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100' }}">
+                                            <i class="fas {{ $payment->order_type === 'produk' ? 'fa-box' : 'fa-tools' }} mr-1"></i>
+                                            {{ ucfirst($payment->order_type) }}
+                                        </span>
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Order</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">
+                                        @if($payment->order_type === 'produk')
+                                            {{ $payment->order_product_id ?? '-' }}
+                                        @else
+                                            {{ $payment->order_service_id ?? '-' }}
+                                        @endif
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Metode Pembayaran</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $payment->method }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Pembayaran</dt>
+                                    <dd class="mt-1 text-lg font-bold text-gray-900 dark:text-gray-100">Rp {{ number_format($payment->amount, 0, ',', '.') }}</dd>
+                                </div>
+                                @if($payment->method === 'Tunai')
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Uang Diterima</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $payment->formatted_cash_received }}</dd>
+                                </div>
+                                @endif
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nama Pembayar</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $payment->name }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Pembayaran</dt>
+                                    <dd class="mt-1">
+                                        @php
+                                            $statusConfig = [
+                                                'menunggu' => ['bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100', 'fas fa-clock'],
+                                                'dibayar' => ['bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100', 'fas fa-check-circle'],
+                                                'gagal' => ['bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100', 'fas fa-times-circle'],
+                                            ];
+                                            $config = $statusConfig[$payment->status] ?? ['bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200', 'fas fa-question-circle'];
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config[0] }}">
+                                            <i class="{{ $config[1] }} mr-1"></i>
+                                            {{ ucfirst($payment->status) }}
+                                        </span>
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
+                                    <dd class="mt-1">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $payment->payment_type === 'full' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' }}">
+                                            <i class="fas {{ $payment->payment_type === 'full' ? 'fa-money-check-alt' : 'fa-hand-holding-usd' }} mr-1"></i>
+                                            {{ $payment->payment_type === 'full' ? 'Pelunasan' : 'DP (Down Payment)' }}
+                                        </span>
+                                    </dd>
+                                </div>
+                                @if($payment->change_returned && $payment->method === 'Tunai')
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kembalian</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold text-green-600 dark:text-green-400">Rp {{ number_format($payment->change_returned, 0, ',', '.') }}</dd>
+                                </div>
+                                @endif
+                            </dl>
+                        </div>
                     </div>
-                    <div class="px-4 py-5 sm:p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Pembayaran</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->payment_id }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Order</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ ucfirst($payment->order_type) }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Order</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    @if($payment->order_type === 'produk')
-                                        {{ $payment->order_product_id ?? '-' }}
-                                    @else
-                                        {{ $payment->order_service_id ?? '-' }}
-                                    @endif
-                                </dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Metode Pembayaran</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->method }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($payment->amount, 0, ',', '.') }}</dd>
-                            </div>
-                            @if($payment->method === 'Tunai')
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Uang Diterima</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->formatted_cash_received }}</dd>
-                            </div>
+
+                    <!-- Customer & Order Information -->
+                    @php
+                        $order = $payment->order_type === 'produk' ? $payment->orderProduct : $payment->orderService;
+                        $customer = $order ? $order->customer : null;
+                    @endphp
+
+                    @if($order && $customer)
+                    <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas {{ $payment->order_type === 'produk' ? 'fa-box' : 'fa-tools' }} mr-2 text-primary-500"></i>
+                                Informasi {{ $payment->order_type === 'produk' ? 'Order Produk' : 'Order Servis' }}
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nama Pelanggan</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $customer->name }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kontak Pelanggan</dt>
+                                    <dd class="mt-1">
+                                        <a href="{{ $customer->whatsapp_link }}" target="_blank" class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                                            <i class="fab fa-whatsapp mr-1"></i>{{ $customer->contact }}
+                                        </a>
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email Pelanggan</dt>
+                                    <dd class="mt-1">
+                                        @if($customer->email)
+                                            <a href="mailto:{{ $customer->email }}" class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                                                <i class="fas fa-envelope mr-1"></i>{{ $customer->email }}
+                                            </a>
+                                        @else
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">-</span>
+                                        @endif
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Order</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">
+                                        @if($payment->order_type === 'produk')
+                                            {{ $payment->order_product_id }}
+                                        @else
+                                            {{ $payment->order_service_id }}
+                                        @endif
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sub Total</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($order->sub_total, 0, ',', '.') }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Order</dt>
+                                    <dd class="mt-1 text-lg font-bold text-gray-900 dark:text-gray-100">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Dibayar</dt>
+                                    <dd class="mt-1 text-sm text-green-600 dark:text-green-400 font-semibold">Rp {{ number_format($order->paid_amount ?? 0, 0, ',', '.') }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sisa Pembayaran</dt>
+                                    <dd class="mt-1 text-sm text-red-600 dark:text-red-400 font-semibold">Rp {{ number_format($order->remaining_balance ?? 0, 0, ',', '.') }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Pembayaran Order</dt>
+                                    <dd class="mt-1">
+                                        @php
+                                            $orderStatusConfig = [
+                                                'belum_dibayar' => ['bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100', 'fas fa-exclamation-circle'],
+                                                'down_payment' => ['bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100', 'fas fa-clock'],
+                                                'lunas' => ['bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100', 'fas fa-check-circle'],
+                                                'dibatalkan' => ['bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200', 'fas fa-times-circle'],
+                                            ];
+                                            $orderConfig = $orderStatusConfig[$order->status_payment] ?? ['bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200', 'fas fa-question-circle'];
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $orderConfig[0] }}">
+                                            <i class="{{ $orderConfig[1] }} mr-1"></i>
+                                            {{ ucfirst(str_replace('_', ' ', $order->status_payment)) }}
+                                        </span>
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Order</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $order->created_at->format('d F Y H:i') }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <!-- Quick Actions -->
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-bolt mr-2 text-primary-500"></i>
+                                Aksi Cepat
+                            </h3>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            @if (!in_array($payment->status, ['dibayar', 'gagal']))
+                                <a href="{{ route('payments.edit', ['payment_id' => $payment->payment_id]) }}" 
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                    <i class="fas fa-edit mr-2"></i>
+                                    Edit Pembayaran
+                                </a>
                             @endif
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nama</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->name }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
-                                <dd class="mt-1">
-                                    @php
-                                        $statusColors = [
-                                            'pending' => 'bg-yellow-500',
-                                            'dibayar' => 'bg-green-500',
-                                            'gagal' => 'bg-red-500',
-                                        ];
-                                        $colorClass = $statusColors[$payment->status] ?? 'bg-gray-500';
-                                    @endphp
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colorClass }} text-white">
-                                        {{ ucfirst($payment->status) }}
-                                    </span>
-                                </dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    {{ $payment->payment_type === 'full' ? 'Full Payment' : 'Down Payment' }}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Dibuat</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->created_at->format('d M Y H:i') }}</dd>
-                            </div>
-                            @if($payment->updated_at && $payment->updated_at->ne($payment->created_at))
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Terakhir Diupdate</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $payment->updated_at->format('d M Y H:i') }}</dd>
-                            </div>
+                            @if($order && $customer)
+                                <a href="{{ $customer->whatsapp_link }}" target="_blank"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-green-300 shadow-sm text-sm font-medium rounded-md text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-gray-700 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-900/20">
+                                    <i class="fab fa-whatsapp mr-2"></i>
+                                    Hubungi Pelanggan
+                                </a>
+                                @if($customer->email)
+                                <a href="mailto:{{ $customer->email }}"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
+                                    <i class="fas fa-envelope mr-2"></i>
+                                    Kirim Email
+                                </a>
+                                @endif
+                                @if($payment->order_type === 'produk')
+                                    <a href="{{ route('order-products.show', $payment->order_product_id) }}"
+                                        class="w-full inline-flex items-center justify-center px-4 py-2 border border-purple-300 shadow-sm text-sm font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-900/20">
+                                        <i class="fas fa-box mr-2"></i>
+                                        Lihat Order Produk
+                                    </a>
+                                @else
+                                    <a href="{{ route('order-services.show', $payment->order_service_id) }}"
+                                        class="w-full inline-flex items-center justify-center px-4 py-2 border border-purple-300 shadow-sm text-sm font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-900/20">
+                                        <i class="fas fa-tools mr-2"></i>
+                                        Lihat Order Servis
+                                    </a>
+                                @endif
                             @endif
-                            @if($payment->change_returned && $payment->method === 'Tunai')
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kembalian</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($payment->change_returned, 0, ',', '.') }}</dd>
-                            </div>
+                            @if($payment->status !== 'gagal')
+                                <button type="button"
+                                    data-modal-target="cancel-payment-modal-{{ $payment->payment_id }}"
+                                    data-modal-toggle="cancel-payment-modal-{{ $payment->payment_id }}"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-gray-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20">
+                                    <i class="fas fa-ban mr-2"></i>
+                                    Batalkan Pembayaran
+                                </button>
                             @endif
                         </div>
                     </div>
-                </div>
 
-                {{-- Customer & Order Information --}}
-                @php
-                    $order = $payment->order_type === 'produk' ? $payment->orderProduct : $payment->orderService;
-                    $customer = $order ? $order->customer : null;
-                @endphp
-
-                @if($order && $customer)
-                <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-                    <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
-                            Informasi {{ $payment->order_type === 'produk' ? 'Order Produk' : 'Order Servis' }}
-                        </h3>
-                    </div>
-                    <div class="px-4 py-5 sm:p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nama Customer</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $customer->name }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email Customer</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $customer->email ?? '-' }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Telepon Customer</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $customer->phone ?? '-' }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sub Total</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($order->sub_total, 0, ',', '.') }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Diskon</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($order->discount_amount ?? 0, 0, ',', '.') }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Order</dt>
-                                <dd class="mt-1 text-sm font-bold text-gray-900 dark:text-gray-100">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Dibayar</dt>
-                                <dd class="mt-1 text-sm text-green-600 dark:text-green-400 font-medium">Rp {{ number_format($order->paid_amount ?? 0, 0, ',', '.') }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sisa Pembayaran</dt>
-                                <dd class="mt-1 text-sm text-red-600 dark:text-red-400 font-medium">Rp {{ number_format($order->remaining_balance ?? 0, 0, ',', '.') }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Pembayaran Order</dt>
-                                <dd class="mt-1">
-                                    @php
-                                        $orderStatusColors = [
-                                            'belum_dibayar' => 'bg-red-500',
-                                            'down_payment' => 'bg-yellow-500',
-                                            'lunas' => 'bg-green-500',
-                                            'dibatalkan' => 'bg-gray-500',
-                                        ];
-                                        $orderColorClass = $orderStatusColors[$order->status_payment] ?? 'bg-gray-500';
-                                    @endphp
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $orderColorClass }} text-white">
-                                        {{ ucfirst(str_replace('_', ' ', $order->status_payment)) }}
-                                    </span>
-                                </dd>
-                            </div>
-                            @if($order->warranty_period_months)
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Masa Garansi</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $order->warranty_period_months }} bulan</dd>
-                            </div>
-                            @endif
-                            @if($order->warranty_expired_at)
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Garansi Berakhir</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $order->warranty_expired_at->format('d M Y') }}</dd>
-                            </div>
-                            @endif
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Order</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $order->created_at->format('d M Y H:i') }}</dd>
-                            </div>
+                    <!-- Metadata -->
+                    <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-info mr-2 text-primary-500"></i>
+                                Metadata
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <dl class="space-y-4">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dibuat</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                        {{ $payment->created_at->format('d F Y H:i') }}
+                                    </dd>
+                                </div>
+                                @if($payment->updated_at && $payment->updated_at->ne($payment->created_at))
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Terakhir Diubah</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                        {{ $payment->updated_at->format('d F Y H:i') }}
+                                    </dd>
+                                </div>
+                                @endif
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
+                                    <dd class="mt-1">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $payment->payment_type === 'full' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' }}">
+                                            <i class="fas {{ $payment->payment_type === 'full' ? 'fa-money-check-alt' : 'fa-hand-holding-usd' }} mr-1"></i>
+                                            {{ $payment->payment_type === 'full' ? 'Pelunasan' : 'DP (Down Payment)' }}
+                                        </span>
+                                    </dd>
+                                </div>
+                            </dl>
                         </div>
                     </div>
                 </div>
-                @endif
+            </div>
 
                 {{-- Proof of Payment Section --}}
                 @if($payment->proof_photo)
-                <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mt-6">
                     <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
                             Bukti Pembayaran
@@ -242,7 +359,7 @@
                 @endphp
 
                 @if($allPayments->count() > 1)
-                <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mt-6">
                     <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
                             Riwayat Pembayaran Order Ini

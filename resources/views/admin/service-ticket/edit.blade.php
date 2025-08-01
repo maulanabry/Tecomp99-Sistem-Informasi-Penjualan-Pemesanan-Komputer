@@ -1,135 +1,308 @@
 <x-layout-admin>
-    <div class="max-w-7xl mx-auto p-6">
+    <div class="py-6">
         @if (session('success'))
-            <div class="mb-4">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
                 <x-alert type="success" :message="session('success')" />
             </div>
         @endif
-
         @if (session('error'))
-            <div class="mb-4">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
                 <x-alert type="danger" :message="session('error')" />
             </div>
         @endif
 
-        <!-- Header with Back Button -->
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Edit Tiket Servis</h1>
-            <a href="{{ route('service-tickets.show', $ticket) }}"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-primary-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Kembali
-            </a>
-        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+            <!-- Breadcrumbs -->
+            <div class="mb-2">
+                <x-breadcrumbs />
+            </div>
+            
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Edit Tiket Servis</h1>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Perbarui informasi tiket servis {{ $ticket->service_ticket_id }}
+                    </p>
+                </div>
+                <div class="flex space-x-3">
+                    <a href="{{ route('service-tickets.show', $ticket) }}" 
+                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                        <i class="fas fa-eye mr-2"></i>
+                        Lihat Detail
+                    </a>
+                    <a href="{{ route('service-tickets.index') }}" 
+                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+                </div>
+            </div>
 
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <form action="{{ route('service-tickets.update', $ticket) }}" method="POST" class="space-y-6">
-                @csrf
-                @method('PUT')
+            <!-- Form Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main Form -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <form action="{{ route('service-tickets.update', $ticket) }}" method="POST" class="space-y-6">
+                                @csrf
+                                @method('PUT')
+                                
+                                <!-- Basic Information Section -->
+                                <div class="border-b border-gray-200 dark:border-gray-600 pb-6">
+                                    <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                        <i class="fas fa-ticket-alt mr-2 text-primary-500"></i>
+                                        Informasi Dasar Tiket
+                                    </h3>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Status -->
+                                        <div>
+                                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                                Status Tiket <span class="text-red-500">*</span>
+                                            </label>
+                                            <select name="status" id="status" required
+                                                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('status') border-red-500 @enderror">
+                                                <option value="Menunggu" {{ old('status', $ticket->status) === 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                                <option value="Diproses" {{ old('status', $ticket->status) === 'Diproses' ? 'selected' : '' }}>Diproses</option>
+                                                <option value="Diantar" {{ old('status', $ticket->status) === 'Diantar' ? 'selected' : '' }}>Diantar</option>
+                                                <option value="Perlu Diambil" {{ old('status', $ticket->status) === 'Perlu Diambil' ? 'selected' : '' }}>Perlu Diambil</option>
+                                                <option value="Selesai" {{ old('status', $ticket->status) === 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                                            </select>
+                                            @error('status')
+                                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                            @enderror
+                                        </div>
 
-                <!-- Order Type Info -->
-                <div class="mb-4">
-                    <label class="block mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Tipe Layanan
-                    </label>
-                    <div class="text-sm text-gray-900 dark:text-gray-100">
-                        {{ ucfirst($ticket->orderService->type) }}
+                                        <!-- Schedule Date -->
+                                        <div>
+                                            <label for="schedule_date" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                                Tanggal Jadwal <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="date" name="schedule_date" id="schedule_date" 
+                                                value="{{ old('schedule_date', $ticket->schedule_date->format('Y-m-d')) }}"
+                                                min="{{ date('Y-m-d') }}"
+                                                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('schedule_date') border-red-500 @enderror"
+                                                required>
+                                            @error('schedule_date')
+                                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Service Type Information -->
+                                <div class="border-b border-gray-200 dark:border-gray-600 pb-6">
+                                    <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                        <i class="fas fa-cogs mr-2 text-primary-500"></i>
+                                        Informasi Layanan
+                                    </h3>
+
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                            Tipe Layanan
+                                        </label>
+                                        <div class="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                            <i class="fas {{ $ticket->orderService->type === 'onsite' ? 'fa-home text-blue-500' : 'fa-store text-gray-500' }} mr-3"></i>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                {{ ucfirst($ticket->orderService->type) }}
+                                                @if($ticket->orderService->type === 'onsite')
+                                                    - Kunjungan ke lokasi pelanggan
+                                                @else
+                                                    - Servis di toko
+                                                @endif
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    @if($ticket->orderService->type === 'onsite')
+                                    <!-- Visit Schedule for Onsite -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="visit_date" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                                Tanggal Kunjungan
+                                            </label>
+                                            <input type="date" name="visit_date" id="visit_date"
+                                                value="{{ old('visit_date', $ticket->visit_schedule ? $ticket->visit_schedule->format('Y-m-d') : '') }}"
+                                                min="{{ date('Y-m-d') }}"
+                                                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('visit_date') border-red-500 @enderror">
+                                            @error('visit_date')
+                                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div>
+                                            <label for="visit_time_slot" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                                Slot Waktu Kunjungan
+                                            </label>
+                                            <select name="visit_time_slot" id="visit_time_slot"
+                                                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('visit_time_slot') border-red-500 @enderror">
+                                                <option value="">Pilih slot waktu</option>
+                                                <option value="08:00" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '08:00' ? '08:00' : '') === '08:00' ? 'selected' : '' }}>08:00 - 09:30</option>
+                                                <option value="09:30" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '09:30' ? '09:30' : '') === '09:30' ? 'selected' : '' }}>09:30 - 11:00</option>
+                                                <option value="11:00" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '11:00' ? '11:00' : '') === '11:00' ? 'selected' : '' }}>11:00 - 12:30</option>
+                                                <option value="13:00" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '13:00' ? '13:00' : '') === '13:00' ? 'selected' : '' }}>13:00 - 14:30</option>
+                                                <option value="14:30" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '14:30' ? '14:30' : '') === '14:30' ? 'selected' : '' }}>14:30 - 16:00</option>
+                                                <option value="16:00" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '16:00' ? '16:00' : '') === '16:00' ? 'selected' : '' }}>16:00 - 17:30</option>
+                                            </select>
+                                            <div id="slotAvailability" class="mt-2 text-sm"></div>
+                                            @error('visit_time_slot')
+                                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="visit_schedule" name="visit_schedule" value="{{ old('visit_schedule', $ticket->visit_schedule ? $ticket->visit_schedule->format('Y-m-d\TH:i') : '') }}">
+                                    @endif
+                                </div>
+
+                                <!-- Estimation Section -->
+                                <div>
+                                    <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
+                                        <i class="fas fa-clock mr-2 text-primary-500"></i>
+                                        Estimasi Pengerjaan
+                                    </h3>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Estimation Days -->
+                                        <div>
+                                            <label for="estimation_days" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                                Estimasi Hari Pengerjaan
+                                            </label>
+                                            <div class="relative">
+                                                <input type="number" name="estimation_days" id="estimation_days" 
+                                                    value="{{ old('estimation_days', $ticket->estimation_days) }}"
+                                                    min="1" max="365"
+                                                    class="block w-full px-3 py-2 pr-12 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('estimation_days') border-red-500 @enderror"
+                                                    placeholder="Masukkan estimasi hari">
+                                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                                    <span class="text-gray-500 sm:text-sm">hari</span>
+                                                </div>
+                                            </div>
+                                            @error('estimation_days')
+                                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                            @enderror
+                                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                Perkiraan waktu yang dibutuhkan untuk menyelesaikan servis
+                                            </p>
+                                        </div>
+
+                                        <!-- Estimate Date (Auto-calculated) -->
+                                        <div>
+                                            <label for="estimate_date" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                                Perkiraan Tanggal Selesai
+                                            </label>
+                                            <input type="date" name="estimate_date" id="estimate_date" readonly
+                                                value="{{ old('estimate_date', $ticket->estimate_date ? $ticket->estimate_date->format('Y-m-d') : '') }}"
+                                                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 sm:text-sm cursor-not-allowed">
+                                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                Otomatis dihitung berdasarkan tanggal jadwal dan estimasi hari
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
+                                    <a href="{{ route('service-tickets.show', $ticket) }}"
+                                        class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                        <i class="fas fa-times mr-2"></i>
+                                        Batal
+                                    </a>
+                                    <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                        <i class="fas fa-save mr-2"></i>
+                                        Simpan Perubahan
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Status -->
-                <div>
-                    <label for="status" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Status <span class="text-red-500">*</span>
-                    </label>
-                    <select id="status" name="status" required
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <option value="Menunggu" {{ $ticket->status === 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
-                        <option value="Diproses" {{ $ticket->status === 'Diproses' ? 'selected' : '' }}>Diproses</option>
-                        <option value="Diantar" {{ $ticket->status === 'Diantar' ? 'selected' : '' }}>Diantar</option>
-                        <option value="Perlu Diambil" {{ $ticket->status === 'Perlu Diambil' ? 'selected' : '' }}>Perlu Diambil</option>
-                        <option value="Selesai" {{ $ticket->status === 'Selesai' ? 'selected' : '' }}>Selesai</option>
-                    </select>
-                </div>
-
-                <!-- Schedule Date -->
-                <div>
-                    <label for="schedule_date" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Tanggal Jadwal <span class="text-red-500">*</span>
-                    </label>
-                    <input type="date" id="schedule_date" name="schedule_date" required
-                        value="{{ $ticket->schedule_date->format('Y-m-d') }}"
-                        min="{{ date('Y-m-d') }}"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                </div>
-
-                @if($ticket->orderService->type === 'onsite')
-                <!-- Visit Schedule -->
-                <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Jadwal Kunjungan
-                    </label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="visit_date" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Tanggal Kunjungan
-                            </label>
-                            <input type="date" id="visit_date" name="visit_date"
-                                value="{{ $ticket->visit_schedule ? $ticket->visit_schedule->format('Y-m-d') : '' }}"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <!-- Ticket Info -->
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-info mr-2 text-primary-500"></i>
+                                Info Tiket
+                            </h3>
                         </div>
-                        <div>
-                            <label for="visit_time_slot" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Slot Waktu
-                            </label>
-                            <select id="visit_time_slot" name="visit_time_slot"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                <option value="">Pilih slot waktu</option>
-                                <option value="08:00" {{ $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '08:00' ? 'selected' : '' }}>08:00 - 09:30</option>
-                                <option value="09:30" {{ $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '09:30' ? 'selected' : '' }}>09:30 - 11:00</option>
-                                <option value="11:00" {{ $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '11:00' ? 'selected' : '' }}>11:00 - 12:30</option>
-                                <option value="13:00" {{ $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '13:00' ? 'selected' : '' }}>13:00 - 14:30</option>
-                                <option value="14:30" {{ $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '14:30' ? 'selected' : '' }}>14:30 - 16:00</option>
-                                <option value="16:00" {{ $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '16:00' ? 'selected' : '' }}>16:00 - 17:30</option>
-                            </select>
-                            <div id="slotAvailability" class="mt-2 text-sm"></div>
+                        <div class="p-6">
+                            <dl class="space-y-4">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Tiket</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $ticket->service_ticket_id }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Saat Ini</dt>
+                                    <dd class="mt-1">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                            @if($ticket->status === 'Menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                            @elseif($ticket->status === 'Diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                            @elseif($ticket->status === 'Diantar') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
+                                            @elseif($ticket->status === 'Perlu Diambil') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                            @elseif($ticket->status === 'Selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @endif">
+                                            {{ $ticket->status }}
+                                        </span>
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Teknisi</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $ticket->admin->name }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dibuat</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $ticket->created_at->format('d F Y H:i') }} WIB</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Terakhir Diubah</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $ticket->updated_at->format('d F Y H:i') }} WIB</dd>
+                                </div>
+                            </dl>
                         </div>
                     </div>
-                    <input type="hidden" id="visit_schedule" name="visit_schedule" value="{{ $ticket->visit_schedule ? $ticket->visit_schedule->format('Y-m-d\TH:i') : '' }}">
-                </div>
-                @endif
 
-                <!-- Estimation Days -->
-                <div>
-                    <label for="estimation_days" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Estimasi Hari Pengerjaan
-                    </label>
-                    <input type="number" id="estimation_days" name="estimation_days" min="1"
-                        value="{{ $ticket->estimation_days }}"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        placeholder="Masukkan estimasi hari">
+                    <!-- Order Service Info -->
+                    <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-file-alt mr-2 text-primary-500"></i>
+                                Info Order Servis
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <dl class="space-y-4">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Order</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $ticket->orderService->order_service_id }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pelanggan</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $ticket->orderService->customer->name }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Perangkat</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $ticket->orderService->device }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Keluhan</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $ticket->orderService->complaints }}</dd>
+                                </div>
+                            </dl>
+                            
+                            <div class="mt-4">
+                                <a href="{{ route('order-services.show', $ticket->orderService) }}" 
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
+                                    <i class="fas fa-external-link-alt mr-2"></i>
+                                    Lihat Detail Order
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <!-- Estimate Date (Auto-calculated) -->
-                <div>
-                    <label for="estimate_date" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Perkiraan Tanggal Selesai
-                    </label>
-                    <input type="date" id="estimate_date" name="estimate_date" readonly
-                        value="{{ $ticket->estimate_date ? $ticket->estimate_date->format('Y-m-d') : '' }}"
-                        class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                </div>
-
-                <!-- Submit Button -->
-                <div class="flex justify-end space-x-4">
-                    <button type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700">
-                        Simpan Perubahan
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -143,13 +316,7 @@
             const visitScheduleHidden = document.getElementById('visit_schedule');
             const slotAvailability = document.getElementById('slotAvailability');
 
-            // Set minimum date as today for visit_date
-            const today = new Date().toISOString().split('T')[0];
-            if (visitDate) {
-                visitDate.min = today;
-            }
-
-            // Check slot availability
+            // Check slot availability for onsite services
             async function checkSlotAvailability() {
                 if (!visitDate || !visitTimeSlot || !visitDate.value || !visitTimeSlot.value) {
                     if (slotAvailability) slotAvailability.innerHTML = '';
@@ -174,29 +341,26 @@
                     const data = await response.json();
                     
                     if (data.available) {
-                        slotAvailability.innerHTML = `<span class="text-green-600">✓ Slot tersedia (${data.remaining_slots} slot tersisa hari ini)</span>`;
+                        slotAvailability.innerHTML = `<span class="text-green-600 flex items-center"><i class="fas fa-check-circle mr-1"></i>Slot tersedia (${data.remaining_slots} slot tersisa hari ini)</span>`;
                         updateVisitScheduleHidden();
                     } else {
-                        slotAvailability.innerHTML = `<span class="text-red-600">✗ ${data.message}</span>`;
-                        visitScheduleHidden.value = '';
+                        slotAvailability.innerHTML = `<span class="text-red-600 flex items-center"><i class="fas fa-times-circle mr-1"></i>${data.message}</span>`;
+                        if (visitScheduleHidden) visitScheduleHidden.value = '';
                     }
                 } catch (error) {
                     console.error('Error checking slot availability:', error);
-                    if (slotAvailability) slotAvailability.innerHTML = '<span class="text-red-600">Error checking availability</span>';
+                    if (slotAvailability) slotAvailability.innerHTML = '<span class="text-red-600 flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i>Error checking availability</span>';
                 }
             }
 
             // Update hidden visit_schedule field
             function updateVisitScheduleHidden() {
-                if (visitDate && visitTimeSlot && visitDate.value && visitTimeSlot.value) {
+                if (visitDate && visitTimeSlot && visitDate.value && visitTimeSlot.value && visitScheduleHidden) {
                     visitScheduleHidden.value = visitDate.value + 'T' + visitTimeSlot.value + ':00';
                 }
             }
 
-            // Event listeners for slot checking
-            if (visitDate) visitDate.addEventListener('change', checkSlotAvailability);
-            if (visitTimeSlot) visitTimeSlot.addEventListener('change', checkSlotAvailability);
-
+            // Update estimate date based on schedule date and estimation days
             function updateEstimateDate() {
                 if (scheduleDate.value && estimationDays.value) {
                     const startDate = new Date(scheduleDate.value);
@@ -207,9 +371,16 @@
                 }
             }
 
+            // Event listeners
+            if (visitDate) visitDate.addEventListener('change', checkSlotAvailability);
+            if (visitTimeSlot) visitTimeSlot.addEventListener('change', checkSlotAvailability);
+            
             scheduleDate.addEventListener('change', updateEstimateDate);
             estimationDays.addEventListener('change', updateEstimateDate);
             estimationDays.addEventListener('input', updateEstimateDate);
+
+            // Initial calculation
+            updateEstimateDate();
         });
     </script>
 </x-layout-admin>

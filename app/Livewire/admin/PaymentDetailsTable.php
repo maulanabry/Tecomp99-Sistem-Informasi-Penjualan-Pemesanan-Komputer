@@ -62,42 +62,51 @@ class PaymentDetailsTable extends Component
 
     public function confirmCancelPayment()
     {
+        // Jika tidak ada pembayaran yang dipilih, tampilkan pesan error dan hentikan proses
         if (!$this->selectedPaymentId) {
             session()->flash('error', 'Pembayaran tidak ditemukan.');
             return;
         }
 
         try {
+            // Ambil data pembayaran berdasarkan payment_id yang dipilih
             $payment = PaymentDetail::where('payment_id', $this->selectedPaymentId)->firstOrFail();
 
-            if (!in_array($payment->status, ['dibayar', 'gagal'])) {
-                // Update payment status to gagal
-                $payment->status = 'gagal';
+            // Hanya izinkan pembatalan jika status pembayaran bukan 'dibayar', 'gagal', atau 'dibatalkan'
+            if (!in_array($payment->status, ['dibayar', 'gagal', 'dibatalkan'])) {
+
+                // Update status pembayaran menjadi 'dibatalkan'
+                $payment->status = 'dibatalkan';
                 $payment->save();
 
-                // Update related order's payment status to belum_dibayar
+                // Jika pembayaran terkait order produk, update status pembayaran pada order produk juga
                 if ($payment->order_type === 'produk') {
                     $order = OrderProduct::where('order_product_id', $payment->order_product_id)->first();
                     if ($order) {
-                        $order->status_payment = 'belum_dibayar';
+                        $order->status_payment = 'dibatalkan';
                         $order->save();
                     }
                 } else {
+                    // Jika pembayaran terkait order servis, update status pembayaran pada order servis juga
                     $order = OrderService::where('order_service_id', $payment->order_service_id)->first();
                     if ($order) {
-                        $order->status_payment = 'belum_dibayar';
+                        $order->status_payment = 'dibatalkan';
                         $order->save();
                     }
                 }
 
+                // Tampilkan pesan sukses jika pembatalan berhasil
                 session()->flash('success', 'Pembayaran berhasil dibatalkan.');
             } else {
-                session()->flash('error', 'Pembayaran tidak dapat dibatalkan.');
+                // Jika status pembayaran tidak memenuhi syarat, tampilkan pesan error
+                session()->flash('error', 'Pembayaran tidak dapat dibatalkan karena sudah diproses atau dibatalkan sebelumnya.');
             }
         } catch (\Exception $e) {
-            session()->flash('error', 'Gagal membatalkan pembayaran.');
+            // Tangkap error jika terjadi kegagalan saat proses pembatalan
+            session()->flash('error', 'Gagal membatalkan pembayaran: ' . $e->getMessage());
         }
 
+        // Tutup modal konfirmasi pembatalan
         $this->closeCancelModal();
     }
 
