@@ -16,7 +16,7 @@
                 </button>
             </div>
             <!-- Modal body -->
-            <form action="{{ route('service-tickets.actions.store', $ticket) }}" method="POST">
+            <form action="@if(auth('teknisi')->check()){{ route('teknisi.service-tickets.actions.store', $ticket) }}@else{{ route('service-tickets.actions.store', $ticket) }}@endif" method="POST">
                 @csrf
                 <div class="p-6 space-y-6">
                     <div>

@@ -62,6 +62,17 @@
                 </ul>
             </li>
 
+            <!-- Pembayaran -->
+            <li>
+                <a href="{{ route('owner.payments.index') }}" wire:navigate
+                   class="flex items-center px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
+                          hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
+                          {{ request()->is('pemilik/payments*') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
+                    <i class="fas fa-credit-card w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium">Pembayaran</span>
+                </a>
+            </li>
+
             <!-- Laporan Order -->
             <li x-data="{ open: {{ request()->is('pemilik/laporan*') ? 'true' : 'false' }} }" class="mt-2">
                 <button @click="open = !open" 
@@ -82,13 +93,13 @@
                     x-transition:leave-end="opacity-0 transform -translate-y-2"
                     class="mt-1 space-y-1 pl-10">
                     <li>
-                        <a href="{{ route('pemilik.laporan.penjualan-produk') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('pemilik/laporan/penjualan-produk*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}"
+                        <a href="{{ route('pemilik.laporan.penjualan-produk') }}"  class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('pemilik/laporan/penjualan-produk*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}"
                            title="Laporan penjualan produk dengan analisis dan statistik">
                             Penjualan Produk
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('pemilik.laporan.pemesanan-servis') }}" wire:navigate class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('pemilik/laporan/pemesanan-servis*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}"
+                        <a href="{{ route('pemilik.laporan.pemesanan-servis') }}"  class="block px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-500 {{ request()->is('pemilik/laporan/pemesanan-servis*') ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300' : '' }}"
                            title="Laporan pemesanan servis dengan analisis dan statistik">
                             Pemesanan Servis
                         </a>

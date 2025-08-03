@@ -453,6 +453,7 @@ Route::middleware('auth:teknisi')->group(function () {
         Route::post('/check-slot-availability', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'checkSlotAvailability'])->name('teknisi.service-tickets.check-slot');
         Route::get('/{ticket}', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'show'])->name('teknisi.service-tickets.show');
         Route::put('/{ticket}/status', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'updateStatus'])->name('teknisi.service-tickets.update-status');
+        Route::put('/{ticket}/cancel', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'cancel'])->name('teknisi.service-tickets.cancel');
         Route::post('/{ticket}/actions', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'storeAction'])->name('teknisi.service-tickets.actions.store');
         Route::delete('/{ticket}/actions/{action}', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'destroyAction'])->name('teknisi.service-tickets.actions.destroy');
     });
@@ -498,19 +499,42 @@ Route::middleware('auth:pemilik')->group(function () {
     // Pemilik Order Products
     Route::prefix('pemilik/order-produk')->group(function () {
         Route::get('/', [\App\Http\Controllers\Owner\OrderProductController::class, 'index'])->name('pemilik.order-produk.index');
+        Route::get('/create', [\App\Http\Controllers\Owner\OrderProductController::class, 'create'])->name('pemilik.order-produk.create');
+        Route::post('/', [\App\Http\Controllers\Owner\OrderProductController::class, 'store'])->name('pemilik.order-produk.store');
         Route::get('/{orderProduct}', [\App\Http\Controllers\Owner\OrderProductController::class, 'show'])->name('pemilik.order-produk.show');
+        Route::get('/{orderProduct}/invoice', [\App\Http\Controllers\Owner\OrderProductController::class, 'showInvoice'])->name('pemilik.order-produk.invoice');
         Route::get('/{orderProduct}/edit', [\App\Http\Controllers\Owner\OrderProductController::class, 'edit'])->name('pemilik.order-produk.edit');
+        Route::get('/{orderProduct}/edit-shipping', [\App\Http\Controllers\Owner\OrderProductController::class, 'editShipping'])->name('pemilik.order-produk.edit-shipping');
+        Route::put('/{orderProduct}/shipping', [\App\Http\Controllers\Owner\OrderProductController::class, 'updateShipping'])->name('pemilik.order-produk.update-shipping');
         Route::put('/{orderProduct}', [\App\Http\Controllers\Owner\OrderProductController::class, 'update'])->name('pemilik.order-produk.update');
         Route::put('/{orderProduct}/cancel', [\App\Http\Controllers\Owner\OrderProductController::class, 'cancel'])->name('pemilik.order-produk.cancel');
+        Route::post('/validate-voucher', [\App\Http\Controllers\Owner\OrderProductController::class, 'validateVoucherCode'])->name('pemilik.order-produk.validate-voucher');
     });
 
     // Pemilik Order Services
     Route::prefix('pemilik/order-service')->group(function () {
         Route::get('/', [\App\Http\Controllers\Owner\OrderServiceController::class, 'index'])->name('pemilik.order-service.index');
+        Route::get('/create', [\App\Http\Controllers\Owner\OrderServiceController::class, 'create'])->name('pemilik.order-service.create');
+        Route::post('/', [\App\Http\Controllers\Owner\OrderServiceController::class, 'store'])->name('pemilik.order-service.store');
         Route::get('/{orderService}', [\App\Http\Controllers\Owner\OrderServiceController::class, 'show'])->name('pemilik.order-service.show');
+        Route::get('/{orderService}/invoice', [\App\Http\Controllers\Owner\OrderServiceController::class, 'showInvoice'])->name('pemilik.order-service.invoice');
+        Route::get('/{orderService}/tanda-terima', [\App\Http\Controllers\Owner\OrderServiceController::class, 'showTandaTerima'])->name('pemilik.order-service.tanda-terima');
         Route::get('/{orderService}/edit', [\App\Http\Controllers\Owner\OrderServiceController::class, 'edit'])->name('pemilik.order-service.edit');
         Route::put('/{orderService}', [\App\Http\Controllers\Owner\OrderServiceController::class, 'update'])->name('pemilik.order-service.update');
         Route::put('/{orderService}/cancel', [\App\Http\Controllers\Owner\OrderServiceController::class, 'cancel'])->name('pemilik.order-service.cancel');
+        Route::delete('/{orderService}', [\App\Http\Controllers\Owner\OrderServiceController::class, 'destroy'])->name('pemilik.order-service.destroy');
+        Route::post('/validate-voucher', [\App\Http\Controllers\Owner\OrderServiceController::class, 'validateVoucherCode'])->name('pemilik.order-service.validate-voucher');
+    });
+
+    // Pemilik Payments
+    Route::prefix('pemilik/payments')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Owner\PaymentController::class, 'index'])->name('owner.payments.index');
+        Route::get('/create', [\App\Http\Controllers\Owner\PaymentController::class, 'create'])->name('owner.payments.create');
+        Route::post('/', [\App\Http\Controllers\Owner\PaymentController::class, 'store'])->name('owner.payments.store');
+        Route::get('/{payment_id}', [\App\Http\Controllers\Owner\PaymentController::class, 'show'])->name('owner.payments.show');
+        Route::get('/{payment_id}/edit', [\App\Http\Controllers\Owner\PaymentController::class, 'edit'])->name('owner.payments.edit');
+        Route::put('/{payment_id}', [\App\Http\Controllers\Owner\PaymentController::class, 'update'])->name('owner.payments.update');
+        Route::put('/{payment_id}/cancel', [\App\Http\Controllers\Owner\PaymentController::class, 'cancel'])->name('owner.payments.cancel');
     });
 
     // Pemilik Laporan
