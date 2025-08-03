@@ -34,7 +34,7 @@ class OrderServiceObserver
                 'device' => $orderService->device,
                 'total' => $orderService->grand_total,
                 'type' => 'servis',
-                'action_url' => route('customer.orders.service-detail', $orderService->order_service_id)
+                'action_url' => route('customer.orders.services.show', $orderService->order_service_id)
             ]
         );
     }
@@ -59,7 +59,7 @@ class OrderServiceObserver
                     'device' => $orderService->device,
                     'status' => $orderService->status_order,
                     'type' => 'servis',
-                    'action_url' => route('customer.orders.service-detail', $orderService->order_service_id)
+                    'action_url' => route('customer.orders.services.show', $orderService->order_service_id)
                 ]
             );
         }
@@ -79,7 +79,7 @@ class OrderServiceObserver
                     'paid_amount' => $orderService->paid_amount,
                     'remaining_balance' => $orderService->remaining_balance,
                     'type' => 'servis',
-                    'action_url' => route('customer.orders.service-detail', $orderService->order_service_id)
+                    'action_url' => route('customer.orders.services.show', $orderService->order_service_id)
                 ]
             );
         }

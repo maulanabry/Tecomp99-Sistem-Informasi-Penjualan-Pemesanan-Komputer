@@ -17,8 +17,17 @@
                 </div>
             </div>
             <div class="flex items-center">
-                <!-- Right side content -->
+                <!-- Komponen Pencarian Global -->
+                <div class="hidden md:block w-96 mr-4">
+                    <livewire:owner.global-search />
+                </div>
+                <!-- Notifikasi dan Profil -->
                 <div class="flex items-center space-x-4">
+                    <!-- Notification Bell -->
+                    <div class="relative">
+                        <livewire:owner.notification-dropdown />
+                    </div>
+
                     <!-- Dark Mode Toggle -->
                     <div class="flex items-center">
                         <x-dark-mode-toggle size="5" />

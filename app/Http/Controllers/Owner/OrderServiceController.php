@@ -7,6 +7,7 @@ use App\Models\OrderService;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\Admin;
+use App\Models\User;
 use App\Services\NotificationService;
 use App\Enums\NotificationType;
 use Illuminate\Http\Request;
@@ -136,13 +137,33 @@ class OrderServiceController extends Controller
             // Increment service_orders_count for the customer
             $customer->increment('service_orders_count');
 
-            // Create notifications for all admins after order service is saved
+            // Create notifications for all admins and owners after order service is saved
             $admins = Admin::all();
+            $owners = User::where('role', 'pemilik')->get();
+
+            // Notifikasi untuk Admin
             foreach ($admins as $admin) {
                 $this->notificationService->create(
                     notifiable: $admin,
                     type: NotificationType::SERVICE_ORDER_CREATED,
                     subject: $orderService->fresh(), // Ensure we have the saved model with ID
+                    message: "Pesanan servis baru #{$orderServiceId} dari {$customer->name}",
+                    data: [
+                        'order_id' => $orderServiceId,
+                        'customer_name' => $customer->name,
+                        'device' => $request->device,
+                        'type' => $request->type,
+                        'complaints' => $request->complaints
+                    ]
+                );
+            }
+
+            // Notifikasi untuk Owner/Pemilik
+            foreach ($owners as $owner) {
+                $this->notificationService->create(
+                    notifiable: $owner,
+                    type: NotificationType::SERVICE_ORDER_CREATED,
+                    subject: $orderService->fresh(),
                     message: "Pesanan servis baru #{$orderServiceId} dari {$customer->name}",
                     data: [
                         'order_id' => $orderServiceId,

@@ -41,8 +41,8 @@ class PaymentDetailObserver
                 'method' => $payment->method,
                 'payment_type' => $payment->payment_type,
                 'action_url' => $payment->order_type === 'produk'
-                    ? route('customer.orders.product-detail', $payment->order_product_id)
-                    : route('customer.orders.service-detail', $payment->order_service_id)
+                    ? route('customer.orders.products.show', $payment->order_product_id)
+                    : route('customer.orders.services.show', $payment->order_service_id)
             ]
         );
     }
@@ -75,8 +75,8 @@ class PaymentDetailObserver
                         'method' => $payment->method,
                         'payment_type' => $payment->payment_type,
                         'action_url' => $payment->order_type === 'produk'
-                            ? route('customer.orders.product-detail', $payment->order_product_id)
-                            : route('customer.orders.service-detail', $payment->order_service_id)
+                            ? route('customer.orders.products.show', $payment->order_product_id)
+                            : route('customer.orders.services.show', $payment->order_service_id)
                     ]
                 );
             } elseif ($payment->status === 'gagal') {
@@ -93,8 +93,8 @@ class PaymentDetailObserver
                         'method' => $payment->method,
                         'payment_type' => $payment->payment_type,
                         'action_url' => $payment->order_type === 'produk'
-                            ? route('customer.orders.product-detail', $payment->order_product_id)
-                            : route('customer.orders.service-detail', $payment->order_service_id)
+                            ? route('customer.orders.products.show', $payment->order_product_id)
+                            : route('customer.orders.services.show', $payment->order_service_id)
                     ]
                 );
             }

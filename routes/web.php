@@ -548,6 +548,11 @@ Route::middleware('auth:pemilik')->group(function () {
         Route::get('/pemesanan-servis/export-excel', [\App\Http\Controllers\Owner\LaporanController::class, 'exportServiceExcel'])->name('pemilik.laporan.pemesanan-servis.export-excel');
     });
 
+    // Pemilik Notifications
+    Route::prefix('pemilik/notifications')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Owner\NotificationController::class, 'index'])->name('pemilik.notifications.index');
+    });
+
     // Settings
     Route::get('/pemilik/settings', function () {
         return view('owner.settings');

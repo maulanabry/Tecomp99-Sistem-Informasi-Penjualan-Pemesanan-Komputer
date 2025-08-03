@@ -73,6 +73,17 @@
                 </a>
             </li>
 
+            <!-- Notifikasi -->
+            <li>
+                <a href="{{ route('pemilik.notifications.index') }}" wire:navigate
+                   class="flex items-center px-3 py-2 rounded-lg transition-colors duration-150 ease-in-out
+                          hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-600 dark:hover:text-primary-400
+                          {{ request()->is('pemilik/notifications*') ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400' : '' }}">
+                    <i class="fas fa-bell w-5 h-5 mr-3 transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium">Notifikasi</span>
+                </a>
+            </li>
+
             <!-- Laporan Order -->
             <li x-data="{ open: {{ request()->is('pemilik/laporan*') ? 'true' : 'false' }} }" class="mt-2">
                 <button @click="open = !open" 
