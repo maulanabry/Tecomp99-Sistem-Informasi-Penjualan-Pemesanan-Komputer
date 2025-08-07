@@ -21,12 +21,11 @@ class LaporanController extends Controller
     public function penjualanProduk(Request $request)
     {
         // Get date range from request or default to current month
-        $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
-
-        // Parse dates
-        $start = Carbon::parse($startDate)->startOfDay();
-        $end = Carbon::parse($endDate)->endOfDay();
+        $dates = $this->parseDateRange($request);
+        $start = $dates['start'];
+        $end = $dates['end'];
+        $startDate = $dates['startDate'];
+        $endDate = $dates['endDate'];
 
         // Get sales summary data
         $salesSummary = $this->getSalesSummary($start, $end);
@@ -622,5 +621,17 @@ class LaporanController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    private function parseDateRange(Request $request)
+    {
+        $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        return [
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'start' => Carbon::parse($startDate)->startOfDay(),
+            'end' => Carbon::parse($endDate)->endOfDay(),
+        ];
     }
 }
