@@ -1,6 +1,6 @@
 <x-layout-customer>
     <x-slot name="title">Pesan Servis Onsite - Tecomp99</x-slot>
-    <x-slot name="description">Pesan layanan servis onsite atau reguler untuk perangkat IT Anda dengan mudah dan cepat.</x-slot>
+    <x-slot name="description">Pesan layanan servis onsite untuk perangkat IT Anda dengan mudah dan cepat.</x-slot>
 
     <!-- Header Section -->
     <section class="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white py-16">
@@ -13,12 +13,12 @@
                 <h1 class="text-3xl lg:text-5xl font-bold mb-6 leading-tight">
                     Pesan Servis
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">
-                        Onsite & Reguler
+                        Onsite
                     </span>
                 </h1>
                 
                 <p class="text-xl mb-8 text-primary-100 leading-relaxed max-w-3xl mx-auto">
-                    Dapatkan layanan servis IT terbaik dengan teknisi berpengalaman. Pilih servis onsite untuk kenyamanan di lokasi Anda atau servis reguler di toko kami.
+                    Dapatkan layanan servis IT terbaik dengan teknisi berpengalaman. Teknisi kami akan datang langsung ke lokasi Anda untuk memberikan layanan terbaik.
                 </p>
                 
                 <!-- Features -->
@@ -29,14 +29,14 @@
                         <p class="text-sm text-primary-100">Teknisi datang ke lokasi Anda</p>
                     </div>
                     <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                        <i class="fas fa-tools text-3xl mb-4 text-yellow-300"></i>
-                        <h3 class="font-semibold mb-2">Servis Reguler</h3>
-                        <p class="text-sm text-primary-100">Bawa perangkat ke toko kami</p>
-                    </div>
-                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
                         <i class="fas fa-clock text-3xl mb-4 text-yellow-300"></i>
                         <h3 class="font-semibold mb-2">Respon Cepat</h3>
                         <p class="text-sm text-primary-100">Konfirmasi dalam 24 jam</p>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                        <i class="fas fa-shield-alt text-3xl mb-4 text-yellow-300"></i>
+                        <h3 class="font-semibold mb-2">Garansi Layanan</h3>
+                        <p class="text-sm text-primary-100">Garansi untuk setiap pekerjaan</p>
                     </div>
                 </div>
             </div>

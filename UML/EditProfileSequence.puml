@@ -1,0 +1,10 @@
+@startuml EditProfileSequence
+actor Customer
+participant "ProfileController" as PC
+participant "Customer" as C
+
+Customer -> PC : editProfile()
+PC -> C : updateProfile()
+C -> PC : profileUpdated()
+PC -> Customer : displayProfileUpdatedMessage()
+@enduml

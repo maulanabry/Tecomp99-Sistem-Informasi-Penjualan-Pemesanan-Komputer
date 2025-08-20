@@ -13,12 +13,21 @@
                             Beranda
                         </a>
                     </li>
+                    @if(!isset($checkoutData) || $checkoutData['checkout_type'] !== 'buy_now')
                     <li>
                         <div class="flex items-center">
                             <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
                             <a href="{{ route('customer.cart.index') }}" class="ml-1 text-sm font-medium text-gray-700 hover:text-primary-600 md:ml-2">Keranjang</a>
                         </div>
                     </li>
+                    @else
+                    <li>
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                            <a href="{{ route('products.public') }}" class="ml-1 text-sm font-medium text-gray-700 hover:text-primary-600 md:ml-2">Produk</a>
+                        </div>
+                    </li>
+                    @endif
                     <li aria-current="page">
                         <div class="flex items-center">
                             <i class="fas fa-chevron-right text-gray-400 mx-2"></i>

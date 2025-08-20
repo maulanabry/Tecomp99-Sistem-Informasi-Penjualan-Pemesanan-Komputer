@@ -1,0 +1,10 @@
+@startuml CustomerChatActivity
+boundary "Chat Window" as CW
+controller "ChatController" as CC
+entity "Chat" as C
+
+CW -> CC : initiateChat()
+CC -> C : createChat()
+C -> CC : chatCreated()
+CC -> CW : displayChatWindow()
+@enduml

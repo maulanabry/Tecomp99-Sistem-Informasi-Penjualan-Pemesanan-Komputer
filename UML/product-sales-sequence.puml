@@ -1,0 +1,77 @@
+@startuml Product Sales Sequence
+title Product Sales Report MVC Flow
+
+actor Owner
+participant Router
+participant LaporanController
+participant OrderProduct
+participant Database
+participant View
+
+== Main Report ==
+Owner -> Router: GET /laporan/penjualan-produk
+Router -> LaporanController: penjualanProduk()
+
+LaporanController -> LaporanController: getSalesSummary()
+LaporanController -> OrderProduct: count(), sum()
+OrderProduct -> Database: SELECT product sales data
+Database --> OrderProduct: sales statistics
+OrderProduct --> LaporanController: summary data
+
+LaporanController -> LaporanController: getSalesData()
+LaporanController -> OrderProduct: with(['customer', 'payments'])
+OrderProduct -> Database: SELECT orders with relations
+Database --> OrderProduct: paginated orders
+OrderProduct --> LaporanController: sales orders
+
+LaporanController -> LaporanController: getChartData()
+LaporanController -> OrderProduct: groupBy('date'), join tables
+OrderProduct -> Database: SELECT chart data
+Database --> OrderProduct: aggregated data
+OrderProduct --> LaporanController: chart data
+
+LaporanController -> View: render penjualan-produk.blade.php
+View --> LaporanController: HTML response
+LaporanController --> Router: sales report page
+Router --> Owner: display report
+
+== Export Options ==
+alt Print
+    Owner -> Router: GET /penjualan-produk/export-pdf?print=1
+    Router -> LaporanController: exportPdf()
+    LaporanController -> OrderProduct: get data
+    OrderProduct -> Database: SELECT all data
+    Database --> OrderProduct: complete dataset
+    OrderProduct --> LaporanController: sales data
+    LaporanController -> View: PDF template
+    View --> LaporanController: PDF content
+    LaporanController --> Router: stream PDF
+    Router --> Owner: print preview
+end
+
+alt Export PDF
+    Owner -> Router: GET /penjualan-produk/export-pdf
+    Router -> LaporanController: exportPdf()
+    LaporanController -> OrderProduct: get data
+    OrderProduct -> Database: SELECT all data
+    Database --> OrderProduct: complete dataset
+    OrderProduct --> LaporanController: sales data
+    LaporanController -> View: PDF template
+    View --> LaporanController: PDF content
+    LaporanController --> Router: download PDF
+    Router --> Owner: PDF file
+end
+
+alt Export CSV
+    Owner -> Router: GET /penjualan-produk/export-excel
+    Router -> LaporanController: exportExcel()
+    LaporanController -> OrderProduct: get all data
+    OrderProduct -> Database: SELECT all records
+    Database --> OrderProduct: complete dataset
+    OrderProduct --> LaporanController: sales data
+    LaporanController -> LaporanController: generate CSV
+    LaporanController --> Router: CSV stream
+    Router --> Owner: CSV file
+end
+
+@enduml

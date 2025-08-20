@@ -1,0 +1,548 @@
+@startuml Customer E-commerce & Service Management System - Iteration 3
+
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam classFontSize 9
+skinparam nodesep 15
+skinparam ranksep 30
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+' ===== AUTHENTICATION & USER MANAGEMENT =====
+
+class Admin {
+    - id: int
+    - name: string
+    - email: string
+    - password: string
+    - role: string
+    - theme: string
+    - last_seen_at: datetime
+    - email_verified_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + isOnline(): boolean
+    + notifications(): MorphMany
+    + chats(): HasMany
+    + chatMessages(): HasMany
+    + getChatWithCustomer(customerId: string): Chat
+    + getActiveChats(): Collection
+    + getUnreadMessagesCountAttribute(): int
+    + getChatsWithUnreadMessages(): Collection
+}
+
+class User {
+    - id: int
+    - name: string
+    - email: string
+    - password: string
+    - email_verified_at: datetime
+    - remember_token: string
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + notifications(): MorphMany
+}
+
+class Customer {
+    - customer_id: string
+    - name: string
+    - email: string
+    - password: string
+    - contact: string
+    - gender: string
+    - photo: string
+    - hasAccount: boolean
+    - hasAddress: boolean
+    - last_active: datetime
+    - service_orders_count: int
+    - product_orders_count: int
+    - total_points: int
+    - email_verified_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + addresses(): HasMany
+    + defaultAddress(): HasOne
+    + orderProducts(): HasMany
+    + orderServices(): HasMany
+    + cartItems(): HasMany
+    + notifications(): MorphMany
+    + chats(): HasMany
+    + generateCustomerId(): string
+    + findForAuth(): Customer
+    + getFormattedAddress(): string
+    + getWhatsappLink(): string
+}
+
+class CustomerAddress {
+    - id: int
+    - customer_id: string
+    - province_id: int
+    - province_name: string
+    - city_id: int
+    - city_name: string
+    - district_id: int
+    - district_name: string
+    - subdistrict_id: int
+    - subdistrict_name: string
+    - postal_code: string
+    - detail_address: string
+    - is_default: boolean
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + customer(): BelongsTo
+    + setAsDefault(): void
+}
+
+' ===== PRODUCT & SERVICE MODELS =====
+
+class Category {
+    - categories_id: int
+    - name: string
+    - type: string
+    - slug: string
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + products(): HasMany
+    + services(): HasMany
+    + generateSlug(): string
+}
+
+class Brand {
+    - brand_id: int
+    - name: string
+    - slug: string
+    - logo: string
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + products(): HasMany
+}
+
+class Product {
+    - product_id: string
+    - categories_id: int
+    - brand_id: int
+    - name: string
+    - description: string
+    - price: decimal
+    - weight: int
+    - stock: int
+    - is_active: boolean
+    - sold_count: int
+    - slug: string
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + category(): BelongsTo
+    + brand(): BelongsTo
+    + images(): HasMany
+    + getThumbnailUrl(): string
+    + updateStock(quantity: int): void
+    + incrementSoldCount(): void
+}
+
+class ProductImage {
+    - id: int
+    - product_id: string
+    - image_path: string
+    - is_main: boolean
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + product(): BelongsTo
+}
+
+class Service {
+    - service_id: string
+    - categories_id: int
+    - name: string
+    - description: string
+    - price: decimal
+    - thumbnail: string
+    - slug: string
+    - is_active: boolean
+    - sold_count: int
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + category(): BelongsTo
+    + getThumbnailUrl(): string
+    + incrementSoldCount(): void
+}
+
+' ===== SHOPPING MODELS =====
+
+class Cart {
+    - id: int
+    - customer_id: string
+    - product_id: string
+    - quantity: int
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + customer(): BelongsTo
+    + product(): BelongsTo
+    + getTotalPrice(): int
+    + getFormattedTotalPrice(): string
+    + getIsAvailable(): boolean
+    + addItem(): Cart
+    + updateQuantity(): boolean
+}
+
+' ===== ORDER MODELS =====
+
+class OrderProduct {
+    - order_product_id: string
+    - customer_id: string
+    - status_order: string
+    - status_payment: string
+    - sub_total: decimal
+    - discount_amount: decimal
+    - grand_total: decimal
+    - shipping_cost: decimal
+    - type: string
+    - note: string
+    - warranty_period_months: int
+    - warranty_expired_at: datetime
+    - paid_amount: decimal
+    - remaining_balance: decimal
+    - last_payment_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + customer(): BelongsTo
+    + items(): HasMany
+    + payments(): HasMany
+    + shipping(): HasOne
+    + updatePaymentStatus(): void
+    + processPayment(amount: decimal, type: string): decimal
+    + canAcceptPayment(): boolean
+    + getWarrantyStatusAttribute(): array
+    + updateWarrantyExpiration(completionDate: DateTimeInterface): void
+    + validatePayment(amount: decimal, paymentType: string): array
+}
+
+class OrderProductItem {
+    - id: int
+    - order_product_id: string
+    - product_id: string
+    - quantity: int
+    - unit_price: decimal
+    - total_price: decimal
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + orderProduct(): BelongsTo
+    + product(): BelongsTo
+}
+
+class OrderService {
+    - order_service_id: string
+    - customer_id: string
+    - status_order: string
+    - status_payment: string
+    - complaints: string
+    - type: string
+    - device: string
+    - note: string
+    - hasTicket: boolean
+    - hasDevice: boolean
+    - sub_total: decimal
+    - grand_total: decimal
+    - discount_amount: decimal
+    - warranty_period_months: int
+    - warranty_expired_at: datetime
+    - paid_amount: decimal
+    - remaining_balance: decimal
+    - last_payment_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + customer(): BelongsTo
+    + items(): HasMany
+    + images(): HasMany
+    + media(): HasMany
+    + tickets(): HasMany
+    + paymentDetails(): HasMany
+    + updatePaymentStatus(): void
+    + processPayment(amount: decimal, type: string): decimal
+    + canAcceptPayment(): boolean
+    + getWarrantyStatus(): array
+}
+
+class OrderServiceItem {
+    - id: int
+    - order_service_id: string
+    - service_id: string
+    - quantity: int
+    - unit_price: decimal
+    - total_price: decimal
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + orderService(): BelongsTo
+    + service(): BelongsTo
+}
+
+class Shipping {
+    - shipping_id: int
+    - order_product_id: string
+    - courier_name: string
+    - courier_service: string
+    - tracking_number: string
+    - status: string
+    - shipping_cost: int
+    - total_weight: int
+    - shipped_at: datetime
+    - delivered_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + orderProduct(): BelongsTo
+}
+
+' ===== PAYMENT MODEL =====
+
+class PaymentDetail {
+    - payment_id: string
+    - order_product_id: string
+    - order_service_id: string
+    - method: string
+    - amount: decimal
+    - change_returned: decimal
+    - name: string
+    - status: string
+    - payment_type: string
+    - order_type: string
+    - proof_photo: string
+    - cash_received: decimal
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + orderProduct(): BelongsTo
+    + orderService(): BelongsTo
+    + getOrder(): Model
+    + validate(): array
+    + getFormattedAmount(): string
+    + getProofPhotoUrl(): string
+}
+
+' ===== SERVICE TICKET MODELS =====
+
+class ServiceTicket {
+    - service_ticket_id: string
+    - order_service_id: string
+    - admin_id: int
+    - status: string
+    - schedule_date: datetime
+    - estimation_days: int
+    - estimate_date: datetime
+    - visit_schedule: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + orderService(): BelongsTo
+    + admin(): BelongsTo
+    + actions(): HasMany
+    + updateStatus(status: string): void
+    + assignTechnician(adminId: int): void
+}
+
+class ServiceAction {
+    - id: int
+    - service_ticket_id: string
+    - action: string
+    - description: string
+    - number: int
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + serviceTicket(): BelongsTo
+}
+
+' ===== CUSTOMER CONTROLLERS =====
+
+class AccountController {
+    --
+    + profile(): View
+    + updateProfile(request: Request): RedirectResponse
+    + password(): View
+    + updatePassword(request: Request): RedirectResponse
+    + addresses(): View
+    --
+    + validateProfileData(data: array): array
+    + updateCustomerProfile(customerId: string, data: array): boolean
+    + changePassword(customerId: string, oldPassword: string, newPassword: string): boolean
+}
+
+class CartController {
+    --
+    + index(): View
+    + add(request: Request): RedirectResponse
+    + update(request: Request): RedirectResponse
+    + remove(request: Request): RedirectResponse
+    + clear(): RedirectResponse
+    --
+    + addToCart(customerId: string, productId: string, quantity: int): Cart
+    + updateCartItem(cartId: int, quantity: int): boolean
+    + removeCartItem(cartId: int): boolean
+    + clearCustomerCart(customerId: string): boolean
+    + getCartTotal(customerId: string): decimal
+}
+
+class CheckoutController {
+    --
+    + index(): View
+    + process(request: Request): RedirectResponse
+    --
+    + validateCheckoutData(data: array): array
+    + createOrder(customerId: string, data: array): OrderProduct
+    + processPayment(orderId: string, paymentData: array): PaymentDetail
+    + calculateShipping(addressId: int, items: array): decimal
+}
+
+class ProductOverviewController {
+    --
+    + show(productId: string): View
+    + search(request: Request): View
+    + filter(request: Request): View
+    --
+    + getProductDetails(productId: string): Product
+    + searchProducts(query: string): Collection
+    + filterByCategory(categoryId: int): Collection
+    + filterByBrand(brandId: int): Collection
+    + filterByPrice(minPrice: decimal, maxPrice: decimal): Collection
+}
+
+class OrderController {
+    --
+    + index(): View
+    + show(orderId: string): View
+    + track(orderId: string): View
+    --
+    + getCustomerOrders(customerId: string): Collection
+    + getOrderDetails(orderId: string): OrderProduct
+    + trackOrderStatus(orderId: string): array
+    + cancelOrder(orderId: string, reason: string): boolean
+}
+
+class PaymentOrderController {
+    --
+    + create(orderId: string): View
+    + store(request: Request): RedirectResponse
+    + show(paymentId: string): View
+    --
+    + createPayment(orderId: string, data: array): PaymentDetail
+    + validatePaymentData(data: array): array
+    + processOrderPayment(paymentId: string): boolean
+    + uploadPaymentProof(paymentId: string, file: UploadedFile): string
+}
+
+class AddressController {
+    --
+    + index(): View
+    + create(): View
+    + store(request: Request): RedirectResponse
+    + edit(addressId: int): View
+    + update(request: Request, addressId: int): RedirectResponse
+    + destroy(addressId: int): RedirectResponse
+    + setDefault(addressId: int): RedirectResponse
+    --
+    + createAddress(customerId: string, data: array): CustomerAddress
+    + updateAddress(addressId: int, data: array): boolean
+    + deleteAddress(addressId: int): boolean
+    + setDefaultAddress(addressId: int): boolean
+}
+
+class ServiceOrderController {
+    --
+    + index(): View
+    + create(): View
+    + store(request: Request): RedirectResponse
+    + show(orderId: string): View
+    --
+    + createServiceOrder(customerId: string, data: array): OrderService
+    + getServiceOrderDetails(orderId: string): OrderService
+    + updateServiceOrder(orderId: string, data: array): boolean
+    + cancelServiceOrder(orderId: string, reason: string): boolean
+}
+
+class ChatController {
+    --
+    + index(): View
+    + show(chatId: string): View
+    + store(request: Request): RedirectResponse
+    --
+    + getCustomerChats(customerId: string): Collection
+    + sendMessage(chatId: string, message: string): ChatMessage
+    + markAsRead(chatId: string): boolean
+    + createChat(customerId: string, adminId: int): Chat
+}
+
+' ===== RELATIONSHIPS =====
+
+' Model Relationships
+Admin ||--o{ ServiceTicket
+Customer ||--o{ CustomerAddress
+Customer ||--o{ Cart
+Customer ||--o{ OrderProduct
+Customer ||--o{ OrderService
+Category ||--o{ Product
+Category ||--o{ Service
+Brand ||--o{ Product
+Product ||--o{ ProductImage
+Product ||--o{ OrderProductItem
+Service ||--o{ OrderServiceItem
+OrderProduct ||--o{ OrderProductItem
+OrderProduct ||--o{ PaymentDetail
+OrderProduct ||--o| Shipping
+OrderService ||--o{ OrderServiceItem
+OrderService ||--o{ PaymentDetail
+OrderService ||--o{ ServiceTicket
+ServiceTicket ||--o{ ServiceAction
+Cart }o--|| Product
+Cart }o--|| Customer
+
+' Controller to Model Relationships
+AccountController --> Customer
+AccountController --> CustomerAddress
+CartController --> Cart
+CartController --> Product
+CheckoutController --> OrderProduct
+CheckoutController --> Cart
+CheckoutController --> Customer
+CheckoutController --> CustomerAddress
+ProductOverviewController --> Product
+ProductOverviewController --> Category
+ProductOverviewController --> Brand
+OrderController --> OrderProduct
+OrderController --> OrderService
+PaymentOrderController --> PaymentDetail
+PaymentOrderController --> OrderProduct
+PaymentOrderController --> OrderService
+AddressController --> CustomerAddress
+ServiceOrderController --> OrderService
+ServiceOrderController --> Service
+ChatController --> Customer
+ChatController --> Admin
+
+@enduml

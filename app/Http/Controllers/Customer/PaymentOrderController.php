@@ -30,17 +30,17 @@ class PaymentOrderController extends Controller
         $customerId = Auth::guard('customer')->id();
 
         // Coba cari di order product terlebih dahulu
-        $order = OrderProduct::where('order_product_id', $orderId)
-            ->where('customer_id', $customerId)
-            ->with(['customer', 'items.product.images', 'items.product.brand', 'shipping'])
-            ->first();
-
-        // Jika tidak ditemukan, cari di order service
+        $order = $this->findOrder('produk', $orderId, $customerId, [
+            'customer',
+            'items.product.images',
+            'items.product.brand',
+            'shipping'
+        ]);
         if (!$order) {
-            $order = OrderService::where('order_service_id', $orderId)
-                ->where('customer_id', $customerId)
-                ->with(['customer', 'serviceItems.service'])
-                ->first();
+            $order = $this->findOrder('servis', $orderId, $customerId, [
+                'customer',
+                'serviceItems.service'
+            ]);
         }
 
         if (!$order) {
@@ -184,5 +184,23 @@ class PaymentOrderController extends Controller
         $incrementFormatted = str_pad($newIncrement, 3, '0', STR_PAD_LEFT);
 
         return $prefix . $incrementFormatted;
+    }
+
+    /**
+     * Ambil order produk atau servis berdasarkan tipe dan ID
+     */
+    private function findOrder($orderType, $orderId, $customerId, $with = [])
+    {
+        if ($orderType === 'produk') {
+            return OrderProduct::where('order_product_id', $orderId)
+                ->where('customer_id', $customerId)
+                ->with($with)
+                ->first();
+        } else {
+            return OrderService::where('order_service_id', $orderId)
+                ->where('customer_id', $customerId)
+                ->with($with)
+                ->first();
+        }
     }
 }

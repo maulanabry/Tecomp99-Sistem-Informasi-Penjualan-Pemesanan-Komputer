@@ -121,7 +121,9 @@
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Teknisi</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ $ticket->admin->name }}</dd>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                                        {{ $ticket->admin ? $ticket->admin->name : 'Belum ditugaskan' }}
+                                    </dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Jadwal</dt>

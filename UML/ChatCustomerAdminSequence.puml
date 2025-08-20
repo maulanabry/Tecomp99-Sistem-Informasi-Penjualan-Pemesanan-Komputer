@@ -1,0 +1,46 @@
+@startuml ChatCustomerSequence
+title Sequence Diagram Live Chat Customer
+
+actor Customer
+
+boundary IconChat as VI
+boundary ChatWindow as VW
+control ChatController as CC
+entity Chats as C
+entity ChatMessages as CM
+
+' Pelanggan klik icon chat
+Customer -> VI : klikIconChat()
+VI -> CC : getAvailableAdmins()
+CC -> C : getAvailableAdmins()
+C --> CC : daftarAdmin
+CC --> VI : daftarAdmin
+VI --> Customer : tampilkanPopUpLiveChat()
+
+' Pelanggan pilih admin untuk mulai chat
+Customer -> VI : pilihAdmin(adminId)
+VI -> CC : startChatWithAdmin(customerId, adminId)
+CC -> C : findOrCreateChat(customerId, adminId)
+C --> CC : chat + riwayatPesan
+CC --> VW : displayChatWindow(chat, riwayatPesan)
+VW --> Customer : chatRoomDitampilkan()
+
+' Pelanggan kirim pesan
+Customer -> VW : ketikPesan(message/file)
+VW -> CC : sendMessage(chatId, message/file)
+CC -> CM : create(message)
+CM --> CC : messageSaved
+CC -> C : update last_message_at
+CC --> VW : displayMessage(message)
+VW --> Customer : pesanDitampilkan()
+
+loop Obrolan Berlanjut
+  Customer -> VW : kirimPesan()
+  VW -> CC : sendMessage()
+  CC -> CM : create(message)
+  CM --> CC : messageSaved
+  CC -> VW : displayMessage()
+  VW --> Customer : tampilkanPesanBaru()
+end
+
+@enduml

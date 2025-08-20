@@ -25,15 +25,22 @@ class CheckoutController extends Controller
                 ->with('message', 'Silakan login terlebih dahulu untuk melakukan checkout.');
         }
 
+        $customerId = Auth::guard('customer')->id();
+        $checkoutType = session('checkout_type', 'cart');
+
         // Ambil cart items yang dipilih dari session
         $selectedCartIds = session('checkout_cart_items');
 
         if (empty($selectedCartIds)) {
-            return redirect()->route('customer.cart.index')
-                ->with('error', 'Tidak ada item yang dipilih untuk checkout.');
+            // Jika tidak ada item yang dipilih, redirect berdasarkan tipe checkout
+            if ($checkoutType === 'buy_now') {
+                return redirect()->route('product.overview', session('buy_now_product_id', ''))
+                    ->with('error', 'Produk tidak ditemukan untuk pembelian langsung.');
+            } else {
+                return redirect()->route('customer.cart.index')
+                    ->with('error', 'Tidak ada item yang dipilih untuk checkout.');
+            }
         }
-
-        $customerId = Auth::guard('customer')->id();
 
         // Ambil cart items yang dipilih
         $cartItems = Cart::whereIn('id', $selectedCartIds)
@@ -42,8 +49,27 @@ class CheckoutController extends Controller
             ->get();
 
         if ($cartItems->isEmpty()) {
-            return redirect()->route('customer.cart.index')
-                ->with('error', 'Item checkout tidak ditemukan.');
+            // Redirect berdasarkan tipe checkout jika item tidak ditemukan
+            if ($checkoutType === 'buy_now') {
+                return redirect()->route('product.overview', session('buy_now_product_id', ''))
+                    ->with('error', 'Produk tidak ditemukan untuk pembelian langsung.');
+            } else {
+                return redirect()->route('customer.cart.index')
+                    ->with('error', 'Item checkout tidak ditemukan.');
+            }
+        }
+
+        // Validasi stok untuk semua item
+        foreach ($cartItems as $item) {
+            if (!$item->product->is_active) {
+                return redirect()->back()
+                    ->with('error', "Produk {$item->product->name} tidak tersedia saat ini.");
+            }
+
+            if ($item->quantity > $item->product->stock) {
+                return redirect()->back()
+                    ->with('error', "Stok produk {$item->product->name} tidak mencukupi. Stok tersedia: {$item->product->stock}");
+            }
         }
 
         // Ambil data customer dan alamat
@@ -55,7 +81,14 @@ class CheckoutController extends Controller
             return $item->product->price * $item->quantity;
         });
 
-        return view('customer.checkout', compact('cartItems', 'customer', 'defaultAddress', 'subtotal'));
+        // Data tambahan untuk view
+        $checkoutData = [
+            'checkout_type' => $checkoutType,
+            'is_buy_now' => $checkoutType === 'buy_now',
+            'buy_now_product_id' => session('buy_now_product_id'),
+        ];
+
+        return view('customer.checkout', compact('cartItems', 'customer', 'defaultAddress', 'subtotal', 'checkoutData'));
     }
 
     /**

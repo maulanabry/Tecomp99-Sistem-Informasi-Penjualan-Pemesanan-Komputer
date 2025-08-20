@@ -112,6 +112,8 @@ class Customer extends Authenticatable implements MustVerifyEmail
         'last_active' => 'datetime',
         'password' => 'hashed',
         'email_verified_at' => 'datetime',
+
+
     ];
 
     public function addresses(): HasMany

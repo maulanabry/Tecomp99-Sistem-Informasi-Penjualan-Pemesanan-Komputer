@@ -85,21 +85,7 @@ class ChatController extends Controller
                     'name' => $chat->admin->name,
                     'is_online' => $chat->admin->isOnline(),
                 ],
-                'messages' => $chat->messages->map(function ($message) {
-                    return [
-                        'id' => $message->id,
-                        'sender_type' => $message->sender_type,
-                        'sender_name' => $message->sender_name,
-                        'message' => $message->message,
-                        'message_type' => $message->message_type,
-                        'file_url' => $message->file_url,
-                        'file_name' => $message->file_name,
-                        'is_image' => $message->isImage(),
-                        'formatted_time' => $message->formatted_time,
-                        'formatted_date' => $message->formatted_date,
-                        'created_at' => $message->created_at->toISOString(),
-                    ];
-                }),
+                'messages' => $chat->messages->map(fn($m) => $this->formatMessage($m)),
                 'unread_count' => $chat->unread_messages_for_customer,
             ]
         ]);
@@ -277,5 +263,25 @@ class ChatController extends Controller
         }
 
         return 'file';
+    }
+
+    /**
+     * Memformat pesan untuk dikirim ke klien
+     */
+    private function formatMessage(ChatMessage $message)
+    {
+        return [
+            'id' => $message->id,
+            'sender_type' => $message->sender_type,
+            'sender_name' => $message->sender_name,
+            'message' => $message->message,
+            'message_type' => $message->message_type,
+            'file_url' => $message->file_url,
+            'file_name' => $message->file_name,
+            'is_image' => $message->isImage(),
+            'formatted_time' => $message->formatted_time,
+            'formatted_date' => $message->formatted_date,
+            'created_at' => $message->created_at->toISOString(),
+        ];
     }
 }

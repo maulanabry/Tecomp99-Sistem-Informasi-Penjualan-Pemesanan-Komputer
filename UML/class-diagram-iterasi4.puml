@@ -1,0 +1,374 @@
+@startuml Admin Chat, Customer Service & Profile Management - Iteration 4
+
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam classFontSize 9
+skinparam nodesep 15
+skinparam ranksep 30
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+' ===== USER MANAGEMENT =====
+
+class Admin {
+    - id: int
+    - name: string
+    - email: string
+    - password: string
+    - role: string
+    - theme: string
+    - last_seen_at: datetime
+    - email_verified_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + isOnline(): boolean
+    + notifications(): MorphMany
+    + chats(): HasMany
+    + chatMessages(): HasMany
+    + getChatWithCustomer(customerId: string): Chat
+    + getActiveChats(): Collection
+    + getUnreadMessagesCountAttribute(): int
+    + getChatsWithUnreadMessages(): Collection
+}
+
+class User {
+    - id: int
+    - name: string
+    - email: string
+    - password: string
+    - email_verified_at: datetime
+    - remember_token: string
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + notifications(): MorphMany
+}
+
+class Customer {
+    - customer_id: string
+    - name: string
+    - email: string
+    - password: string
+    - contact: string
+    - gender: string
+    - photo: string
+    - hasAccount: boolean
+    - hasAddress: boolean
+    - last_active: datetime
+    - service_orders_count: int
+    - product_orders_count: int
+    - total_points: int
+    - email_verified_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + addresses(): HasMany
+    + defaultAddress(): HasOne
+    + orderServices(): HasMany
+    + notifications(): MorphMany
+    + chats(): HasMany
+    + chatMessages(): HasMany
+    + getChatWithAdmin(adminId: int): Chat
+    + getActiveChats(): Collection
+    + generateCustomerId(): string
+    + findForAuth(identifier: string): Customer
+    + getFormattedAddressAttribute(): string
+    + getWhatsappLinkAttribute(): string
+    + getUnreadMessagesCountAttribute(): int
+    + getChatsWithUnreadMessages(): Collection
+}
+
+class CustomerAddress {
+    - id: int
+    - customer_id: string
+    - province_id: int
+    - province_name: string
+    - city_id: int
+    - city_name: string
+    - district_id: int
+    - district_name: string
+    - subdistrict_id: int
+    - subdistrict_name: string
+    - postal_code: string
+    - detail_address: string
+    - is_default: boolean
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + customer(): BelongsTo
+    + setAsDefault(): void
+}
+
+' ===== CHAT SYSTEM =====
+
+class Chat {
+    - id: int
+    - customer_id: string
+    - admin_id: int
+    - last_message_at: datetime
+    - is_active: boolean
+    - customer_last_read_at: datetime
+    - admin_last_read_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + customer(): BelongsTo
+    + admin(): BelongsTo
+    + messages(): HasMany
+    + lastMessage(): HasOne
+    + getUnreadMessagesForCustomerAttribute(): int
+    + getUnreadMessagesForAdminAttribute(): int
+    + markAsReadByCustomer(): void
+    + markAsReadByAdmin(): void
+    + findOrCreateChat(customerId: string, adminId: int): Chat
+    + getActiveChatsForCustomer(customerId: string): Collection
+    + getActiveChatsForAdmin(adminId: int): Collection
+    + getChatsWithUnreadMessagesForAdmin(): Collection
+}
+
+class ChatMessage {
+    - id: int
+    - chat_id: int
+    - sender_type: string
+    - sender_id: string
+    - message: string
+    - message_type: string
+    - file_path: string
+    - file_name: string
+    - is_read_by_customer: boolean
+    - is_read_by_admin: boolean
+    - read_by_customer_at: datetime
+    - read_by_admin_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + chat(): BelongsTo
+    + getSenderNameAttribute(): string
+    + getFileUrlAttribute(): string
+    + getFormattedTimeAttribute(): string
+    + getFormattedDateAttribute(): string
+    + isImage(): boolean
+}
+
+' ===== SERVICE MANAGEMENT =====
+
+class OrderService {
+    - order_service_id: string
+    - customer_id: string
+    - status_order: string
+    - status_payment: string
+    - complaints: string
+    - type: string
+    - device: string
+    - note: string
+    - hasTicket: boolean
+    - hasDevice: boolean
+    - sub_total: decimal
+    - grand_total: decimal
+    - discount_amount: decimal
+    - warranty_period_months: int
+    - warranty_expired_at: datetime
+    - paid_amount: decimal
+    - remaining_balance: decimal
+    - last_payment_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + customer(): BelongsTo
+    + items(): HasMany
+    + images(): HasMany
+    + media(): HasMany
+    + tickets(): HasMany
+    + paymentDetails(): HasMany
+    + updateWarrantyExpiration(completionDate: DateTimeInterface): void
+    + updatePaymentStatus(): void
+    + canAcceptPayment(): boolean
+    + validatePayment(amount: decimal, paymentType: string): array
+    + processPayment(amount: decimal, paymentType: string): decimal
+    + getWarrantyStatusAttribute(): array
+    + getAppliedPromoAttribute(): mixed
+}
+
+class OrderServiceItem {
+    - id: int
+    - order_service_id: string
+    - service_id: string
+    - service_name: string
+    - quantity: int
+    - unit_price: decimal
+    - total_price: decimal
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + orderService(): BelongsTo
+    + service(): BelongsTo
+}
+
+class ServiceTicket {
+    - service_ticket_id: string
+    - order_service_id: string
+    - admin_id: int
+    - status: string
+    - schedule_date: datetime
+    - estimation_days: int
+    - estimate_date: datetime
+    - visit_schedule: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + orderService(): BelongsTo
+    + admin(): BelongsTo
+    + actions(): HasMany
+}
+
+class ServiceAction {
+    - id: int
+    - service_ticket_id: string
+    - action: string
+    - description: string
+    - number: int
+    - created_at: datetime
+    - updated_at: datetime
+    --
+    + serviceTicket(): BelongsTo
+}
+
+' ===== PAYMENT & SHIPPING =====
+
+class PaymentDetail {
+    - payment_id: string
+    - order_product_id: string
+    - order_service_id: string
+    - method: string
+    - amount: decimal
+    - change_returned: decimal
+    - name: string
+    - status: string
+    - payment_type: string
+    - order_type: string
+    - proof_photo: string
+    - cash_received: decimal
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + orderService(): BelongsTo
+    + getFormattedAmountAttribute(): string
+    + getProofPhotoUrlAttribute(): string
+    + validate(): array
+}
+
+class Shipping {
+    - shipping_id: int
+    - order_product_id: string
+    - courier_name: string
+    - courier_service: string
+    - tracking_number: string
+    - status: string
+    - shipping_cost: int
+    - total_weight: int
+    - shipped_at: datetime
+    - delivered_at: datetime
+    - created_at: datetime
+    - updated_at: datetime
+    - deleted_at: datetime
+    --
+    + orderProduct(): BelongsTo
+}
+
+' ===== CUSTOMER CONTROLLERS =====
+
+class CustomerChatController {
+    --
+    + index(): View
+    + getAvailableAdmins(): JsonResponse
+    + startChatWithAdmin(request: Request): JsonResponse
+    + sendMessage(request: Request): JsonResponse
+    + getChatHistory(request: Request): JsonResponse
+    + markAsRead(request: Request): JsonResponse
+    + getUnreadCount(): JsonResponse
+    --
+    + getFileType(file: UploadedFile): string
+}
+
+class AdminChatController {
+    --
+    + index(): View
+    + getCustomerChats(request: Request): JsonResponse
+    + startChatWithCustomer(request: Request): JsonResponse
+    + sendMessage(request: Request): JsonResponse
+    + getChatHistory(request: Request): JsonResponse
+    + markAsRead(request: Request): JsonResponse
+    + getUnreadCount(): JsonResponse
+    + searchCustomers(request: Request): JsonResponse
+    + deleteChat(request: Request): JsonResponse
+    + getFilteredMessages(request: Request): JsonResponse
+    --
+    + applyTimeFilter(query: Builder, timeFilter: string, dateFrom: string, dateTo: string): Builder
+    + applyMessageTimeFilter(query: Builder, timeFilter: string, dateFrom: string, dateTo: string): Builder
+    + getFileType(file: UploadedFile): string
+}
+
+class CustomerAccountController {
+    --
+    + profile(): View
+    + updateProfile(request: Request): RedirectResponse
+    + password(): View
+    + updatePassword(request: Request): RedirectResponse
+    + addresses(): View
+    --
+    + validateProfileData(data: array): array
+    + updateCustomerProfile(customerId: string, data: array): boolean
+    + changePassword(customerId: string, oldPassword: string, newPassword: string): boolean
+}
+
+class CustomerServiceOrderController {
+    --
+    + index(): View
+    + store(request: Request): RedirectResponse
+    --
+    + createServiceOrder(customerId: string, data: array): OrderService
+    + validateServiceOrderData(data: array): array
+}
+
+' ===== RELATIONSHIPS =====
+
+' User Management Relationships
+Customer ||--o{ CustomerAddress
+Customer ||--o{ OrderService
+
+' Chat System Relationships
+Admin ||--o{ Chat
+Customer ||--o{ Chat
+Chat ||--o{ ChatMessage
+Admin ||--o{ ChatMessage
+Customer ||--o{ ChatMessage
+
+' Service Management Relationships
+OrderService ||--o{ OrderServiceItem
+OrderService ||--o{ ServiceTicket
+OrderService ||--o{ PaymentDetail
+ServiceTicket ||--o{ ServiceAction
+Admin ||--o{ ServiceTicket
+
+' Controller to Model Relationships
+CustomerChatController --> Chat
+CustomerChatController --> ChatMessage
+CustomerChatController --> Admin
+AdminChatController --> Chat
+AdminChatController --> ChatMessage
+AdminChatController --> Customer
+CustomerAccountController --> Customer
+CustomerAccountController --> CustomerAddress
+CustomerServiceOrderController --> OrderService
+CustomerServiceOrderController --> Customer
+
+@enduml

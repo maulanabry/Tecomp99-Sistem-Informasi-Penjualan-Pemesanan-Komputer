@@ -1,0 +1,31 @@
+@startuml CustomerServiceOrderSequence
+title Sequence Diagram - Customer Service Order
+
+actor Customer
+boundary "Navbar" as NB
+boundary "Halaman Pesan Servis" as PS
+control "ServiceOrderController" as SOC
+entity "OrderService" as OS
+
+' Customer akses menu Pesan Servis dari Navbar
+Customer -> NB : klik "Pesan Servis"
+NB -> SOC : requestFormPesanServis()
+SOC -> PS : tampilkanFormPesanServis()
+
+' Customer isi form & pilih jadwal
+Customer -> PS : isiFormPemesanan()
+Customer -> PS : pilihJadwalKunjungan()
+
+' Customer submit pesanan
+Customer -> PS : klik "Buat Pesanan"
+PS -> SOC : submitOrder(requestData)
+
+' Controller proses ke model
+SOC -> OS : createOrder(requestData)
+OS --> SOC : orderCreated
+
+' Controller kembalikan response
+SOC --> PS : tampilkanMessageSukses("Pesanan berhasil dibuat")
+PS --> Customer : pesan sukses ditampilkan
+
+@enduml

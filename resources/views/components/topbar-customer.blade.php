@@ -140,9 +140,7 @@
                     </a>
                     <a href="{{ route('products.public') }}" class="hover:text-primary-200 transition-colors text-sm">Produk</a>
                     <a href="{{ route('services.public') }}" class="hover:text-primary-200 transition-colors text-sm">Servis</a>
-                    @auth('customer')
-                        <a href="{{ route('customer.service-order') }}" class="hover:text-primary-200 transition-colors text-sm">Pesan Servis Onsite</a>
-                    @endauth
+                    <a href="{{ route('customer.service-order') }}" class="hover:text-primary-200 transition-colors text-sm">Pesan Servis</a>
                     <a href="{{ route('tentang-kami') }}" class="hover:text-primary-200 transition-colors text-sm">Tentang Kami</a>
                 </nav>
                 
@@ -178,12 +176,10 @@
                         <i class="fas fa-tools mr-3 text-primary-200"></i>
                         <span class="font-medium">Servis</span>
                     </a>
-                    @auth('customer')
-                        <a href="{{ route('customer.service-order') }}" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
-                            <i class="fas fa-home mr-3 text-primary-200"></i>
-                            <span class="font-medium">Pesan Servis Onsite</span>
-                        </a>
-                    @endauth
+                    <a href="{{ route('customer.service-order') }}" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
+                        <i class="fas fa-wrench mr-3 text-primary-200"></i>
+                        <span class="font-medium">Pesan Servis</span>
+                    </a>
                     <a href="{{ route('tentang-kami') }}" class="flex items-center px-4 py-3 text-white hover:bg-primary-500 rounded-lg transition-colors">
                         <i class="fas fa-info-circle mr-3 text-primary-200"></i>
                         <span class="font-medium">Tentang Kami</span>

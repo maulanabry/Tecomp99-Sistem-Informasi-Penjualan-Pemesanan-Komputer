@@ -1,0 +1,10 @@
+@startuml TrackServiceProgressSequence
+actor Customer
+participant "ServiceController" as SC
+participant "ServiceProgress" as SP
+
+Customer -> SC : requestProgress()
+SC -> SP : getProgress()
+SP -> SC : progressData()
+SC -> Customer : displayProgress()
+@enduml

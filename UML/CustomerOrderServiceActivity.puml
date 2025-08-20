@@ -1,0 +1,10 @@
+@startuml CustomerOrderServiceActivity
+boundary "Service Order Page" as SOP
+controller "ServiceController" as SC
+entity "ServiceOrder" as SO
+
+SOP -> SC : selectService()
+SC -> SO : createOrder()
+SO -> SC : orderCreated()
+SC -> SOP : displayOrderConfirmation()
+@enduml

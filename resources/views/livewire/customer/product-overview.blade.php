@@ -161,13 +161,13 @@
                         <div class="space-y-4 pt-4 border-t border-gray-200/50">
                             
                             <!-- Wishlist Button -->
-<button wire:click="toggleWishlist" 
+{{-- <button wire:click="toggleWishlist" 
         class="inline-flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300 hover:scale-105 {{ in_array($product->product_id, $wishlist) ? 'bg-gradient-to-r from-red-50 to-pink-50 text-red-700 hover:from-red-100 hover:to-pink-100 border border-red-200/50' : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-gray-100 hover:to-gray-200 border border-gray-200/50' }}">
                                 <svg class="w-4 h-4 {{ in_array($product->product_id, $wishlist) ? 'text-red-500' : 'text-gray-400' }}" fill="{{ in_array($product->product_id, $wishlist) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                 </svg>
                                 <span>{{ in_array($product->product_id, $wishlist) ? 'Hapus dari Wishlist' : 'Tambah ke Wishlist' }}</span>
-                            </button>
+                            </button> --}}
                             
                             <!-- Quantity Controls -->
                             @if($product->stock > 0)
@@ -182,12 +182,7 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
                                                 </svg>
                                             </button>
-                                            <input type="number" 
-                                                   wire:model.live="quantity" 
-                                                   wire:change="updateQuantity"
-                                                   min="1" 
-                                                   max="{{ min(99, $product->stock) }}" 
-                                                   class="w-12 px-2 py-2 text-center border-0 focus:ring-0 focus:outline-none bg-transparent font-bold text-gray-900">
+                                            <span class="w-12 px-2 py-2 text-center font-bold text-gray-900 select-none">{{ $quantity }}</span>
                                             <button wire:click="incrementQuantity" 
                                                     class="px-3 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 rounded-r-lg group"
                                                     {{ $quantity >= min(99, $product->stock) ? 'disabled' : '' }}>
@@ -223,11 +218,20 @@
                                 </button>
                                 
 <button wire:click="buyNow" 
-        class="w-full bg-gradient-to-r from-primary-500 to-orange-500 hover:from-primary-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group">
-                                    <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z"/>
-                                    </svg>
-                                    <span>Beli Sekarang</span>
+        wire:loading.attr="disabled"
+        wire:target="buyNow"
+        class="w-full bg-gradient-to-r from-primary-500 to-orange-500 hover:from-primary-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+        {{ $isBuyingNow ? 'disabled' : '' }}>
+                                    <div wire:loading.remove wire:target="buyNow">
+                                        <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z"/>
+                                        </svg>
+                                    </div>
+                                    <div wire:loading wire:target="buyNow">
+                                        <i class="fas fa-spinner fa-spin w-4 h-4"></i>
+                                    </div>
+                                    <span wire:loading.remove wire:target="buyNow">Beli Sekarang</span>
+                                    <span wire:loading wire:target="buyNow">Memproses...</span>
                                 </button>
                             @else
                                 <button disabled 

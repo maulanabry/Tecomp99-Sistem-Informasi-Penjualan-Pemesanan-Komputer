@@ -1,0 +1,74 @@
+@startuml
+!theme plain
+title Customer Cart Management - MVC Sequence Diagram
+
+actor Customer
+participant "CartController" as Controller
+participant "Cart Model" as Model
+participant "Product Model" as Product
+participant "View" as View
+
+== Add Product to Cart ==
+Customer -> Controller: POST /customer/cart/add
+activate Controller
+Controller -> Controller: validate(product_id, quantity)
+Controller -> Model: addItem(customer_id, product_id, quantity)
+activate Model
+Model -> Product: find(product_id)
+activate Product
+Product --> Model: product details
+deactivate Product
+Model -> Model: check stock availability
+Model -> Model: create/update cart item
+Model --> Controller: cart item
+deactivate Model
+Controller -> View: redirect()->back()
+activate View
+View --> Customer: success message
+deactivate View
+deactivate Controller
+
+== Update Cart Quantity ==
+Customer -> Controller: PUT /customer/cart/{id}/quantity
+activate Controller
+Controller -> Controller: validate(quantity)
+Controller -> Model: find(id)
+activate Model
+Model -> Model: updateQuantity(quantity)
+Model --> Controller: updated cart
+deactivate Model
+Controller -> View: JSON response
+activate View
+View --> Customer: updated cart data
+deactivate View
+deactivate Controller
+
+== Remove Item from Cart ==
+Customer -> Controller: DELETE /customer/cart/{id}
+activate Controller
+Controller -> Model: find(id)
+activate Model
+Model -> Model: delete()
+Model --> Controller: success
+deactivate Model
+Controller -> View: JSON response
+activate View
+View --> Customer: success message
+deactivate View
+deactivate Controller
+
+== Clear Cart ==
+Customer -> Controller: DELETE /customer/cart/clear
+activate Controller
+Controller -> Model: clearCartForCustomer(customer_id)
+activate Model
+Model -> Model: delete all items
+Model --> Controller: success
+deactivate Model
+Controller -> View: redirect()->route('customer.cart.index')
+activate View
+View --> Customer: empty cart view
+deactivate View
+deactivate Controller
+
+@enduml

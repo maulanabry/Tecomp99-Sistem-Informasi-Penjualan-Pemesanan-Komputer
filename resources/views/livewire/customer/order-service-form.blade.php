@@ -101,34 +101,16 @@
                 <h2 class="text-xl font-semibold text-gray-900">Detail Pesanan Servis</h2>
             </div>
 
-            <!-- Service Type Selection -->
+            <!-- Service Type Info -->
             <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-3">Jenis Layanan</label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label class="relative">
-                        <input type="radio" wire:model="mode" value="onsite" class="sr-only">
-                        <div class="border-2 rounded-lg p-4 cursor-pointer transition-all {{ $mode === 'onsite' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300' }}">
-                            <div class="flex items-center">
-                                <i class="fas fa-home text-2xl {{ $mode === 'onsite' ? 'text-primary-500' : 'text-gray-400' }} mr-3"></i>
-                                <div>
-                                    <h3 class="font-semibold {{ $mode === 'onsite' ? 'text-primary-700' : 'text-gray-900' }}">Servis Onsite</h3>
-                                    <p class="text-sm text-gray-600">Teknisi datang ke lokasi Anda</p>
-                                </div>
-                            </div>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-home text-2xl text-blue-500 mr-3"></i>
+                        <div>
+                            <h3 class="font-semibold text-blue-900">Servis Onsite</h3>
+                            <p class="text-sm text-blue-700">Teknisi kami akan datang langsung ke lokasi Anda</p>
                         </div>
-                    </label>
-                    <label class="relative">
-                        <input type="radio" wire:model="mode" value="ticket" class="sr-only">
-                        <div class="border-2 rounded-lg p-4 cursor-pointer transition-all {{ $mode === 'ticket' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300' }}">
-                            <div class="flex items-center">
-                                <i class="fas fa-tools text-2xl {{ $mode === 'ticket' ? 'text-primary-500' : 'text-gray-400' }} mr-3"></i>
-                                <div>
-                                    <h3 class="font-semibold {{ $mode === 'ticket' ? 'text-primary-700' : 'text-gray-900' }}">Servis Reguler</h3>
-                                    <p class="text-sm text-gray-600">Bawa perangkat ke toko</p>
-                                </div>
-                            </div>
-                        </div>
-                    </label>
+                    </div>
                 </div>
             </div>
 
@@ -150,37 +132,53 @@
                 </div>
             </div>
 
-            <!-- Onsite Only Fields -->
-            @if ($mode === 'onsite')
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-medium text-blue-900 mb-4">
-                        <i class="fas fa-calendar-alt mr-2"></i>Jadwal Kunjungan
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Kunjungan *</label>
-                            <input type="date" wire:model="tanggal_kunjungan" min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                            @error('tanggal_kunjungan') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Slot Waktu *</label>
-                            <select wire:model="slot_waktu" 
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                                <option value="">Pilih slot waktu</option>
+            <!-- Jadwal Kunjungan -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 class="font-medium text-blue-900 mb-4">
+                    <i class="fas fa-calendar-alt mr-2"></i>Jadwal Kunjungan
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Kunjungan *</label>
+                        <input type="date" wire:model.live="tanggal_kunjungan" min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        @error('tanggal_kunjungan') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Slot Waktu *</label>
+                        <select wire:model="slot_waktu" 
+                                wire:key="slot-select-{{ $tanggal_kunjungan }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">
+                                @if(empty($tanggal_kunjungan))
+                                    Pilih tanggal terlebih dahulu
+                                @else
+                                    Pilih slot waktu
+                                @endif
+                            </option>
+                            @if(!empty($tanggal_kunjungan))
                                 @foreach ($availableSlots as $slot)
+                                    @php
+                                        $isAvailable = !isset($slotsStatus[$slot]) || $slotsStatus[$slot]['available'];
+                                    @endphp
                                     <option value="{{ $slot }}" 
-                                            @if(isset($slotsStatus[$slot]) && !$slotsStatus[$slot]['available']) disabled @endif>
+                                            @if(!$isAvailable) disabled @endif>
                                         {{ $slot }}
-                                        @if(isset($slotsStatus[$slot]) && !$slotsStatus[$slot]['available']) - PENUH @endif
+                                        @if(!$isAvailable) - PENUH @endif
                                     </option>
                                 @endforeach
-                            </select>
-                            @error('slot_waktu') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                        </div>
+                            @endif
+                        </select>
+                        @error('slot_waktu') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                        
+                        @if(!empty($tanggal_kunjungan) && !empty($slotsStatus))
+                            <div class="mt-2 text-xs text-gray-500" wire:key="date-info-{{ $tanggal_kunjungan }}">
+                                Slot tersedia untuk tanggal {{ \Carbon\Carbon::parse($tanggal_kunjungan)->format('d F Y') }}
+                            </div>
+                        @endif
                     </div>
                 </div>
-            @endif
+            </div>
 
             <!-- File Upload -->
             <div class="mb-6">

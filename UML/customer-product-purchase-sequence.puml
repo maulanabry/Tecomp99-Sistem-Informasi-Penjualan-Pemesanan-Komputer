@@ -1,0 +1,49 @@
+@startuml
+actor Customer
+boundary "Checkout View" as View
+control "OrderController" as Controller
+entity "Cart Model" as CartModel
+entity "Order Model" as OrderModel
+entity "Shipping Model" as ShippingModel
+entity "Payment Model" as PaymentModel
+
+'--- Open Cart Page ---
+Customer -> View: clickCartIcon()
+View -> Controller: openCartPage()
+Controller -> CartModel: getCartItems(customerId)
+CartModel --> Controller: cartItems
+Controller -> View: displayCart(cartItems)
+
+'--- Select Items to Buy ---
+Customer -> View: selectItems(itemIds)
+
+'--- Checkout ---
+Customer -> View: clickCheckout()
+View -> Controller: openCheckoutPage(selectedItems)
+Controller -> View: displayCheckoutForm(selectedItems)
+
+'--- Choose Order Type ---
+alt Pickup at Store
+    Customer -> View: selectPickupOption()
+else Shipping
+    Customer -> View: selectShippingOption(addressId)
+    View -> Controller: calculateShipping(addressId, selectedItems)
+    Controller -> ShippingModel: getShippingCost(addressId, selectedItems)
+    ShippingModel --> Controller: shippingCost
+    Controller -> View: displayShippingCost(shippingCost)
+end
+
+'--- Place Order ---
+Customer -> View: clickPlaceOrder()
+View -> Controller: createOrder(orderData)
+Controller -> OrderModel: saveOrder(orderData)
+OrderModel --> Controller: orderId
+
+'--- Payment ---
+Controller -> View: displayPaymentPage(orderId)
+Customer -> View: fillPaymentForm(paymentData)
+View -> Controller: processPayment(orderId, paymentData)
+Controller -> PaymentModel: makePayment(orderId, paymentData)
+PaymentModel --> Controller: paymentStatus
+Controller -> View: displayPaymentResult(paymentStatus)
+@enduml

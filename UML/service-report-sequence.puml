@@ -1,0 +1,77 @@
+@startuml Service Report Sequence
+title Service Report MVC Flow
+
+actor Owner
+participant Router
+participant LaporanController
+participant OrderService
+participant Database
+participant View
+
+== Main Report ==
+Owner -> Router: GET /laporan/pemesanan-servis
+Router -> LaporanController: pemesananServis()
+
+LaporanController -> LaporanController: getServiceSummary()
+LaporanController -> OrderService: count(), sum()
+OrderService -> Database: SELECT service data
+Database --> OrderService: service statistics
+OrderService --> LaporanController: summary data
+
+LaporanController -> LaporanController: getServiceData()
+LaporanController -> OrderService: with(['customer', 'paymentDetails'])
+OrderService -> Database: SELECT orders with relations
+Database --> OrderService: paginated orders
+OrderService --> LaporanController: service orders
+
+LaporanController -> LaporanController: getServiceChartData()
+LaporanController -> OrderService: groupBy('date'), join tables
+OrderService -> Database: SELECT chart data
+Database --> OrderService: aggregated data
+OrderService --> LaporanController: chart data
+
+LaporanController -> View: render pemesanan-servis.blade.php
+View --> LaporanController: HTML response
+LaporanController --> Router: service report page
+Router --> Owner: display report
+
+== Export Options ==
+alt Print
+    Owner -> Router: GET /pemesanan-servis/export-pdf?print=1
+    Router -> LaporanController: exportServicePdf()
+    LaporanController -> OrderService: get data
+    OrderService -> Database: SELECT all data
+    Database --> OrderService: complete dataset
+    OrderService --> LaporanController: service data
+    LaporanController -> View: PDF template
+    View --> LaporanController: PDF content
+    LaporanController --> Router: stream PDF
+    Router --> Owner: print preview
+end
+
+alt Export PDF
+    Owner -> Router: GET /pemesanan-servis/export-pdf
+    Router -> LaporanController: exportServicePdf()
+    LaporanController -> OrderService: get data
+    OrderService -> Database: SELECT all data
+    Database --> OrderService: complete dataset
+    OrderService --> LaporanController: service data
+    LaporanController -> View: PDF template
+    View --> LaporanController: PDF content
+    LaporanController --> Router: download PDF
+    Router --> Owner: PDF file
+end
+
+alt Export CSV
+    Owner -> Router: GET /pemesanan-servis/export-excel
+    Router -> LaporanController: exportServiceExcel()
+    LaporanController -> OrderService: get all data
+    OrderService -> Database: SELECT all records
+    Database --> OrderService: complete dataset
+    OrderService --> LaporanController: service data
+    LaporanController -> LaporanController: generate CSV
+    LaporanController --> Router: CSV stream
+    Router --> Owner: CSV file
+end
+
+@enduml

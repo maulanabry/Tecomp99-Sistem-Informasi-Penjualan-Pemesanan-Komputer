@@ -1,0 +1,38 @@
+@startuml AdminChatSequence
+actor Admin
+boundary Sidebar
+boundary ChatWindow
+control ChatController
+entity Chat
+entity ChatMessage
+
+' Admin membuka sidebar Chat
+Admin -> Sidebar : Klik "Chat"
+Sidebar -> ChatController : index()
+ChatController -> Chat : ambil daftar chat aktif
+Chat --> ChatController : chats + unread
+ChatController --> ChatWindow : tampilkanHalamanLiveChat()
+
+' Admin memilih customer yang ingin dibalas
+Admin -> ChatWindow : pilih customer
+ChatWindow -> ChatController : startChatWithCustomer(customerId)
+ChatController -> Chat : findOrCreateChat()
+Chat --> ChatController : chat + messages
+ChatController --> ChatWindow : tampilkan chat & riwayat
+
+' Admin mengirim pesan
+Admin -> ChatWindow : ketik pesan
+ChatWindow -> ChatController : sendMessage(chatId, message/file)
+ChatController -> ChatMessage : create(message)
+ChatMessage --> ChatController : messageSaved
+ChatController -> Chat : update last_message_at
+ChatController --> ChatWindow : tampilkan pesan
+
+loop Obrolan Berlanjut
+  Admin -> ChatWindow : kirim pesan berikutnya
+  ChatWindow -> ChatController : sendMessage()
+  ChatController -> ChatMessage : create(message)
+  ChatMessage --> ChatController : messageSaved
+  ChatController --> ChatWindow : tampilkan pesan
+end
+@enduml

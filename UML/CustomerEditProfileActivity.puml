@@ -1,0 +1,30 @@
+@startuml CustomerUpdateProfileSequence
+title Sequence Diagram - Customer Update Profile
+
+actor Customer
+boundary "Topbar" as TB
+boundary "Halaman Profil" as HP
+control "AccountController" as AC
+entity "Customer Model" as CM
+
+' Customer akses halaman profil dari Topbar
+Customer -> TB : klik "Profil"
+TB -> AC : requestProfilePage()
+AC -> HP : tampilkanHalamanProfil()
+
+' Customer mengubah data profil
+Customer -> HP : ubahInformasiProfil()
+
+' Customer simpan perubahan
+Customer -> HP : klik "Simpan Perubahan"
+HP -> AC : updateProfile(requestData)
+
+' Controller validasi & update model
+AC -> CM : updateCustomerData(requestData)
+CM --> AC : updateSuccess
+
+' Controller kembalikan response
+AC --> HP : tampilkanPesanSukses("Profil berhasil diperbarui")
+HP --> Customer : profil diperbarui + pesan sukses
+
+@enduml

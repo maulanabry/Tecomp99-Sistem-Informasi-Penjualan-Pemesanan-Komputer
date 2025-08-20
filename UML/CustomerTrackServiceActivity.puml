@@ -1,0 +1,40 @@
+@startuml
+title Sequence Diagram - Customer Track Order with Navbar & Overview Page
+
+actor Customer
+boundary "Navbar" as NB
+boundary "Overview Page" as OP
+boundary "Tracking Page" as TP
+control "OrderController" as OC
+entity "Order" as O
+
+' Customer akses halaman tracking dari navbar
+Customer -> NB : klik "Lacak Pesanan"
+NB -> OC : requestOverviewPage()
+OC -> O : getOrderTypes()
+O --> OC : daftarTipePesanan
+OC --> OP : tampilkanOverviewPage()
+
+' Customer pilih tipe pesanan
+Customer -> OP : pilihPesananProduk/Servis
+OP -> OC : selectOrderType(type)
+OC -> O : validateOrderType(type)
+O --> OC : valid/invalid
+OC --> TP : tampilkanFormNomorPesanan()
+
+' Customer input nomor pesanan
+Customer -> TP : inputNomorPesanan(orderId)
+TP -> OC : trackOrder(orderId, type)
+OC -> O : findOrderById(orderId, type)
+
+alt Pesanan ditemukan
+    O --> OC : orderData(status, detail)
+    OC --> TP : tampilkanDetailPesanan(orderData)
+    TP --> Customer : lihatStatusPesanan()
+else Pesanan tidak ditemukan
+    O --> OC : null
+    OC --> TP : tampilkanPesanError("Pesanan tidak ditemukan")
+    TP --> Customer : lihatPesanError()
+end
+
+@enduml
