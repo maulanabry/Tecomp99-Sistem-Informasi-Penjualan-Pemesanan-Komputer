@@ -28,6 +28,8 @@ class RedirectIfAuthenticated
                         return redirect()->route('teknisi.dashboard.index');
                     case 'pemilik':
                         return redirect()->route('pemilik.dashboard.index');
+                    case 'customer':
+                        return redirect('/beranda');
                 }
             }
         }

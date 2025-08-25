@@ -120,7 +120,7 @@
             </div>
         </div>
 
-        <!-- Tipe Pesanan - FIXED WITH LIVEWIRE BINDING -->
+        <!-- Tipe Pesanan - IMPROVED LIVEWIRE INTEGRATION -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">
                 <i class="fas fa-truck text-primary-600 mr-2"></i>
@@ -134,7 +134,7 @@
                     <!-- Livewire Radio Button Approach -->
                     <div class="space-y-3">
                         <!-- Ambil di Toko -->
-                        <label class="flex items-center p-4 border-2 {{ $orderType === 'langsung' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg cursor-pointer hover:bg-primary-100 transition-colors">
+                        <label class="flex items-center p-4 border-2 {{ $orderType === 'langsung' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                             <input type="radio" wire:model.live="orderType" value="langsung" 
                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
                             <div class="ml-3 flex items-center justify-between w-full">
@@ -161,7 +161,13 @@
                                         <p class="text-sm {{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }}">Estimasi 2-3 hari kerja</p>
                                     </div>
                                 </div>
-                                <span id="shippingCostDisplay" class="{{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }} font-semibold">{{ $this->formatPrice($shippingCost) }}</span>
+                                <span id="shippingCostDisplay" class="{{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }} font-semibold">
+                                    @if($orderType === 'pengiriman' && $isCalculatingShipping)
+                                        <i class="fas fa-spinner fa-spin"></i> Menghitung...
+                                    @else
+                                        {{ $this->formatPrice($shippingCost) }}
+                                    @endif
+                                </span>
                             </div>
                         </label>
                     </div>
@@ -176,7 +182,7 @@
                                 <h4 class="font-medium text-blue-800 mb-2">Detail Pengiriman</h4>
                                 
                                 <!-- Loading State -->
-                                <div id="shippingLoading" class="hidden">
+                                <div id="shippingLoading" class="{{ $isCalculatingShipping ? '' : 'hidden' }}">
                                     <div class="flex items-center space-x-2">
                                         <i class="fas fa-spinner fa-spin text-blue-600"></i>
                                         <span class="text-sm text-blue-700">Menghitung ongkos kirim...</span>
@@ -184,439 +190,61 @@
                                 </div>
                                 
                                 <!-- Calculated State -->
-                                <div id="shippingCalculated" class="hidden">
+                                <div id="shippingCalculated" class="{{ !$isCalculatingShipping && $shippingCost > 0 && $orderType === 'pengiriman' ? '' : 'hidden' }}">
                                     <div class="text-sm text-blue-700 space-y-1">
-                                        <p><strong>Kurir:</strong> JNE REG</p>
-                                        <p><strong>Estimasi:</strong> 2-3 hari kerja</p>
-                                        <p><strong>Ongkos Kirim:</strong> <span id="calculatedShippingCost">Rp 0</span></p>
+                                        <p><strong>Kurir:</strong> <span id="courierName">JNE REG</span></p>
+                                        <p><strong>Estimasi:</strong> <span id="estimatedDelivery">2-3 hari kerja</span></p>
+                                        <p><strong>Ongkos Kirim:</strong> <span id="calculatedShippingCost">{{ $this->formatPrice($shippingCost) }}</span></p>
+                                        <p><strong>Berat Total:</strong> <span id="totalWeight">{{ number_format($totalWeight) }}g</span></p>
+                                        @if($customerAddress)
+                                            <p><strong>Tujuan:</strong> {{ $customerAddress->city_name }}, {{ $customerAddress->province_name }}</p>
+                                        @endif
                                     </div>
-                                    <button onclick="recalculateShipping()" 
-                                            class="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
-                                        Hitung Ulang
+                                    <button wire:click="calculateShippingCost" 
+                                            wire:loading.attr="disabled"
+                                            class="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-50">
+                                        <span wire:loading.remove wire:target="calculateShippingCost">Hitung Ulang</span>
+                                        <span wire:loading wire:target="calculateShippingCost">
+                                            <i class="fas fa-spinner fa-spin"></i> Menghitung...
+                                        </span>
                                     </button>
                                 </div>
                                 
                                 <!-- Error State -->
                                 <div id="shippingError" class="hidden">
-                                    <p class="text-sm text-red-600 mb-2">Gagal menghitung ongkir. Menggunakan estimasi.</p>
-                                    <button onclick="recalculateShipping()" 
-                                            class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">
-                                        Coba Lagi
+                                    <p class="text-sm text-red-600 mb-2" id="shippingErrorMessage">Gagal menghitung ongkir. Menggunakan estimasi.</p>
+                                    <button wire:click="calculateShippingCost" 
+                                            wire:loading.attr="disabled"
+                                            class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50">
+                                        <span wire:loading.remove wire:target="calculateShippingCost">Coba Lagi</span>
+                                        <span wire:loading wire:target="calculateShippingCost">
+                                            <i class="fas fa-spinner fa-spin"></i> Menghitung...
+                                        </span>
                                     </button>
                                 </div>
+
+                                <!-- No Address Warning -->
+                                @if($orderType === 'pengiriman' && !$customerAddress)
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-2">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                                            <div>
+                                                <p class="text-sm text-yellow-800 font-medium">Alamat Belum Diatur</p>
+                                                <p class="text-sm text-yellow-700">Silakan lengkapi alamat pengiriman terlebih dahulu.</p>
+                                                <a href="{{ route('customer.account.addresses') }}" 
+                                                   class="inline-block mt-1 px-2 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700">
+                                                    Atur Alamat
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Inline JavaScript for Immediate Functionality -->
-        <script>
-            let currentShippingCost = 0;
-            let isCalculatingShipping = false;
-
-            // Handle order type change
-            function handleOrderTypeChange(orderType) {
-                console.log('Order type changed to:', orderType);
-                
-                const shippingDetailsSection = document.getElementById('shippingDetailsSection');
-                const shippingCostDisplay = document.getElementById('shippingCostDisplay');
-                
-                // Update label styles
-                updateLabelStyles(orderType);
-                
-                if (orderType === 'pengiriman') {
-                    // Show shipping section
-                    shippingDetailsSection.classList.remove('hidden');
-                    
-                    // Start calculating shipping
-                    calculateShippingCost();
-                } else {
-                    // Hide shipping section
-                    shippingDetailsSection.classList.add('hidden');
-                    
-                    // Reset shipping cost
-                    currentShippingCost = 0;
-                    shippingCostDisplay.textContent = 'Rp 0';
-                    updateTotals();
-                }
-            }
-
-            // Update label styles based on selection
-            function updateLabelStyles(selectedType) {
-                const labels = document.querySelectorAll('label');
-                labels.forEach(label => {
-                    const radio = label.querySelector('input[type="radio"]');
-                    if (radio) {
-                        if (radio.value === selectedType) {
-                            // Selected style
-                            label.classList.remove('border-gray-300', 'bg-white');
-                            label.classList.add('border-primary-500', 'bg-primary-50');
-                            
-                            // Update text colors
-                            const mainText = label.querySelector('p.font-medium');
-                            const subText = label.querySelector('p.text-sm');
-                            const icon = label.querySelector('i');
-                            
-                            if (mainText) mainText.classList.add('text-primary-700');
-                            if (subText) subText.classList.add('text-primary-600');
-                            if (icon) {
-                                icon.classList.remove('text-gray-600');
-                                icon.classList.add('text-primary-600');
-                            }
-                        } else {
-                            // Unselected style
-                            label.classList.remove('border-primary-500', 'bg-primary-50');
-                            label.classList.add('border-gray-300', 'bg-white');
-                            
-                            // Update text colors
-                            const mainText = label.querySelector('p.font-medium');
-                            const subText = label.querySelector('p.text-sm');
-                            const icon = label.querySelector('i');
-                            
-                            if (mainText) {
-                                mainText.classList.remove('text-primary-700');
-                                mainText.classList.add('text-gray-700');
-                            }
-                            if (subText) {
-                                subText.classList.remove('text-primary-600');
-                                subText.classList.add('text-gray-600');
-                            }
-                            if (icon) {
-                                icon.classList.remove('text-primary-600');
-                                icon.classList.add('text-gray-600');
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Calculate shipping cost - FIXED FOR KOMERCE API
-            async function calculateShippingCost() {
-                if (isCalculatingShipping) return;
-                
-                console.log('=== MULAI KALKULASI ONGKIR (Komerce API) ===');
-                isCalculatingShipping = true;
-                
-                // Show loading state
-                showShippingState('loading');
-                
-                try {
-                    // Get customer postal code
-                    const postalCodeElement = document.getElementById('customerPostalCode');
-                    const postalCode = postalCodeElement ? postalCodeElement.textContent.trim() : '';
-                    
-                    console.log('Customer postal code:', postalCode);
-                    
-                    // Validate postal code format
-                    if (!postalCode || postalCode === '-') {
-                        throw new Error('Kode pos tidak tersedia');
-                    }
-                    
-                    if (!/^\d{5}$/.test(postalCode)) {
-                        throw new Error('Format kode pos tidak valid. Pastikan kode pos terdiri dari 5 digit angka.');
-                    }
-                    
-                    // Calculate total weight
-                    const totalWeight = calculateTotalWeight();
-                    console.log('Total weight:', totalWeight, 'grams');
-                    
-                    if (totalWeight <= 0) {
-                        throw new Error('Berat total produk tidak valid');
-                    }
-                    
-                    console.log('STEP 1: Mencari destinasi untuk kode pos:', postalCode);
-                    
-                    // Step 1: Get destination data using Komerce API
-                    const destinationResponse = await fetch(`/api/public/search-destination?search=${encodeURIComponent(postalCode)}&limit=1`, {
-                        headers: {
-                            'Accept': 'application/json',
-                        }
-                    });
-                    
-                    console.log('Destination response status:', destinationResponse.status);
-                    
-                    if (!destinationResponse.ok) {
-                        const errorText = await destinationResponse.text();
-                        console.error('Destination API error:', errorText);
-                        throw new Error(`Gagal mencari destinasi: ${destinationResponse.status}`);
-                    }
-                    
-                    const destinationResponse_json = await destinationResponse.json();
-                    console.log('Destination response received:', destinationResponse_json);
-                    
-                    // Check if destination API response indicates success
-                    if (!destinationResponse_json.success) {
-                        console.error('Destination API indicated failure:', destinationResponse_json);
-                        throw new Error('API destinasi mengembalikan status gagal');
-                    }
-                    
-                    const destinationData = destinationResponse_json.data;
-                    console.log('Destination data extracted:', destinationData);
-                    
-                    // Validate destination data structure
-                    if (!destinationData || !Array.isArray(destinationData) || destinationData.length === 0) {
-                        throw new Error(`Kode pos ${postalCode} tidak ditemukan dalam database. Mohon periksa kembali kode pos yang digunakan.`);
-                    }
-                    
-                    const destination = destinationData[0];
-                    console.log('STEP 1 SUCCESS: Destinasi ditemukan', destination);
-                    
-                    // Step 2: Calculate shipping cost using Komerce API
-                    console.log('STEP 2: Menghitung ongkir dengan params:', {
-                        destination: destination.id,
-                        weight: Math.ceil(totalWeight),
-                        courier: 'jne',
-                        service: 'reg'
-                    });
-                    
-                    const params = new URLSearchParams();
-                    params.append('destination', destination.id);
-                    params.append('weight', Math.ceil(totalWeight));
-                    params.append('courier', 'jne');
-                    params.append('service', 'reg');
-                    
-                    const shippingResponse = await fetch('/api/public/check-ongkir', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Accept': 'application/json',
-                        },
-                        body: params
-                    });
-                    
-                    console.log('Shipping response status:', shippingResponse.status);
-                    
-                    if (!shippingResponse.ok) {
-                        const errorText = await shippingResponse.text();
-                        console.error('Shipping API error:', errorText);
-                        throw new Error(`Gagal mendapatkan ongkos kirim: ${shippingResponse.status}`);
-                    }
-                    
-                    const shippingResponse_json = await shippingResponse.json();
-                    console.log('STEP 2 RESULT: Shipping response received:', shippingResponse_json);
-                    
-                    // Check if API response indicates success
-                    if (!shippingResponse_json.success) {
-                        console.error('API indicated failure:', shippingResponse_json);
-                        throw new Error('API mengembalikan status gagal');
-                    }
-                    
-                    const shippingData = shippingResponse_json.data;
-                    console.log('STEP 2 DATA: Shipping data extracted:', shippingData);
-                    
-                    // Validate response data structure
-                    if (!Array.isArray(shippingData)) {
-                        console.error('Invalid shipping data format:', shippingData);
-                        throw new Error('Format respons ongkos kirim tidak valid');
-                    }
-                    
-                    // Find JNE REG service - MORE FLEXIBLE SEARCH
-                    console.log('Searching for JNE REG in shipping data...');
-                    
-                    let regService = null;
-                    
-                    // Try multiple search patterns
-                    regService = shippingData.find(service => 
-                        service.code?.toLowerCase() === 'jne' && 
-                        service.service?.toUpperCase() === 'REG'
-                    );
-                    
-                    if (!regService) {
-                        // Try alternative search patterns
-                        regService = shippingData.find(service => 
-                            service.courier?.toLowerCase() === 'jne' && 
-                            service.service?.toUpperCase() === 'REG'
-                        );
-                    }
-                    
-                    if (!regService) {
-                        // Try searching just for JNE
-                        regService = shippingData.find(service => 
-                            service.code?.toLowerCase() === 'jne' ||
-                            service.courier?.toLowerCase() === 'jne'
-                        );
-                    }
-                    
-                    if (!regService) {
-                        // Use first available service as fallback
-                        regService = shippingData[0];
-                        console.log('Using first available service as fallback:', regService);
-                    }
-                    
-                    console.log('Selected service:', regService);
-                    
-                    if (!regService) {
-                        throw new Error('Tidak ada layanan pengiriman yang tersedia untuk rute ini.');
-                    }
-                    
-                    // Get cost from various possible fields
-                    let cost = 0;
-                    if (regService.cost) {
-                        cost = parseInt(regService.cost);
-                    } else if (regService.price) {
-                        cost = parseInt(regService.price);
-                    } else if (regService.value) {
-                        cost = parseInt(regService.value);
-                    }
-                    
-                    console.log('Extracted cost:', cost);
-                    
-                    if (isNaN(cost) || cost <= 0) {
-                        throw new Error('Biaya pengiriman tidak valid: ' + cost);
-                    }
-                    
-                    currentShippingCost = cost;
-                    
-                    // Update displays
-                    document.getElementById('shippingCostDisplay').textContent = formatRupiah(cost);
-                    document.getElementById('calculatedShippingCost').textContent = formatRupiah(cost);
-                    
-                    // Show calculated state (SUCCESS)
-                    showShippingState('calculated');
-                    
-                    // Update totals
-                    updateTotals();
-                    
-                    console.log('SUCCESS: Ongkir berhasil dihitung: Rp', cost.toLocaleString('id-ID'));
-                    
-                    // Exit function here - don't continue to catch block
-                    return;
-                    
-                } catch (error) {
-                    console.error('ERROR: Shipping calculation failed:', error);
-                    
-                    // Use estimated cost as fallback
-                    const estimatedCost = getEstimatedShippingCost();
-                    currentShippingCost = estimatedCost;
-                    
-                    console.log('FALLBACK: Menggunakan estimasi ongkir: Rp', estimatedCost.toLocaleString('id-ID'));
-                    
-                    // Update displays with estimated cost
-                    document.getElementById('shippingCostDisplay').textContent = formatRupiah(estimatedCost);
-                    document.getElementById('calculatedShippingCost').textContent = formatRupiah(estimatedCost);
-                    
-                    // Show error state
-                    showShippingState('error');
-                    
-                    // Update totals
-                    updateTotals();
-                    
-                    // Show user-friendly error message
-                    console.warn('Menggunakan estimasi ongkir karena:', error.message);
-                } finally {
-                    isCalculatingShipping = false;
-                    console.log('=== SELESAI KALKULASI ONGKIR ===');
-                }
-            }
-
-            // Show different shipping states
-            function showShippingState(state) {
-                const loading = document.getElementById('shippingLoading');
-                const calculated = document.getElementById('shippingCalculated');
-                const error = document.getElementById('shippingError');
-                
-                // Hide all states
-                loading.classList.add('hidden');
-                calculated.classList.add('hidden');
-                error.classList.add('hidden');
-                
-                // Show selected state
-                if (state === 'loading') {
-                    loading.classList.remove('hidden');
-                } else if (state === 'calculated') {
-                    calculated.classList.remove('hidden');
-                } else if (state === 'error') {
-                    error.classList.remove('hidden');
-                }
-            }
-
-            // Recalculate shipping
-            function recalculateShipping() {
-                calculateShippingCost();
-            }
-
-            // Calculate total weight
-            function calculateTotalWeight() {
-                let totalWeight = 0;
-                document.querySelectorAll('.cart-item').forEach(item => {
-                    const weight = parseInt(item.getAttribute('data-weight')) || 0;
-                    const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
-                    totalWeight += weight * quantity;
-                });
-                return totalWeight;
-            }
-
-            // Get estimated shipping cost
-            function getEstimatedShippingCost() {
-                const totalWeight = calculateTotalWeight();
-                const weightInKg = Math.ceil(totalWeight / 1000);
-                return Math.max(15000, weightInKg * 5000); // Minimum 15rb, 5rb per kg
-            }
-
-            // Format rupiah
-            function formatRupiah(number) {
-                return 'Rp ' + number.toLocaleString('id-ID');
-            }
-
-            // Update totals
-            function updateTotals() {
-                // Calculate subtotal
-                let subtotal = 0;
-                document.querySelectorAll('.cart-item').forEach(item => {
-                    const price = parseFloat(item.getAttribute('data-price')) || 0;
-                    const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
-                    subtotal += price * quantity;
-                });
-                
-                // Get discount (from Livewire)
-                const discount = {{ $discount }};
-                
-                // Calculate grand total
-                const grandTotal = subtotal - discount + currentShippingCost;
-                
-                // Update displays
-                const subtotalElement = document.getElementById('subtotalAmount');
-                const shippingElement = document.getElementById('shippingAmount');
-                const grandTotalElement = document.getElementById('grandTotalAmount');
-                
-                if (subtotalElement) subtotalElement.textContent = formatRupiah(subtotal);
-                if (shippingElement) shippingElement.textContent = formatRupiah(currentShippingCost);
-                if (grandTotalElement) grandTotalElement.textContent = formatRupiah(grandTotal);
-                
-                // Show/hide shipping row
-                const shippingRow = document.getElementById('shippingRow');
-                if (shippingRow) {
-                    if (currentShippingCost > 0) {
-                        shippingRow.classList.remove('hidden');
-                    } else {
-                        shippingRow.classList.add('hidden');
-                    }
-                }
-                
-                // Update Livewire component
-                if (window.Livewire) {
-                    try {
-                        const livewireComponent = Livewire.find(document.querySelector('[wire\\:id]').getAttribute('wire:id'));
-                        if (livewireComponent) {
-                            livewireComponent.call('setShippingCost', currentShippingCost);
-                        }
-                    } catch (error) {
-                        console.error('Error updating Livewire:', error);
-                    }
-                }
-                
-                console.log('Totals updated:', { subtotal, discount, shipping: currentShippingCost, grandTotal });
-            }
-
-            // Initialize on page load
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('Pengiriman section initialized');
-                updateLabelStyles('langsung'); // Set initial state
-            });
-        </script>
 
         <!-- Voucher -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -720,3 +348,300 @@
         </div>
     </div>
 </div>
+
+@script
+<script>
+    let currentShippingCost = $wire.shippingCost;
+    let isCalculatingShipping = false;
+
+    // Listen for Livewire events
+    $wire.on('orderTypeChanged', (orderType) => {
+        console.log('Order type changed to:', orderType);
+        handleOrderTypeChange(orderType);
+    });
+
+    $wire.on('shippingCalculationStarted', () => {
+        console.log('Shipping calculation started');
+        showShippingState('loading');
+        isCalculatingShipping = true;
+    });
+
+    $wire.on('shippingCostCalculated', (data) => {
+        console.log('Shipping cost calculated:', data);
+        currentShippingCost = data.cost;
+        updateShippingDisplay(data.cost);
+        updateShippingDetails(data.details);
+        showShippingState('calculated');
+        updateTotals();
+        isCalculatingShipping = false;
+    });
+
+    $wire.on('shippingCostCalculationError', (data) => {
+        console.log('Shipping calculation error:', data);
+        currentShippingCost = data.fallbackCost;
+        updateShippingDisplay(data.fallbackCost);
+        updateShippingDetails(data.details);
+        showShippingErrorState(data.error);
+        updateTotals();
+        isCalculatingShipping = false;
+    });
+
+    $wire.on('shippingCostUpdated', (data) => {
+        console.log('Shipping cost updated:', data);
+        currentShippingCost = data.cost;
+        updateShippingDisplay(data.cost);
+        updateTotals();
+    });
+
+    // Handle order type change
+    function handleOrderTypeChange(orderType) {
+        const shippingDetailsSection = document.getElementById('shippingDetailsSection');
+        
+        if (orderType === 'pengiriman') {
+            if (shippingDetailsSection) {
+                shippingDetailsSection.classList.remove('hidden');
+            }
+        } else {
+            if (shippingDetailsSection) {
+                shippingDetailsSection.classList.add('hidden');
+            }
+            // Reset shipping cost
+            currentShippingCost = 0;
+            updateShippingDisplay(0);
+            updateTotals();
+        }
+    }
+
+    // Calculate shipping cost
+    async function calculateShippingCost() {
+        if (isCalculatingShipping) return;
+        
+        console.log('=== CALCULATING SHIPPING COST ===');
+        isCalculatingShipping = true;
+        
+        // Show loading state
+        showShippingState('loading');
+        
+        try {
+            // Get customer postal code
+            const postalCodeElement = document.getElementById('customerPostalCode');
+            const postalCode = postalCodeElement ? postalCodeElement.textContent.trim() : '';
+            
+            if (!postalCode || postalCode === '-' || !/^\d{5}$/.test(postalCode)) {
+                throw new Error('Kode pos tidak valid');
+            }
+            
+            // Calculate total weight
+            const totalWeight = calculateTotalWeight();
+            if (totalWeight <= 0) {
+                throw new Error('Berat produk tidak valid');
+            }
+            
+            console.log('Postal code:', postalCode, 'Weight:', totalWeight);
+            
+            // Step 1: Get destination
+            const destinationResponse = await fetch(`/api/public/search-destination?search=${encodeURIComponent(postalCode)}&limit=1`);
+            if (!destinationResponse.ok) throw new Error('Gagal mencari destinasi');
+            
+            const destinationData = await destinationResponse.json();
+            if (!Array.isArray(destinationData) || destinationData.length === 0) {
+                throw new Error('Kode pos tidak ditemukan');
+            }
+            
+            const destination = destinationData[0];
+            
+            // Step 2: Calculate shipping
+            const params = new URLSearchParams();
+            params.append('destination', destination.id);
+            params.append('weight', Math.ceil(totalWeight));
+            params.append('courier', 'jne');
+            params.append('service', 'reg');
+            
+            const shippingResponse = await fetch('/api/public/check-ongkir', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: params
+            });
+            
+            if (!shippingResponse.ok) throw new Error('Gagal menghitung ongkir');
+            
+            const shippingData = await shippingResponse.json();
+            if (!Array.isArray(shippingData)) throw new Error('Format response tidak valid');
+            
+            // Find JNE REG service
+            let regService = shippingData.find(service => 
+                service.code?.toLowerCase() === 'jne' && 
+                service.service?.toUpperCase() === 'REG'
+            );
+            
+            if (!regService) {
+                regService = shippingData.find(service => 
+                    service.courier?.toLowerCase() === 'jne'
+                );
+            }
+            
+            if (!regService) {
+                regService = shippingData[0];
+            }
+            
+            if (!regService) throw new Error('Layanan tidak tersedia');
+            
+            // Get cost
+            let cost = parseInt(regService.cost || regService.price || regService.value || 0);
+            if (isNaN(cost) || cost <= 0) throw new Error('Biaya tidak valid');
+            
+            // Extract service details
+            const courierName = regService.code?.toUpperCase() || regService.courier?.toUpperCase() || 'JNE';
+            const serviceName = regService.service?.toUpperCase() || 'REG';
+            const etd = regService.etd || regService.estimation || '2-3 hari kerja';
+            
+            // Update displays
+            currentShippingCost = cost;
+            updateShippingDisplay(cost);
+            updateShippingDetails(courierName, serviceName, etd, cost);
+            showShippingState('calculated');
+            updateTotals();
+            
+            console.log('SUCCESS: Shipping cost calculated:', cost);
+            
+        } catch (error) {
+            console.error('ERROR:', error);
+            
+            // Use estimated cost as fallback
+            const estimatedCost = getEstimatedShippingCost();
+            currentShippingCost = estimatedCost;
+            updateShippingDisplay(estimatedCost);
+            showShippingState('error');
+            updateTotals();
+        } finally {
+            isCalculatingShipping = false;
+        }
+    }
+
+    // Update shipping details with new data structure
+    function updateShippingDetails(details) {
+        if (!details) return;
+        
+        // Update individual elements
+        const courierElement = document.getElementById('courierName');
+        const estimatedElement = document.getElementById('estimatedDelivery');
+        const costElement = document.getElementById('calculatedShippingCost');
+        const weightElement = document.getElementById('totalWeight');
+        
+        if (courierElement) courierElement.textContent = `${details.courier} ${details.service}`;
+        if (estimatedElement) estimatedElement.textContent = details.etd;
+        if (costElement) costElement.textContent = formatRupiah(details.cost);
+        if (weightElement) weightElement.textContent = `${details.weight.toLocaleString('id-ID')}g`;
+    }
+
+    // Show shipping error state
+    function showShippingErrorState(errorMessage) {
+        const errorSection = document.getElementById('shippingError');
+        const errorMessageElement = document.getElementById('shippingErrorMessage');
+        
+        if (errorSection) {
+            errorSection.classList.remove('hidden');
+        }
+        if (errorMessageElement) {
+            errorMessageElement.textContent = errorMessage || 'Gagal menghitung ongkir. Menggunakan estimasi.';
+        }
+        
+        // Hide other states
+        const loading = document.getElementById('shippingLoading');
+        const calculated = document.getElementById('shippingCalculated');
+        
+        if (loading) loading.classList.add('hidden');
+        if (calculated) calculated.classList.add('hidden');
+    }
+
+    // Show shipping states
+    function showShippingState(state) {
+        const loading = document.getElementById('shippingLoading');
+        const calculated = document.getElementById('shippingCalculated');
+        const error = document.getElementById('shippingError');
+        
+        [loading, calculated, error].forEach(el => el?.classList.add('hidden'));
+        
+        if (state === 'loading') loading?.classList.remove('hidden');
+        else if (state === 'calculated') calculated?.classList.remove('hidden');
+        else if (state === 'error') error?.classList.remove('hidden');
+    }
+
+    // Update shipping display
+    function updateShippingDisplay(cost) {
+        const shippingCostDisplay = document.getElementById('shippingCostDisplay');
+        if (shippingCostDisplay) {
+            shippingCostDisplay.textContent = formatRupiah(cost);
+        }
+    }
+
+    // Calculate total weight
+    function calculateTotalWeight() {
+        let totalWeight = 0;
+        document.querySelectorAll('.cart-item').forEach(item => {
+            const weight = parseInt(item.getAttribute('data-weight')) || 0;
+            const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+            totalWeight += weight * quantity;
+        });
+        return totalWeight;
+    }
+
+    // Get estimated shipping cost
+    function getEstimatedShippingCost() {
+        const totalWeight = calculateTotalWeight();
+        const weightInKg = Math.ceil(totalWeight / 1000);
+        return Math.max(15000, weightInKg * 5000);
+    }
+
+    // Format rupiah
+    function formatRupiah(number) {
+        return 'Rp ' + number.toLocaleString('id-ID');
+    }
+
+    // Update totals
+    function updateTotals() {
+        let subtotal = 0;
+        document.querySelectorAll('.cart-item').forEach(item => {
+            const price = parseFloat(item.getAttribute('data-price')) || 0;
+            const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+            subtotal += price * quantity;
+        });
+        
+        const discount = $wire.discount;
+        const grandTotal = subtotal - discount + currentShippingCost;
+        
+        // Update displays
+        const subtotalElement = document.getElementById('subtotalAmount');
+        const shippingElement = document.getElementById('shippingAmount');
+        const grandTotalElement = document.getElementById('grandTotalAmount');
+        
+        if (subtotalElement) subtotalElement.textContent = formatRupiah(subtotal);
+        if (shippingElement) shippingElement.textContent = formatRupiah(currentShippingCost);
+        if (grandTotalElement) grandTotalElement.textContent = formatRupiah(grandTotal);
+        
+        // Show/hide shipping row
+        const shippingRow = document.getElementById('shippingRow');
+        if (shippingRow) {
+            if (currentShippingCost > 0) {
+                shippingRow.classList.remove('hidden');
+            } else {
+                shippingRow.classList.add('hidden');
+            }
+        }
+        
+        // Update Livewire component
+        $wire.call('setShippingCost', currentShippingCost);
+    }
+
+    // Recalculate shipping
+    function recalculateShipping() {
+        calculateShippingCost();
+    }
+
+    // Make functions globally available
+    window.recalculateShipping = recalculateShipping;
+</script>
+@endscript

@@ -72,10 +72,15 @@ Route::prefix('lacak')->name('tracking.')->group(function () {
 
 // Admin/Staff Login (changed from /login to /batcave)
 Route::get('/batcave', [AuthController::class, 'index'])
-    ->name('login')
+    ->name('admin.login')
     ->middleware('guest:admin,teknisi,pemilik');
 Route::post('/batcave', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Legacy route alias for backward compatibility (redirects to /batcave)
+Route::get('/login', function () {
+    return redirect('/batcave');
+})->name('login')->middleware('guest:admin,teknisi,pemilik');
 
 // Customer Authentication Routes
 Route::middleware('guest:customer')->group(function () {

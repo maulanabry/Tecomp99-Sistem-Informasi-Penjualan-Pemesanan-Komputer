@@ -126,11 +126,9 @@ class CheckoutManager extends Component
             }
         }
 
-        // Hitung ongkir jika pengiriman
-        if ($this->orderType === 'pengiriman') {
-            // Untuk saat ini set default, nanti bisa dihitung dengan API
-            $this->shippingCost = 0; // Akan dihitung dengan API JNE
-        } else {
+        // Shipping cost will be calculated by JavaScript and set via setShippingCost method
+        // Don't reset to 0 here if already calculated
+        if ($this->orderType !== 'pengiriman') {
             $this->shippingCost = 0;
         }
 
@@ -155,11 +153,25 @@ class CheckoutManager extends Component
         if ($this->orderType === 'langsung') {
             $this->shippingCost = 0;
             Log::info('Shipping cost reset to 0 for langsung order');
+            $this->calculateTotals();
+
+            // Dispatch event to update frontend
+            $this->dispatch('shippingCostUpdated', [
+                'cost' => 0,
+                'orderType' => 'langsung'
+            ]);
         } else {
             Log::info('Order type set to pengiriman, shipping cost will be calculated');
+
+            // Dispatch loading state first
+            $this->dispatch('shippingCalculationStarted');
+
+            // Auto-calculate shipping cost for pengiriman
+            $this->calculateShippingCost();
         }
 
-        $this->calculateTotals();
+        // Emit event to JavaScript for UI updates
+        $this->dispatch('orderTypeChanged', $this->orderType);
     }
 
     /**
@@ -168,7 +180,195 @@ class CheckoutManager extends Component
     public function setShippingCost($cost)
     {
         $this->shippingCost = intval($cost);
+        Log::info('Shipping cost updated via Livewire', [
+            'cost' => $this->shippingCost,
+            'order_type' => $this->orderType
+        ]);
         $this->calculateTotals();
+    }
+
+    /**
+     * Calculate shipping cost using RajaOngkir API
+     */
+    public function calculateShippingCost()
+    {
+        if ($this->orderType !== 'pengiriman' || !$this->customerAddress) {
+            $this->shippingCost = 0;
+            $this->calculateTotals();
+
+            $this->dispatch('shippingCostUpdated', [
+                'cost' => 0,
+                'orderType' => $this->orderType,
+                'details' => null
+            ]);
+            return;
+        }
+
+        $this->isCalculatingShipping = true;
+
+        // Dispatch loading state
+        $this->dispatch('shippingCalculationStarted');
+
+        try {
+            // Validate postal code
+            if (!$this->customerAddress->postal_code || !preg_match('/^\d{5}$/', $this->customerAddress->postal_code)) {
+                throw new \Exception('Kode pos tidak valid. Pastikan kode pos terdiri dari 5 digit angka.');
+            }
+
+            // Use the RajaOngkir controller directly instead of HTTP calls
+            $rajaOngkirController = new \App\Http\Controllers\Api\Public\RajaOngkirController();
+
+            // Create request objects for the controller methods
+            $destinationRequest = new \Illuminate\Http\Request([
+                'search' => $this->customerAddress->postal_code,
+                'limit' => 1
+            ]);
+
+            // Get destination data
+            $destinationResponse = $rajaOngkirController->searchDestination($destinationRequest);
+            $destinationData = $destinationResponse->getData(true);
+
+            // Handle direct array response (backward compatibility)
+            if (is_array($destinationData) && !isset($destinationData['success'])) {
+                // Direct array response
+                if (empty($destinationData)) {
+                    throw new \Exception('Kode pos tidak ditemukan dalam database RajaOngkir');
+                }
+                $destination = $destinationData[0];
+            } else {
+                // Wrapped response format
+                if (!$destinationData['success'] || empty($destinationData['data'])) {
+                    throw new \Exception('Kode pos tidak ditemukan dalam database RajaOngkir');
+                }
+                $destination = $destinationData['data'][0];
+            }
+
+            // Calculate shipping cost
+            $weightToUse = max(1000, $this->totalWeight); // Minimum 1kg
+            $shippingRequest = new \Illuminate\Http\Request([
+                'destination' => $destination['id'],
+                'weight' => $weightToUse,
+                'courier' => 'jne',
+                'service' => 'reg'
+            ]);
+
+            $shippingResponse = $rajaOngkirController->checkOngkir($shippingRequest);
+            $shippingData = $shippingResponse->getData(true);
+
+            // Handle direct array response (backward compatibility)
+            if (is_array($shippingData) && !isset($shippingData['success'])) {
+                // Direct array response
+                if (empty($shippingData)) {
+                    throw new \Exception('Gagal menghitung ongkos kirim dari API');
+                }
+                $shippingCosts = $shippingData;
+            } else {
+                // Wrapped response format
+                if (!$shippingData['success'] || empty($shippingData['data'])) {
+                    throw new \Exception('Gagal menghitung ongkos kirim dari API');
+                }
+                $shippingCosts = $shippingData['data'];
+            }
+
+            // Find JNE REG service
+            $regService = collect($shippingCosts)->first(function ($service) {
+                return strtolower($service['code'] ?? '') === 'jne' &&
+                    strtoupper($service['service'] ?? '') === 'REG';
+            });
+
+            if (!$regService) {
+                // Try alternative search patterns
+                $regService = collect($shippingCosts)->first(function ($service) {
+                    return strtolower($service['courier'] ?? '') === 'jne';
+                });
+            }
+
+            if (!$regService) {
+                // Use first available service as fallback
+                $regService = $shippingCosts[0] ?? null;
+            }
+
+            if ($regService) {
+                // Get cost from various possible fields
+                $cost = $regService['cost'] ?? $regService['price'] ?? $regService['value'] ?? 0;
+                $this->shippingCost = intval($cost);
+
+                if ($this->shippingCost > 0) {
+                    Log::info('Shipping cost calculated successfully', [
+                        'cost' => $this->shippingCost,
+                        'destination' => $destination['id'],
+                        'weight' => $this->totalWeight,
+                        'service' => $regService
+                    ]);
+
+                    // Prepare shipping details
+                    $shippingDetails = [
+                        'courier' => strtoupper($regService['code'] ?? 'JNE'),
+                        'service' => strtoupper($regService['service'] ?? 'REG'),
+                        'etd' => $regService['etd'] ?? '2-3 hari kerja',
+                        'cost' => $this->shippingCost,
+                        'weight' => $weightToUse,
+                        'destination' => $destination['name'] ?? 'Unknown'
+                    ];
+
+                    // Dispatch success event
+                    $this->dispatch('shippingCostCalculated', [
+                        'cost' => $this->shippingCost,
+                        'details' => $shippingDetails,
+                        'success' => true
+                    ]);
+                } else {
+                    throw new \Exception('Biaya pengiriman tidak valid dari API');
+                }
+            } else {
+                throw new \Exception('Layanan JNE REG tidak tersedia untuk rute ini');
+            }
+        } catch (\Exception $e) {
+            Log::error('Shipping cost calculation failed', [
+                'error' => $e->getMessage(),
+                'postal_code' => $this->customerAddress->postal_code ?? 'N/A',
+                'weight' => $this->totalWeight
+            ]);
+
+            // Use estimated cost as fallback
+            $this->shippingCost = $this->getEstimatedShippingCost();
+            Log::info('Using estimated shipping cost as fallback', [
+                'estimated_cost' => $this->shippingCost,
+                'error' => $e->getMessage()
+            ]);
+
+            // Dispatch error event with fallback cost
+            $this->dispatch('shippingCostCalculationError', [
+                'error' => $e->getMessage(),
+                'fallbackCost' => $this->shippingCost,
+                'details' => [
+                    'courier' => 'JNE',
+                    'service' => 'REG (Estimasi)',
+                    'etd' => '2-3 hari kerja',
+                    'cost' => $this->shippingCost,
+                    'weight' => max(1000, $this->totalWeight),
+                    'destination' => 'Estimasi'
+                ]
+            ]);
+        } finally {
+            $this->isCalculatingShipping = false;
+            $this->calculateTotals();
+
+            // Always dispatch final update
+            $this->dispatch('shippingCostUpdated', [
+                'cost' => $this->shippingCost,
+                'orderType' => $this->orderType
+            ]);
+        }
+    }
+
+    /**
+     * Get estimated shipping cost as fallback
+     */
+    private function getEstimatedShippingCost()
+    {
+        $weightInKg = max(1, ceil($this->totalWeight / 1000));
+        return max(15000, $weightInKg * 5000); // Minimum 15k, 5k per kg
     }
 
     /**

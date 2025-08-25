@@ -41,7 +41,7 @@
             <div class="text-center">
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Akses Ditolak</h1>
                 <p class="text-gray-600 dark:text-gray-400 mb-4">Anda tidak memiliki akses sebagai pemilik.</p>
-                <a href="{{ route('login') }}" class="text-primary-600 hover:text-primary-500">Kembali ke Login</a>
+                <a href="{{ route('admin.login') }}" class="text-primary-600 hover:text-primary-500">Kembali ke Login</a>
             </div>
         </div>
     @endauth
