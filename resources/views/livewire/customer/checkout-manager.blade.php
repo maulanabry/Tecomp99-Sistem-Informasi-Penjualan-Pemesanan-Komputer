@@ -136,7 +136,8 @@
                         <!-- Ambil di Toko -->
                         <label class="flex items-center p-4 border-2 {{ $orderType === 'langsung' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                             <input type="radio" wire:model.live="orderType" value="langsung" 
-                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                   @change="console.log('Order type changed to langsung')">
                             <div class="ml-3 flex items-center justify-between w-full">
                                 <div class="flex items-center">
                                     <i class="fas fa-store {{ $orderType === 'langsung' ? 'text-primary-600' : 'text-gray-600' }} mr-3"></i>
@@ -152,7 +153,8 @@
                         <!-- Pengiriman JNE -->
                         <label class="flex items-center p-4 border-2 {{ $orderType === 'pengiriman' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                             <input type="radio" wire:model.live="orderType" value="pengiriman" 
-                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                   onchange="if (this.checked && window.handlePengirimanSelection) { window.handlePengirimanSelection(); }">
                             <div class="ml-3 flex items-center justify-between w-full">
                                 <div class="flex items-center">
                                     <i class="fas fa-truck {{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }} mr-3"></i>
@@ -222,6 +224,19 @@
                                         </span>
                                     </button>
                                 </div>
+
+                                <!-- Manual Calculate Button -->
+                                @if($orderType === 'pengiriman' && $customerAddress)
+                                    <div class="mt-3">
+                                        <button onclick="manualCalculateShipping()" 
+                                                class="px-4 py-2 bg-primary-600 text-white text-sm rounded hover:bg-primary-700 disabled:opacity-50"
+                                                id="manualCalculateBtn">
+                                            <i class="fas fa-calculator mr-2"></i>
+                                            Hitung Ongkir Manual
+                                        </button>
+                                        <p class="text-xs text-gray-600 mt-1">Klik jika ongkir tidak muncul otomatis</p>
+                                    </div>
+                                @endif
 
                                 <!-- No Address Warning -->
                                 @if($orderType === 'pengiriman' && !$customerAddress)
@@ -354,44 +369,136 @@
     let currentShippingCost = $wire.shippingCost;
     let isCalculatingShipping = false;
 
-    // Listen for Livewire events
-    $wire.on('orderTypeChanged', (orderType) => {
-        console.log('Order type changed to:', orderType);
-        handleOrderTypeChange(orderType);
+    // Initialize and sync with Livewire state
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sync initial shipping cost
+        currentShippingCost = $wire.shippingCost || 0;
+        console.log('Initial shipping cost synced:', currentShippingCost);
+        
+        // Update displays with current values
+        updateShippingDisplay(currentShippingCost);
+        updateTotals(true); // Skip Livewire update on initial load
     });
 
-    $wire.on('shippingCalculationStarted', () => {
-        console.log('Shipping calculation started');
-        showShippingState('loading');
-        isCalculatingShipping = true;
-    });
+    // Listen for Livewire events with error handling
+    try {
+        // Order type change handler
+        Livewire.on('orderTypeChanged', (orderType) => {
+            console.log('Livewire event - Order type changed to:', orderType);
+            handleOrderTypeChange(orderType);
+        });
 
-    $wire.on('shippingCostCalculated', (data) => {
-        console.log('Shipping cost calculated:', data);
-        currentShippingCost = data.cost;
-        updateShippingDisplay(data.cost);
-        updateShippingDetails(data.details);
-        showShippingState('calculated');
-        updateTotals();
-        isCalculatingShipping = false;
-    });
+        // Shipping calculation started
+        Livewire.on('shippingCalculationStarted', () => {
+            console.log('Livewire event - Shipping calculation started');
+            showShippingState('loading');
+            isCalculatingShipping = true;
+        });
 
-    $wire.on('shippingCostCalculationError', (data) => {
-        console.log('Shipping calculation error:', data);
-        currentShippingCost = data.fallbackCost;
-        updateShippingDisplay(data.fallbackCost);
-        updateShippingDetails(data.details);
-        showShippingErrorState(data.error);
-        updateTotals();
-        isCalculatingShipping = false;
-    });
+        // Shipping cost calculated successfully
+        Livewire.on('shippingCostCalculated', (data) => {
+            console.log('Livewire event - Shipping cost calculated:', data);
+            if (data && typeof data.cost !== 'undefined') {
+                currentShippingCost = data.cost;
+                updateShippingDisplay(data.cost);
+                if (data.details) {
+                    updateShippingDetails(data.details);
+                }
+                showShippingState('calculated');
+                updateTotals(true); // Skip Livewire update to prevent loop
+            }
+            isCalculatingShipping = false;
+        });
 
-    $wire.on('shippingCostUpdated', (data) => {
-        console.log('Shipping cost updated:', data);
-        currentShippingCost = data.cost;
-        updateShippingDisplay(data.cost);
-        updateTotals();
-    });
+        // Shipping calculation error
+        Livewire.on('shippingCostCalculationError', (data) => {
+            console.log('Livewire event - Shipping calculation error:', data);
+            if (data && typeof data.fallbackCost !== 'undefined') {
+                currentShippingCost = data.fallbackCost;
+                updateShippingDisplay(data.fallbackCost);
+                if (data.details) {
+                    updateShippingDetails(data.details);
+                }
+                showShippingErrorState(data.error);
+                updateTotals(true); // Skip Livewire update to prevent loop
+            }
+            isCalculatingShipping = false;
+        });
+
+        // Shipping cost updated
+        Livewire.on('shippingCostUpdated', (data) => {
+            console.log('Livewire event - Shipping cost updated:', data);
+            if (data && typeof data.cost !== 'undefined') {
+                currentShippingCost = data.cost;
+                updateShippingDisplay(data.cost);
+                updateTotals(true); // Skip Livewire update to prevent loop
+            }
+        });
+
+        // Also listen using $wire for compatibility
+        $wire.on('orderTypeChanged', (orderType) => {
+            console.log('$wire event - Order type changed to:', orderType);
+            handleOrderTypeChange(orderType);
+        });
+
+        $wire.on('shippingCalculationStarted', () => {
+            console.log('$wire event - Shipping calculation started');
+            showShippingState('loading');
+            isCalculatingShipping = true;
+        });
+
+        $wire.on('shippingCostCalculated', (data) => {
+            console.log('$wire event - Shipping cost calculated:', data);
+            if (data && typeof data.cost !== 'undefined') {
+                currentShippingCost = data.cost;
+                updateShippingDisplay(data.cost);
+                if (data.details) {
+                    updateShippingDetails(data.details);
+                }
+                showShippingState('calculated');
+                updateTotals(true);
+            }
+            isCalculatingShipping = false;
+        });
+
+        $wire.on('shippingCostCalculationError', (data) => {
+            console.log('$wire event - Shipping calculation error:', data);
+            if (data && typeof data.fallbackCost !== 'undefined') {
+                currentShippingCost = data.fallbackCost;
+                updateShippingDisplay(data.fallbackCost);
+                if (data.details) {
+                    updateShippingDetails(data.details);
+                }
+                showShippingErrorState(data.error);
+                updateTotals(true);
+            }
+            isCalculatingShipping = false;
+        });
+
+        $wire.on('shippingCostUpdated', (data) => {
+            console.log('$wire event - Shipping cost updated:', data);
+            if (data && typeof data.cost !== 'undefined') {
+                currentShippingCost = data.cost;
+                updateShippingDisplay(data.cost);
+                updateTotals(true);
+            }
+        });
+
+    } catch (wireError) {
+        console.error('Error setting up Livewire event listeners:', wireError);
+    }
+
+    // Handle pengiriman selection specifically
+    function handlePengirimanSelection() {
+        console.log('Pengiriman selected - triggering calculation');
+        // Small delay to ensure Livewire has processed the change
+        setTimeout(() => {
+            if ($wire.orderType === 'pengiriman') {
+                console.log('Triggering shipping calculation from frontend');
+                $wire.call('calculateShippingCost');
+            }
+        }, 100);
+    }
 
     // Handle order type change
     function handleOrderTypeChange(orderType) {
@@ -401,14 +508,22 @@
             if (shippingDetailsSection) {
                 shippingDetailsSection.classList.remove('hidden');
             }
+            // Trigger shipping calculation if not already calculated
+            if (currentShippingCost === 0) {
+                setTimeout(() => {
+                    calculateShippingCost();
+                }, 500);
+            }
         } else {
             if (shippingDetailsSection) {
                 shippingDetailsSection.classList.add('hidden');
             }
-            // Reset shipping cost
+            // Reset shipping cost and update Livewire
             currentShippingCost = 0;
             updateShippingDisplay(0);
-            updateTotals();
+            $wire.call('setShippingCost', 0).then(() => {
+                updateTotals(true); // Skip Livewire update since we just updated it
+            });
         }
     }
 
@@ -498,12 +613,22 @@
             const serviceName = regService.service?.toUpperCase() || 'REG';
             const etd = regService.etd || regService.estimation || '2-3 hari kerja';
             
-            // Update displays
+            // Update displays and sync with Livewire
             currentShippingCost = cost;
             updateShippingDisplay(cost);
-            updateShippingDetails(courierName, serviceName, etd, cost);
+            updateShippingDetails({
+                courier: courierName,
+                service: serviceName,
+                etd: etd,
+                cost: cost,
+                weight: totalWeight
+            });
             showShippingState('calculated');
-            updateTotals();
+            
+            // Update Livewire first, then update totals without triggering another Livewire call
+            $wire.call('setShippingCost', cost).then(() => {
+                updateTotals(true); // Skip Livewire update since we just updated it
+            });
             
             console.log('SUCCESS: Shipping cost calculated:', cost);
             
@@ -514,8 +639,12 @@
             const estimatedCost = getEstimatedShippingCost();
             currentShippingCost = estimatedCost;
             updateShippingDisplay(estimatedCost);
-            showShippingState('error');
-            updateTotals();
+            showShippingErrorState(error.message);
+            
+            // Update Livewire with fallback cost, then update totals
+            $wire.call('setShippingCost', estimatedCost).then(() => {
+                updateTotals(true); // Skip Livewire update since we just updated it
+            });
         } finally {
             isCalculatingShipping = false;
         }
@@ -596,52 +725,117 @@
         return Math.max(15000, weightInKg * 5000);
     }
 
-    // Format rupiah
+    // Format rupiah with null safety
     function formatRupiah(number) {
-        return 'Rp ' + number.toLocaleString('id-ID');
+        try {
+            // Handle null, undefined, or invalid values
+            if (number === null || number === undefined || isNaN(number)) {
+                console.warn('Invalid number provided to formatRupiah:', number);
+                return 'Rp 0';
+            }
+            
+            const value = Number(number);
+            if (isNaN(value)) {
+                console.warn('Cannot convert to number:', number);
+                return 'Rp 0';
+            }
+            
+            return 'Rp ' + value.toLocaleString('id-ID');
+        } catch (error) {
+            console.error('Error formatting Rupiah:', error, 'Input:', number);
+            return 'Rp 0';
+        }
     }
 
-    // Update totals
-    function updateTotals() {
-        let subtotal = 0;
-        document.querySelectorAll('.cart-item').forEach(item => {
-            const price = parseFloat(item.getAttribute('data-price')) || 0;
-            const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
-            subtotal += price * quantity;
-        });
-        
-        const discount = $wire.discount;
-        const grandTotal = subtotal - discount + currentShippingCost;
-        
-        // Update displays
-        const subtotalElement = document.getElementById('subtotalAmount');
-        const shippingElement = document.getElementById('shippingAmount');
-        const grandTotalElement = document.getElementById('grandTotalAmount');
-        
-        if (subtotalElement) subtotalElement.textContent = formatRupiah(subtotal);
-        if (shippingElement) shippingElement.textContent = formatRupiah(currentShippingCost);
-        if (grandTotalElement) grandTotalElement.textContent = formatRupiah(grandTotal);
-        
-        // Show/hide shipping row
-        const shippingRow = document.getElementById('shippingRow');
-        if (shippingRow) {
-            if (currentShippingCost > 0) {
-                shippingRow.classList.remove('hidden');
-            } else {
-                shippingRow.classList.add('hidden');
-            }
+    // Update totals with debouncing to prevent reset loops
+    let updateTotalsTimeout;
+    function updateTotals(skipLivewireUpdate = false) {
+        // Clear any pending updates
+        if (updateTotalsTimeout) {
+            clearTimeout(updateTotalsTimeout);
         }
         
-        // Update Livewire component
-        $wire.call('setShippingCost', currentShippingCost);
+        updateTotalsTimeout = setTimeout(() => {
+            let subtotal = 0;
+            document.querySelectorAll('.cart-item').forEach(item => {
+                const price = parseFloat(item.getAttribute('data-price')) || 0;
+                const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+                subtotal += price * quantity;
+            });
+            
+            const discount = $wire.discount || 0;
+            const grandTotal = subtotal - discount + currentShippingCost;
+            
+            // Update displays
+            const subtotalElement = document.getElementById('subtotalAmount');
+            const shippingElement = document.getElementById('shippingAmount');
+            const grandTotalElement = document.getElementById('grandTotalAmount');
+            
+            if (subtotalElement) subtotalElement.textContent = formatRupiah(subtotal);
+            if (shippingElement) shippingElement.textContent = formatRupiah(currentShippingCost);
+            if (grandTotalElement) grandTotalElement.textContent = formatRupiah(grandTotal);
+            
+            // Show/hide shipping row
+            const shippingRow = document.getElementById('shippingRow');
+            if (shippingRow) {
+                if (currentShippingCost > 0) {
+                    shippingRow.classList.remove('hidden');
+                } else {
+                    shippingRow.classList.add('hidden');
+                }
+            }
+            
+            // Only update Livewire if not skipping and cost has actually changed
+            if (!skipLivewireUpdate && currentShippingCost !== $wire.shippingCost) {
+                console.log('Updating Livewire shipping cost:', currentShippingCost);
+                $wire.call('setShippingCost', currentShippingCost);
+            }
+        }, 100); // Small delay to prevent rapid updates
+    }
+
+    // Manual shipping calculation
+    function manualCalculateShipping() {
+        console.log('Manual shipping calculation triggered');
+        showShippingState('loading');
+        isCalculatingShipping = true;
+        
+        // Try Livewire method first
+        try {
+            $wire.call('calculateShippingCost').then(() => {
+                console.log('Livewire shipping calculation completed');
+            }).catch((error) => {
+                console.error('Livewire shipping calculation failed:', error);
+                // Fallback to JavaScript calculation
+                calculateShippingCost();
+            });
+        } catch (error) {
+            console.error('Error calling Livewire calculateShippingCost:', error);
+            // Fallback to JavaScript calculation
+            calculateShippingCost();
+        }
     }
 
     // Recalculate shipping
     function recalculateShipping() {
-        calculateShippingCost();
+        manualCalculateShipping();
+    }
+
+    // Debug function to check current state
+    function debugShippingState() {
+        console.log('=== SHIPPING DEBUG INFO ===');
+        console.log('Current shipping cost:', currentShippingCost);
+        console.log('Livewire shipping cost:', $wire.shippingCost);
+        console.log('Order type:', $wire.orderType);
+        console.log('Is calculating:', isCalculatingShipping);
+        console.log('Customer address:', $wire.customerAddress);
+        console.log('Total weight:', calculateTotalWeight());
+        console.log('===========================');
     }
 
     // Make functions globally available
     window.recalculateShipping = recalculateShipping;
+    window.manualCalculateShipping = manualCalculateShipping;
+    window.debugShippingState = debugShippingState;
+    window.handlePengirimanSelection = handlePengirimanSelection;
 </script>
 @endscript

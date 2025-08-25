@@ -39,6 +39,39 @@
         @livewire('customer.floating-chat')
     @endauth
 
+    <!-- jQuery (Load before other scripts) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- Error Prevention Script -->
+    <script>
+        // Prevent common JavaScript errors
+        window.addEventListener('error', function(e) {
+            // Log errors but don't break the page
+            console.warn('JavaScript Error Caught:', e.message, 'at', e.filename + ':' + e.lineno);
+            
+            // Prevent share-modal errors from breaking the page
+            if (e.message.includes('share-modal') || e.message.includes('addEventListener')) {
+                console.warn('Share modal error prevented');
+                return true; // Prevent default error handling
+            }
+        });
+        
+        // Ensure Livewire and Alpine are properly initialized
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for Livewire to be available
+            if (typeof window.Livewire !== 'undefined') {
+                console.log('Livewire is available');
+            } else {
+                console.warn('Livewire not found, waiting...');
+                setTimeout(function() {
+                    if (typeof window.Livewire !== 'undefined') {
+                        console.log('Livewire loaded after delay');
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+    
     @livewireScripts
     
     <!-- Flowbite JS -->
@@ -46,5 +79,31 @@
     
     <!-- Custom Scripts Stack -->
     @stack('scripts')
+    
+    <!-- Debug Script for Shipping -->
+    <script>
+        // Ensure handlePengirimanSelection is available globally
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!window.handlePengirimanSelection) {
+                window.handlePengirimanSelection = function() {
+                    console.log('Fallback handlePengirimanSelection called');
+                    setTimeout(() => {
+                        if (window.Livewire) {
+                            const components = document.querySelectorAll('[wire\\:id]');
+                            if (components.length > 0) {
+                                const wireId = components[0].getAttribute('wire:id');
+                                const component = window.Livewire.find(wireId);
+                                if (component) {
+                                    console.log('Triggering calculateShippingCost via fallback');
+                                    component.call('calculateShippingCost');
+                                }
+                            }
+                        }
+                    }, 300);
+                };
+            }
+            console.log('handlePengirimanSelection function available:', typeof window.handlePengirimanSelection);
+        });
+    </script>
 </body>
 </html>

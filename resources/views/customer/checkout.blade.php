@@ -193,11 +193,13 @@
             setTimeout(initializeOrderTypeButtons, 100);
         });
         
-        // Initialize when jQuery is ready
-        $(document).ready(function() {
-            console.log('jQuery ready - initializing buttons');
-            setTimeout(initializeOrderTypeButtons, 200);
-        });
+        // Initialize when jQuery is ready (with safety check)
+        if (typeof $ !== 'undefined') {
+            $(document).ready(function() {
+                console.log('jQuery ready - initializing buttons');
+                setTimeout(initializeOrderTypeButtons, 200);
+            });
+        }
         
         // Initialize when Livewire is ready
         document.addEventListener('livewire:init', () => {
@@ -262,13 +264,15 @@
             });
         });
 
-        // Initialize totals calculation on page load
-        $(document).ready(function() {
-            // Calculate initial totals
-            if (typeof shippingCalculator !== 'undefined') {
-                shippingCalculator.updateTotals();
-            }
-        });
+        // Initialize totals calculation on page load (with safety check)
+        if (typeof $ !== 'undefined') {
+            $(document).ready(function() {
+                // Calculate initial totals
+                if (typeof shippingCalculator !== 'undefined') {
+                    shippingCalculator.updateTotals();
+                }
+            });
+        }
     </script>
     @endpush
 </x-layout-customer>

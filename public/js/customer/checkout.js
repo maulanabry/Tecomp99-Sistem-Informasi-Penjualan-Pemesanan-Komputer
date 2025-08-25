@@ -1,20 +1,30 @@
 // Customer Checkout JavaScript - Improved Livewire Integration
 // Utility Functions
 const checkoutUtils = {
-    // Format number as Rupiah currency
+    // Format number as Rupiah currency with enhanced null safety
     formatRupiah(number) {
         try {
+            // Handle null, undefined, or invalid values
+            if (number === null || number === undefined || number === "") {
+                console.warn(
+                    "Null/undefined number provided to formatRupiah:",
+                    number
+                );
+                return "Rp 0";
+            }
+
             const value = Number(number);
-            if (isNaN(value)) {
+            if (isNaN(value) || !isFinite(value)) {
                 console.warn(
                     "Invalid number provided to formatRupiah:",
                     number
                 );
                 return "Rp 0";
             }
+
             return `Rp ${value.toLocaleString("id-ID")}`;
         } catch (error) {
-            console.error("Error formatting Rupiah:", error);
+            console.error("Error formatting Rupiah:", error, "Input:", number);
             return "Rp 0";
         }
     },
@@ -116,10 +126,15 @@ const shippingCalculator = {
         }
     },
 
-    // Get Livewire component ID
+    // Get Livewire component ID with safety checks
     getLivewireComponentId() {
-        const livewireElement = document.querySelector("[wire\\:id]");
-        return livewireElement?.getAttribute("wire:id");
+        try {
+            const livewireElement = document.querySelector("[wire\\:id]");
+            return livewireElement?.getAttribute("wire:id") || null;
+        } catch (error) {
+            console.error("Error getting Livewire component ID:", error);
+            return null;
+        }
     },
 
     // Calculate total weight of all products
@@ -145,27 +160,35 @@ const shippingCalculator = {
         return /^\d{5}$/.test(postalCode);
     },
 
-    // Update shipping cost display
+    // Update shipping cost display with enhanced error handling
     updateShippingDisplay(cost) {
-        const formattedCost =
-            cost > 0 ? checkoutUtils.formatRupiah(cost) : "Rp 0";
+        try {
+            const formattedCost =
+                cost && cost > 0 ? checkoutUtils.formatRupiah(cost) : "Rp 0";
 
-        // Update various display elements
-        const displays = [
-            "shippingCostDisplay",
-            "shippingCostAmount",
-            "shippingAmount",
-            "calculatedShippingCost",
-        ];
+            // Update various display elements
+            const displays = [
+                "shippingCostDisplay",
+                "shippingCostAmount",
+                "shippingAmount",
+                "calculatedShippingCost",
+            ];
 
-        displays.forEach((id) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = formattedCost;
-            }
-        });
+            displays.forEach((id) => {
+                try {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = formattedCost;
+                    }
+                } catch (elementError) {
+                    console.warn(`Error updating element ${id}:`, elementError);
+                }
+            });
 
-        console.log("Shipping display updated:", formattedCost);
+            console.log("Shipping display updated:", formattedCost);
+        } catch (error) {
+            console.error("Error updating shipping display:", error);
+        }
     },
 
     // Update total calculations
@@ -253,6 +276,37 @@ document.addEventListener("livewire:init", function () {
         shippingCalculator.init();
     }, 100);
 });
+
+// Handle pengiriman selection specifically
+window.handlePengirimanSelection = function () {
+    console.log(
+        "Pengiriman selected - triggering calculation from checkout.js"
+    );
+    // Small delay to ensure Livewire has processed the change
+    setTimeout(() => {
+        if (window.Livewire && window.Livewire.find) {
+            try {
+                // Try to find the Livewire component and trigger calculation
+                const components = document.querySelectorAll("[wire\\:id]");
+                if (components.length > 0) {
+                    const wireId = components[0].getAttribute("wire:id");
+                    const component = window.Livewire.find(wireId);
+                    if (component && component.orderType === "pengiriman") {
+                        console.log(
+                            "Triggering shipping calculation from checkout.js"
+                        );
+                        component.call("calculateShippingCost");
+                    }
+                }
+            } catch (error) {
+                console.error(
+                    "Error triggering shipping calculation from checkout.js:",
+                    error
+                );
+            }
+        }
+    }, 200);
+};
 
 // Export for external use and Livewire @script section
 window.checkoutUtils = checkoutUtils;
