@@ -175,6 +175,23 @@ class CheckoutManager extends Component
     }
 
     /**
+     * Select pengiriman and calculate shipping cost (matches manual button logic)
+     */
+    public function selectPengirimanAndCalculate()
+    {
+        Log::info('selectPengirimanAndCalculate method called - using manual button approach');
+
+        // Set order type directly without triggering updatedOrderType
+        $this->orderType = 'pengiriman';
+
+        // Just calculate shipping cost directly like the manual button does
+        $this->calculateShippingCost();
+
+        // Emit event to JavaScript for UI updates
+        $this->dispatch('orderTypeChanged', $this->orderType);
+    }
+
+    /**
      * Set shipping cost from JavaScript calculation
      */
     public function setShippingCost($cost)

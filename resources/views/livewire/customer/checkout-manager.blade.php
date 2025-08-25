@@ -131,14 +131,13 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-3">Pilih Metode Pengiriman</label>
                     
-                    <!-- Livewire Radio Button Approach -->
+                    <!-- Button Selection Approach -->
                     <div class="space-y-3">
                         <!-- Ambil di Toko -->
-                        <label class="flex items-center p-4 border-2 {{ $orderType === 'langsung' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                            <input type="radio" wire:model.live="orderType" value="langsung" 
-                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                   @change="console.log('Order type changed to langsung')">
-                            <div class="ml-3 flex items-center justify-between w-full">
+                        <button type="button" 
+                                wire:click="$set('orderType', 'langsung')"
+                                class="w-full flex items-center p-4 border-2 {{ $orderType === 'langsung' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg hover:bg-gray-50 transition-colors text-left">
+                            <div class="flex items-center justify-between w-full">
                                 <div class="flex items-center">
                                     <i class="fas fa-store {{ $orderType === 'langsung' ? 'text-primary-600' : 'text-gray-600' }} mr-3"></i>
                                     <div>
@@ -146,16 +145,20 @@
                                         <p class="text-sm {{ $orderType === 'langsung' ? 'text-primary-600' : 'text-gray-600' }}">Gratis - Langsung ambil di toko</p>
                                     </div>
                                 </div>
-                                <span class="{{ $orderType === 'langsung' ? 'text-primary-600' : 'text-gray-600' }} font-semibold">GRATIS</span>
+                                <div class="flex items-center">
+                                    @if($orderType === 'langsung')
+                                        <i class="fas fa-check-circle text-primary-600 mr-2"></i>
+                                    @endif
+                                    <span class="{{ $orderType === 'langsung' ? 'text-primary-600' : 'text-gray-600' }} font-semibold">GRATIS</span>
+                                </div>
                             </div>
-                        </label>
+                        </button>
 
                         <!-- Pengiriman JNE -->
-                        <label class="flex items-center p-4 border-2 {{ $orderType === 'pengiriman' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                            <input type="radio" wire:model.live="orderType" value="pengiriman" 
-                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                   onchange="if (this.checked && window.handlePengirimanSelection) { window.handlePengirimanSelection(); }">
-                            <div class="ml-3 flex items-center justify-between w-full">
+                        <button type="button" 
+                                wire:click="selectPengirimanAndCalculate"
+                                class="w-full flex items-center p-4 border-2 {{ $orderType === 'pengiriman' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg hover:bg-gray-50 transition-colors text-left">
+                            <div class="flex items-center justify-between w-full">
                                 <div class="flex items-center">
                                     <i class="fas fa-truck {{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }} mr-3"></i>
                                     <div>
@@ -163,15 +166,20 @@
                                         <p class="text-sm {{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }}">Estimasi 2-3 hari kerja</p>
                                     </div>
                                 </div>
-                                <span id="shippingCostDisplay" class="{{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }} font-semibold">
-                                    @if($orderType === 'pengiriman' && $isCalculatingShipping)
-                                        <i class="fas fa-spinner fa-spin"></i> Menghitung...
-                                    @else
-                                        {{ $this->formatPrice($shippingCost) }}
+                                <div class="flex items-center">
+                                    @if($orderType === 'pengiriman')
+                                        <i class="fas fa-check-circle text-primary-600 mr-2"></i>
                                     @endif
-                                </span>
+                                    <span id="shippingCostDisplay" class="{{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }} font-semibold">
+                                        @if($orderType === 'pengiriman' && $isCalculatingShipping)
+                                            <i class="fas fa-spinner fa-spin"></i> Menghitung...
+                                        @else
+                                            {{ $this->formatPrice($shippingCost) }}
+                                        @endif
+                                    </span>
+                                </div>
                             </div>
-                        </label>
+                        </button>
                     </div>
                 </div>
 
