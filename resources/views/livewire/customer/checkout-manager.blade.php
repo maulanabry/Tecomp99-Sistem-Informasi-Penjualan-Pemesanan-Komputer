@@ -120,7 +120,11 @@
             </div>
         </div>
 
+<<<<<<< Updated upstream
         <!-- Tipe Pesanan - FIXED WITH LIVEWIRE BINDING -->
+=======
+        <!-- Tipe Pesanan - OPTIMIZED LIVEWIRE INTEGRATION -->
+>>>>>>> Stashed changes
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">
                 <i class="fas fa-truck text-primary-600 mr-2"></i>
@@ -131,6 +135,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-3">Pilih Metode Pengiriman</label>
                     
+<<<<<<< Updated upstream
                     <!-- Livewire Radio Button Approach -->
                     <div class="space-y-3">
                         <!-- Ambil di Toko -->
@@ -138,6 +143,16 @@
                             <input type="radio" wire:model.live="orderType" value="langsung" 
                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
                             <div class="ml-3 flex items-center justify-between w-full">
+=======
+                    <!-- Simplified Button Selection -->
+                    <div class="space-y-3">
+                        <!-- Ambil di Toko -->
+                        <button type="button" 
+                                wire:click="selectShippingMethod('langsung')"
+                                wire:loading.attr="disabled"
+                                class="w-full flex items-center p-4 border-2 {{ $orderType === 'langsung' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg hover:bg-gray-50 transition-colors text-left disabled:opacity-50">
+                            <div class="flex items-center justify-between w-full">
+>>>>>>> Stashed changes
                                 <div class="flex items-center">
                                     <i class="fas fa-store {{ $orderType === 'langsung' ? 'text-primary-600' : 'text-gray-600' }} mr-3"></i>
                                     <div>
@@ -150,10 +165,19 @@
                         </label>
 
                         <!-- Pengiriman JNE -->
+<<<<<<< Updated upstream
                         <label class="flex items-center p-4 border-2 {{ $orderType === 'pengiriman' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                             <input type="radio" wire:model.live="orderType" value="pengiriman" 
                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
                             <div class="ml-3 flex items-center justify-between w-full">
+=======
+                        <button type="button" 
+                                wire:click="selectShippingMethod('pengiriman')"
+                                wire:loading.attr="disabled"
+                                wire:target="selectShippingMethod,calculateShippingCost"
+                                class="w-full flex items-center p-4 border-2 {{ $orderType === 'pengiriman' ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white' }} rounded-lg hover:bg-gray-50 transition-colors text-left disabled:opacity-50">
+                            <div class="flex items-center justify-between w-full">
+>>>>>>> Stashed changes
                                 <div class="flex items-center">
                                     <i class="fas fa-truck {{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }} mr-3"></i>
                                     <div>
@@ -161,14 +185,30 @@
                                         <p class="text-sm {{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }}">Estimasi 2-3 hari kerja</p>
                                     </div>
                                 </div>
+<<<<<<< Updated upstream
                                 <span id="shippingCostDisplay" class="{{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }} font-semibold">{{ $this->formatPrice($shippingCost) }}</span>
+=======
+                                <div class="flex items-center">
+                                    @if($orderType === 'pengiriman')
+                                        <i class="fas fa-check-circle text-primary-600 mr-2"></i>
+                                    @endif
+                                    <span class="{{ $orderType === 'pengiriman' ? 'text-primary-600' : 'text-gray-600' }} font-semibold">
+                                        <span wire:loading.remove wire:target="selectShippingMethod,calculateShippingCost">
+                                            {{ $this->formatPrice($shippingCost) }}
+                                        </span>
+                                        <span wire:loading wire:target="selectShippingMethod,calculateShippingCost">
+                                            <i class="fas fa-spinner fa-spin"></i> Menghitung...
+                                        </span>
+                                    </span>
+                                </div>
+>>>>>>> Stashed changes
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <!-- Shipping Details Section -->
-                <div id="shippingDetailsSection" class="{{ $orderType === 'pengiriman' ? '' : 'hidden' }}">
+                <!-- Shipping Details Section - Simplified with Livewire State -->
+                @if($orderType === 'pengiriman')
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div class="flex items-start space-x-3">
                             <i class="fas fa-info-circle text-blue-600 mt-1"></i>
@@ -176,7 +216,11 @@
                                 <h4 class="font-medium text-blue-800 mb-2">Detail Pengiriman</h4>
                                 
                                 <!-- Loading State -->
+<<<<<<< Updated upstream
                                 <div id="shippingLoading" class="hidden">
+=======
+                                <div wire:loading wire:target="selectShippingMethod,calculateShippingCost">
+>>>>>>> Stashed changes
                                     <div class="flex items-center space-x-2">
                                         <i class="fas fa-spinner fa-spin text-blue-600"></i>
                                         <span class="text-sm text-blue-700">Menghitung ongkos kirim...</span>
@@ -184,6 +228,7 @@
                                 </div>
                                 
                                 <!-- Calculated State -->
+<<<<<<< Updated upstream
                                 <div id="shippingCalculated" class="hidden">
                                     <div class="text-sm text-blue-700 space-y-1">
                                         <p><strong>Kurir:</strong> JNE REG</p>
@@ -204,10 +249,51 @@
                                         Coba Lagi
                                     </button>
                                 </div>
+=======
+                                <div wire:loading.remove wire:target="selectShippingMethod,calculateShippingCost">
+                                    @if($shippingCost > 0)
+                                        <div class="text-sm text-blue-700 space-y-1">
+                                            <p><strong>Kurir:</strong> JNE REG</p>
+                                            <p><strong>Estimasi:</strong> 2-3 hari kerja</p>
+                                            <p><strong>Ongkos Kirim:</strong> {{ $this->formatPrice($shippingCost) }}</p>
+                                            <p><strong>Berat Total:</strong> {{ number_format($totalWeight) }}g</p>
+                                            @if($customerAddress)
+                                                <p><strong>Tujuan:</strong> {{ $customerAddress->city_name }}, {{ $customerAddress->province_name }}</p>
+                                            @endif
+                                        </div>
+                                        <button wire:click="calculateShippingCost" 
+                                                wire:loading.attr="disabled"
+                                                wire:target="calculateShippingCost"
+                                                class="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-50">
+                                            <span wire:loading.remove wire:target="calculateShippingCost">Hitung Ulang</span>
+                                            <span wire:loading wire:target="calculateShippingCost">
+                                                <i class="fas fa-spinner fa-spin"></i> Menghitung...
+                                            </span>
+                                        </button>
+                                    @endif
+                                </div>
+
+                                <!-- No Address Warning -->
+                                @if(!$customerAddress)
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-2">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                                            <div>
+                                                <p class="text-sm text-yellow-800 font-medium">Alamat Belum Diatur</p>
+                                                <p class="text-sm text-yellow-700">Silakan lengkapi alamat pengiriman terlebih dahulu.</p>
+                                                <a href="{{ route('customer.account.addresses') }}" 
+                                                   class="inline-block mt-1 px-2 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700">
+                                                    Atur Alamat
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+>>>>>>> Stashed changes
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
 
@@ -680,24 +766,28 @@
             <div class="space-y-3">
                 <div class="flex justify-between">
                     <span class="text-gray-600">Subtotal</span>
-                    <span class="font-medium" id="subtotalAmount">{{ $this->formatPrice($subtotal) }}</span>
+                    <span class="font-medium">{{ $this->formatPrice($subtotal) }}</span>
                 </div>
                 
-                <div id="discountRow" class="flex justify-between text-green-600 {{ $discount > 0 ? '' : 'hidden' }}">
-                    <span>Diskon</span>
-                    <span id="discountAmount">-{{ $this->formatPrice($discount) }}</span>
-                </div>
+                @if($discount > 0)
+                    <div class="flex justify-between text-green-600">
+                        <span>Diskon</span>
+                        <span>-{{ $this->formatPrice($discount) }}</span>
+                    </div>
+                @endif
                 
-                <div id="shippingRow" class="flex justify-between {{ $shippingCost > 0 ? '' : 'hidden' }}">
-                    <span class="text-gray-600">Ongkir</span>
-                    <span class="font-medium" id="shippingAmount">{{ $this->formatPrice($shippingCost) }}</span>
-                </div>
+                @if($shippingCost > 0)
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Ongkir</span>
+                        <span class="font-medium">{{ $this->formatPrice($shippingCost) }}</span>
+                    </div>
+                @endif
                 
                 <hr class="border-gray-200">
                 
                 <div class="flex justify-between text-lg font-semibold">
                     <span>Total</span>
-                    <span class="text-primary-600" id="grandTotalAmount">{{ $this->formatPrice($grandTotal) }}</span>
+                    <span class="text-primary-600">{{ $this->formatPrice($grandTotal) }}</span>
                 </div>
             </div>
             
@@ -720,3 +810,24 @@
         </div>
     </div>
 </div>
+<<<<<<< Updated upstream
+=======
+
+@script
+<script>
+    // Simplified script for Livewire integration - no conflicting event handlers
+    console.log('Checkout manager initialized with pure Livewire approach');
+    
+    // Optional: Add any utility functions that don't conflict with Livewire
+    window.debugCheckoutState = function() {
+        console.log('=== CHECKOUT DEBUG INFO ===');
+        console.log('Order type:', $wire.orderType);
+        console.log('Shipping cost:', $wire.shippingCost);
+        console.log('Is calculating:', $wire.isCalculatingShipping);
+        console.log('Is shipping selected:', $wire.isShippingSelected);
+        console.log('Grand total:', $wire.grandTotal);
+        console.log('===========================');
+    };
+</script>
+@endscript
+>>>>>>> Stashed changes

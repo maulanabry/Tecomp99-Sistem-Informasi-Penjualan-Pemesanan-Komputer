@@ -59,35 +59,11 @@
     </div>
 
     @push('scripts')
-    {{-- Include JavaScript for backend functionality --}}
-    <script src="{{ asset('js/customer/checkout.js') }}"></script>
+    {{-- Simplified JavaScript - only essential utilities --}}
     <script>
-        // Direct button handling - ensures it works immediately
-        function initializeOrderTypeButtons() {
-            console.log('Initializing order type buttons...');
-            
-            // Find all order type buttons
-            const buttons = document.querySelectorAll('.order-type-btn');
-            console.log('Found buttons:', buttons.length);
-            
-            buttons.forEach((button, index) => {
-                console.log(`Button ${index}:`, button.getAttribute('data-order-type'));
-                
-                // Remove any existing listeners
-                button.removeEventListener('click', handleOrderTypeClick);
-                
-                // Add click listener
-                button.addEventListener('click', handleOrderTypeClick);
-                
-                // Also add to child elements
-                const children = button.querySelectorAll('*');
-                children.forEach(child => {
-                    child.removeEventListener('click', handleOrderTypeClick);
-                    child.addEventListener('click', handleOrderTypeClick);
-                });
-            });
-        }
+        console.log('Checkout page initialized with Livewire-first approach');
         
+<<<<<<< Updated upstream
         function handleOrderTypeClick(event) {
             event.preventDefault();
             event.stopPropagation();
@@ -240,6 +216,8 @@
             }
         }, 1000);
 
+=======
+>>>>>>> Stashed changes
         // Konfirmasi sebelum meninggalkan halaman jika ada perubahan
         let hasChanges = false;
         
@@ -260,8 +238,14 @@
             Livewire.on('checkoutProcessed', () => {
                 hasChanges = false;
             });
+            
+            Livewire.on('checkoutCompleted', (orderId) => {
+                // Redirect ke payment order page
+                window.location.href = `/payment-order/${orderId}`;
+            });
         });
 
+<<<<<<< Updated upstream
         // Initialize totals calculation on page load
         $(document).ready(function() {
             // Calculate initial totals
@@ -269,6 +253,15 @@
                 shippingCalculator.updateTotals();
             }
         });
+=======
+        // Debug function for troubleshooting
+        window.debugCheckout = function() {
+            console.log('=== CHECKOUT PAGE DEBUG ===');
+            console.log('Has changes:', hasChanges);
+            console.log('Livewire available:', typeof Livewire !== 'undefined');
+            console.log('============================');
+        };
+>>>>>>> Stashed changes
     </script>
     @endpush
 </x-layout-customer>
