@@ -45,6 +45,7 @@ class CheckoutManager extends Component
     // Properties untuk loading states
     public $isProcessing = false;
     public $isCalculatingShipping = false;
+    public $isShippingSelected = false;
     public $voucherError = '';
     public $voucherSuccess = '';
 
@@ -149,9 +150,10 @@ class CheckoutManager extends Component
             $this->orderType = 'langsung'; // Reset to default
         }
 
-        // Reset shipping cost when changing order type
+        // Handle order type changes without resetting shipping cost unnecessarily
         if ($this->orderType === 'langsung') {
             $this->shippingCost = 0;
+            $this->isShippingSelected = false;
             Log::info('Shipping cost reset to 0 for langsung order');
             $this->calculateTotals();
 
@@ -161,13 +163,10 @@ class CheckoutManager extends Component
                 'orderType' => 'langsung'
             ]);
         } else {
-            Log::info('Order type set to pengiriman, shipping cost will be calculated');
-
-            // Dispatch loading state first
-            $this->dispatch('shippingCalculationStarted');
-
-            // Auto-calculate shipping cost for pengiriman
-            $this->calculateShippingCost();
+            // For pengiriman, don't auto-calculate here to prevent conflicts
+            // Let the selectShippingMethod handle the calculation
+            $this->isShippingSelected = true;
+            Log::info('Order type set to pengiriman, waiting for shipping calculation');
         }
 
         // Emit event to JavaScript for UI updates
@@ -175,20 +174,50 @@ class CheckoutManager extends Component
     }
 
     /**
-     * Select pengiriman and calculate shipping cost (matches manual button logic)
+     * Select shipping method and calculate cost - improved state management
+     */
+    public function selectShippingMethod($method = 'pengiriman')
+    {
+        Log::info('selectShippingMethod called with method: ' . $method);
+
+        // Prevent multiple simultaneous calculations
+        if ($this->isCalculatingShipping) {
+            Log::info('Shipping calculation already in progress, skipping');
+            return;
+        }
+
+        if ($method === 'langsung') {
+            $this->orderType = 'langsung';
+            $this->shippingCost = 0;
+            $this->isShippingSelected = false;
+            $this->calculateTotals();
+
+            $this->dispatch('shippingMethodSelected', [
+                'method' => 'langsung',
+                'cost' => 0
+            ]);
+        } else {
+            $this->orderType = 'pengiriman';
+            $this->isShippingSelected = true;
+
+            // Calculate shipping cost
+            $this->calculateShippingCost();
+
+            $this->dispatch('shippingMethodSelected', [
+                'method' => 'pengiriman',
+                'calculating' => true
+            ]);
+        }
+
+        Log::info('Shipping method selected: ' . $method . ', orderType: ' . $this->orderType);
+    }
+
+    /**
+     * Legacy method for backward compatibility
      */
     public function selectPengirimanAndCalculate()
     {
-        Log::info('selectPengirimanAndCalculate method called - using manual button approach');
-
-        // Set order type directly without triggering updatedOrderType
-        $this->orderType = 'pengiriman';
-
-        // Just calculate shipping cost directly like the manual button does
-        $this->calculateShippingCost();
-
-        // Emit event to JavaScript for UI updates
-        $this->dispatch('orderTypeChanged', $this->orderType);
+        $this->selectShippingMethod('pengiriman');
     }
 
     /**
@@ -205,12 +234,19 @@ class CheckoutManager extends Component
     }
 
     /**
-     * Calculate shipping cost using RajaOngkir API
+     * Calculate shipping cost using RajaOngkir API - improved with state management
      */
     public function calculateShippingCost()
     {
+        // Prevent multiple simultaneous calculations
+        if ($this->isCalculatingShipping) {
+            Log::info('Shipping calculation already in progress, skipping duplicate request');
+            return;
+        }
+
         if ($this->orderType !== 'pengiriman' || !$this->customerAddress) {
             $this->shippingCost = 0;
+            $this->isShippingSelected = false;
             $this->calculateTotals();
 
             $this->dispatch('shippingCostUpdated', [
@@ -222,6 +258,7 @@ class CheckoutManager extends Component
         }
 
         $this->isCalculatingShipping = true;
+        $this->isShippingSelected = true;
 
         // Dispatch loading state
         $this->dispatch('shippingCalculationStarted');
@@ -315,7 +352,8 @@ class CheckoutManager extends Component
                         'cost' => $this->shippingCost,
                         'destination' => $destination['id'],
                         'weight' => $this->totalWeight,
-                        'service' => $regService
+                        'service' => $regService,
+                        'order_type' => $this->orderType
                     ]);
 
                     // Prepare shipping details
@@ -332,7 +370,8 @@ class CheckoutManager extends Component
                     $this->dispatch('shippingCostCalculated', [
                         'cost' => $this->shippingCost,
                         'details' => $shippingDetails,
-                        'success' => true
+                        'success' => true,
+                        'orderType' => $this->orderType
                     ]);
                 } else {
                     throw new \Exception('Biaya pengiriman tidak valid dari API');
@@ -344,20 +383,23 @@ class CheckoutManager extends Component
             Log::error('Shipping cost calculation failed', [
                 'error' => $e->getMessage(),
                 'postal_code' => $this->customerAddress->postal_code ?? 'N/A',
-                'weight' => $this->totalWeight
+                'weight' => $this->totalWeight,
+                'order_type' => $this->orderType
             ]);
 
-            // Use estimated cost as fallback
+            // Use estimated cost as fallback but keep shipping selected
             $this->shippingCost = $this->getEstimatedShippingCost();
             Log::info('Using estimated shipping cost as fallback', [
                 'estimated_cost' => $this->shippingCost,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'order_type' => $this->orderType
             ]);
 
             // Dispatch error event with fallback cost
             $this->dispatch('shippingCostCalculationError', [
                 'error' => $e->getMessage(),
                 'fallbackCost' => $this->shippingCost,
+                'orderType' => $this->orderType,
                 'details' => [
                     'courier' => 'JNE',
                     'service' => 'REG (Estimasi)',
@@ -371,10 +413,11 @@ class CheckoutManager extends Component
             $this->isCalculatingShipping = false;
             $this->calculateTotals();
 
-            // Always dispatch final update
+            // Always dispatch final update with order type
             $this->dispatch('shippingCostUpdated', [
                 'cost' => $this->shippingCost,
-                'orderType' => $this->orderType
+                'orderType' => $this->orderType,
+                'isSelected' => $this->isShippingSelected
             ]);
         }
     }
