@@ -15,16 +15,16 @@ return new class extends Migration {
                 ->on('customers')
                 ->onDelete('cascade');
 
-            $table->unsignedInteger('province_id')->nullable();
+            $table->string('province_id', 10)->nullable();
             $table->string('province_name')->nullable();
 
-            $table->unsignedInteger('city_id')->nullable();
+            $table->string('city_id', 10)->nullable();
             $table->string('city_name')->nullable();
 
-            $table->unsignedInteger('district_id')->nullable();
+            $table->string('district_id', 10)->nullable();
             $table->string('district_name')->nullable();
 
-            $table->unsignedInteger('subdistrict_id')->nullable();
+            $table->string('subdistrict_id', 10)->nullable();
             $table->string('subdistrict_name')->nullable();
 
             $table->string('postal_code', 10)->nullable();

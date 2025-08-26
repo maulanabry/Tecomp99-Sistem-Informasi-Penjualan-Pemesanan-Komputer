@@ -10,6 +10,34 @@
                 <x-alert type="danger" :message="session('error')" />
             </div>
         @endif
+        @if ($errors->has('error'))
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
+                <x-alert type="danger" :message="$errors->first('error')" />
+            </div>
+        @endif
+        @if ($errors->any() && !$errors->has('error'))
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-red-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                                Terdapat kesalahan pada form:
+                            </h3>
+                            <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                                <ul class="list-disc pl-5 space-y-1">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <!-- Breadcrumbs -->
@@ -316,9 +344,79 @@
     </div>
 
     <script>
+        // Enhanced debugging for customer creation
+        console.log('Customer create form script loaded');
+
+        // Form submission debugging
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing customer create form');
+            
+            const form = document.querySelector('form[action*="customers.store"]');
+            if (form) {
+                console.log('Customer create form found:', form);
+                
+                form.addEventListener('submit', function(e) {
+                    console.log('Form submission started');
+                    console.log('Form data:', new FormData(form));
+                    
+                    // Log all form fields
+                    const formData = new FormData(form);
+                    const formObject = {};
+                    for (let [key, value] of formData.entries()) {
+                        formObject[key] = value;
+                    }
+                    console.log('Form data object:', formObject);
+                    
+                    // Check required fields
+                    const requiredFields = ['name', 'contact'];
+                    let missingFields = [];
+                    
+                    requiredFields.forEach(field => {
+                        const input = form.querySelector(`[name="${field}"]`);
+                        if (!input || !input.value.trim()) {
+                            missingFields.push(field);
+                        }
+                    });
+                    
+                    if (missingFields.length > 0) {
+                        console.error('Missing required fields:', missingFields);
+                        alert('Missing required fields: ' + missingFields.join(', '));
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    // Check hasAccount and password validation
+                    const hasAccountCheckbox = form.querySelector('[name="hasAccount"]');
+                    const passwordField = form.querySelector('[name="password"]');
+                    
+                    if (hasAccountCheckbox && hasAccountCheckbox.checked) {
+                        if (!passwordField || !passwordField.value.trim()) {
+                            console.error('Password required when hasAccount is checked');
+                            alert('Password is required when creating an account');
+                            e.preventDefault();
+                            return false;
+                        }
+                        
+                        if (passwordField.value.length < 6) {
+                            console.error('Password too short');
+                            alert('Password must be at least 6 characters');
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
+                    
+                    console.log('Form validation passed, submitting...');
+                });
+            } else {
+                console.error('Customer create form not found!');
+            }
+        });
+
         // Gender radio button styling
         document.querySelectorAll('input[name="gender"]').forEach(radio => {
             radio.addEventListener('change', function() {
+                console.log('Gender changed to:', this.value);
+                
                 // Remove active styling from all labels
                 document.querySelectorAll('label[for^="gender_"]').forEach(label => {
                     label.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
@@ -342,12 +440,13 @@
             }
         });
 
-        // Indonesian Regions API Integration
+        // Database-driven Location System
         document.addEventListener('DOMContentLoaded', function() {
             const provinceSelect = document.getElementById('province_id');
             const citySelect = document.getElementById('city_id');
             const districtSelect = document.getElementById('district_id');
             const subdistrictSelect = document.getElementById('subdistrict_id');
+            const postalCodeInput = document.getElementById('postal_code');
             
             const provinceNameInput = document.getElementById('province_name');
             const cityNameInput = document.getElementById('city_name');
@@ -363,17 +462,13 @@
                 const provinceName = this.options[this.selectedIndex].text;
                 
                 if (provinceId) {
-                    provinceNameInput.value = provinceName;
+                    provinceNameInput.value = provinceName !== 'Pilih Provinsi' ? provinceName : '';
                     loadCities(provinceId);
                     citySelect.disabled = false;
                 } else {
                     provinceNameInput.value = '';
-                    resetSelect(citySelect, 'Pilih Kota/Kabupaten');
-                    resetSelect(districtSelect, 'Pilih Kecamatan');
-                    resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
-                    citySelect.disabled = true;
-                    districtSelect.disabled = true;
-                    subdistrictSelect.disabled = true;
+                    resetSelects(['city_id', 'district_id', 'subdistrict_id']);
+                    postalCodeInput.value = '';
                 }
             });
 
@@ -383,15 +478,13 @@
                 const cityName = this.options[this.selectedIndex].text;
                 
                 if (cityId) {
-                    cityNameInput.value = cityName;
+                    cityNameInput.value = cityName !== 'Pilih Kota/Kabupaten' ? cityName : '';
                     loadDistricts(cityId);
                     districtSelect.disabled = false;
                 } else {
                     cityNameInput.value = '';
-                    resetSelect(districtSelect, 'Pilih Kecamatan');
-                    resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
-                    districtSelect.disabled = true;
-                    subdistrictSelect.disabled = true;
+                    resetSelects(['district_id', 'subdistrict_id']);
+                    postalCodeInput.value = '';
                 }
             });
 
@@ -401,134 +494,163 @@
                 const districtName = this.options[this.selectedIndex].text;
                 
                 if (districtId) {
-                    districtNameInput.value = districtName;
+                    districtNameInput.value = districtName !== 'Pilih Kecamatan' ? districtName : '';
                     loadSubdistricts(districtId);
                     subdistrictSelect.disabled = false;
                 } else {
                     districtNameInput.value = '';
-                    resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
-                    subdistrictSelect.disabled = true;
+                    resetSelects(['subdistrict_id']);
+                    postalCodeInput.value = '';
                 }
             });
 
             // Subdistrict change handler
             subdistrictSelect.addEventListener('change', function() {
+                const subdistrictId = this.value;
                 const subdistrictName = this.options[this.selectedIndex].text;
-                subdistrictNameInput.value = subdistrictName;
+                
+                if (subdistrictId) {
+                    subdistrictNameInput.value = subdistrictName !== 'Pilih Kelurahan/Desa' ? subdistrictName : '';
+                    loadPostalCode(subdistrictId);
+                } else {
+                    subdistrictNameInput.value = '';
+                    postalCodeInput.value = '';
+                }
             });
 
-            // Load provinces function
-            function loadProvinces() {
-                showLoading(provinceSelect);
-                
-                fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
-                    .then(response => response.json())
-                    .then(provinces => {
-                        resetSelect(provinceSelect, 'Pilih Provinsi');
-                        
-                        provinces.forEach(province => {
-                            const option = document.createElement('option');
-                            option.value = province.id;
-                            option.textContent = province.name;
-                            provinceSelect.appendChild(option);
-                        });
-                        
-                        hideLoading(provinceSelect);
-                    })
-                    .catch(error => {
-                        console.error('Error loading provinces:', error);
+            // Load functions
+            async function loadProvinces() {
+                try {
+                    showLoading(provinceSelect);
+                    const response = await fetch('/api/locations/provinces');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        populateSelect(provinceSelect, data.data, 'Pilih Provinsi');
+                    } else {
+                        console.error('Failed to load provinces:', data.message);
                         resetSelect(provinceSelect, 'Error loading provinces');
-                        hideLoading(provinceSelect);
-                    });
+                    }
+                } catch (error) {
+                    console.error('Error loading provinces:', error);
+                    resetSelect(provinceSelect, 'Error loading provinces');
+                } finally {
+                    hideLoading(provinceSelect);
+                }
             }
 
-            // Load cities function
-            function loadCities(provinceId) {
-                showLoading(citySelect);
-                resetSelect(districtSelect, 'Pilih Kecamatan');
-                resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
-                districtSelect.disabled = true;
-                subdistrictSelect.disabled = true;
-                
-                fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinceId}.json`)
-                    .then(response => response.json())
-                    .then(cities => {
-                        resetSelect(citySelect, 'Pilih Kota/Kabupaten');
-                        
-                        cities.forEach(city => {
-                            const option = document.createElement('option');
-                            option.value = city.id;
-                            option.textContent = city.name;
-                            citySelect.appendChild(option);
-                        });
-                        
-                        hideLoading(citySelect);
-                    })
-                    .catch(error => {
-                        console.error('Error loading cities:', error);
+            async function loadCities(provinceId) {
+                try {
+                    showLoading(citySelect);
+                    resetSelects(['district_id', 'subdistrict_id']);
+                    
+                    const response = await fetch(`/api/locations/cities?province_id=${provinceId}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        populateSelect(citySelect, data.data, 'Pilih Kota/Kabupaten');
+                    } else {
+                        console.error('Failed to load cities:', data.message);
                         resetSelect(citySelect, 'Error loading cities');
-                        hideLoading(citySelect);
-                    });
+                    }
+                } catch (error) {
+                    console.error('Error loading cities:', error);
+                    resetSelect(citySelect, 'Error loading cities');
+                } finally {
+                    hideLoading(citySelect);
+                }
             }
 
-            // Load districts function
-            function loadDistricts(cityId) {
-                showLoading(districtSelect);
-                resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
-                subdistrictSelect.disabled = true;
-                
-                fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${cityId}.json`)
-                    .then(response => response.json())
-                    .then(districts => {
-                        resetSelect(districtSelect, 'Pilih Kecamatan');
-                        
-                        districts.forEach(district => {
-                            const option = document.createElement('option');
-                            option.value = district.id;
-                            option.textContent = district.name;
-                            districtSelect.appendChild(option);
-                        });
-                        
-                        hideLoading(districtSelect);
-                    })
-                    .catch(error => {
-                        console.error('Error loading districts:', error);
+            async function loadDistricts(cityId) {
+                try {
+                    showLoading(districtSelect);
+                    resetSelects(['subdistrict_id']);
+                    
+                    const response = await fetch(`/api/locations/districts?city_id=${cityId}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        populateSelect(districtSelect, data.data, 'Pilih Kecamatan');
+                    } else {
+                        console.error('Failed to load districts:', data.message);
                         resetSelect(districtSelect, 'Error loading districts');
-                        hideLoading(districtSelect);
-                    });
+                    }
+                } catch (error) {
+                    console.error('Error loading districts:', error);
+                    resetSelect(districtSelect, 'Error loading districts');
+                } finally {
+                    hideLoading(districtSelect);
+                }
             }
 
-            // Load subdistricts function
-            function loadSubdistricts(districtId) {
-                showLoading(subdistrictSelect);
-                
-                fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${districtId}.json`)
-                    .then(response => response.json())
-                    .then(subdistricts => {
-                        resetSelect(subdistrictSelect, 'Pilih Kelurahan/Desa');
-                        
-                        subdistricts.forEach(subdistrict => {
-                            const option = document.createElement('option');
-                            option.value = subdistrict.id;
-                            option.textContent = subdistrict.name;
-                            subdistrictSelect.appendChild(option);
-                        });
-                        
-                        hideLoading(subdistrictSelect);
-                    })
-                    .catch(error => {
-                        console.error('Error loading subdistricts:', error);
+            async function loadSubdistricts(districtId) {
+                try {
+                    showLoading(subdistrictSelect);
+                    
+                    const response = await fetch(`/api/locations/subdistricts?district_id=${districtId}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        populateSelect(subdistrictSelect, data.data, 'Pilih Kelurahan/Desa');
+                    } else {
+                        console.error('Failed to load subdistricts:', data.message);
                         resetSelect(subdistrictSelect, 'Error loading subdistricts');
-                        hideLoading(subdistrictSelect);
-                    });
+                    }
+                } catch (error) {
+                    console.error('Error loading subdistricts:', error);
+                    resetSelect(subdistrictSelect, 'Error loading subdistricts');
+                } finally {
+                    hideLoading(subdistrictSelect);
+                }
             }
 
-            // Helper function to reset select options
+            async function loadPostalCode(subdistrictId) {
+                try {
+                    const response = await fetch(`/api/locations/postal-code?subdistrict_id=${subdistrictId}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        postalCodeInput.value = data.data.postal_code || '';
+                    }
+                } catch (error) {
+                    console.error('Error loading postal code:', error);
+                }
+            }
+
+            function populateSelect(selectElement, options, placeholder) {
+                selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+                
+                options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.id;
+                    optionElement.textContent = option.name;
+                    selectElement.appendChild(optionElement);
+                });
+            }
+
             function resetSelect(selectElement, placeholder) {
                 selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+                selectElement.disabled = true;
             }
 
-            // Helper function to show loading state
+            function resetSelects(selectIds) {
+                const placeholders = {
+                    'city_id': 'Pilih Kota/Kabupaten',
+                    'district_id': 'Pilih Kecamatan',
+                    'subdistrict_id': 'Pilih Kelurahan/Desa'
+                };
+
+                selectIds.forEach(id => {
+                    const select = document.getElementById(id);
+                    const nameInput = document.getElementById(id.replace('_id', '_name'));
+                    
+                    resetSelect(select, placeholders[id]);
+                    if (nameInput) nameInput.value = '';
+                });
+                
+                postalCodeInput.value = '';
+            }
+
             function showLoading(selectElement) {
                 const placeholder = selectElement.querySelector('option[value=""]');
                 if (placeholder) {
@@ -537,7 +659,6 @@
                 selectElement.disabled = true;
             }
 
-            // Helper function to hide loading state
             function hideLoading(selectElement) {
                 selectElement.disabled = false;
             }

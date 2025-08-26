@@ -153,7 +153,7 @@
                                                         Edit
                                                     </button>
                                                     @if(!$address->is_default)
-                                                        <button onclick="setAsDefault({{ $address->address_id }})"
+                                                        <button onclick="setAsDefault({{ $address->id }})"
                                                             class="ml-2 inline-flex items-center px-3 py-1.5 border border-primary-300 dark:border-primary-600 shadow-sm text-xs font-medium rounded text-primary-700 dark:text-primary-400 bg-white dark:bg-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                                             <i class="fas fa-star mr-1"></i>
                                                             Jadikan Utama
@@ -421,7 +421,7 @@
             currentEditingAddress = address;
             
             // Set form action
-            document.getElementById('editAddressForm').action = `/admin/customer/{{ $customer->customer_id }}/address/${address.address_id}`;
+            document.getElementById('editAddressForm').action = `/admin/customer/{{ $customer->customer_id }}/address/${address.id}`;
             
             // Fill form fields
             document.getElementById('edit_detail_address').value = address.detail_address || '';

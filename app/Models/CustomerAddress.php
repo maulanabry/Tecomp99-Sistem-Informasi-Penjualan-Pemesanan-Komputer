@@ -103,4 +103,24 @@ class CustomerAddress extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
     }
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'province_id');
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function district()
+    {
+        return $this->belongsTo(District::class, 'district_id');
+    }
+
+    public function subdistrict()
+    {
+        return $this->belongsTo(Subdistrict::class, 'subdistrict_id');
+    }
 }

@@ -18,6 +18,16 @@ Route::get('/', function () {
     return redirect('/beranda');
 });
 
+// Location API Routes (Public - for address forms)
+Route::prefix('api/locations')->name('api.locations.')->group(function () {
+    Route::get('/provinces', [LocationController::class, 'getProvinces'])->name('provinces');
+    Route::get('/cities', [LocationController::class, 'getCities'])->name('cities');
+    Route::get('/districts', [LocationController::class, 'getDistricts'])->name('districts');
+    Route::get('/subdistricts', [LocationController::class, 'getSubdistricts'])->name('subdistricts');
+    Route::get('/postal-code', [LocationController::class, 'getPostalCode'])->name('postal-code');
+    Route::get('/search', [LocationController::class, 'searchLocations'])->name('search');
+});
+
 Route::get('/beranda', function () {
     return view('welcome');
 })->name('home');
@@ -283,6 +293,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::delete('/{id}/force', [\App\Http\Controllers\Admin\CustomerController::class, 'forceDelete'])->name('customers.force-delete');
 
         // Address management routes
+        Route::post('/{customer}/address', [\App\Http\Controllers\Admin\CustomerController::class, 'storeAddress'])->name('customers.address.store');
         Route::put('/{customer}/address/{addressId}', [\App\Http\Controllers\Admin\CustomerController::class, 'updateAddress'])->name('customers.address.update');
         Route::put('/{customer}/address/{addressId}/set-default', [\App\Http\Controllers\Admin\CustomerController::class, 'setDefaultAddress'])->name('customers.address.set-default');
     });
