@@ -48,9 +48,11 @@ class CustomerController extends Controller
             if ($validated['hasAccount']) {
                 $validated['password'] = Hash::make($request->password);
                 $validated['last_active'] = now();
+                $validated['email_verified_at'] = now(); // Auto-verify admin-created accounts
             } else {
                 $validated['password'] = null;
                 $validated['last_active'] = null;
+                $validated['email_verified_at'] = null;
             }
 
             $customerData = collect($validated)->except([
@@ -132,9 +134,12 @@ class CustomerController extends Controller
                     unset($validated['password']);
                 }
                 $validated['last_active'] = $customer->last_active ?? now();
+                // Auto-verify admin-created/updated accounts
+                $validated['email_verified_at'] = $customer->email_verified_at ?? now();
             } else {
                 $validated['password'] = null;
                 $validated['last_active'] = null;
+                $validated['email_verified_at'] = null;
             }
 
             $customer->update($validated);

@@ -16,6 +16,43 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <div class="py-4">
+                {{-- Success Message --}}
+                @if(session('success'))
+                    <div class="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            {{ session('success') }}
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Error Messages --}}
+                @if($errors->any())
+                    <div class="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle mr-2 mt-0.5"></i>
+                            <div>
+                                <h4 class="font-medium mb-2">Terjadi kesalahan:</h4>
+                                <ul class="list-disc list-inside space-y-1">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- General Error Message --}}
+                @if(session('error'))
+                    <div class="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            {{ session('error') }}
+                        </div>
+                    </div>
+                @endif
+
                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
                     <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
@@ -30,35 +67,48 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div>
                                     <label for="method" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Method</label>
-                                    <select id="method" name="method" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                                        <option value="Tunai" {{ $payment->method === 'Tunai' ? 'selected' : '' }}>Tunai</option>
-                                        <option value="Bank BCA" {{ $payment->method === 'Bank BCA' ? 'selected' : '' }}>Bank BCA</option>
+                                    <select id="method" name="method" class="mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 @error('method') border-red-300 dark:border-red-600 @else border-gray-300 dark:border-gray-600 @enderror">
+                                        <option value="Tunai" {{ old('method', $payment->method) === 'Tunai' ? 'selected' : '' }}>Tunai</option>
+                                        <option value="Bank BCA" {{ old('method', $payment->method) === 'Bank BCA' ? 'selected' : '' }}>Bank BCA</option>
                                     </select>
+                                    @error('method')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                @if($payment->method === 'Tunai')
-                                <div>
+                                <div id="cash_received_container" class="{{ old('method', $payment->method) === 'Tunai' ? '' : 'hidden' }}">
                                     <label for="cash_received" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Uang Diterima</label>
-                                    <input type="number" name="cash_received" id="cash_received" value="{{ $payment->cash_received }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                                    <input type="number" name="cash_received" id="cash_received" value="{{ old('cash_received', $payment->cash_received) }}" class="mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 @error('cash_received') border-red-300 dark:border-red-600 @else border-gray-300 dark:border-gray-600 @enderror">
+                                    @error('cash_received')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                @endif
                                 <div>
                                     <label for="amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount</label>
-                                    <input type="number" name="amount" id="amount" value="{{ $payment->amount }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                                    <input type="number" name="amount" id="amount" value="{{ old('amount', $payment->amount) }}" class="mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 @error('amount') border-red-300 dark:border-red-600 @else border-gray-300 dark:border-gray-600 @enderror">
+                                    @error('amount')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
                                 <div>
                                     <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                                    <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                                        <option value="pending" {{ $payment->status === 'pending' ? 'selected' : '' }}>Pending</option>
-                                        <option value="dibayar" {{ $payment->status === 'dibayar' ? 'selected' : '' }}>Dibayar</option>
-                                        <option value="gagal" {{ $payment->status === 'gagal' ? 'selected' : '' }}>Gagal</option>
+                                    <select id="status" name="status" class="mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 @error('status') border-red-300 dark:border-red-600 @else border-gray-300 dark:border-gray-600 @enderror">
+                                        <option value="pending" {{ old('status', $payment->status) === 'pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="dibayar" {{ old('status', $payment->status) === 'dibayar' ? 'selected' : '' }}>Dibayar</option>
+                                        <option value="gagal" {{ old('status', $payment->status) === 'gagal' ? 'selected' : '' }}>Gagal</option>
                                     </select>
+                                    @error('status')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
                                 <div>
                                     <label for="payment_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Payment Type</label>
-                                    <select id="payment_type" name="payment_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                                        <option value="full" {{ $payment->payment_type === 'full' ? 'selected' : '' }}>Full</option>
-                                        <option value="down_payment" {{ $payment->payment_type === 'down_payment' ? 'selected' : '' }}>Down Payment</option>
+                                    <select id="payment_type" name="payment_type" class="mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 @error('payment_type') border-red-300 dark:border-red-600 @else border-gray-300 dark:border-gray-600 @enderror">
+                                        <option value="full" {{ old('payment_type', $payment->payment_type) === 'full' ? 'selected' : '' }}>Full</option>
+                                        <option value="down_payment" {{ old('payment_type', $payment->payment_type) === 'down_payment' ? 'selected' : '' }}>Down Payment</option>
                                     </select>
+                                    @error('payment_type')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
                                 <div>
                                     <label for="warranty_period_months" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -149,15 +199,19 @@
             // Handle payment method change
             methodSelect.addEventListener('change', function() {
                 const isCash = this.value === 'Tunai';
-                const cashReceivedContainer = document.querySelector('[for="cash_received"]').parentElement;
+                const cashReceivedContainer = document.getElementById('cash_received_container');
                 
                 if (isCash) {
                     cashReceivedContainer.classList.remove('hidden');
-                    cashReceivedInput.required = true;
+                    if (cashReceivedInput) {
+                        cashReceivedInput.required = true;
+                    }
                 } else {
                     cashReceivedContainer.classList.add('hidden');
-                    cashReceivedInput.required = false;
-                    cashReceivedInput.value = '';
+                    if (cashReceivedInput) {
+                        cashReceivedInput.required = false;
+                        cashReceivedInput.value = '';
+                    }
                 }
             });
 

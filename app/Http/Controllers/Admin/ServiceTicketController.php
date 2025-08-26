@@ -331,13 +331,15 @@ class ServiceTicketController extends Controller
 
     public function edit(ServiceTicket $ticket)
     {
-        return view('admin.service-ticket.edit', compact('ticket'));
+        $technicians = \App\Models\Admin::where('role', 'teknisi')->get();
+        return view('admin.service-ticket.edit', compact('ticket', 'technicians'));
     }
 
     public function update(Request $request, ServiceTicket $ticket)
     {
         $rules = [
             'status' => 'required|in:Menunggu,Diproses,Diantar,Perlu Diambil,Selesai',
+            'admin_id' => 'required|exists:admins,id',
             'schedule_date' => 'required|date',
             'estimation_days' => 'nullable|integer|min:1',
         ];
@@ -361,9 +363,9 @@ class ServiceTicketController extends Controller
 
         // Handle visit schedule for onsite orders
         if ($ticket->orderService->type === 'onsite') {
-            // Check slot availability
+            // Check slot availability with the new admin_id
             $isSlotAvailable = $this->checkSlotAvailabilityInternal(
-                $ticket->admin_id,
+                $validated['admin_id'],
                 $validated['visit_date'],
                 $validated['visit_time_slot'],
                 $ticket->service_ticket_id
@@ -378,6 +380,7 @@ class ServiceTicketController extends Controller
         }
 
         $oldStatus = $ticket->status;
+        $oldAdminId = $ticket->admin_id;
         $ticket->update($validated);
 
         // Create notification for ticket update if status changed
@@ -399,6 +402,29 @@ class ServiceTicketController extends Controller
                 $this->createTicketNotification($ticket, $type, $message);
             } catch (\Exception $e) {
                 Log::error('Failed to create service ticket update notification: ' . $e->getMessage());
+            }
+        }
+
+        // Create notification for technician assignment change
+        if ($oldAdminId !== $ticket->admin_id) {
+            try {
+                // Notify the new assigned teknisi
+                $newTeknisi = Admin::find($ticket->admin_id);
+                if ($newTeknisi && $newTeknisi->role === 'teknisi') {
+                    $this->createTeknisiAssignmentNotification($ticket, $newTeknisi);
+                }
+
+                // Create general notification for admin about technician change
+                $oldTeknisiName = $oldAdminId ? Admin::find($oldAdminId)?->name : 'Tidak ada';
+                $newTeknisiName = $newTeknisi ? $newTeknisi->name : 'Tidak ada';
+
+                $this->createTicketNotification(
+                    $ticket,
+                    NotificationType::SERVICE_TICKET_UPDATED,
+                    "Teknisi tiket servis #{$ticket->service_ticket_id} diubah dari {$oldTeknisiName} ke {$newTeknisiName}"
+                );
+            } catch (\Exception $e) {
+                Log::error('Failed to create technician assignment change notification: ' . $e->getMessage());
             }
         }
 

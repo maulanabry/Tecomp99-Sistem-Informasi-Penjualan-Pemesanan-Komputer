@@ -179,7 +179,7 @@
 
                             <!-- Password Field (shown when hasAccount is true) -->
                             <div x-show="hasAccount" x-transition class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
+                                <div x-data="{ showPassword: false }">
                                     <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                         Password <span class="text-red-500">*</span>
                                     </label>
@@ -187,9 +187,14 @@
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <i class="fas fa-lock text-gray-400"></i>
                                         </div>
-                                        <input type="password" name="password" id="password" 
-                                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('password') border-red-500 @enderror"
+                                        <input :type="showPassword ? 'text' : 'password'" name="password" id="password" 
+                                            class="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('password') border-red-500 @enderror"
                                             placeholder="Minimal 6 karakter">
+                                        <button type="button" @click="showPassword = !showPassword" 
+                                            class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                            <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                                               class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"></i>
+                                        </button>
                                     </div>
                                     @error('password')
                                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>

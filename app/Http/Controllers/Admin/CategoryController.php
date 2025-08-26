@@ -62,7 +62,7 @@ class CategoryController extends Controller
 
     public function recovery()
     {
-        $categories = Category::onlyTrashed()->get();
+        $categories = Category::onlyTrashed()->paginate(10);
 
         return view('admin.categories.recovery', compact('categories'));
     }

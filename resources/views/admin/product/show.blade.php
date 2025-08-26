@@ -320,7 +320,7 @@
     <script>
         function confirmDelete(productId, productName) {
             document.getElementById('productName').textContent = productName;
-            document.getElementById('deleteForm').action = `/admin/product/${productId}`;
+            document.getElementById('deleteForm').action = `/admin/produk/${productId}`;
             document.getElementById('deleteModal').classList.remove('hidden');
         }
 
@@ -344,7 +344,7 @@
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/admin/product/${productId}/toggle-status`;
+                form.action = `/admin/produk/${productId}/toggle-status`;
                 
                 const csrfToken = document.createElement('input');
                 csrfToken.type = 'hidden';
@@ -359,7 +359,8 @@
                 const statusField = document.createElement('input');
                 statusField.type = 'hidden';
                 statusField.name = 'is_active';
-                statusField.value = newStatus;
+                // Convert string to proper boolean value for Laravel
+                statusField.value = newStatus === 'true' || newStatus === true ? '1' : '0';
                 
                 form.appendChild(csrfToken);
                 form.appendChild(methodField);

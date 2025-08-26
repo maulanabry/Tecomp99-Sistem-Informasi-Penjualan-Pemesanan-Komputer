@@ -259,4 +259,28 @@ class ServiceController extends Controller
     {
         return view('admin.service.show', compact('service'));
     }
+
+    public function toggleStatus(Request $request, Service $service)
+    {
+        try {
+            $validated = $request->validate([
+                'is_active' => 'required|in:0,1,true,false'
+            ]);
+
+            // Convert to boolean
+            $isActive = in_array($validated['is_active'], ['1', 'true', true], true);
+
+            $service->update([
+                'is_active' => $isActive
+            ]);
+
+            $status = $isActive ? 'diaktifkan' : 'dinonaktifkan';
+
+            return redirect()->route('services.show', $service)
+                ->with('success', "Servis berhasil {$status}.");
+        } catch (\Exception $e) {
+            return redirect()->route('services.show', $service)
+                ->with('error', 'Gagal mengubah status servis: ' . $e->getMessage());
+        }
+    }
 }

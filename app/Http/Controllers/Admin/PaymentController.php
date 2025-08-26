@@ -201,22 +201,48 @@ class PaymentController extends Controller
     public function update(Request $request, $payment_id)
     {
         try {
-            $request->validate([
-                'method' => 'required|in:Tunai,Bank BCA',
-                'amount' => 'required|integer|min:1',
+            // Use PaymentDetail constants for validation
+            $validationRules = [
+                'method' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_METHODS)),
+                'amount' => 'required|numeric|min:1',
                 'cash_received' => 'nullable|numeric|min:1',
-                'status' => 'required|in:pending,dibayar,gagal',
-                'payment_type' => 'required|in:full,down_payment',
-                'proof_photo' => 'nullable|image|max:2048', // max 2MB
+                'status' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_STATUSES)),
+                'payment_type' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_TYPES)),
+                'proof_photo' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
                 'change_returned' => 'nullable|numeric|min:0',
                 'warranty_period_months' => 'nullable|integer|min:1|max:60',
-            ]);
+            ];
 
-            // Validate change_returned only for cash payments
+            // Custom validation messages
+            $validationMessages = [
+                'method.required' => 'Metode pembayaran harus dipilih.',
+                'method.in' => 'Metode pembayaran tidak valid.',
+                'amount.required' => 'Jumlah pembayaran harus diisi.',
+                'amount.numeric' => 'Jumlah pembayaran harus berupa angka.',
+                'amount.min' => 'Jumlah pembayaran minimal 1.',
+                'cash_received.numeric' => 'Uang diterima harus berupa angka.',
+                'cash_received.min' => 'Uang diterima minimal 1.',
+                'status.required' => 'Status pembayaran harus dipilih.',
+                'status.in' => 'Status pembayaran tidak valid.',
+                'payment_type.required' => 'Tipe pembayaran harus dipilih.',
+                'payment_type.in' => 'Tipe pembayaran tidak valid.',
+                'proof_photo.image' => 'File bukti pembayaran harus berupa gambar.',
+                'proof_photo.mimes' => 'Format file harus JPG, JPEG, atau PNG.',
+                'proof_photo.max' => 'Ukuran file maksimal 2MB.',
+                'change_returned.numeric' => 'Kembalian harus berupa angka.',
+                'change_returned.min' => 'Kembalian tidak boleh negatif.',
+                'warranty_period_months.integer' => 'Masa garansi harus berupa angka bulat.',
+                'warranty_period_months.min' => 'Masa garansi minimal 1 bulan.',
+                'warranty_period_months.max' => 'Masa garansi maksimal 60 bulan.',
+            ];
+
+            $request->validate($validationRules, $validationMessages);
+
+            // Additional validation for cash payments
             if ($request->method === 'Tunai' && $request->change_returned !== null && $request->change_returned < 0) {
                 return back()
                     ->withInput()
-                    ->with('error', 'Kembalian tidak boleh bernilai negatif.');
+                    ->withErrors(['change_returned' => 'Kembalian tidak boleh bernilai negatif.']);
             }
 
             $payment = PaymentDetail::where('payment_id', $payment_id)->firstOrFail();
@@ -291,10 +317,23 @@ class PaymentController extends Controller
             return redirect()
                 ->route('payments.show', $payment)
                 ->with('success', 'Payment berhasil diupdate.');
-        } catch (\Exception $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Handle validation errors specifically
+            Log::error('Payment update validation failed: ' . json_encode($e->errors()));
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan pembayaran. ' . $e->getMessage());
+                ->withErrors($e->errors());
+        } catch (\Exception $e) {
+            // Log the full error for debugging
+            Log::error('Payment update failed: ' . $e->getMessage(), [
+                'payment_id' => $payment_id,
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['general' => 'Terjadi kesalahan saat menyimpan pembayaran: ' . $e->getMessage()]);
         }
     }
 

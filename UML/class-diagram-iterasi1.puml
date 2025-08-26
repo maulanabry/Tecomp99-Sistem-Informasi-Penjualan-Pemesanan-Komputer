@@ -2,7 +2,8 @@
 
 skinparam linetype ortho
 skinparam classAttributeIconSize 0
-skinparam classFontSize 9
+skinparam defaultFontSize 30
+skinparam defaultFontName "Arial"
 skinparam nodesep 10
 skinparam ranksep 20
 skinparam class {
@@ -500,38 +501,38 @@ BaseController <|-- OrderServiceController
 BaseController <|-- PaymentController
 BaseController <|-- TechnicianScheduleController
 
-CategoryController --> Category
-ProductController --> Product
-ProductController --> Brand
-ProductController --> ProductImage
-ServiceController --> Service
-VoucherController --> Voucher
-CustomerController --> Customer
-CustomerController --> CustomerAddress
-OrderProductController --> OrderProduct
-OrderProductController --> OrderProductItem
-OrderServiceController --> OrderService
-OrderServiceController --> OrderServiceItem
-PaymentController --> PaymentDetail
-TechnicianScheduleController --> ServiceTicket
-TechnicianScheduleController --> ServiceAction
+CategoryController --> Category : manages
+ProductController --> Product : manages
+ProductController --> Brand : uses
+ProductController --> ProductImage : uses
+ServiceController --> Service : manages
+VoucherController --> Voucher : manages
+CustomerController --> Customer : manages
+CustomerController --> CustomerAddress : manages
+OrderProductController --> OrderProduct : manages
+OrderProductController --> OrderProductItem : uses
+OrderServiceController --> OrderService : manages
+OrderServiceController --> OrderServiceItem : uses
+PaymentController --> PaymentDetail : manages
+TechnicianScheduleController --> ServiceTicket : manages
+TechnicianScheduleController --> ServiceAction : manages
 
-Category ||--o{ Product
-Category ||--o{ Service
-Brand ||--o{ Product
-Product ||--o{ ProductImage
-Customer ||--o{ CustomerAddress
-Customer ||--o{ OrderProduct
-Customer ||--o{ OrderService
-OrderProduct ||--o{ OrderProductItem
-OrderProduct ||--o{ PaymentDetail
-OrderProduct ||--o| Shipping
-OrderService ||--o{ OrderServiceItem
-OrderService ||--o{ PaymentDetail
-OrderService ||--o{ ServiceTicket
-Product ||--o{ OrderProductItem
-Service ||--o{ OrderServiceItem
-ServiceTicket ||--o{ ServiceAction
-Admin ||--o{ ServiceTicket
+Category " " o-- " " Product : contains
+Category " " o-- " " Service : classifies
+Brand " " o-- " " Product : owns
+Product " " o-- " " ProductImage : contains
+Customer " " o-- " " CustomerAddress : has
+Customer " " o-- " " OrderProduct : submits
+Customer " " o-- " " OrderService : submits
+OrderProduct " " o-- " " OrderProductItem : contains
+OrderProduct " " o-- " " PaymentDetail : triggers
+OrderProduct " " o-- " " Shipping : uses
+OrderService " " o-- " " OrderServiceItem : contains
+OrderService " " o-- " " PaymentDetail : triggers
+OrderService " " o-- " " ServiceTicket : generates
+Product " " o-- " " OrderProductItem : isUsedIn
+Service " " o-- " " OrderServiceItem : isUsedIn
+ServiceTicket " " o-- " " ServiceAction : contains
+Admin " " o-- " " ServiceTicket : assignedTo
 
 @enduml

@@ -340,4 +340,28 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
+    public function toggleStatus(Request $request, Product $product)
+    {
+        try {
+            $validated = $request->validate([
+                'is_active' => 'required|in:0,1,true,false'
+            ]);
+
+            // Convert to boolean
+            $isActive = in_array($validated['is_active'], ['1', 'true', true], true);
+
+            $product->update([
+                'is_active' => $isActive
+            ]);
+
+            $status = $isActive ? 'diaktifkan' : 'dinonaktifkan';
+
+            return redirect()->route('products.show', $product)
+                ->with('success', "Produk berhasil {$status}.");
+        } catch (\Exception $e) {
+            return redirect()->route('products.show', $product)
+                ->with('error', 'Gagal mengubah status produk: ' . $e->getMessage());
+        }
+    }
 }

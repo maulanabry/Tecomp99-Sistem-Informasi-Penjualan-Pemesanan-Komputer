@@ -276,7 +276,7 @@
     <script>
         function confirmDelete(serviceId, serviceName) {
             document.getElementById('serviceName').textContent = serviceName;
-            document.getElementById('deleteForm').action = `/admin/service/${serviceId}`;
+            document.getElementById('deleteForm').action = `/admin/servis/${serviceId}`;
             document.getElementById('deleteModal').classList.remove('hidden');
         }
 
@@ -300,7 +300,7 @@
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/admin/service/${serviceId}/toggle-status`;
+                form.action = `/admin/servis/${serviceId}/toggle-status`;
                 
                 const csrfToken = document.createElement('input');
                 csrfToken.type = 'hidden';
@@ -315,7 +315,8 @@
                 const statusField = document.createElement('input');
                 statusField.type = 'hidden';
                 statusField.name = 'is_active';
-                statusField.value = newStatus;
+                // Convert string to proper boolean value for Laravel
+                statusField.value = newStatus === 'true' || newStatus === true ? '1' : '0';
                 
                 form.appendChild(csrfToken);
                 form.appendChild(methodField);

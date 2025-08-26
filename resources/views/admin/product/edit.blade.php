@@ -1,4 +1,5 @@
 <x-layout-admin>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="py-6">
         @if (session('success'))
             <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
@@ -548,14 +549,19 @@
         // Image management functions
         function setMainImage(productId, imageId) {
             if (confirm('Jadikan gambar ini sebagai foto utama produk?')) {
-                fetch(`/admin/product/${productId}/image/${imageId}/set-main`, {
+                fetch(`/admin/produk/${productId}/images/${imageId}/main`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         location.reload();
@@ -587,14 +593,19 @@
         });
 
         function deleteImage(productId, imageId) {
-            fetch(`/admin/product/${productId}/image/${imageId}`, {
+            fetch(`/admin/produk/${productId}/images/${imageId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     document.getElementById(`image-${imageId}`).remove();

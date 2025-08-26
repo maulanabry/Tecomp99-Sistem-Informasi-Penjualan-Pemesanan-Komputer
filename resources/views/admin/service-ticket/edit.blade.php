@@ -74,8 +74,27 @@
                                             @enderror
                                         </div>
 
-                                        <!-- Schedule Date -->
+                                        <!-- Technician Selection -->
                                         <div>
+                                            <label for="admin_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                                Teknisi <span class="text-red-500">*</span>
+                                            </label>
+                                            <select name="admin_id" id="admin_id" required
+                                                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('admin_id') border-red-500 @enderror">
+                                                <option value="">Pilih teknisi</option>
+                                                @foreach($technicians as $technician)
+                                                    <option value="{{ $technician->id }}" {{ old('admin_id', $ticket->admin_id) == $technician->id ? 'selected' : '' }}>
+                                                        {{ $technician->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('admin_id')
+                                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Schedule Date -->
+                                        <div class="md:col-span-2">
                                             <label for="schedule_date" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                                 Tanggal Jadwal <span class="text-red-500">*</span>
                                             </label>
@@ -313,6 +332,7 @@
             const scheduleDate = document.getElementById('schedule_date');
             const estimationDays = document.getElementById('estimation_days');
             const estimateDate = document.getElementById('estimate_date');
+            const adminSelect = document.getElementById('admin_id');
             const visitDate = document.getElementById('visit_date');
             const visitTimeSlot = document.getElementById('visit_time_slot');
             const visitScheduleHidden = document.getElementById('visit_schedule');
@@ -320,7 +340,7 @@
 
             // Check slot availability for onsite services
             async function checkSlotAvailability() {
-                if (!visitDate || !visitTimeSlot || !visitDate.value || !visitTimeSlot.value) {
+                if (!adminSelect || !visitDate || !visitTimeSlot || !adminSelect.value || !visitDate.value || !visitTimeSlot.value) {
                     if (slotAvailability) slotAvailability.innerHTML = '';
                     return;
                 }
@@ -333,7 +353,7 @@
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
                         body: JSON.stringify({
-                            admin_id: {{ $ticket->admin_id }},
+                            admin_id: adminSelect.value,
                             visit_date: visitDate.value,
                             visit_time_slot: visitTimeSlot.value,
                             exclude_ticket_id: '{{ $ticket->service_ticket_id }}'
@@ -374,6 +394,7 @@
             }
 
             // Event listeners
+            if (adminSelect) adminSelect.addEventListener('change', checkSlotAvailability);
             if (visitDate) visitDate.addEventListener('change', checkSlotAvailability);
             if (visitTimeSlot) visitTimeSlot.addEventListener('change', checkSlotAvailability);
             
