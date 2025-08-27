@@ -1,0 +1,492 @@
+@startuml Comprehensive Class Diagram - Laravel E-commerce & Service Management System
+
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam classFontSize 10
+skinparam packageFontSize 12
+
+package "Authentication & User Management" {
+    abstract class Authenticatable {
+        +string email
+        +string password
+        +datetime email_verified_at
+        +string remember_token
+        +datetime created_at
+        +datetime updated_at
+        --
+        +getAuthIdentifier()
+        +getAuthPassword()
+    }
+
+    class Admin {
+        +int id
+        +string name
+        +string email
+        +string role
+        +string theme
+        +datetime last_seen_at
+        +datetime deleted_at
+        --
+        +isOnline(): bool
+        +getChatWithCustomer()
+        +getActiveChats()
+        +getUnreadMessagesCount()
+    }
+
+    class Customer {
+        +string customer_id
+        +string name
+        +string contact
+        +string photo
+        +string gender
+        +int hasAccount
+        +int hasAddress
+        +datetime last_active
+        +int service_orders_count
+        +int product_orders_count
+        +int total_points
+        +datetime deleted_at
+        --
+        +generateCustomerId(): string
+        +getFormattedAddress()
+        +getWhatsappLink()
+        +findForAuth()
+    }
+
+    class User {
+        +int id
+        +string name
+        +string email
+        +datetime email_verified_at
+        +datetime created_at
+        +datetime updated_at
+    }
+}
+
+package "Product Management" {
+    class Category {
+        +int categories_id
+        +string name
+        +string type
+        +string slug
+        +datetime created_at
+        +datetime updated_at
+        +datetime deleted_at
+    }
+
+    class Brand {
+        +int brand_id
+        +string name
+        +string slug
+        +string logo
+        +datetime created_at
+        +datetime updated_at
+        +datetime deleted_at
+    }
+
+    class Product {
+        +string product_id
+        +int categories_id
+        +int brand_id
+        +string name
+        +string description
+        +int price
+        +int weight
+        +int stock
+        +bool is_active
+        +int sold_count
+        +string slug
+        +datetime created_at
+        +datetime updated_at
+        +datetime deleted_at
+        --
+        +getThumbnailUrl()
+    }
+
+    class ProductImage {
+        +int id
+        +string product_id
+        +string url
+        +bool is_main
+        +datetime created_at
+        +datetime updated_at
+    }
+}
+
+package "Service Management" {
+    class Service {
+        +string service_id
+        +int categories_id
+        +string name
+        +string description
+        +int price
+        +bool is_active
+        +string slug
+        +datetime created_at
+        +datetime updated_at
+        +datetime deleted_at
+    }
+
+    class ServiceTicket {
+        +string service_ticket_id
+        +string order_service_id
+        +string status
+        +string priority
+        +string assigned_to
+        +datetime resolved_at
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class ServiceAction {
+        +string service_action_id
+        +string service_ticket_id
+        +string action_type
+        +string description
+        +string performed_by
+        +datetime created_at
+        +datetime updated_at
+    }
+}
+
+package "Order Management" {
+    class OrderProduct {
+        +string order_product_id
+        +string customer_id
+        +string status_order
+        +string status_payment
+        +decimal sub_total
+        +decimal discount_amount
+        +decimal grand_total
+        +decimal shipping_cost
+        +string type
+        +string note
+        +int warranty_period_months
+        +datetime warranty_expired_at
+        +decimal paid_amount
+        +decimal remaining_balance
+        +datetime last_payment_at
+        +datetime created_at
+        +datetime updated_at
+        +datetime deleted_at
+        --
+        +updateWarrantyExpiration()
+        +updatePaymentStatus()
+        +canAcceptPayment(): bool
+        +processPayment()
+        +getWarrantyStatus()
+    }
+
+    class OrderProductItem {
+        +int order_product_item_id
+        +string order_product_id
+        +string product_id
+        +int quantity
+        +decimal price
+        +decimal total
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class OrderService {
+        +string order_service_id
+        +string customer_id
+        +string status_order
+        +string status_payment
+        +string complaints
+        +string type
+        +string device
+        +string note
+        +bool hasTicket
+        +bool hasDevice
+        +decimal sub_total
+        +decimal grand_total
+        +decimal discount_amount
+        +int warranty_period_months
+        +datetime warranty_expired_at
+        +decimal paid_amount
+        +decimal remaining_balance
+        +datetime last_payment_at
+        +datetime created_at
+        +datetime updated_at
+        +datetime deleted_at
+        --
+        +updateWarrantyExpiration()
+        +updatePaymentStatus()
+        +canAcceptPayment(): bool
+        +processPayment()
+        +getWarrantyStatus()
+    }
+
+    class OrderServiceItem {
+        +int order_service_item_id
+        +string order_service_id
+        +string service_id
+        +int quantity
+        +decimal price
+        +decimal total
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class OrderServiceMedia {
+        +int order_service_media_id
+        +string order_service_id
+        +string media_type
+        +string media_path
+        +string description
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class OrderServiceImage {
+        +int media_id
+        +string order_service_id
+        +string image_path
+        +string description
+        +datetime created_at
+        +datetime updated_at
+    }
+}
+
+package "Location Management" {
+    class Province {
+        +int id
+        +string name
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class City {
+        +int id
+        +int province_id
+        +string name
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class District {
+        +int id
+        +int city_id
+        +string name
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class Subdistrict {
+        +int id
+        +int district_id
+        +string name
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class CustomerAddress {
+        +int id
+        +string customer_id
+        +int province_id
+        +string province_name
+        +int city_id
+        +string city_name
+        +int district_id
+        +string district_name
+        +int subdistrict_id
+        +string subdistrict_name
+        +string postal_code
+        +string detail_address
+        +int is_default
+        +datetime created_at
+        +datetime updated_at
+        --
+        +setAsDefault()
+    }
+}
+
+package "Communication System" {
+    class Chat {
+        +int id
+        +string customer_id
+        +int admin_id
+        +datetime last_message_at
+        +bool is_active
+        +datetime customer_last_read_at
+        +datetime admin_last_read_at
+        +datetime created_at
+        +datetime updated_at
+        --
+        +markAsReadByCustomer()
+        +markAsReadByAdmin()
+        +findOrCreateChat()
+        +getUnreadMessagesForCustomer()
+        +getUnreadMessagesForAdmin()
+    }
+
+    class ChatMessage {
+        +int id
+        +int chat_id
+        +string sender_id
+        +string sender_type
+        +string message
+        +string message_type
+        +bool is_read_by_customer
+        +bool is_read_by_admin
+        +datetime read_by_customer_at
+        +datetime read_by_admin_at
+        +datetime created_at
+        +datetime updated_at
+    }
+}
+
+package "Payment & Commerce" {
+    class PaymentDetail {
+        +string payment_id
+        +string order_product_id
+        +string order_service_id
+        +decimal amount
+        +string payment_method
+        +string status
+        +string transaction_id
+        +datetime payment_date
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class Shipping {
+        +int shipping_id
+        +string order_product_id
+        +string courier
+        +string service_type
+        +decimal cost
+        +string tracking_number
+        +string status
+        +datetime shipped_at
+        +datetime delivered_at
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class Cart {
+        +int id
+        +string customer_id
+        +string product_id
+        +int quantity
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class Voucher {
+        +int voucher_id
+        +string code
+        +string type
+        +decimal value
+        +decimal min_purchase
+        +int usage_limit
+        +int used_count
+        +datetime valid_from
+        +datetime valid_until
+        +bool is_active
+        +datetime created_at
+        +datetime updated_at
+    }
+}
+
+package "System Management" {
+    class SystemNotification {
+        +int id
+        +string notifiable_type
+        +string notifiable_id
+        +string type
+        +string title
+        +string message
+        +json data
+        +datetime read_at
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class FeedbackTestimonial {
+        +int id
+        +string customer_name
+        +string email
+        +string phone
+        +string message
+        +int rating
+        +bool is_approved
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class Setting {
+        +int id
+        +string key
+        +string value
+        +string type
+        +string description
+        +datetime created_at
+        +datetime updated_at
+    }
+}
+
+' Inheritance Relationships
+Authenticatable <|-- Admin
+Authenticatable <|-- Customer
+
+' Product Management Relationships
+Category "1" o-- "many" Product
+Brand "1" o-- "many" Product
+Product "1" o-- "many" ProductImage
+Category "1" o-- "many" Service
+
+' Order Relationships - Composition
+Customer "1" o-- "many" OrderProduct
+Customer "1" o-- "many" OrderService
+OrderProduct "1" *-- "many" OrderProductItem
+OrderService "1" *-- "many" OrderServiceItem
+OrderService "1" o-- "many" OrderServiceMedia
+OrderService "1" o-- "many" OrderServiceImage
+
+' Order Item Relationships
+Product "1" o-- "many" OrderProductItem
+Service "1" o-- "many" OrderServiceItem
+
+' Service Management Relationships - Composition
+OrderService "1" *-- "many" ServiceTicket
+ServiceTicket "1" *-- "many" ServiceAction
+
+' Location Hierarchy Relationships - Aggregation
+Province "1" o-- "many" City
+City "1" o-- "many" District
+District "1" o-- "many" Subdistrict
+
+' Customer Address Relationships
+Customer "1" o-- "many" CustomerAddress
+Province "0..1" o-- "many" CustomerAddress
+City "0..1" o-- "many" CustomerAddress
+District "0..1" o-- "many" CustomerAddress
+Subdistrict "0..1" o-- "many" CustomerAddress
+
+' Communication Relationships - Composition
+Customer "1" *-- "many" Chat
+Admin "1" *-- "many" Chat
+Chat "1" *-- "many" ChatMessage
+
+' Payment Relationships
+OrderProduct "1" o-- "many" PaymentDetail
+OrderService "1" o-- "many" PaymentDetail
+OrderProduct "0..1" o-- "1" Shipping
+
+' Cart Relationships
+Customer "1" o-- "many" Cart
+Product "1" o-- "many" Cart
+
+' Polymorphic Relationships
+SystemNotification o-- Admin : "notifiable"
+SystemNotification o-- Customer : "notifiable"
+
+' Notes for relationship types
+note top of OrderProduct : Composition - OrderProduct owns OrderProductItems
+note top of Chat : Composition - Chat owns ChatMessages
+note top of Province : Aggregation - Location hierarchy
+note bottom of SystemNotification : Polymorphic relationship
+
+@enduml

@@ -182,15 +182,15 @@
 
             <!-- File Upload -->
             <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Upload File (Opsional)</label>
-                <p class="text-sm text-gray-600 mb-3">Upload foto atau video untuk membantu teknisi memahami masalah. Maksimal 10MB per file.</p>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Upload Foto (Opsional)</label>
+                <p class="text-sm text-gray-600 mb-3">Upload foto untuk membantu teknisi memahami masalah. Maksimal 2MB per file.</p>
                 
                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                    <input type="file" wire:model="uploadedFiles" multiple accept="image/*,video/*" class="hidden" id="file-upload">
+                    <input type="file" wire:model="uploadedFiles" multiple accept="image/*" class="hidden" id="file-upload">
                     <label for="file-upload" class="cursor-pointer">
                         <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                        <p class="text-gray-600">Klik untuk memilih file atau drag & drop</p>
-                        <p class="text-sm text-gray-500 mt-1">JPG, PNG, GIF, MP4, AVI, MOV (Max 10MB)</p>
+                        <p class="text-gray-600">Klik untuk memilih foto atau drag & drop</p>
+                        <p class="text-sm text-gray-500 mt-1">JPG, PNG, GIF (Max 2MB)</p>
                     </label>
                 </div>
 
@@ -205,13 +205,7 @@
                                         class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
                                     ×
                                 </button>
-                                @if (in_array(strtolower($preview['type']), ['jpg', 'jpeg', 'png', 'gif']))
-                                    <img src="{{ $preview['url'] }}" alt="Preview" class="w-full h-20 object-cover rounded mb-2">
-                                @else
-                                    <div class="w-full h-20 bg-gray-200 rounded mb-2 flex items-center justify-center">
-                                        <i class="fas fa-file-video text-2xl text-gray-400"></i>
-                                    </div>
-                                @endif
+                                <img src="{{ $preview['url'] }}" alt="Preview" class="w-full h-20 object-cover rounded mb-2">
                                 <p class="text-xs text-gray-600 truncate">{{ $preview['name'] }}</p>
                                 <p class="text-xs text-gray-500">{{ $preview['size'] }}</p>
                             </div>

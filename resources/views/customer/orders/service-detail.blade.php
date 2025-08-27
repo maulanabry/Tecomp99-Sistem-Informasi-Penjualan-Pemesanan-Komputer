@@ -88,36 +88,57 @@
                         
                         <div class="relative">
                             @php
-                                $steps = [
-                                    [
-                                        'title' => 'Pesanan Diterima',
-                                        'description' => 'Pesanan servis Anda telah diterima dan menunggu konfirmasi',
-                                        'icon' => 'fas fa-clipboard-check',
-                                        'status' => 'completed',
-                                        'date' => $order->created_at
-                                    ],
-                                    [
-                                        'title' => 'Konfirmasi & Diagnosa',
-                                        'description' => 'Tim teknisi sedang melakukan diagnosa perangkat',
-                                        'icon' => 'fas fa-search',
-                                        'status' => in_array($order->status_order, ['diproses', 'sedang_dikerjakan', 'selesai']) ? 'completed' : ($order->status_order === 'menunggu_konfirmasi' ? 'current' : 'pending'),
-                                        'date' => in_array($order->status_order, ['diproses', 'sedang_dikerjakan', 'selesai']) ? $order->updated_at : null
-                                    ],
-                                    [
-                                        'title' => 'Sedang Dikerjakan',
-                                        'description' => 'Perangkat sedang dalam proses perbaikan',
-                                        'icon' => 'fas fa-tools',
-                                        'status' => in_array($order->status_order, ['sedang_dikerjakan', 'selesai']) ? 'completed' : ($order->status_order === 'diproses' ? 'current' : 'pending'),
-                                        'date' => in_array($order->status_order, ['sedang_dikerjakan', 'selesai']) ? $order->updated_at : null
-                                    ],
-                                    [
-                                        'title' => 'Selesai',
-                                        'description' => 'Perbaikan selesai dan perangkat siap diambil',
-                                        'icon' => 'fas fa-check-circle',
-                                        'status' => $order->status_order === 'selesai' ? 'completed' : 'pending',
-                                        'date' => $order->status_order === 'selesai' ? $order->updated_at : null
-                                    ]
-                                ];
+                                // Different steps for onsite vs regular service
+                                if ($order->type === 'onsite') {
+                                    $steps = [
+                                        [
+                                            'title' => 'Pesanan Diterima',
+                                            'description' => 'Pesanan servis onsite Anda telah diterima dan menunggu konfirmasi',
+                                            'icon' => 'fas fa-clipboard-check',
+                                            'status' => 'completed',
+                                            'date' => $order->created_at
+                                        ],
+                                        [
+                                            'title' => 'Dijadwalkan',
+                                            'description' => 'Jadwal kunjungan teknisi telah ditentukan dan dikonfirmasi',
+                                            'icon' => 'fas fa-calendar-check',
+                                            'status' => $order->status_order === 'Diproses' ? 'current' : ($order->status_order === 'Selesai' ? 'completed' : 'pending'),
+                                            'date' => $order->status_order === 'Diproses' ? $order->updated_at : null
+                                        ],
+                                        [
+                                            'title' => 'Selesai',
+                                            'description' => 'Perbaikan selesai dan perangkat telah berfungsi normal',
+                                            'icon' => 'fas fa-check-circle',
+                                            'status' => $order->status_order === 'Selesai' ? 'completed' : 'pending',
+                                            'date' => $order->status_order === 'Selesai' ? $order->updated_at : null
+                                        ]
+                                    ];
+                                } else {
+                                    // Regular service steps (drop-off service)
+                                    $steps = [
+                                        [
+                                            'title' => 'Pesanan Diterima',
+                                            'description' => 'Pesanan servis Anda telah diterima dan menunggu konfirmasi',
+                                            'icon' => 'fas fa-clipboard-check',
+                                            'status' => 'completed',
+                                            'date' => $order->created_at
+                                        ],
+                                        [
+                                            'title' => 'Konfirmasi & Diagnosa',
+                                            'description' => 'Tim teknisi sedang melakukan diagnosa perangkat',
+                                            'icon' => 'fas fa-search',
+                                            'status' => $order->status_order === 'Diproses' ? 'current' : ($order->status_order === 'Selesai' ? 'completed' : 'pending'),
+                                            'date' => $order->status_order === 'Diproses' ? $order->updated_at : null
+                                        ],
+                                        [
+                                            'title' => 'Selesai',
+                                            'description' => 'Perbaikan selesai dan perangkat siap diambil',
+                                            'icon' => 'fas fa-check-circle',
+                                            'status' => $order->status_order === 'Selesai' ? 'completed' : 'pending',
+                                            'date' => $order->status_order === 'Selesai' ? $order->updated_at : null
+                                        ]
+                                    ];
+                                }
                             @endphp
                             
                             @foreach($steps as $index => $step)
@@ -128,7 +149,7 @@
                                             @if($step['status'] === 'completed') 
                                                 bg-green-100 border-green-500 text-green-600
                                             @elseif($step['status'] === 'current') 
-                                                bg-blue-100 border-blue-500 text-blue-600 animate-pulse
+                                                bg-blue-100 border-blue-500 text-blue-600
                                             @else 
                                                 bg-gray-100 border-gray-300 text-gray-400
                                             @endif
@@ -459,19 +480,28 @@
                                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                     @foreach($order->media as $media)
                                         <div class="relative group">
+                                            @php
+                                                $filename = basename($media->media_path);
+                                                $mediaUrl = route('customer.media.order-service', [
+                                                    'orderId' => $order->order_service_id,
+                                                    'filename' => $filename
+                                                ]);
+                                            @endphp
+                                            
                                             @if(in_array(strtolower($media->file_type), ['jpg', 'jpeg', 'png', 'gif']))
-                                                <img src="{{ Storage::disk('local')->url($media->media_path) }}" 
+                                                <img src="{{ $mediaUrl }}" 
                                                      alt="Foto perangkat" 
-                                                     class="w-full h-32 object-cover rounded-lg border border-gray-200">
+                                                     class="w-full h-32 object-cover rounded-lg border border-gray-200"
+                                                     loading="lazy">
                                             @else
                                                 <div class="w-full h-32 bg-gray-200 rounded-lg border border-gray-200 flex items-center justify-center">
                                                     <i class="fas fa-file-video text-2xl text-gray-400"></i>
                                                 </div>
                                             @endif
                                             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
-                                                <button class="opacity-0 group-hover:opacity-100 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded-full transition-all duration-200">
+                                                <a href="{{ $mediaUrl }}" target="_blank" class="opacity-0 group-hover:opacity-100 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded-full transition-all duration-200">
                                                     <i class="fas fa-expand mr-1"></i>Lihat
-                                                </button>
+                                                </a>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-1">{{ $media->media_name }}</p>
                                         </div>

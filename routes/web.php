@@ -117,6 +117,9 @@ Route::middleware('auth:customer')->group(function () {
     Route::get('/pesan-servis', [\App\Http\Controllers\Customer\ServiceOrderController::class, 'index'])->name('customer.service-order');
     Route::post('/pesan-servis', [\App\Http\Controllers\Customer\ServiceOrderController::class, 'store'])->name('customer.service-order.store');
 
+    // Media serving routes for customers
+    Route::get('/media/order-service/{orderId}/{filename}', [\App\Http\Controllers\MediaController::class, 'serveOrderServiceMedia'])->name('customer.media.order-service');
+
     // Customer Account Management Routes
     Route::prefix('akun')->name('customer.account.')->group(function () {
         // Profile Management
@@ -196,6 +199,8 @@ Route::middleware('auth:customer')->group(function () {
 // Protected Routes
 // ==========================
 Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
+    // Media serving routes for admin/staff
+    Route::get('/admin/media/order-service/{orderId}/{filename}', [\App\Http\Controllers\MediaController::class, 'serveOrderServiceMediaAdmin'])->name('admin.media.order-service');
     // Categories
     Route::prefix('admin/kategori')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');

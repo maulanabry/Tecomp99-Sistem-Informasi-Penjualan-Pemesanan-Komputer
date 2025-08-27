@@ -48,7 +48,7 @@ class OrderServiceForm extends Component
         'jenis_perangkat' => 'required|min:3|max:100',
         'tanggal_kunjungan' => 'required|date|after:today',
         'slot_waktu' => 'required',
-        'uploadedFiles.*' => 'file|max:10240|mimes:jpg,jpeg,png,gif,mp4,avi,mov',
+        'uploadedFiles.*' => 'file|max:2048|mimes:jpg,jpeg,png,gif',
     ];
 
     protected $messages = [
@@ -63,8 +63,8 @@ class OrderServiceForm extends Component
         'tanggal_kunjungan.after' => 'Tanggal kunjungan harus setelah hari ini.',
         'slot_waktu.required' => 'Slot waktu harus dipilih.',
         'uploadedFiles.*.file' => 'File yang diupload tidak valid.',
-        'uploadedFiles.*.max' => 'Ukuran file maksimal 10MB.',
-        'uploadedFiles.*.mimes' => 'File harus berformat: jpg, jpeg, png, gif, mp4, avi, mov.',
+        'uploadedFiles.*.max' => 'Ukuran file maksimal 2MB.',
+        'uploadedFiles.*.mimes' => 'File harus berformat foto: jpg, jpeg, png, gif.',
     ];
 
     public function mount()
@@ -283,7 +283,7 @@ class OrderServiceForm extends Component
 
         session()->flash('success', 'Pesanan servis berhasil dibuat! ID Pesanan: ' . $orderId);
 
-        return redirect()->route('customer.orders.services');
+        return redirect()->route('customer.orders.services.show', $orderService->order_service_id);
     }
 
     private function generateOrderId()
@@ -318,7 +318,7 @@ class OrderServiceForm extends Component
                 $fileContent = file_get_contents($file->getRealPath());
 
                 // Compress file if it's an image (basic compression)
-                if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png'])) {
+                if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])) {
                     $fileContent = $this->compressImage($file->getRealPath(), $extension);
                 }
 
@@ -358,6 +358,9 @@ class OrderServiceForm extends Component
                 case 'png':
                     $image = imagecreatefrompng($filePath);
                     break;
+                case 'gif':
+                    $image = imagecreatefromgif($filePath);
+                    break;
                 default:
                     return file_get_contents($filePath);
             }
@@ -377,6 +380,9 @@ class OrderServiceForm extends Component
                     break;
                 case 'png':
                     imagepng($image, null, 8); // Compression level 8
+                    break;
+                case 'gif':
+                    imagegif($image, null);
                     break;
             }
 
