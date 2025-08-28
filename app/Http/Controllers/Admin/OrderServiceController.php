@@ -139,9 +139,8 @@ class OrderServiceController extends Controller
             // Increment service_orders_count for the customer
             $customer->increment('service_orders_count');
 
-            // Create notifications for all admins and owners after order service is saved
+            // Create notifications for all admins after order service is saved
             $admins = Admin::all();
-            $owners = User::where('role', 'pemilik')->get();
 
             // Notifikasi untuk Admin
             foreach ($admins as $admin) {
@@ -149,23 +148,6 @@ class OrderServiceController extends Controller
                     notifiable: $admin,
                     type: NotificationType::SERVICE_ORDER_CREATED,
                     subject: $orderService->fresh(), // Ensure we have the saved model with ID
-                    message: "Pesanan servis baru #{$orderServiceId} dari {$customer->name}",
-                    data: [
-                        'order_id' => $orderServiceId,
-                        'customer_name' => $customer->name,
-                        'device' => $request->device,
-                        'type' => $request->type,
-                        'complaints' => $request->complaints
-                    ]
-                );
-            }
-
-            // Notifikasi untuk Owner/Pemilik
-            foreach ($owners as $owner) {
-                $this->notificationService->create(
-                    notifiable: $owner,
-                    type: NotificationType::SERVICE_ORDER_CREATED,
-                    subject: $orderService->fresh(),
                     message: "Pesanan servis baru #{$orderServiceId} dari {$customer->name}",
                     data: [
                         'order_id' => $orderServiceId,
@@ -240,6 +222,11 @@ class OrderServiceController extends Controller
 
             // Store previous status for comparison
             $previousStatus = $orderService->status_order;
+
+            // Validate discount amount doesn't exceed subtotal
+            if ($request->discount_amount > $request->sub_total) {
+                throw new \Exception('Jumlah diskon tidak boleh melebihi subtotal');
+            }
 
             // Calculate grand total
             $grandTotal = $request->sub_total - $request->discount_amount;
@@ -568,5 +555,37 @@ class OrderServiceController extends Controller
             'discount_type' => $voucher->type,
             'discount_value' => $voucher->type === 'percentage' ? $voucher->discount_percentage : $voucher->discount_amount,
         ]);
+    }
+
+    /**
+     * Remove voucher/discount from order
+     */
+    public function removeVoucher(Request $request, OrderService $orderService)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Calculate new grand total without discount
+            $newGrandTotal = $orderService->sub_total;
+
+            $orderService->update([
+                'discount_amount' => 0,
+                'grand_total' => $newGrandTotal,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Voucher berhasil dihapus',
+                'new_grand_total' => $newGrandTotal,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus voucher: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

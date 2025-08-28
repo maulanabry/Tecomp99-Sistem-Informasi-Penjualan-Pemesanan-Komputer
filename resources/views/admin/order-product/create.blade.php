@@ -111,41 +111,64 @@
                 <textarea name="note" id="note" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Catatan tambahan (opsional)"></textarea>
             </div>
 
-            <!-- Promo -->
+            <!-- Diskon & Voucher -->
             <div class="flex gap-4">
                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 w-2/4">
-                    <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Promo</h2>
+                    <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Diskon & Voucher</h2>
+                    
+                    <!-- Manual Discount Field -->
+                    <div class="mb-4">
+                        <label for="discount_amount" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Jumlah Diskon (Rp)</label>
+                        <input type="number" id="discount_amount" name="discount_amount" 
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" 
+                            placeholder="0" 
+                            value="0" 
+                            min="0" 
+                            step="1000">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Admin dapat mengubah jumlah diskon secara manual</p>
+                    </div>
+
+                    <!-- Voucher Status Section -->
+                    <div id="voucherStatusSection" class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hidden">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-green-800 dark:text-green-200">Voucher sudah diterapkan</p>
+                                <p class="text-xs text-green-600 dark:text-green-400" id="voucherDiscountText">Diskon: Rp 0</p>
+                            </div>
+                            <button type="button" id="removeVoucherBtn" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium">
+                                [Hapus Voucher]
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Voucher Code Input -->
                     <div class="flex gap-2">
                         <div class="flex-1">
-                            <label for="promo_code" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Kode Promo</label>
-                            <input type="text" id="promo_code" name="promo_code" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Masukkan kode promo">
-                            <input type="hidden" id="promo_id" name="promo_id">
-                            <input type="hidden" id="promo_type" name="promo_type">
-                            <input type="hidden" id="promo_value" name="promo_value">
+                            <label for="voucher_code" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Kode Voucher</label>
+                            <input type="text" id="voucher_code" name="voucher_code" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Masukkan kode voucher" value="">
+                            <input type="hidden" id="voucher_id" name="voucher_id" value="">
+                            <input type="hidden" id="voucher_type" name="voucher_type" value="">
+                            <input type="hidden" id="voucher_value" name="voucher_value" value="">
                         </div>
                         <div class="flex items-end">
-                            <button type="button" id="applyPromoBtn" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                            <button type="button" id="applyVoucherBtn" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
                                 Terapkan
                             </button>
                         </div>
                     </div>
-                    <div id="promoInfo" class="mt-2 text-sm hidden">
-                        <p class="text-green-600 dark:text-green-400 hidden" id="promoSuccess"></p>
-                        <p class="text-red-600 dark:text-red-400 hidden" id="promoError"></p>
+                    <div id="voucherInfo" class="mt-2 text-sm hidden">
+                        <p class="text-green-600 dark:text-green-400 hidden" id="voucherSuccess"></p>
+                        <p class="text-red-600 dark:text-red-400 hidden" id="voucherError"></p>
                     </div>
                 </div>
 
                 <!-- Ringkasan Total -->
                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 w-2/4">
-                    <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Ringkasan Total</h2>
+                    <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Ringkasan Pemesanan</h2>
                     <div class="space-y-2">
                         <div class="flex justify-between text-gray-700 dark:text-gray-300">
                             <span>Subtotal:</span>
                             <span id="subtotalDisplay">Rp 0</span>
-                        </div>
-                        <div class="flex justify-between text-gray-700 dark:text-gray-300">
-                            <span>Diskon Promo:</span>
-                            <span id="discountDisplay">Rp 0</span>
                         </div>
                         <div class="flex justify-between text-gray-700 dark:text-gray-300">
                             <span>Ongkos Kirim:</span>
@@ -159,9 +182,16 @@
                                 <span id="shippingCostDisplay">Rp 0</span>
                             </div>
                         </div>
+                        <div class="flex justify-between text-gray-700 dark:text-gray-300">
+                            <span>Diskon:</span>
+                            <span id="discountDisplay" class="text-red-600 dark:text-red-400">- Rp 0</span>
+                        </div>
                         <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-600">
                             <span>Total Keseluruhan:</span>
                             <span id="grandTotalDisplay">Rp 0</span>
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            Formula: Subtotal + Ongkos Kirim - Diskon
                         </div>
                     </div>
                 </div>

@@ -13,7 +13,12 @@ class ProductCard extends Component
     public function addToOrder()
     {
         $this->loading = true;
-        $this->dispatch('productSelected', productId: $this->product->product_id);
+        $this->dispatch('productSelected', [
+            'id' => $this->product->product_id,
+            'name' => $this->product->name,
+            'price' => $this->product->price,
+            'weight' => $this->product->weight
+        ]);
         $this->loading = false;
     }
 

@@ -321,6 +321,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderProductController::class, 'recovery'])->name('order-products.recovery');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderProductController::class, 'restore'])->name('order-products.restore');
         Route::post('/validate-voucher', [\App\Http\Controllers\Admin\OrderProductController::class, 'validateVoucherCode'])->name('order-products.validate-voucher');
+        Route::post('/{orderProduct}/remove-voucher', [\App\Http\Controllers\Admin\OrderProductController::class, 'removeVoucher'])->name('order-products.remove-voucher');
     });
 
     // Order Services
@@ -339,6 +340,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderServiceController::class, 'recovery'])->name('order-services.recovery');
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\OrderServiceController::class, 'restore'])->name('order-services.restore');
         Route::post('/validate-voucher', [\App\Http\Controllers\Admin\OrderServiceController::class, 'validateVoucherCode'])->name('order-services.validate-voucher');
+        Route::post('/{orderService}/remove-voucher', [\App\Http\Controllers\Admin\OrderServiceController::class, 'removeVoucher'])->name('order-services.remove-voucher');
     });
     // Service Tickets
     Route::prefix('admin/service-tickets')->middleware(['auth:admin'])->group(function () {

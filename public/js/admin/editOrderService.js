@@ -18,6 +18,12 @@ const subtotalDisplay = document.getElementById("subtotalDisplay");
 const discountDisplay = document.getElementById("discountDisplay");
 const grandTotalDisplay = document.getElementById("grandTotalDisplay");
 
+// Discount Management Elements
+const discountAmountInput = document.getElementById("discount_amount");
+const voucherStatusSection = document.getElementById("voucherStatusSection");
+const voucherDiscountText = document.getElementById("voucherDiscountText");
+const removeVoucherBtn = document.getElementById("removeVoucherBtn");
+
 // Remove modal event listeners (modals removed)
 
 // Listen for Livewire events for adding items
@@ -348,7 +354,7 @@ applyPromoBtn.addEventListener("click", async () => {
     });
 
     try {
-        const response = await fetch("/admin/order-services/validate-promo", {
+        const response = await fetch("/admin/order-services/validate-voucher", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -358,7 +364,7 @@ applyPromoBtn.addEventListener("click", async () => {
                 Accept: "application/json",
             },
             body: JSON.stringify({
-                promo_code: code,
+                voucher_code: code,
                 subtotal: subtotal,
             }),
         });
@@ -401,45 +407,58 @@ async function calculateTotals() {
         subtotal += price * quantity;
     });
 
-    // If no promo is applied, update displays immediately
-    if (
-        !promoIdInput.value ||
-        !promoTypeInput.value ||
-        !promoValueInput.value
-    ) {
-        updateDisplays(subtotal, 0);
-        return;
-    }
+    // Get discount - prioritize manual discount amount over promo
+    let discount = parseInt(discountAmountInput.value) || 0;
 
-    // Re-validate promo with current subtotal
-    try {
-        const response = await fetch("/admin/order-services/validate-promo", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector(
-                    'meta[name="csrf-token"]'
-                ).content,
-                Accept: "application/json",
-            },
-            body: JSON.stringify({
-                promo_code: promoCodeInput.value.trim(),
-                subtotal: subtotal,
-            }),
-        });
-
-        const data = await response.json();
-        if (response.ok && data.success) {
-            updateDisplays(subtotal, data.discount);
-        } else {
+    // If no manual discount, check for promo discount
+    if (discount === 0) {
+        // If no promo is applied, update displays immediately
+        if (
+            !promoIdInput.value ||
+            !promoTypeInput.value ||
+            !promoValueInput.value
+        ) {
             updateDisplays(subtotal, 0);
+            updateVoucherStatus(0);
+            return;
+        }
+
+        // Re-validate promo with current subtotal
+        try {
+            const response = await fetch(
+                "/admin/order-services/validate-voucher",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector(
+                            'meta[name="csrf-token"]'
+                        ).content,
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({
+                        voucher_code: promoCodeInput.value.trim(),
+                        subtotal: subtotal,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+            if (response.ok && data.success) {
+                discount = data.discount;
+            } else {
+                discount = 0;
+                await clearPromo();
+            }
+        } catch (error) {
+            console.error("Error validating promo:", error);
+            discount = 0;
             await clearPromo();
         }
-    } catch (error) {
-        console.error("Error validating promo:", error);
-        updateDisplays(subtotal, 0);
-        await clearPromo();
     }
+
+    updateDisplays(subtotal, discount);
+    updateVoucherStatus(discount);
 }
 
 // Update display values
@@ -503,6 +522,64 @@ document.getElementById("orderForm").addEventListener("submit", function (e) {
     subTotalInput.value = subtotal;
     discountAmountInput.value = discount;
 });
+
+// Discount Management Functions
+function updateVoucherStatus(discount) {
+    if (discount > 0) {
+        voucherStatusSection.classList.remove("hidden");
+        voucherStatusSection.classList.remove(
+            "bg-gray-50",
+            "dark:bg-gray-800",
+            "border-gray-200",
+            "dark:border-gray-700"
+        );
+        voucherStatusSection.classList.add(
+            "bg-green-50",
+            "dark:bg-green-900/20",
+            "border-green-200",
+            "dark:border-green-800"
+        );
+        voucherDiscountText.textContent = `Diskon: ${formatRupiah(discount)}`;
+    } else {
+        voucherStatusSection.classList.add("hidden");
+    }
+}
+
+function handleDiscountChange() {
+    calculateTotals();
+}
+
+async function handleRemoveVoucher() {
+    try {
+        // Reset discount amount
+        discountAmountInput.value = 0;
+
+        // Clear promo data
+        promoCodeInput.value = "";
+        promoIdInput.value = "";
+        promoTypeInput.value = "";
+        promoValueInput.value = "";
+        promoInfo.classList.add("hidden");
+
+        // Recalculate totals
+        await calculateTotals();
+
+        // Show success message
+        alert("Voucher berhasil dihapus");
+    } catch (error) {
+        console.error("Error removing voucher:", error);
+        alert("Gagal menghapus voucher");
+    }
+}
+
+// Event Listeners for Discount Management
+if (discountAmountInput) {
+    discountAmountInput.addEventListener("input", handleDiscountChange);
+}
+
+if (removeVoucherBtn) {
+    removeVoucherBtn.addEventListener("click", handleRemoveVoucher);
+}
 
 // Initialize totals on page load
 calculateTotals();

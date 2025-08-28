@@ -45,6 +45,7 @@ class OrderProductController extends Controller
             'shipping_cost' => 'nullable|integer|min:0',
             'voucher_code' => 'nullable|string',
             'voucher_id' => 'nullable|exists:vouchers,voucher_id',
+            'discount_amount' => 'nullable|integer|min:0',
             'note' => 'nullable|string',
             'warranty_period_months' => 'nullable|integer|min:0|max:60',
         ]);
@@ -78,8 +79,10 @@ class OrderProductController extends Controller
                 $totalWeight += $item['quantity'] * $product->weight;
             }
 
-            $discount = 0;
-            if (!empty($validated['voucher_code'])) {
+            // Prioritize manual discount over voucher
+            $discount = $validated['discount_amount'] ?? 0;
+
+            if ($discount == 0 && !empty($validated['voucher_code'])) {
                 // Find voucher by code first, then validate
                 $voucher = \App\Models\Voucher::where('code', $validated['voucher_code'])
                     ->where('is_active', true)
@@ -115,8 +118,13 @@ class OrderProductController extends Controller
                 $voucher->increment('used_count');
             }
 
+            // Validate discount doesn't exceed subtotal
+            if ($discount > $subtotal) {
+                throw new \Exception('Jumlah diskon tidak boleh melebihi subtotal');
+            }
+
             $shippingCost = $validated['order_type'] === 'Pengiriman' ? ($validated['shipping_cost'] ?? 0) : 0;
-            $grandTotal = $subtotal - $discount + $shippingCost;
+            $grandTotal = $subtotal + $shippingCost - $discount;
 
             $orderId = 'ORD' . date('dmy') . str_pad(
                 \App\Models\OrderProduct::withTrashed()->count() + 1, // Count all orders, including soft-deleted ones
@@ -254,6 +262,7 @@ class OrderProductController extends Controller
             'status_order' => 'required|in:menunggu,diproses,dikirim,selesai,dibatalkan',
             'items' => 'required|json',
             'shipping_cost' => 'nullable|integer|min:0',
+            'discount_amount' => 'nullable|integer|min:0',
             'voucher_code' => 'nullable|string',
             'voucher_id' => 'nullable|exists:vouchers,voucher_id',
             'note' => 'nullable|string',
@@ -298,9 +307,14 @@ class OrderProductController extends Controller
                 $totalWeight += $item['quantity'] * $product->weight;
             }
 
-            // Calculate discount
-            $discount = 0;
-            if (!empty($validated['voucher_code'])) {
+            // Calculate shipping cost first
+            $shippingCost = $validated['order_type'] === 'Pengiriman' ? ($validated['shipping_cost'] ?? 0) : 0;
+
+            // Calculate discount - prioritize manual discount amount
+            $discount = $validated['discount_amount'] ?? 0;
+
+            // If no manual discount but voucher code provided, calculate voucher discount
+            if ($discount == 0 && !empty($validated['voucher_code'])) {
                 // Find voucher by code first, then validate
                 $voucher = Voucher::where('code', $validated['voucher_code'])
                     ->where('is_active', true)
@@ -328,14 +342,14 @@ class OrderProductController extends Controller
                 } else {
                     $discount = $voucher->discount_amount;
                 }
-
-                if ($discount > $subtotal) {
-                    $discount = $subtotal;
-                }
             }
 
-            $shippingCost = $validated['order_type'] === 'Pengiriman' ? ($validated['shipping_cost'] ?? 0) : 0;
-            $grandTotal = $subtotal - $discount + $shippingCost;
+            // Ensure discount doesn't exceed subtotal + shipping
+            $maxDiscount = $subtotal + $shippingCost;
+            if ($discount > $maxDiscount) {
+                $discount = $maxDiscount;
+            }
+            $grandTotal = $subtotal + $shippingCost - $discount;
 
             // Update order product
             // Store previous status for comparison
@@ -626,6 +640,39 @@ class OrderProductController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Gagal memperbarui informasi pengiriman: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Remove voucher/discount from order
+     */
+    public function removeVoucher(Request $request, OrderProduct $orderProduct)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Calculate new grand total without discount
+            $shippingCost = $orderProduct->shipping_cost ?? 0;
+            $newGrandTotal = $orderProduct->sub_total + $shippingCost;
+
+            $orderProduct->update([
+                'discount_amount' => 0,
+                'grand_total' => $newGrandTotal,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Voucher berhasil dihapus',
+                'new_grand_total' => $newGrandTotal,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus voucher: ' . $e->getMessage(),
+            ], 500);
         }
     }
 }

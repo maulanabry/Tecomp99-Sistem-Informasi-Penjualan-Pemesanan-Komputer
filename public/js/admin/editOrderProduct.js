@@ -380,7 +380,7 @@ const promoManager = {
             utils.showLoading(this.$applyBtn, "Memeriksa...");
 
             const response = await $.ajax({
-                url: "/admin/order-products/validate-promo",
+                url: "/admin/order-products/validate-voucher",
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -390,7 +390,7 @@ const promoManager = {
                     Accept: "application/json",
                 },
                 data: JSON.stringify({
-                    promo_code: code,
+                    voucher_code: code,
                     subtotal: this.calculateSubtotal(),
                 }),
             });
@@ -423,6 +423,85 @@ const promoManager = {
 
 // Initialize promo manager
 promoManager.init();
+
+// Discount Management
+const discountManager = {
+    // Cache jQuery selectors
+    $discountAmount: $("#discount_amount"),
+    $voucherSection: $("#voucherStatusSection"),
+    $voucherDiscountText: $("#voucherDiscountText"),
+    $removeVoucherBtn: $("#removeVoucherBtn"),
+
+    // Initialize discount handling
+    init() {
+        this.bindEvents();
+    },
+
+    // Bind event handlers
+    bindEvents() {
+        this.$discountAmount.on("input", () => this.handleDiscountChange());
+        this.$removeVoucherBtn.on("click", () => this.handleRemoveVoucher());
+    },
+
+    // Handle discount amount input changes
+    async handleDiscountChange() {
+        try {
+            const discount = parseInt(this.$discountAmount.val()) || 0;
+            await calculateTotals();
+            this.updateVoucherStatus(discount);
+        } catch (error) {
+            console.error("Error handling discount change:", error);
+        }
+    },
+
+    // Handle remove voucher button click
+    async handleRemoveVoucher() {
+        try {
+            // Reset discount amount
+            this.$discountAmount.val(0);
+
+            // Clear promo data
+            $("#promo_code").val("");
+            $("#promo_id").val("");
+            $("#promo_type").val("");
+            $("#promo_value").val("");
+            $("#promoInfo").addClass("hidden");
+
+            // Recalculate totals
+            await calculateTotals();
+
+            // Show success message
+            utils.showSuccess("Voucher berhasil dihapus");
+        } catch (error) {
+            console.error("Error removing voucher:", error);
+            utils.showError("Gagal menghapus voucher");
+        }
+    },
+
+    // Update voucher status section
+    updateVoucherStatus(discount) {
+        if (discount > 0) {
+            this.$voucherSection.removeClass("hidden");
+            this.$voucherSection.removeClass(
+                "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+            );
+            this.$voucherSection.addClass(
+                "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+            );
+            this.$voucherDiscountText.text(`Diskon: ${formatRupiah(discount)}`);
+        } else {
+            this.$voucherSection.addClass("hidden");
+        }
+    },
+};
+
+// Initialize discount manager
+discountManager.init();
+
+// Update voucher status function (called from calculateTotals)
+function updateVoucherStatus(discount) {
+    discountManager.updateVoucherStatus(discount);
+}
 
 // Calculate total weight of all products
 function calculateTotalWeight() {
@@ -699,15 +778,19 @@ async function calculateTotals() {
             subtotal += qty * price;
         });
 
-        // Get discount from promo
-        const discountValue = parseInt($("#promo_value").val()) || 0;
-        const discountType = $("#promo_type").val();
-        let discount = 0;
+        // Get discount - prioritize manual discount amount over promo
+        let discount = parseInt($("#discount_amount").val()) || 0;
 
-        if (discountType === "percentage") {
-            discount = Math.round(subtotal * (discountValue / 100));
-        } else if (discountType === "amount") {
-            discount = discountValue;
+        // If no manual discount, check for promo discount
+        if (discount === 0) {
+            const discountValue = parseInt($("#promo_value").val()) || 0;
+            const discountType = $("#promo_type").val();
+
+            if (discountType === "percentage") {
+                discount = Math.round(subtotal * (discountValue / 100));
+            } else if (discountType === "amount") {
+                discount = discountValue;
+            }
         }
 
         // Get shipping cost
@@ -715,6 +798,9 @@ async function calculateTotals() {
 
         // Update displays
         updateDisplays(subtotal, discount, shippingCost);
+
+        // Update voucher status section
+        updateVoucherStatus(discount);
 
         // Update items JSON for form submission
         const items = [];
@@ -744,8 +830,8 @@ async function calculateTotals() {
 // Update display values
 function updateDisplays(subtotal, discount, shippingCost) {
     try {
-        // Calculate grand total
-        const grandTotal = subtotal - discount + shippingCost;
+        // Calculate grand total using correct formula: Subtotal + Shipping - Discount
+        const grandTotal = subtotal + shippingCost - discount;
 
         // Log for debugging
         console.log("Updating displays with:", {

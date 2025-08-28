@@ -181,17 +181,58 @@
                 <input type="hidden" name="items" id="itemsInput" />
             </div>
 
-            <!-- Section 4: Promo and Ringkasan Pembayaran -->
+            <!-- Section 4: Diskon & Voucher and Ringkasan Pembayaran -->
             <div class="flex gap-4">
                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 w-2/4">
-                    <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Promo</h2>
+                    <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Diskon & Voucher</h2>
+                    
+                    <!-- Manual Discount Field -->
+                    <div class="mb-4">
+                        <label for="discount_amount" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Jumlah Diskon (Rp)</label>
+                        <input type="number" id="discount_amount" name="discount_amount" 
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" 
+                            placeholder="0" 
+                            value="{{ $orderService->discount_amount ?? 0 }}" 
+                            min="0" 
+                            step="1000">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Admin dapat mengubah jumlah diskon secara manual</p>
+                    </div>
+
+                    <!-- Voucher Status Section -->
+                    @if($orderService->discount_amount > 0)
+                        <div id="voucherStatusSection" class="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-green-800 dark:text-green-200">Voucher sudah diterapkan</p>
+                                    <p class="text-xs text-green-600 dark:text-green-400">Diskon: Rp {{ number_format($orderService->discount_amount, 0, ',', '.') }}</p>
+                                </div>
+                                <button type="button" id="removeVoucherBtn" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium">
+                                    [Hapus Voucher]
+                                </button>
+                            </div>
+                        </div>
+                    @else
+                        <div id="voucherStatusSection" class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hidden">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-green-800 dark:text-green-200">Voucher sudah diterapkan</p>
+                                    <p class="text-xs text-green-600 dark:text-green-400" id="voucherDiscountText">Diskon: Rp 0</p>
+                                </div>
+                                <button type="button" id="removeVoucherBtn" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium">
+                                    [Hapus Voucher]
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Voucher Code Input -->
                     <div class="flex gap-2">
                         <div class="flex-1">
-                            <label for="promo_code" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Kode Promo</label>
-                            <input type="text" id="promo_code" name="promo_code" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Masukkan kode promo" value="{{ $orderService->promo_code ?? '' }}">
-                            <input type="hidden" id="promo_id" name="promo_id" value="{{ $orderService->promo_id ?? '' }}">
-                            <input type="hidden" id="promo_type" name="promo_type" value="{{ $orderService->promo_type ?? '' }}">
-                            <input type="hidden" id="promo_value" name="promo_value" value="{{ $orderService->promo_value ?? '' }}">
+                            <label for="promo_code" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Kode Voucher</label>
+                            <input type="text" id="promo_code" name="promo_code" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Masukkan kode voucher" value="">
+                            <input type="hidden" id="promo_id" name="promo_id" value="">
+                            <input type="hidden" id="promo_type" name="promo_type" value="">
+                            <input type="hidden" id="promo_value" name="promo_value" value="">
                         </div>
                         <div class="flex items-end">
                             <button type="button" id="applyPromoBtn" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
@@ -213,12 +254,15 @@
                             <span id="subtotalDisplay">Rp {{ number_format($orderService->sub_total, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-gray-700 dark:text-gray-300">
-                            <span>Diskon Promo:</span>
-                            <span id="discountDisplay">Rp {{ number_format($orderService->discount_amount ?? 0, 0, ',', '.') }}</span>
+                            <span>Diskon:</span>
+                            <span id="discountDisplay" class="text-red-600 dark:text-red-400">- Rp {{ number_format($orderService->discount_amount ?? 0, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-600">
                             <span>Total Keseluruhan:</span>
-                            <span id="grandTotalDisplay">Rp {{ number_format($orderService->grand_total_amount, 0, ',', '.') }}</span>
+                            <span id="grandTotalDisplay">Rp {{ number_format($orderService->sub_total - ($orderService->discount_amount ?? 0), 0, ',', '.') }}</span>
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            Formula: Subtotal - Diskon
                         </div>
                     </div>
                 </div>
