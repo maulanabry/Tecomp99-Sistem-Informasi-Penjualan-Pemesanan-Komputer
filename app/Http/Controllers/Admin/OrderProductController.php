@@ -432,6 +432,76 @@ class OrderProductController extends Controller
         return redirect()->route('order-products.index')->with('success', 'Order produk berhasil dibatalkan.');
     }
 
+    public function updateStatus(Request $request, OrderProduct $orderProduct)
+    {
+        $validated = $request->validate([
+            'status_order' => 'required|in:menunggu,diproses,dikirim,selesai,dibatalkan',
+        ]);
+
+        $oldStatus = $orderProduct->status_order;
+        $orderProduct->update($validated);
+
+        // Create notification for status update if status changed
+        if ($oldStatus !== $orderProduct->status_order) {
+            try {
+                $type = NotificationType::CUSTOMER_ORDER_PRODUCT_STATUS_UPDATED;
+
+                $message = match ($orderProduct->status_order) {
+                    'selesai' => "Order produk #{$orderProduct->order_product_id} telah selesai",
+                    'diproses' => "Order produk #{$orderProduct->order_product_id} sedang diproses",
+                    'dikirim' => "Order produk #{$orderProduct->order_product_id} sedang dikirim",
+                    'menunggu' => "Order produk #{$orderProduct->order_product_id} menunggu konfirmasi",
+                    default => "Status order produk #{$orderProduct->order_product_id} diubah menjadi {$orderProduct->status_order}"
+                };
+
+                // Notify customer
+                if ($orderProduct->customer) {
+                    $this->notificationService->create(
+                        notifiable: $orderProduct->customer,
+                        type: $type,
+                        subject: $orderProduct,
+                        message: $message,
+                        data: [
+                            'order_id' => $orderProduct->order_product_id,
+                            'status' => $orderProduct->status_order,
+                            'total' => $orderProduct->grand_total,
+                            'type' => $orderProduct->type
+                        ]
+                    );
+                }
+
+                // Notify all admins
+                $admins = Admin::where('role', 'admin')->get();
+                foreach ($admins as $admin) {
+                    $adminType = match ($orderProduct->status_order) {
+                        'selesai' => NotificationType::PRODUCT_ORDER_SHIPPED,
+                        'dikirim' => NotificationType::PRODUCT_ORDER_SHIPPED,
+                        default => NotificationType::PRODUCT_ORDER_CREATED
+                    };
+
+                    $this->notificationService->create(
+                        notifiable: $admin,
+                        type: $adminType,
+                        subject: $orderProduct,
+                        message: "Status order produk #{$orderProduct->order_product_id} diubah menjadi {$orderProduct->status_order}",
+                        data: [
+                            'order_id' => $orderProduct->order_product_id,
+                            'customer_name' => $orderProduct->customer->name,
+                            'status' => $orderProduct->status_order,
+                            'total' => $orderProduct->grand_total,
+                            'type' => $orderProduct->type
+                        ]
+                    );
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to create order product status update notification: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->back()
+            ->with('success', 'Status order produk berhasil diperbarui.');
+    }
+
     public function destroy(OrderProduct $orderProduct)
     {
         return $this->cancel($orderProduct);

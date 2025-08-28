@@ -315,6 +315,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/{orderProduct}/edit-shipping', [\App\Http\Controllers\Admin\OrderProductController::class, 'editShipping'])->name('order-products.edit-shipping');
         Route::put('/{orderProduct}/shipping', [\App\Http\Controllers\Admin\OrderProductController::class, 'updateShipping'])->name('order-products.update-shipping');
         Route::put('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'update'])->name('order-products.update');
+        Route::put('/{orderProduct}/status', [\App\Http\Controllers\Admin\OrderProductController::class, 'updateStatus'])->name('order-products.update-status');
         Route::put('/{orderProduct}/cancel', [\App\Http\Controllers\Admin\OrderProductController::class, 'cancel'])->name('order-products.cancel');
         Route::delete('/{orderProduct}', [\App\Http\Controllers\Admin\OrderProductController::class, 'destroy'])->name('order-products.destroy');
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderProductController::class, 'recovery'])->name('order-products.recovery');
@@ -332,6 +333,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         Route::get('/{orderService}/tanda-terima', [\App\Http\Controllers\Admin\OrderServiceController::class, 'showTandaTerima'])->name('order-services.tanda-terima');
         Route::get('/{orderService}/edit', [\App\Http\Controllers\Admin\OrderServiceController::class, 'edit'])->name('order-services.edit');
         Route::put('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'update'])->name('order-services.update');
+        Route::put('/{orderService}/status', [\App\Http\Controllers\Admin\OrderServiceController::class, 'updateStatus'])->name('order-services.update-status');
         Route::put('/{orderService}/cancel', [\App\Http\Controllers\Admin\OrderServiceController::class, 'cancel'])->name('order-services.cancel');
         Route::delete('/{orderService}', [\App\Http\Controllers\Admin\OrderServiceController::class, 'destroy'])->name('order-services.destroy');
         Route::get('/recovery', [\App\Http\Controllers\Admin\OrderServiceController::class, 'recovery'])->name('order-services.recovery');
@@ -530,6 +532,7 @@ Route::middleware('auth:pemilik')->group(function () {
         Route::get('/{orderProduct}/edit-shipping', [\App\Http\Controllers\Owner\OrderProductController::class, 'editShipping'])->name('pemilik.order-produk.edit-shipping');
         Route::put('/{orderProduct}/shipping', [\App\Http\Controllers\Owner\OrderProductController::class, 'updateShipping'])->name('pemilik.order-produk.update-shipping');
         Route::put('/{orderProduct}', [\App\Http\Controllers\Owner\OrderProductController::class, 'update'])->name('pemilik.order-produk.update');
+        Route::put('/{orderProduct}/status', [\App\Http\Controllers\Owner\OrderProductController::class, 'updateStatus'])->name('pemilik.order-produk.update-status');
         Route::put('/{orderProduct}/cancel', [\App\Http\Controllers\Owner\OrderProductController::class, 'cancel'])->name('pemilik.order-produk.cancel');
         Route::post('/validate-voucher', [\App\Http\Controllers\Owner\OrderProductController::class, 'validateVoucherCode'])->name('pemilik.order-produk.validate-voucher');
     });
@@ -544,6 +547,7 @@ Route::middleware('auth:pemilik')->group(function () {
         Route::get('/{orderService}/tanda-terima', [\App\Http\Controllers\Owner\OrderServiceController::class, 'showTandaTerima'])->name('pemilik.order-service.tanda-terima');
         Route::get('/{orderService}/edit', [\App\Http\Controllers\Owner\OrderServiceController::class, 'edit'])->name('pemilik.order-service.edit');
         Route::put('/{orderService}', [\App\Http\Controllers\Owner\OrderServiceController::class, 'update'])->name('pemilik.order-service.update');
+        Route::put('/{orderService}/status', [\App\Http\Controllers\Owner\OrderServiceController::class, 'updateStatus'])->name('pemilik.order-service.update-status');
         Route::put('/{orderService}/cancel', [\App\Http\Controllers\Owner\OrderServiceController::class, 'cancel'])->name('pemilik.order-service.cancel');
         Route::delete('/{orderService}', [\App\Http\Controllers\Owner\OrderServiceController::class, 'destroy'])->name('pemilik.order-service.destroy');
         Route::post('/validate-voucher', [\App\Http\Controllers\Owner\OrderServiceController::class, 'validateVoucherCode'])->name('pemilik.order-service.validate-voucher');

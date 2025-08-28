@@ -42,6 +42,49 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Information -->
                 <div class="lg:col-span-2">
+                    <!-- Status Update Section -->
+                    @if($orderService->status_order !== 'Selesai' && $orderService->status_order !== 'Dibatalkan')
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-sync-alt mr-2 text-primary-500"></i>
+                                Update Status Order
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <form action="{{ route('pemilik.order-service.update-status', $orderService) }}" method="POST" class="flex flex-wrap items-end gap-4">
+                                @csrf
+                                @method('PUT')
+                                <div class="flex-1 min-w-48">
+                                    <label for="status_order" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Status Saat Ini: 
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full ml-2
+                                            @if($orderService->status_order === 'Menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                            @elseif($orderService->status_order === 'Diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                            @elseif($orderService->status_order === 'Selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @elseif($orderService->status_order === 'Dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                            @endif">
+                                            {{ $orderService->status_order }}
+                                        </span>
+                                    </label>
+                                    <select name="status_order" id="status_order" required
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                        <option value="Menunggu" {{ $orderService->status_order === 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                        <option value="Diproses" {{ $orderService->status_order === 'Diproses' ? 'selected' : '' }}>Diproses</option>
+                                        <option value="Selesai" {{ $orderService->status_order === 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                                        <option value="Dibatalkan" {{ $orderService->status_order === 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                                    </select>
+                                </div>
+                                <button type="submit" 
+                                    class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                    <i class="fas fa-save mr-2"></i>
+                                    Update Status
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Order Service Information -->
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">

@@ -42,6 +42,50 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Information -->
                 <div class="lg:col-span-2">
+                    <!-- Status Update Section -->
+                    @if($orderProduct->status_order !== 'selesai' && $orderProduct->status_order !== 'dibatalkan')
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-sync-alt mr-2 text-primary-500"></i>
+                                Update Status Order
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <form action="{{ route('pemilik.order-produk.update-status', $orderProduct) }}" method="POST" class="flex flex-wrap items-end gap-4">
+                                @csrf
+                                @method('PUT')
+                                <div class="flex-1 min-w-48">
+                                    <label for="status_order" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        Status Saat Ini: 
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full ml-2
+                                            @if($orderProduct->status_order === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                            @elseif($orderProduct->status_order === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                            @elseif($orderProduct->status_order === 'dikirim') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                            @elseif($orderProduct->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @endif">
+                                            {{ ucfirst($orderProduct->status_order) }}
+                                        </span>
+                                    </label>
+                                    <select name="status_order" id="status_order" required
+                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                        <option value="menunggu" {{ $orderProduct->status_order === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                        <option value="diproses" {{ $orderProduct->status_order === 'diproses' ? 'selected' : '' }}>Diproses</option>
+                                        <option value="dikirim" {{ $orderProduct->status_order === 'dikirim' ? 'selected' : '' }}>Dikirim</option>
+                                        <option value="selesai" {{ $orderProduct->status_order === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                        <option value="dibatalkan" {{ $orderProduct->status_order === 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                                    </select>
+                                </div>
+                                <button type="submit" 
+                                    class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                    <i class="fas fa-save mr-2"></i>
+                                    Update Status
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Order Information -->
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
