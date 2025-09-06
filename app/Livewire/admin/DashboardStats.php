@@ -40,9 +40,9 @@ class DashboardStats extends Component
             ->sum('amount');
 
         // Menghitung pesanan yang menunggu
-        $this->pendingOrders = OrderProduct::where('status_order', 'pending')
+        $this->pendingOrders = OrderProduct::where('status_order', 'menunggu')
             ->count() +
-            OrderService::where('status_order', 'pending')
+            OrderService::where('status_order', 'Menunggu')
             ->count();
 
         // Menghitung tiket servis yang aktif
@@ -173,17 +173,20 @@ class DashboardStats extends Component
 
     private function getOrderStatusData()
     {
-        $pending = OrderProduct::where('status_order', 'pending')->count() +
-            OrderService::where('status_order', 'pending')->count();
-        $processing = OrderProduct::where('status_order', 'processing')->count() +
-            OrderService::where('status_order', 'processing')->count();
-        $completed = OrderProduct::where('status_order', 'completed')->count() +
-            OrderService::where('status_order', 'completed')->count();
+        $menunggu = OrderProduct::where('status_order', 'menunggu')->count() +
+            OrderService::where('status_order', 'Menunggu')->count();
+        $diproses = OrderProduct::where('status_order', 'diproses')->count() +
+            OrderService::where('status_order', 'Diproses')->count();
+        $dikirim = OrderProduct::where('status_order', 'dikirim')->count();
+        $selesai = OrderProduct::where('status_order', 'selesai')->count() +
+            OrderService::where('status_order', 'Selesai')->count();
+        $dibatalkan = OrderProduct::where('status_order', 'dibatalkan')->count() +
+            OrderService::where('status_order', 'Dibatalkan')->count();
 
         return [
-            'labels' => ['Menunggu', 'Diproses', 'Selesai'],
-            'data' => [$pending, $processing, $completed],
-            'colors' => ['#f59e0b', '#3b82f6', '#10b981']
+            'labels' => ['Menunggu', 'Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'],
+            'data' => [$menunggu, $diproses, $dikirim, $selesai, $dibatalkan],
+            'colors' => ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444']
         ];
     }
 

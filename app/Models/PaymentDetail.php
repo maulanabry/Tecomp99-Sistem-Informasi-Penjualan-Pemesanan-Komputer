@@ -255,16 +255,18 @@ class PaymentDetail extends Model
 
     /**
      * Get the full URL for the proof photo
+     * Handles both private storage (new) and public storage (legacy)
      */
     public function getProofPhotoUrlAttribute()
     {
         if ($this->proof_photo) {
-            // Check if it's the new format (just filename)
-            if (!str_contains($this->proof_photo, '/')) {
-                return asset('images/payment/' . $this->proof_photo);
+            // Check if it's the new format (private storage path with /)
+            if (str_contains($this->proof_photo, '/')) {
+                // New format: private storage path - use route to serve private files
+                return route('payment.image', ['payment_id' => $this->payment_id]);
             }
-            // Legacy format (full path)
-            return asset('storage/' . $this->proof_photo);
+            // Legacy format: public storage filename only
+            return asset('images/payment/' . $this->proof_photo);
         }
         return null;
     }

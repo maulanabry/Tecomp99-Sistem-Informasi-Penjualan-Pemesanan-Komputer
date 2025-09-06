@@ -4,13 +4,17 @@ skinparam linetype ortho
 skinparam classAttributeIconSize 0
 skinparam defaultFontSize 30
 skinparam defaultFontName "Arial"
-skinparam nodesep 10
-skinparam ranksep 20
+skinparam nodesep 50
+skinparam ranksep 80
+skinparam minClassWidth 200
 skinparam class {
     BackgroundColor White
     BorderColor Black
     ArrowColor Black
 }
+skinparam packageStyle rectangle
+!define SPACING_HORIZONTAL 100
+!define SPACING_VERTICAL 120
 
 class Admin {
     - id: int
@@ -491,6 +495,9 @@ class Shipping {
     + orderProduct(): BelongsTo
 }
 
+' ==============================
+' Generalisation (Inheritance) - IS-A Relationships
+' ==============================
 BaseController <|-- CategoryController
 BaseController <|-- ProductController
 BaseController <|-- ServiceController
@@ -501,38 +508,68 @@ BaseController <|-- OrderServiceController
 BaseController <|-- PaymentController
 BaseController <|-- TechnicianScheduleController
 
-CategoryController --> Category : manages
-ProductController --> Product : manages
-ProductController --> Brand : uses
-ProductController --> ProductImage : uses
-ServiceController --> Service : manages
-VoucherController --> Voucher : manages
-CustomerController --> Customer : manages
-CustomerController --> CustomerAddress : manages
-OrderProductController --> OrderProduct : manages
-OrderProductController --> OrderProductItem : uses
-OrderServiceController --> OrderService : manages
-OrderServiceController --> OrderServiceItem : uses
-PaymentController --> PaymentDetail : manages
-TechnicianScheduleController --> ServiceTicket : manages
-TechnicianScheduleController --> ServiceAction : manages
+' ==============================
+' Dependencies (dashed line with arrow)
+' ==============================
+ProductController ..> Brand : "depends"
+ProductController ..> ProductImage : "depends"
+OrderProductController ..> OrderProductItem : "depends"
+OrderServiceController ..> OrderServiceItem : "depends"
 
-Category " " o-- " " Product : contains
-Category " " o-- " " Service : classifies
-Brand " " o-- " " Product : owns
-Product " " o-- " " ProductImage : contains
-Customer " " o-- " " CustomerAddress : has
-Customer " " o-- " " OrderProduct : submits
-Customer " " o-- " " OrderService : submits
-OrderProduct " " o-- " " OrderProductItem : contains
-OrderProduct " " o-- " " PaymentDetail : triggers
-OrderProduct " " o-- " " Shipping : uses
-OrderService " " o-- " " OrderServiceItem : contains
-OrderService " " o-- " " PaymentDetail : triggers
-OrderService " " o-- " " ServiceTicket : generates
-Product " " o-- " " OrderProductItem : isUsedIn
-Service " " o-- " " OrderServiceItem : isUsedIn
-ServiceTicket " " o-- " " ServiceAction : contains
-Admin " " o-- " " ServiceTicket : assignedTo
+' ==============================
+' Controller Management Associations (1 to 0..*)
+' ==============================
+CategoryController ||--o{ Category : "1" manages "0..*"
+ProductController ||--o{ Product : "1" manages "0..*"
+ServiceController ||--o{ Service : "1" manages "0..*"
+VoucherController ||--o{ Voucher : "1" manages "0..*"
+CustomerController ||--o{ Customer : "1" manages "0..*"
+CustomerController ||--o{ CustomerAddress : "1" manages "0..*"
+OrderProductController ||--o{ OrderProduct : "1" manages "0..*"
+OrderServiceController ||--o{ OrderService : "1" manages "0..*"
+PaymentController ||--o{ PaymentDetail : "1" manages "0..*"
+TechnicianScheduleController ||--o{ ServiceTicket : "1" manages "0..*"
+TechnicianScheduleController ||--o{ ServiceAction : "1" manages "0..*"
+
+' ==============================
+' One-to-Many Associations with Cardinality (1 to 0..*)
+' ==============================
+Category ||--o{ Product : "1" contains "0..*"
+Category ||--o{ Service : "1" classifies "0..*"
+Brand ||--o{ Product : "1" owns "0..*"
+Customer ||--o{ CustomerAddress : "1" has "0..*"
+Customer ||--o{ OrderProduct : "1" submits "0..*"
+Customer ||--o{ OrderService : "1" submits "0..*"
+OrderProduct ||--o{ OrderProductItem : "1" contains "1..*"
+OrderProduct ||--o{ PaymentDetail : "1" triggers "0..*"
+OrderService ||--o{ OrderServiceItem : "1" contains "1..*"
+OrderService ||--o{ PaymentDetail : "1" triggers "0..*"
+OrderService ||--o{ ServiceTicket : "1" generates "0..1"
+ServiceTicket ||--o{ ServiceAction : "1" contains "0..*"
+Product ||--o{ ProductImage : "1" contains "0..*"
+Admin ||--o{ ServiceTicket : "1" handles "0..*"
+
+' ==============================
+' Many-to-One Reference Associations (0..* to 1)
+' ==============================
+OrderProductItem }o--|| Product : "0..*" references "1"
+OrderServiceItem }o--|| Service : "0..*" references "1"
+PaymentDetail }o--|| OrderProduct : "0..*" pays for "0..1"
+PaymentDetail }o--|| OrderService : "0..*" pays for "0..1"
+
+' ==============================
+' One-to-One Associations (1 to 0..1)
+' ==============================
+OrderProduct ||--|| Shipping : "1" uses "0..1"
+Customer ||--|| CustomerAddress : "1" has default "0..1"
+
+' ==============================
+' Composition (Strong Ownership - Whole-Part with Cardinality)
+' ==============================
+Product *--o ProductImage : "1" *-- "0..*"
+OrderProduct *--o OrderProductItem : "1" *-- "1..*"
+OrderService *--o OrderServiceItem : "1" *-- "1..*"
+OrderService *--o ServiceTicket : "1" *-- "0..1"
+ServiceTicket *--o ServiceAction : "1" *-- "0..*"
 
 @enduml

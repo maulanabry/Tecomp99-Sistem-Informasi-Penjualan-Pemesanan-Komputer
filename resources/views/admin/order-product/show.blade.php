@@ -396,7 +396,7 @@
                                             <div class="md:col-span-2">
                                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bukti Pembayaran</dt>
                                                 <dd class="mt-2">
-                                                    <img src="{{ asset('storage/' . $payment->proof_photo) }}" alt="Bukti Pembayaran" class="max-w-md rounded-lg shadow-lg">
+                                                    <img src="{{ $payment->proof_photo_url }}" alt="Bukti Pembayaran" class="max-w-md rounded-lg shadow-lg">
                                                 </dd>
                                             </div>
                                             @endif

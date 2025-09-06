@@ -432,6 +432,10 @@ class ServiceTicketController extends Controller
             ->with('success', 'Tiket servis berhasil diperbarui.');
     }
 
+    /**
+     * Mengecek ketersediaan slot waktu kunjungan untuk teknisi tertentu
+     * Endpoint untuk AJAX request dari form create/edit service ticket
+     */
     public function checkSlotAvailability(Request $request)
     {
         $validated = $request->validate([
@@ -451,46 +455,115 @@ class ServiceTicketController extends Controller
         return response()->json($result);
     }
 
+    /**
+     * Mendapatkan semua slot yang sudah dibooking untuk tanggal dan teknisi tertentu
+     * Digunakan untuk menampilkan slot yang tidak tersedia di frontend
+     */
+    public function getBookedSlotsForDate(Request $request)
+    {
+        $validated = $request->validate([
+            'admin_id' => 'required|exists:admins,id',
+            'visit_date' => 'required|date',
+            'exclude_ticket_id' => 'nullable|string'
+        ]);
+
+        // Query untuk mendapatkan semua slot yang sudah dibooking
+        $query = ServiceTicket::where('admin_id', $validated['admin_id'])
+            ->whereDate('visit_schedule', $validated['visit_date'])
+            ->whereNotNull('visit_schedule');
+
+        // Exclude ticket tertentu jika sedang edit
+        if (!empty($validated['exclude_ticket_id'])) {
+            $query->where('service_ticket_id', '!=', $validated['exclude_ticket_id']);
+        }
+
+        // Ambil semua waktu yang sudah dibooking
+        $bookedSlots = $query->get()
+            ->map(function ($ticket) {
+                return [
+                    'time_slot' => $ticket->visit_schedule->format('H:i'),
+                    'ticket_id' => $ticket->service_ticket_id,
+                    'customer_name' => $ticket->orderService->customer->name ?? 'Unknown'
+                ];
+            })
+            ->toArray();
+
+        // Hitung total kunjungan hari ini
+        $totalVisitsToday = count($bookedSlots);
+        $maxVisitsPerDay = 4;
+        $remainingSlots = max(0, $maxVisitsPerDay - $totalVisitsToday);
+
+        return response()->json([
+            'booked_slots' => $bookedSlots,
+            'total_visits_today' => $totalVisitsToday,
+            'remaining_slots' => $remainingSlots,
+            'max_visits_per_day' => $maxVisitsPerDay,
+            'date_full' => $totalVisitsToday >= $maxVisitsPerDay
+        ]);
+    }
+
+    /**
+     * Method internal untuk mengecek ketersediaan slot waktu tertentu
+     * Digunakan oleh checkSlotAvailability dan proses validasi form
+     */
     private function checkSlotAvailabilityInternal($adminId, $visitDate, $timeSlot, $excludeTicketId = null)
     {
-        // Check if slot is already taken
+        // Cek apakah slot waktu spesifik sudah diambil
         $query = ServiceTicket::where('admin_id', $adminId)
             ->whereDate('visit_schedule', $visitDate)
-            ->whereTime('visit_schedule', $timeSlot);
+            ->whereTime('visit_schedule', $timeSlot)
+            ->whereNotNull('visit_schedule');
 
+        // Exclude ticket tertentu jika sedang edit
         if ($excludeTicketId) {
             $query->where('service_ticket_id', '!=', $excludeTicketId);
         }
 
         $isSlotTaken = $query->exists();
 
+        // Jika slot sudah diambil, return tidak tersedia
         if ($isSlotTaken) {
+            $existingTicket = $query->first();
+            $customerName = $existingTicket->orderService->customer->name ?? 'Unknown';
+
             return [
                 'available' => false,
-                'message' => 'Slot sudah diambil'
+                'message' => "Slot sudah diambil oleh {$customerName}",
+                'reason' => 'slot_taken',
+                'existing_ticket' => $existingTicket->service_ticket_id
             ];
         }
 
-        // Check daily visit limit (max 4 visits per technician per day)
-        $dailyVisits = ServiceTicket::where('admin_id', $adminId)
-            ->whereDate('visit_schedule', $visitDate);
+        // Cek batas maksimal kunjungan harian (maksimal 4 kunjungan per teknisi per hari)
+        $dailyVisitsQuery = ServiceTicket::where('admin_id', $adminId)
+            ->whereDate('visit_schedule', $visitDate)
+            ->whereNotNull('visit_schedule');
 
         if ($excludeTicketId) {
-            $dailyVisits->where('service_ticket_id', '!=', $excludeTicketId);
+            $dailyVisitsQuery->where('service_ticket_id', '!=', $excludeTicketId);
         }
 
-        $dailyVisitsCount = $dailyVisits->count();
+        $dailyVisitsCount = $dailyVisitsQuery->count();
+        $maxVisitsPerDay = 4;
 
-        if ($dailyVisitsCount >= 4) {
+        // Jika sudah mencapai batas maksimal kunjungan
+        if ($dailyVisitsCount >= $maxVisitsPerDay) {
             return [
                 'available' => false,
-                'message' => 'Teknisi sudah mencapai batas maksimal kunjungan hari ini'
+                'message' => 'Teknisi sudah mencapai batas maksimal kunjungan hari ini (4 kunjungan)',
+                'reason' => 'daily_limit_reached',
+                'current_visits' => $dailyVisitsCount,
+                'max_visits' => $maxVisitsPerDay
             ];
         }
 
+        // Slot tersedia
         return [
             'available' => true,
-            'remaining_slots' => 4 - $dailyVisitsCount
+            'message' => 'Slot tersedia',
+            'remaining_slots' => $maxVisitsPerDay - $dailyVisitsCount,
+            'current_visits' => $dailyVisitsCount,
+            'max_visits' => $maxVisitsPerDay
         ];
     }
 

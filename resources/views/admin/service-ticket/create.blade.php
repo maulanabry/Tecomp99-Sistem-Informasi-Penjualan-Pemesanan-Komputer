@@ -254,6 +254,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Ambil semua elemen DOM yang diperlukan
             const orderSelect = document.getElementById('order_service_id');
             const orderInfo = document.getElementById('orderServiceInfo');
             const visitScheduleSection = document.getElementById('visitScheduleSection');
@@ -266,7 +267,7 @@
             const visitScheduleHidden = document.getElementById('visit_schedule');
             const slotAvailability = document.getElementById('slotAvailability');
 
-            // Order services data for JavaScript
+            // Data order services untuk JavaScript
             const orderServices = {!! json_encode($orderServices->map(function($order) {
                 return [
                     'order_service_id' => $order->order_service_id,
@@ -277,7 +278,13 @@
                 ];
             })->values()) !!};
 
-            // Handle order selection
+            // Variabel untuk menyimpan status loading
+            let isCheckingAvailability = false;
+
+            /**
+             * Handler untuk perubahan pilihan order service
+             * Menampilkan informasi order dan menentukan apakah perlu jadwal kunjungan
+             */
             orderSelect.addEventListener('change', function() {
                 if (this.value) {
                     const selectedOption = this.options[this.selectedIndex];
@@ -286,41 +293,154 @@
                     const complaints = selectedOption.getAttribute('data-complaints');
                     const customer = selectedOption.getAttribute('data-customer');
                     
-                    // Update order info display
+                    // Update tampilan informasi order
                     document.getElementById('deviceInfo').textContent = device || '-';
                     document.getElementById('complaintsInfo').textContent = complaints || '-';
                     document.getElementById('customerInfo').textContent = customer || '-';
                     document.getElementById('typeInfo').textContent = orderType === 'onsite' ? 'Onsite (Kunjungan)' : 'Reguler (Di Toko)';
                     orderInfo.classList.remove('hidden');
                     
-                    // Show/hide visit schedule based on order type
+                    // Tampilkan/sembunyikan section jadwal kunjungan berdasarkan tipe order
                     if (orderType === 'onsite') {
                         visitScheduleSection.classList.remove('hidden');
+                        // Reset dan load ulang slot yang tersedia jika ada teknisi dan tanggal yang dipilih
+                        if (adminSelect.value && visitDate.value) {
+                            loadAvailableSlots();
+                        }
                     } else {
                         visitScheduleSection.classList.add('hidden');
                         clearVisitSchedule();
                     }
                 } else {
+                    // Sembunyikan semua info jika tidak ada order yang dipilih
                     orderInfo.classList.add('hidden');
                     visitScheduleSection.classList.add('hidden');
                     clearVisitSchedule();
                 }
             });
 
-            // Clear visit schedule fields
+            /**
+             * Membersihkan semua field jadwal kunjungan
+             */
             function clearVisitSchedule() {
                 if (visitDate) visitDate.value = '';
                 if (visitTimeSlot) visitTimeSlot.value = '';
                 if (visitScheduleHidden) visitScheduleHidden.value = '';
                 if (slotAvailability) slotAvailability.innerHTML = '';
+                
+                // Reset semua option slot waktu ke enabled
+                resetTimeSlotOptions();
             }
 
-            // Check slot availability for onsite services
-            async function checkSlotAvailability() {
-                if (!adminSelect.value || !visitDate.value || !visitTimeSlot.value) {
+            /**
+             * Reset semua option slot waktu ke kondisi enabled
+             */
+            function resetTimeSlotOptions() {
+                if (visitTimeSlot) {
+                    Array.from(visitTimeSlot.options).forEach(option => {
+                        if (option.value) {
+                            option.disabled = false;
+                            option.style.color = '';
+                            option.textContent = option.textContent.replace(' (Tidak Tersedia)', '');
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Memuat slot yang tersedia untuk tanggal dan teknisi tertentu
+             * Menonaktifkan slot yang sudah dibooking
+             */
+            async function loadAvailableSlots() {
+                if (!adminSelect.value || !visitDate.value) {
+                    resetTimeSlotOptions();
                     if (slotAvailability) slotAvailability.innerHTML = '';
                     return;
                 }
+
+                // Tampilkan loading state
+                if (slotAvailability) {
+                    slotAvailability.innerHTML = '<span class="text-blue-600 flex items-center"><i class="fas fa-spinner fa-spin mr-1"></i>Memuat ketersediaan slot...</span>';
+                }
+
+                try {
+                    const response = await fetch('/admin/service-tickets/get-booked-slots', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            admin_id: adminSelect.value,
+                            visit_date: visitDate.value
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    // Reset semua option terlebih dahulu
+                    resetTimeSlotOptions();
+                    
+                    // Nonaktifkan slot yang sudah dibooking
+                    if (data.booked_slots && data.booked_slots.length > 0) {
+                        data.booked_slots.forEach(bookedSlot => {
+                            const option = Array.from(visitTimeSlot.options).find(opt => opt.value === bookedSlot.time_slot);
+                            if (option) {
+                                option.disabled = true;
+                                option.style.color = '#9CA3AF'; // text-gray-400
+                                option.textContent += ` (Tidak Tersedia - ${bookedSlot.customer_name})`;
+                            }
+                        });
+                    }
+
+                    // Update informasi ketersediaan
+                    updateAvailabilityInfo(data);
+                    
+                    // Jika ada slot yang dipilih, cek ketersediaannya
+                    if (visitTimeSlot.value) {
+                        checkSpecificSlotAvailability();
+                    }
+
+                } catch (error) {
+                    console.error('Error loading available slots:', error);
+                    if (slotAvailability) {
+                        slotAvailability.innerHTML = '<span class="text-red-600 flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal memuat ketersediaan slot</span>';
+                    }
+                }
+            }
+
+            /**
+             * Update informasi ketersediaan slot
+             */
+            function updateAvailabilityInfo(data) {
+                if (!slotAvailability) return;
+
+                if (data.date_full) {
+                    slotAvailability.innerHTML = `
+                        <div class="text-red-600 flex items-center">
+                            <i class="fas fa-times-circle mr-1"></i>
+                            Teknisi sudah mencapai batas maksimal kunjungan hari ini (${data.total_visits_today}/${data.max_visits_per_day})
+                        </div>
+                    `;
+                } else {
+                    slotAvailability.innerHTML = `
+                        <div class="text-blue-600 flex items-center">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            ${data.remaining_slots} slot tersisa dari ${data.max_visits_per_day} slot maksimal per hari
+                        </div>
+                    `;
+                }
+            }
+
+            /**
+             * Cek ketersediaan slot waktu spesifik yang dipilih
+             */
+            async function checkSpecificSlotAvailability() {
+                if (!adminSelect.value || !visitDate.value || !visitTimeSlot.value || isCheckingAvailability) {
+                    return;
+                }
+
+                isCheckingAvailability = true;
 
                 try {
                     const response = await fetch('/admin/service-tickets/check-slot-availability', {
@@ -339,26 +459,50 @@
                     const data = await response.json();
                     
                     if (data.available) {
-                        slotAvailability.innerHTML = `<span class="text-green-600 flex items-center"><i class="fas fa-check-circle mr-1"></i>Slot tersedia (${data.remaining_slots} slot tersisa hari ini)</span>`;
+                        // Slot tersedia - update hidden field dan tampilkan pesan sukses
                         updateVisitScheduleHidden();
+                        if (slotAvailability) {
+                            slotAvailability.innerHTML = `
+                                <div class="text-green-600 flex items-center">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Slot ${visitTimeSlot.value} tersedia (${data.remaining_slots} slot tersisa hari ini)
+                                </div>
+                            `;
+                        }
                     } else {
-                        slotAvailability.innerHTML = `<span class="text-red-600 flex items-center"><i class="fas fa-times-circle mr-1"></i>${data.message}</span>`;
+                        // Slot tidak tersedia - bersihkan hidden field dan tampilkan pesan error
                         if (visitScheduleHidden) visitScheduleHidden.value = '';
+                        if (slotAvailability) {
+                            slotAvailability.innerHTML = `
+                                <div class="text-red-600 flex items-center">
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    ${data.message}
+                                </div>
+                            `;
+                        }
                     }
                 } catch (error) {
                     console.error('Error checking slot availability:', error);
-                    if (slotAvailability) slotAvailability.innerHTML = '<span class="text-red-600 flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i>Error checking availability</span>';
+                    if (slotAvailability) {
+                        slotAvailability.innerHTML = '<span class="text-red-600 flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal mengecek ketersediaan slot</span>';
+                    }
+                } finally {
+                    isCheckingAvailability = false;
                 }
             }
 
-            // Update hidden visit_schedule field
+            /**
+             * Update field hidden visit_schedule dengan format datetime
+             */
             function updateVisitScheduleHidden() {
                 if (visitDate && visitTimeSlot && visitDate.value && visitTimeSlot.value && visitScheduleHidden) {
                     visitScheduleHidden.value = visitDate.value + 'T' + visitTimeSlot.value + ':00';
                 }
             }
 
-            // Update estimate date based on schedule date and estimation days
+            /**
+             * Update tanggal estimasi selesai berdasarkan tanggal jadwal dan estimasi hari
+             */
             function updateEstimateDate() {
                 if (scheduleDate.value && estimationDays.value) {
                     const startDate = new Date(scheduleDate.value);
@@ -369,16 +513,39 @@
                 }
             }
 
-            // Event listeners
-            if (adminSelect) adminSelect.addEventListener('change', checkSlotAvailability);
-            if (visitDate) visitDate.addEventListener('change', checkSlotAvailability);
-            if (visitTimeSlot) visitTimeSlot.addEventListener('change', checkSlotAvailability);
+            // Event listeners untuk berbagai perubahan input
+            if (adminSelect) {
+                adminSelect.addEventListener('change', function() {
+                    // Reset slot yang dipilih ketika teknisi berubah
+                    if (visitTimeSlot) visitTimeSlot.value = '';
+                    if (visitScheduleHidden) visitScheduleHidden.value = '';
+                    
+                    // Load ulang slot yang tersedia
+                    loadAvailableSlots();
+                });
+            }
             
+            if (visitDate) {
+                visitDate.addEventListener('change', function() {
+                    // Reset slot yang dipilih ketika tanggal berubah
+                    if (visitTimeSlot) visitTimeSlot.value = '';
+                    if (visitScheduleHidden) visitScheduleHidden.value = '';
+                    
+                    // Load ulang slot yang tersedia
+                    loadAvailableSlots();
+                });
+            }
+            
+            if (visitTimeSlot) {
+                visitTimeSlot.addEventListener('change', checkSpecificSlotAvailability);
+            }
+            
+            // Event listeners untuk estimasi tanggal selesai
             scheduleDate.addEventListener('change', updateEstimateDate);
             estimationDays.addEventListener('change', updateEstimateDate);
             estimationDays.addEventListener('input', updateEstimateDate);
 
-            // Initialize on page load if there are old values
+            // Inisialisasi jika ada nilai lama (old values) saat page load
             if (orderSelect.value) {
                 orderSelect.dispatchEvent(new Event('change'));
             }

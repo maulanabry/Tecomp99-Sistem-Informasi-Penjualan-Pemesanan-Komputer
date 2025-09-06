@@ -362,6 +362,8 @@ const voucherManager = {
     async handleVoucherInput() {
         if (!this.$code.val().trim()) {
             await this.clearVoucher();
+            // Hide any existing messages when input is cleared
+            this.$info.addClass("hidden");
         }
     },
 
@@ -371,6 +373,7 @@ const voucherManager = {
             const code = this.$code.val().trim();
             if (!code) {
                 this.showError("Masukkan kode voucher");
+                utils.showError("Masukkan kode voucher");
                 return;
             }
 
@@ -401,16 +404,20 @@ const voucherManager = {
             this.$type.val(response.discount_type);
             this.$value.val(response.discount_value);
 
-            // Show success message
-            this.showSuccess(
-                `Voucher "${
-                    response.voucher_name
-                }" berhasil diterapkan! (${formatRupiah(response.discount)})`
-            );
+            // Show success message in both UI areas
+            const successMessage = `Voucher "${
+                response.voucher_name
+            }" berhasil diterapkan! Diskon: ${formatRupiah(response.discount)}`;
+            this.showSuccess(successMessage);
+            utils.showSuccess(successMessage);
+
             await calculateTotals();
         } catch (error) {
             console.error("Error applying voucher:", error);
-            this.showError(error.message);
+            const errorMessage =
+                error.message || "Terjadi kesalahan saat memvalidasi voucher";
+            this.showError(errorMessage);
+            utils.showError(errorMessage);
             await this.clearVoucher();
         } finally {
             utils.hideLoading(this.$applyBtn, "Terapkan");
@@ -467,11 +474,16 @@ const discountManager = {
             // Recalculate totals
             await calculateTotals();
 
-            // Show success message
-            utils.showSuccess("Voucher berhasil dihapus");
+            // Show success message in both UI areas
+            const successMessage = "Voucher berhasil dihapus";
+            utils.showSuccess(successMessage);
+
+            // Also hide the voucher status section
+            this.updateVoucherStatus(0);
         } catch (error) {
             console.error("Error removing voucher:", error);
-            utils.showError("Gagal menghapus voucher");
+            const errorMessage = "Gagal menghapus voucher";
+            utils.showError(errorMessage);
         }
     },
 

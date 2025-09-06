@@ -41,12 +41,6 @@ class PaymentController extends Controller
 
     public function create()
     {
-        // Pastikan direktori bukti pembayaran ada
-        $paymentDir = public_path('images/payment');
-        if (!File::exists($paymentDir)) {
-            File::makeDirectory($paymentDir, 0755, true);
-        }
-
         // Ambil order produk yang statusnya belum dibayar atau down_payment saja
         $orderProducts = OrderProduct::with('customer')
             ->whereNotIn('status_payment', ['dibatalkan', 'lunas', 'selesai'])
@@ -224,9 +218,18 @@ class PaymentController extends Controller
 
             // Handle image deletion request
             if ($request->has('delete_current_image') && $payment->proof_photo) {
-                $oldImagePath = public_path('images/payment/' . $payment->proof_photo);
-                if (File::exists($oldImagePath)) {
-                    File::delete($oldImagePath);
+                // Check if it's the new format (private storage path) or legacy (public storage)
+                if (str_contains($payment->proof_photo, '/')) {
+                    // New format: private storage path
+                    if (Storage::exists($payment->proof_photo)) {
+                        Storage::delete($payment->proof_photo);
+                    }
+                } else {
+                    // Legacy format: public storage filename only
+                    $oldImagePath = public_path('images/payment/' . $payment->proof_photo);
+                    if (File::exists($oldImagePath)) {
+                        File::delete($oldImagePath);
+                    }
                 }
                 $payment->proof_photo = null;
             }
@@ -234,9 +237,18 @@ class PaymentController extends Controller
             elseif ($request->hasFile('proof_photo')) {
                 // Delete old photo if exists
                 if ($payment->proof_photo) {
-                    $oldImagePath = public_path('images/payment/' . $payment->proof_photo);
-                    if (File::exists($oldImagePath)) {
-                        File::delete($oldImagePath);
+                    // Check if it's the new format (private storage path) or legacy (public storage)
+                    if (str_contains($payment->proof_photo, '/')) {
+                        // New format: private storage path
+                        if (Storage::exists($payment->proof_photo)) {
+                            Storage::delete($payment->proof_photo);
+                        }
+                    } else {
+                        // Legacy format: public storage filename only
+                        $oldImagePath = public_path('images/payment/' . $payment->proof_photo);
+                        if (File::exists($oldImagePath)) {
+                            File::delete($oldImagePath);
+                        }
                     }
                 }
 
@@ -346,6 +358,7 @@ class PaymentController extends Controller
 
     /**
      * Handle image upload with compression and organized naming
+     * Now saves to private storage like Customer payments
      */
     private function handleImageUpload($file, $paymentId)
     {
@@ -361,29 +374,13 @@ class PaymentController extends Controller
                 throw new \Exception('Ukuran file terlalu besar. Maksimal 2MB.');
             }
 
-            // Create payment directory if not exists
-            $paymentDir = public_path('images/payment');
-            if (!File::exists($paymentDir)) {
-                File::makeDirectory($paymentDir, 0755, true);
-            }
+            // Generate filename: img-{payment_id}.{extension}
+            $fileName = 'img-' . $paymentId . '.' . $file->getClientOriginalExtension();
 
-            // Generate filename: PYMXXX-img.jpg
-            $filename = $paymentId . '-img.jpg';
-            $imagePath = $paymentDir . '/' . $filename;
+            // Save to private storage like Customer payments
+            $proofPath = $file->storeAs('private/payments', $fileName);
 
-            // Process and compress image using Intervention Image
-            $manager = new ImageManager(new Driver());
-            $image = $manager->read($file);
-
-            // Resize if too large (max width/height: 1200px)
-            if ($image->width() > 1200 || $image->height() > 1200) {
-                $image->scale(width: 1200, height: 1200);
-            }
-
-            // Save with compression (quality 80%)
-            $image->toJpeg(80)->save($imagePath);
-
-            return $filename;
+            return $proofPath;
         } catch (\Exception $e) {
             throw new \Exception('Gagal mengunggah gambar: ' . $e->getMessage());
         }
@@ -391,6 +388,7 @@ class PaymentController extends Controller
 
     /**
      * Delete payment image
+     * Now works with both private storage (new) and public storage (legacy)
      */
     public function deleteImage($payment_id)
     {
@@ -398,9 +396,18 @@ class PaymentController extends Controller
             $payment = PaymentDetail::where('payment_id', $payment_id)->firstOrFail();
 
             if ($payment->proof_photo) {
-                $imagePath = public_path('images/payment/' . $payment->proof_photo);
-                if (File::exists($imagePath)) {
-                    File::delete($imagePath);
+                // Check if it's the new format (private storage path)
+                if (str_contains($payment->proof_photo, '/')) {
+                    // New format: private storage path
+                    if (Storage::exists($payment->proof_photo)) {
+                        Storage::delete($payment->proof_photo);
+                    }
+                } else {
+                    // Legacy format: public storage filename only
+                    $imagePath = public_path('images/payment/' . $payment->proof_photo);
+                    if (File::exists($imagePath)) {
+                        File::delete($imagePath);
+                    }
                 }
 
                 $payment->proof_photo = null;

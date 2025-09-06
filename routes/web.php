@@ -201,6 +201,9 @@ Route::middleware('auth:customer')->group(function () {
 Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
     // Media serving routes for admin/staff
     Route::get('/admin/media/order-service/{orderId}/{filename}', [\App\Http\Controllers\MediaController::class, 'serveOrderServiceMediaAdmin'])->name('admin.media.order-service');
+
+    // Private payment image serving route
+    Route::get('/payment/image/{payment_id}', [\App\Http\Controllers\Admin\PaymentController::class, 'servePrivateImage'])->name('payment.image');
     // Categories
     Route::prefix('admin/kategori')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');
@@ -358,6 +361,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
 
         // Slot Availability Check
         Route::post('/check-slot-availability', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'checkSlotAvailability'])->name('service-tickets.check-slot');
+        Route::post('/get-booked-slots', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'getBookedSlotsForDate'])->name('service-tickets.get-booked-slots');
 
         // Service Ticket Actions
         Route::get('/{ticket}/actions/create', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'createAction'])->name('service-tickets.actions.create');
