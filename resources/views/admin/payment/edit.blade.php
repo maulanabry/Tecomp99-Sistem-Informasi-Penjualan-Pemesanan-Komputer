@@ -84,7 +84,7 @@
                                 </div>
                                 <div>
                                     <label for="amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount</label>
-                                    <input type="number" name="amount" id="amount" value="{{ old('amount', $payment->amount) }}" class="mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 @error('amount') border-red-300 dark:border-red-600 @else border-gray-300 dark:border-gray-600 @enderror">
+                                    <input type="number" name="amount" id="amount" value="{{ old('amount', $payment->amount) }}" class="mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 @error('amount') border-red-300 dark:border-red-600 @else border-gray-300 dark:border-gray-600 @enderror" data-currency="true">
                                     @error('amount')
                                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                     @enderror

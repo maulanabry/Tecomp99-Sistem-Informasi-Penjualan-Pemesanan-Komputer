@@ -47,6 +47,12 @@
     @endauth
 
     <livewire:scripts />
+    
+    <!-- Currency Formatter Script -->
+    <script src="{{ asset('js/currency-formatter.js') }}"></script>
+    
+    <!-- Additional Scripts Stack -->
+    @stack('scripts')
 </body>
 
 </html>

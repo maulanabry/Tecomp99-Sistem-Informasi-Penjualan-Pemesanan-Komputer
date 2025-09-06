@@ -154,43 +154,38 @@
 
                                 <!-- Amount Input -->
                                 <div x-show="type === 'amount'" x-transition>
-                                    <label for="discount_amount" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                                        Nominal Diskon <span class="text-red-500">*</span>
-                                    </label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 dark:text-gray-400 sm:text-sm">Rp</span>
-                                        </div>
-                                        <input type="number" name="discount_amount" id="discount_amount" 
-                                            value="{{ old('discount_amount') }}"
-                                            min="0" step="1000"
-                                            class="block w-full pl-12 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                            placeholder="0">
-                                    </div>
-                                    @error('discount_amount')
-                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                    @enderror
+                                    <x-currency-input 
+                                        name="discount_amount" 
+                                        id="discount_amount"
+                                        label="Nominal Diskon"
+                                        :value="old('discount_amount')"
+                                        placeholder="Rp 0"
+                                        help="Masukkan nominal diskon dalam Rupiah"
+                                        :required="false"
+                                        min="0"
+                                        step="1000"
+                                        icon="fas fa-money-bill"
+                                        :error="$errors->first('discount_amount')"
+                                        x-bind:required="type === 'amount'"
+                                    />
                                 </div>
 
                                 <!-- Minimum Order Amount -->
                                 <div>
-                                    <label for="minimum_order_amount" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                                        Minimal Pembelian
-                                    </label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 dark:text-gray-400 sm:text-sm">Rp</span>
-                                        </div>
-                                        <input type="number" name="minimum_order_amount" id="minimum_order_amount"
-                                            value="{{ old('minimum_order_amount') }}"
-                                            min="0" step="1000"
-                                            class="block w-full pl-12 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                            placeholder="0">
-                                    </div>
-                                    @error('minimum_order_amount')
-                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                    @enderror
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Kosongkan jika tidak ada minimal pembelian</p>
+                                    <x-currency-input 
+                                        name="minimum_order_amount" 
+                                        id="minimum_order_amount"
+                                        label="Minimal Pembelian"
+                                        :value="old('minimum_order_amount')"
+                                        placeholder="Rp 0"
+                                        help="Kosongkan jika tidak ada minimal pembelian"
+                                        :required="false"
+                                        min="0"
+                                        step="1000"
+                                        icon="fas fa-shopping-cart"
+                                        :error="$errors->first('minimum_order_amount')"
+                                        :allowEmpty="true"
+                                    />
                                 </div>
                             </div>
                         </div>

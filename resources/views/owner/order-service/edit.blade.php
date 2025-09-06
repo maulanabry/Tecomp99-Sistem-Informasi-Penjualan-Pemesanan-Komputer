@@ -24,8 +24,8 @@
                 </div>
             @endif
 
-            <input type="hidden" name="sub_total" id="sub_total" value="{{ $orderService->sub_total }}">
-            <input type="hidden" name="discount_amount" id="discount_amount" value="{{ $orderService->discount_amount }}">
+            <input type="hidden" name="sub_total" id="sub_total" value="{{ $orderService->sub_total }}" data-currency="true">
+            <input type="hidden" name="discount_amount" id="discount_amount" value="{{ $orderService->discount_amount }}" data-currency="true">
 
             <!-- Section 1: Informasi Pelanggan & Detail Servis -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">

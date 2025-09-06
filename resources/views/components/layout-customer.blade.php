@@ -74,6 +74,9 @@
     
     @livewireScripts
     
+    <!-- Currency Formatter Script -->
+    <script src="{{ asset('js/currency-formatter.js') }}"></script>
+    
     <!-- Flowbite JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
     

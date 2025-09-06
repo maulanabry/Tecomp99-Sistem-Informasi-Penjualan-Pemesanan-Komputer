@@ -111,7 +111,8 @@
                         </label>
                         <input type="number" id="cash_received" name="cash_received"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            placeholder="Masukkan jumlah uang yang diterima dari customer">
+                            placeholder="Masukkan jumlah uang yang diterima dari customer"
+                            data-currency="true">
                     </div>
 
                     <div>
@@ -120,7 +121,8 @@
                         </label>
                         <input type="number" id="amount" name="amount" required
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            placeholder="Masukkan jumlah pembayaran">
+                            placeholder="Masukkan jumlah pembayaran"
+                            data-currency="true">
                         <div id="paymentValidationAlert" class="mt-2 hidden">
                             <div class="p-3 text-sm text-red-800 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-300">
                                 <span id="paymentValidationMessage"></span>
@@ -139,7 +141,8 @@
                         </label>
                         <input type="number" id="change_returned" name="change_returned" readonly
                             class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            placeholder="Kembalian akan dihitung otomatis">
+                            placeholder="Kembalian akan dihitung otomatis"
+                            data-currency="true">
                     </div>
 
                     <div>

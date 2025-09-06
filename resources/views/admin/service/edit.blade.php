@@ -87,17 +87,19 @@
 
                         <!-- Price -->
                         <div>
-                            <label for="price" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Harga
-                            </label>
-                            <div class="mt-1 relative rounded-md shadow-sm">
-                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <span class="text-gray-500 dark:text-gray-400 sm:text-sm">Rp</span>
-                                </div>
-                                <input type="number" name="price" id="price" value="{{ old('price', $service->price) }}" required
-                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 pl-12 shadow-sm dark:bg-gray-700 dark:text-gray-200 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                                    min="0" step="1000">
-                            </div>
+                            <x-currency-input 
+                                name="price" 
+                                id="price"
+                                label="Harga"
+                                :value="old('price', $service->price)"
+                                placeholder="Rp 0"
+                                help="Masukkan harga servis dalam Rupiah"
+                                :required="true"
+                                min="0"
+                                step="1000"
+                                icon="fas fa-tools"
+                                :error="$errors->first('price')"
+                            />
                         </div>
 
                         <!-- Thumbnail (Dropzone Upload) -->

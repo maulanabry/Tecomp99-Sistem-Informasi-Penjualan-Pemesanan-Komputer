@@ -157,7 +157,8 @@
                                        value="{{ old('transfer_amount', $order->grand_total) }}"
                                        min="{{ $order->grand_total }}" max="{{ $order->grand_total }}"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                       placeholder="Masukkan nominal transfer" readonly>
+                                       placeholder="Masukkan nominal transfer" readonly
+                                       data-currency="true">
                                 <p class="mt-1 text-xs text-gray-500">
                                     Total yang harus dibayar: Rp {{ number_format($order->grand_total, 0, ',', '.') }}
                                 </p>
