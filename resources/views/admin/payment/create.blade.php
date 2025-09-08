@@ -1,6 +1,6 @@
 <x-layout-admin>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <div class="max-w-7xl mx-auto p-6">
+    <div class="max-w-7xl mx-auto p-6" x-data="paymentForm()">
         @if (session('success'))
             <div class="mb-4">
                 <x-alert type="success" :message="session('success')" />
@@ -17,72 +17,145 @@
         <form action="{{ route('payments.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
-            <!-- Jenis Order -->
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Jenis Order</h2>
-                <div>
-                    <label for="order_type" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Pilih Jenis Order <span class="text-red-500">*</span>
-                    </label>
-                    <select id="order_type" name="order_type" required
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <option value="">Pilih jenis order</option>
-                        <option value="produk">Produk</option>
-                        <option value="servis">Servis</option>
-                    </select>
-                </div>
-            </div>
-
             <!-- Pilih Order -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Pilih Order</h2>
-                <div>
-                    <label for="order_id" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Pilih Order <span class="text-red-500">*</span>
-                    </label>
-                    <select id="order_id" name="order_id" required disabled
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <option value="">Pilih order terlebih dahulu</option>
-                    </select>
+                
+                <!-- Order Selection Button -->
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Pilih Order untuk Pembayaran <span class="text-red-500">*</span></label>
+                    <button 
+                        type="button"
+                        @click="openOrderModal()"
+                        class="w-full flex items-center justify-between px-4 py-3 text-left bg-gray-50 border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-primary-300 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-primary-800 transition-colors duration-200"
+                    >
+                        <span x-text="selectedOrder ? selectedOrder.id + ' - ' + selectedOrder.customer_name + ' (' + selectedOrder.order_type_display + ')' : 'Klik untuk memilih order...'" 
+                              class="text-sm text-gray-900 dark:text-gray-100"
+                              :class="!selectedOrder ? 'text-gray-500 dark:text-gray-400' : ''">
+                        </span>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
                 </div>
 
-                <!-- Order Info Display -->
-                <div id="orderProductInfo" class="mt-4 hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Informasi Order Produk</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <p><span class="font-medium">Sub Total:</span> Rp <span id="productSubTotal">0</span></p>
-                                <p><span class="font-medium">Diskon:</span> Rp <span id="productDiscount">0</span></p>
-                                <p><span class="font-medium">Total Pembayaran:</span> Rp <span id="productGrandTotal">0</span></p>
-                                <p><span class="font-medium">Customer:</span> <span id="productCustomerName">-</span></p>
+                <!-- Hidden inputs for form submission -->
+                <input type="hidden" name="order_type" x-model="selectedOrderType" required>
+                <input type="hidden" name="order_id" x-model="selectedOrderId" required>
+                @error('order_type')
+                    <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                @enderror
+                @error('order_id')
+                    <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                @enderror
+
+                <!-- Selected Order Info Display -->
+                <div x-show="selectedOrder" 
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform scale-95"
+                     x-transition:enter-end="opacity-100 transform scale-100"
+                     class="mt-4 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
+                    
+                    <!-- Order Header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="h-12 w-12 rounded-full flex items-center justify-center"
+                                 :class="selectedOrder && selectedOrder.type === 'produk' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-green-100 dark:bg-green-900'">
+                                <span class="text-lg font-medium"
+                                      :class="selectedOrder && selectedOrder.type === 'produk' ? 'text-blue-700 dark:text-blue-300' : 'text-green-700 dark:text-green-300'"
+                                      x-text="selectedOrder ? selectedOrder.order_type_display.substring(0, 2).toUpperCase() : ''">
+                                </span>
                             </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white" x-text="selectedOrder?.id"></h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" x-text="selectedOrder ? selectedOrder.order_type_display + ' - ' + selectedOrder.customer_name : ''"></p>
+                            </div>
+                        </div>
+                        <button 
+                            type="button"
+                            @click="clearOrder()"
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            title="Hapus pilihan order"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Financial Information -->
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                </svg>
+                                Informasi Keuangan
+                            </h4>
                             <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <p><span class="font-medium">Status Pembayaran:</span> <span id="productPaymentStatus">-</span></p>
-                                <p><span class="font-medium">Sudah Dibayar:</span> Rp <span id="productPaidAmount">0</span></p>
-                                <p><span class="font-medium">Sisa Pembayaran:</span> <span class="font-bold text-red-600 dark:text-red-400">Rp <span id="productRemainingBalance">0</span></span></p>
-                                <p><span class="font-medium">Pembayaran Terakhir:</span> <span id="productLastPayment">-</span></p>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Sub Total:</span>
+                                    <span x-text="selectedOrder ? 'Rp ' + formatRupiah(selectedOrder.sub_total) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Diskon:</span>
+                                    <span x-text="selectedOrder ? 'Rp ' + formatRupiah(selectedOrder.discount_amount) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between border-t pt-2">
+                                    <span class="font-medium">Total:</span>
+                                    <span class="font-bold" x-text="selectedOrder ? 'Rp ' + formatRupiah(selectedOrder.grand_total) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Sudah Dibayar:</span>
+                                    <span class="text-green-600 dark:text-green-400" x-text="selectedOrder ? 'Rp ' + formatRupiah(selectedOrder.paid_amount) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Sisa Pembayaran:</span>
+                                    <span class="font-bold text-red-600 dark:text-red-400" x-text="selectedOrder ? 'Rp ' + formatRupiah(selectedOrder.remaining_balance) : '-'"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Information -->
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Status Order
+                            </h4>
+                            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Status Pembayaran:</span>
+                                    <span x-text="selectedOrder ? formatPaymentStatus(selectedOrder.status_payment) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Status Order:</span>
+                                    <span x-text="selectedOrder ? formatOrderStatus(selectedOrder.status_order) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Tanggal Order:</span>
+                                    <span x-text="selectedOrder ? formatDate(selectedOrder.created_at) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Pembayaran Terakhir:</span>
+                                    <span x-text="selectedOrder && selectedOrder.last_payment_at ? formatDate(selectedOrder.last_payment_at) : 'Belum ada'"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="orderServiceInfo" class="mt-4 hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Informasi Order Servis</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <p><span class="font-medium">Sub Total:</span> Rp <span id="serviceSubTotal">0</span></p>
-                                <p><span class="font-medium">Diskon:</span> Rp <span id="serviceDiscount">0</span></p>
-                                <p><span class="font-medium">Total Pembayaran:</span> Rp <span id="serviceGrandTotal">0</span></p>
-                                <p><span class="font-medium">Customer:</span> <span id="serviceCustomerName">-</span></p>
-                            </div>
-                            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <p><span class="font-medium">Status Pembayaran:</span> <span id="servicePaymentStatus">-</span></p>
-                                <p><span class="font-medium">Sudah Dibayar:</span> Rp <span id="servicePaidAmount">0</span></p>
-                                <p><span class="font-medium">Sisa Pembayaran:</span> <span class="font-bold text-red-600 dark:text-red-400">Rp <span id="serviceRemainingBalance">0</span></span></p>
-                                <p><span class="font-medium">Pembayaran Terakhir:</span> <span id="serviceLastPayment">-</span></p>
-                            </div>
+                    <!-- Additional Info for Service Orders -->
+                    <div x-show="selectedOrder && selectedOrder.type === 'servis'" class="mt-4 bg-white dark:bg-gray-800 p-4 rounded-lg">
+                        <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Detail Servis
+                        </h4>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                            <p><span class="font-medium">Perangkat:</span> <span x-text="selectedOrder?.device || '-'"></span></p>
                         </div>
                     </div>
                 </div>
@@ -109,20 +182,32 @@
                         <label for="cash_received" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Uang Diterima <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" id="cash_received" name="cash_received"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            placeholder="Masukkan jumlah uang yang diterima dari customer"
-                            data-currency="true">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 dark:text-gray-400 text-sm">Rp</span>
+                            </div>
+                            <input type="text" id="cash_received" name="cash_received"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                placeholder="0"
+                                data-currency="true">
+                            <input type="hidden" id="cash_received_raw" name="cash_received_raw">
+                        </div>
                     </div>
 
                     <div>
                         <label for="amount" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Jumlah Pembayaran <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" id="amount" name="amount" required
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            placeholder="Masukkan jumlah pembayaran"
-                            data-currency="true">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 dark:text-gray-400 text-sm">Rp</span>
+                            </div>
+                            <input type="text" id="amount" name="amount" required
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                placeholder="0"
+                                data-currency="true">
+                            <input type="hidden" id="amount_raw" name="amount_raw">
+                        </div>
                         <div id="paymentValidationAlert" class="mt-2 hidden">
                             <div class="p-3 text-sm text-red-800 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-300">
                                 <span id="paymentValidationMessage"></span>
@@ -139,10 +224,16 @@
                         <label for="change_returned" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Kembalian
                         </label>
-                        <input type="number" id="change_returned" name="change_returned" readonly
-                            class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            placeholder="Kembalian akan dihitung otomatis"
-                            data-currency="true">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 dark:text-gray-400 text-sm">Rp</span>
+                            </div>
+                            <input type="text" id="change_returned" name="change_returned" readonly
+                                class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                placeholder="0"
+                                data-currency="true">
+                            <input type="hidden" id="change_returned_raw" name="change_returned_raw">
+                        </div>
                     </div>
 
                     <div>
@@ -219,245 +310,525 @@
         </form>
     </div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const methodSelect = document.getElementById('method');
-                const amountInput = document.getElementById('amount');
-                const cashReceivedInput = document.getElementById('cash_received');
-                const paymentTypeSelect = document.getElementById('payment_type');
-                const changeReturnedInput = document.getElementById('change_returned');
-                const cashChangeContainer = document.getElementById('cashChangeContainer');
-                const cashReceivedContainer = document.getElementById('cashReceivedContainer');
-                const paymentValidationAlert = document.getElementById('paymentValidationAlert');
-                const paymentSuccessAlert = document.getElementById('paymentSuccessAlert');
-                const paymentValidationMessage = document.getElementById('paymentValidationMessage');
-                const paymentSuccessMessage = document.getElementById('paymentSuccessMessage');
+        <!-- Order Selection Modal -->
+        <livewire:admin.order-selection-modal />
+    </div>
+
+    <script>
+        function paymentForm() {
+            return {
+                selectedOrder: null,
+                selectedOrderId: '',
+                selectedOrderType: '',
+
+                openOrderModal() {
+                    Livewire.dispatch('openOrderModal');
+                },
+
+                clearOrder() {
+                    this.selectedOrder = null;
+                    this.selectedOrderId = '';
+                    this.selectedOrderType = '';
+                    // Reset payment form when order is cleared
+                    this.resetPaymentForm();
+                },
+
+                resetPaymentForm() {
+                    // Reset payment type options based on business rules
+                    const paymentTypeSelect = document.getElementById('payment_type');
+                    const amountInput = document.getElementById('amount');
+                    
+                    if (paymentTypeSelect) {
+                        paymentTypeSelect.innerHTML = '<option value="">Pilih tipe pembayaran</option>';
+                        paymentTypeSelect.innerHTML += '<option value="full">Full Payment</option>';
+                        paymentTypeSelect.innerHTML += '<option value="down_payment">Down Payment</option>';
+                        paymentTypeSelect.innerHTML += '<option value="cicilan">Cicilan</option>';
+                    }
+                    
+                    if (amountInput) {
+                        amountInput.value = '';
+                    }
+                },
+
+                updatePaymentOptions() {
+                    if (!this.selectedOrder) return;
+                    
+                    const paymentTypeSelect = document.getElementById('payment_type');
+                    const amountInput = document.getElementById('amount');
+                    
+                    if (!paymentTypeSelect) return;
+                    
+                    // Clear existing options
+                    paymentTypeSelect.innerHTML = '<option value="">Pilih tipe pembayaran</option>';
+                    
+                    // Add options based on order type and business rules
+                    if (this.selectedOrder.type === 'produk') {
+                        // Product payment rules
+                        paymentTypeSelect.innerHTML += '<option value="full">Full Payment</option>';
+                        paymentTypeSelect.innerHTML += '<option value="down_payment">Down Payment (50%)</option>';
+                        paymentTypeSelect.innerHTML += '<option value="cicilan">Cicilan</option>';
+                    } else if (this.selectedOrder.type === 'servis') {
+                        // Service payment rules
+                        paymentTypeSelect.innerHTML += '<option value="full">Full Payment</option>';
+                        paymentTypeSelect.innerHTML += '<option value="cicilan">Cicilan</option>';
+                    }
+                },
+
+                formatRupiah(number) {
+                    return new Intl.NumberFormat('id-ID').format(number);
+                },
+
+                formatDate(dateString) {
+                    return new Date(dateString).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                },
+
+                formatPaymentStatus(status) {
+                    const statusMap = {
+                        'belum_dibayar': 'Belum Dibayar',
+                        'down_payment': 'Down Payment',
+                        'lunas': 'Lunas',
+                        'dibatalkan': 'Dibatalkan'
+                    };
+                    return statusMap[status] || status;
+                },
+
+                formatOrderStatus(status) {
+                    const statusMap = {
+                        'menunggu': 'Menunggu',
+                        'Menunggu': 'Menunggu',
+                        'diproses': 'Diproses',
+                        'Diproses': 'Diproses',
+                        'dikirim': 'Dikirim',
+                        'selesai': 'Selesai',
+                        'Selesai': 'Selesai',
+                        'dibatalkan': 'Dibatalkan',
+                        'Dibatalkan': 'Dibatalkan'
+                    };
+                    return statusMap[status] || status;
+                },
+
+                init() {
+                    // Listen for order selection from modal
+                    window.addEventListener('orderSelected', (event) => {
+                        this.selectedOrder = event.detail[0];
+                        this.selectedOrderId = event.detail[0].id;
+                        this.selectedOrderType = event.detail[0].type;
+                        
+                        // Update payment options based on selected order
+                        this.$nextTick(() => {
+                            this.updatePaymentOptions();
+                        });
+                    });
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const methodSelect = document.getElementById('method');
+            const amountInput = document.getElementById('amount');
+            const cashReceivedInput = document.getElementById('cash_received');
+            const paymentTypeSelect = document.getElementById('payment_type');
+            const changeReturnedInput = document.getElementById('change_returned');
+            const cashChangeContainer = document.getElementById('cashChangeContainer');
+            const cashReceivedContainer = document.getElementById('cashReceivedContainer');
+            const paymentValidationAlert = document.getElementById('paymentValidationAlert');
+            const paymentSuccessAlert = document.getElementById('paymentSuccessAlert');
+            const paymentValidationMessage = document.getElementById('paymentValidationMessage');
+            const paymentSuccessMessage = document.getElementById('paymentSuccessMessage');
+            
+            // Hidden inputs for raw values
+            const amountRawInput = document.getElementById('amount_raw');
+            const cashReceivedRawInput = document.getElementById('cash_received_raw');
+            const changeReturnedRawInput = document.getElementById('change_returned_raw');
+            
+            let currentOrder = null;
+
+            // Currency formatting functions
+            function formatRupiahInput(value) {
+                // Remove all non-digit characters
+                const numericValue = value.toString().replace(/[^\d]/g, '');
                 
-                let currentOrder = null;
+                if (numericValue === '') return '';
+                
+                // Format with thousand separators
+                return new Intl.NumberFormat('id-ID').format(parseInt(numericValue));
+            }
 
-                // Show/hide cash fields based on payment method
-                methodSelect.addEventListener('change', function() {
-                    if (this.value === 'Tunai') {
-                        cashReceivedContainer.classList.remove('hidden');
-                        cashChangeContainer.classList.remove('hidden');
-                        cashReceivedInput.required = true;
-                        calculateChange();
-                    } else {
-                        cashReceivedContainer.classList.add('hidden');
-                        cashChangeContainer.classList.add('hidden');
-                        cashReceivedInput.required = false;
-                        cashReceivedInput.value = '';
-                        changeReturnedInput.value = '';
-                    }
+            function parseRupiahInput(value) {
+                // Handle empty or null values
+                if (!value || value === '') return 0;
+                
+                // Convert to string and remove all non-digit characters
+                const numericValue = value.toString().replace(/[^\d]/g, '');
+                return numericValue === '' ? 0 : parseInt(numericValue);
+            }
+
+            function updateRawValue(input, rawInput) {
+                const rawValue = parseRupiahInput(input.value);
+                rawInput.value = rawValue;
+                return rawValue;
+            }
+
+            // Initialize currency formatting for all currency inputs
+            function initializeCurrencyInput(input, rawInput) {
+                // Format on input with debouncing to prevent double formatting
+                let inputTimeout;
+                input.addEventListener('input', function(e) {
+                    clearTimeout(inputTimeout);
+                    inputTimeout = setTimeout(() => {
+                        const cursorPosition = e.target.selectionStart;
+                        const oldValue = e.target.value;
+                        
+                        // Only format if the value has actually changed
+                        const rawValue = parseRupiahInput(oldValue);
+                        const formattedValue = formatRupiahInput(rawValue);
+                        
+                        // Prevent infinite loop by checking if formatting is needed
+                        if (oldValue !== formattedValue) {
+                            e.target.value = formattedValue;
+                            
+                            // Calculate new cursor position
+                            const digitsBefore = oldValue.substring(0, cursorPosition).replace(/[^\d]/g, '').length;
+                            const newPosition = calculateCursorPosition(formattedValue, digitsBefore);
+                            e.target.setSelectionRange(newPosition, newPosition);
+                        }
+                        
+                        // Update raw value
+                        updateRawValue(input, rawInput);
+                    }, 100);
                 });
 
-                // Update amount when cash received changes
-                cashReceivedInput.addEventListener('input', function() {
-                    if (!currentOrder) return;
+                // Format on paste
+                input.addEventListener('paste', function(e) {
+                    setTimeout(() => {
+                        const rawValue = parseRupiahInput(e.target.value);
+                        const formattedValue = formatRupiahInput(rawValue);
+                        e.target.value = formattedValue;
+                        updateRawValue(input, rawInput);
+                    }, 0);
+                });
+
+                // Format on focus out
+                input.addEventListener('blur', function(e) {
+                    const rawValue = parseRupiahInput(e.target.value);
+                    const formattedValue = formatRupiahInput(rawValue);
+                    e.target.value = formattedValue;
+                    updateRawValue(input, rawInput);
+                });
+
+                // Prevent non-numeric input
+                input.addEventListener('keypress', function(e) {
+                    // Allow: backspace, delete, tab, escape, enter
+                    if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+                        // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                        (e.keyCode === 65 && e.ctrlKey === true) ||
+                        (e.keyCode === 67 && e.ctrlKey === true) ||
+                        (e.keyCode === 86 && e.ctrlKey === true) ||
+                        (e.keyCode === 88 && e.ctrlKey === true)) {
+                        return;
+                    }
+                    // Ensure that it is a number and stop the keypress
+                    if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            // Helper function to calculate cursor position after formatting
+            function calculateCursorPosition(formattedValue, digitsBefore) {
+                let position = 0;
+                let digitsFound = 0;
+                
+                for (let i = 0; i < formattedValue.length; i++) {
+                    if (/\d/.test(formattedValue[i])) {
+                        digitsFound++;
+                        if (digitsFound >= digitsBefore) {
+                            position = i + 1;
+                            break;
+                        }
+                    }
+                    position = i + 1;
+                }
+                
+                return position;
+            }
+
+            // Initialize currency inputs
+            initializeCurrencyInput(amountInput, amountRawInput);
+            initializeCurrencyInput(cashReceivedInput, cashReceivedRawInput);
+            initializeCurrencyInput(changeReturnedInput, changeReturnedRawInput);
+
+            // Helper function to get raw numeric value from formatted input
+            function getRawValue(input) {
+                return parseRupiahInput(input.value);
+            }
+
+            // Helper function to set formatted value to input
+            function setFormattedValue(input, rawInput, value) {
+                const formattedValue = formatRupiahInput(value);
+                input.value = formattedValue;
+                if (rawInput) {
+                    rawInput.value = value;
+                }
+            }
+
+            // Listen for order selection to update currentOrder
+            window.addEventListener('orderSelected', (event) => {
+                currentOrder = event.detail[0];
+                validatePaymentAndCalculateChange();
+            });
+
+            // Show/hide cash fields based on payment method
+            methodSelect.addEventListener('change', function() {
+                if (this.value === 'Tunai') {
+                    cashReceivedContainer.classList.remove('hidden');
+                    cashChangeContainer.classList.remove('hidden');
+                    cashReceivedInput.required = true;
                     
-                    const cashReceived = parseFloat(this.value) || 0;
-                    const remainingBalance = currentOrder.remaining_balance;
-                    
-                    // Amount is either remaining balance or cash received, whichever is smaller
-                    amountInput.value = Math.min(cashReceived, remainingBalance);
+                    // Set minimum cash received to match amount if order is selected
+                    if (currentOrder) {
+                        const currentAmount = getRawValue(amountInput);
+                        if (currentAmount > 0) {
+                            setFormattedValue(cashReceivedInput, cashReceivedRawInput, currentAmount);
+                        }
+                    }
                     calculateChange();
-                });
+                } else {
+                    cashReceivedContainer.classList.add('hidden');
+                    cashChangeContainer.classList.add('hidden');
+                    cashReceivedInput.required = false;
+                    
+                    // Clear cash fields for non-cash payments
+                    cashReceivedInput.value = '';
+                    cashReceivedRawInput.value = '';
+                    changeReturnedInput.value = '';
+                    changeReturnedRawInput.value = '';
+                }
+            });
 
-                // Validate payment and calculate change
-                function validatePaymentAndCalculateChange() {
-                    if (!currentOrder) return;
+            // Update amount when cash received changes
+            cashReceivedInput.addEventListener('input', function() {
+                if (!currentOrder) return;
+                
+                const cashReceived = getRawValue(this);
+                const remainingBalance = currentOrder.remaining_balance;
+                
+                // Amount is either remaining balance or cash received, whichever is smaller
+                const newAmount = Math.min(cashReceived, remainingBalance);
+                setFormattedValue(amountInput, amountRawInput, newAmount);
+                calculateChange();
+                validatePaymentAndCalculateChange();
+            });
 
-                    const amount = parseFloat(amountInput.value) || 0;
-                    const paymentType = paymentTypeSelect.value;
-                    const remainingBalance = currentOrder.remaining_balance || currentOrder.grand_total;
-
-                    // Hide previous alerts
-                    paymentValidationAlert.classList.add('hidden');
-                    paymentSuccessAlert.classList.add('hidden');
-
-                    // Validate payment
-                    if (amount <= 0) {
-                        showValidationError('Jumlah pembayaran harus lebih dari 0.');
-                        return;
+            // Update cash received when amount changes (for cash payments)
+            amountInput.addEventListener('input', function() {
+                if (methodSelect.value === 'Tunai' && currentOrder) {
+                    const amount = getRawValue(this);
+                    const currentCashReceived = getRawValue(cashReceivedInput);
+                    
+                    // If cash received is less than amount, update it to match amount
+                    if (currentCashReceived < amount) {
+                        setFormattedValue(cashReceivedInput, cashReceivedRawInput, amount);
                     }
+                }
+                validatePaymentAndCalculateChange();
+            });
 
-                    if (paymentType === 'full' && amount < remainingBalance) {
-                        showValidationError(`Total pembayaran tidak mencukupi untuk pelunasan penuh. Minimum: Rp ${formatRupiah(remainingBalance)}`);
-                        return;
-                    }
-
-                    // Calculate change for cash payments
-                    if (methodSelect.value === 'Tunai') {
-                        calculateChange();
-                    }
-
-                    // Show success message
-                    if (paymentType === 'full' && amount >= remainingBalance) {
-                        const change = amount - remainingBalance;
-                        if (change > 0) {
-                            showSuccessMessage(`Pembayaran lunas dengan kembalian Rp ${formatRupiah(change)}`);
-                        } else {
-                            showSuccessMessage('Pembayaran lunas');
+            // Handle payment type change with business rules
+            paymentTypeSelect.addEventListener('change', function() {
+                if (!currentOrder) return;
+                
+                const paymentType = this.value;
+                const remainingBalance = currentOrder.remaining_balance;
+                
+                // Apply business rules based on order type and payment type
+                if (currentOrder.type === 'produk') {
+                    if (paymentType === 'down_payment') {
+                        // Product DP must be exactly 50%
+                        const dpAmount = Math.round(currentOrder.grand_total * 0.5);
+                        setFormattedValue(amountInput, amountRawInput, dpAmount);
+                        amountInput.readOnly = true;
+                        
+                        // Update cash received for cash payments
+                        if (methodSelect.value === 'Tunai') {
+                            setFormattedValue(cashReceivedInput, cashReceivedRawInput, dpAmount);
                         }
                     } else {
-                        showSuccessMessage(`Down payment sebesar Rp ${formatRupiah(amount)}`);
+                        amountInput.readOnly = false;
+                        if (paymentType === 'full') {
+                            setFormattedValue(amountInput, amountRawInput, remainingBalance);
+                            
+                            // Update cash received for cash payments
+                            if (methodSelect.value === 'Tunai') {
+                                setFormattedValue(cashReceivedInput, cashReceivedRawInput, remainingBalance);
+                            }
+                        }
+                    }
+                } else if (currentOrder.type === 'servis') {
+                    // Service payments are flexible
+                    amountInput.readOnly = false;
+                    if (paymentType === 'full') {
+                        setFormattedValue(amountInput, amountRawInput, remainingBalance);
+                        
+                        // Update cash received for cash payments
+                        if (methodSelect.value === 'Tunai') {
+                            setFormattedValue(cashReceivedInput, cashReceivedRawInput, remainingBalance);
+                        }
                     }
                 }
+                
+                validatePaymentAndCalculateChange();
+            });
 
-                function calculateChange() {
-                    if (!currentOrder || methodSelect.value !== 'Tunai') return;
-                    
-                    const cashReceived = parseFloat(cashReceivedInput.value) || 0;
-                    const amount = parseFloat(amountInput.value) || 0;
-                    const change = Math.max(0, cashReceived - amount);
-                    changeReturnedInput.value = change;
+            // Validate payment and calculate change
+            function validatePaymentAndCalculateChange() {
+                if (!currentOrder) return;
+
+                const amount = getRawValue(amountInput);
+                const paymentType = paymentTypeSelect.value;
+                const remainingBalance = currentOrder.remaining_balance || currentOrder.grand_total;
+
+                // Hide previous alerts
+                paymentValidationAlert.classList.add('hidden');
+                paymentSuccessAlert.classList.add('hidden');
+
+                // Validate payment
+                if (amount <= 0) {
+                    showValidationError('Jumlah pembayaran harus lebih dari 0.');
+                    return;
                 }
 
-                function showValidationError(message) {
-                    paymentValidationMessage.textContent = message;
-                    paymentValidationAlert.classList.remove('hidden');
-                    paymentSuccessAlert.classList.add('hidden');
-                }
-
-                function showSuccessMessage(message) {
-                    paymentSuccessMessage.textContent = message;
-                    paymentSuccessAlert.classList.remove('hidden');
-                    paymentValidationAlert.classList.add('hidden');
-                }
-
-                // Add event listeners for real-time validation
-                amountInput.addEventListener('input', validatePaymentAndCalculateChange);
-                paymentTypeSelect.addEventListener('change', validatePaymentAndCalculateChange);
-
-                // Warranty period validation and estimation
-                const warrantyInput = document.getElementById('warranty_period_months');
-                const warrantyEstimation = document.getElementById('warrantyEstimation');
-                const warrantyEstimationText = document.getElementById('warrantyEstimationText');
-                const warrantyValidationAlert = document.getElementById('warrantyValidationAlert');
-                const warrantyValidationMessage = document.getElementById('warrantyValidationMessage');
-
-                function validateWarrantyAndShowEstimation() {
-                    const months = parseInt(warrantyInput.value);
-                    
-                    // Hide previous alerts
-                    warrantyEstimation.classList.add('hidden');
-                    warrantyValidationAlert.classList.add('hidden');
-
-                    if (warrantyInput.value && (isNaN(months) || months < 1 || months > 60)) {
-                        warrantyValidationMessage.textContent = 'Masa garansi harus berupa angka antara 1-60 bulan.';
-                        warrantyValidationAlert.classList.remove('hidden');
+                // Business rule validation
+                if (currentOrder.type === 'produk' && paymentType === 'down_payment') {
+                    const expectedDP = Math.round(currentOrder.grand_total * 0.5);
+                    if (amount !== expectedDP) {
+                        showValidationError(`Down Payment untuk produk harus tepat 50% dari total (Rp ${formatRupiah(expectedDP)})`);
                         return;
                     }
-
-                    if (months && months > 0) {
-                        const estimatedDate = new Date();
-                        estimatedDate.setMonth(estimatedDate.getMonth() + months);
-                        const formattedDate = estimatedDate.toLocaleDateString('id-ID', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric'
-                        });
-                        warrantyEstimationText.textContent = `Estimasi Berakhir Garansi: ${formattedDate}`;
-                        warrantyEstimation.classList.remove('hidden');
-                    }
                 }
 
-                warrantyInput.addEventListener('input', validateWarrantyAndShowEstimation);
+                if (paymentType === 'full' && amount < remainingBalance) {
+                    showValidationError(`Total pembayaran tidak mencukupi untuk pelunasan penuh. Minimum: Rp ${formatRupiah(remainingBalance)}`);
+                    return;
+                }
 
-            const orderTypeSelect = document.getElementById('order_type');
-            const orderSelect = document.getElementById('order_id');
-            const orderProductInfo = document.getElementById('orderProductInfo');
-            const orderServiceInfo = document.getElementById('orderServiceInfo');
+                // Calculate change for cash payments
+                if (methodSelect.value === 'Tunai') {
+                    calculateChange();
+                }
+
+                // Show success message
+                if (paymentType === 'full' && amount >= remainingBalance) {
+                    const change = amount - remainingBalance;
+                    if (change > 0) {
+                        showSuccessMessage(`Pembayaran lunas dengan kembalian Rp ${formatRupiah(change)}`);
+                    } else {
+                        showSuccessMessage('Pembayaran lunas');
+                    }
+                } else if (paymentType === 'down_payment') {
+                    showSuccessMessage(`Down payment sebesar Rp ${formatRupiah(amount)}`);
+                } else {
+                    showSuccessMessage(`Cicilan sebesar Rp ${formatRupiah(amount)}`);
+                }
+            }
+
+            function calculateChange() {
+                if (!currentOrder || methodSelect.value !== 'Tunai') return;
+                
+                const cashReceived = getRawValue(cashReceivedInput);
+                const amount = getRawValue(amountInput);
+                const change = Math.max(0, cashReceived - amount);
+                setFormattedValue(changeReturnedInput, changeReturnedRawInput, change);
+            }
+
+            function showValidationError(message) {
+                paymentValidationMessage.textContent = message;
+                paymentValidationAlert.classList.remove('hidden');
+                paymentSuccessAlert.classList.add('hidden');
+            }
+
+            function showSuccessMessage(message) {
+                paymentSuccessMessage.textContent = message;
+                paymentSuccessAlert.classList.remove('hidden');
+                paymentValidationAlert.classList.add('hidden');
+            }
 
             // Format number to Indonesian Rupiah
             const formatRupiah = (number) => {
                 return new Intl.NumberFormat('id-ID').format(number);
             };
 
-            orderTypeSelect.addEventListener('change', async function() {
-                orderSelect.disabled = true;
-                orderSelect.innerHTML = '<option value="">Memuat data...</option>';
-                orderProductInfo.classList.add('hidden');
-                orderServiceInfo.classList.add('hidden');
-                currentOrder = null;
-
-                if (this.value) {
-                    let orders = [];
-                    if (this.value === 'produk') {
-                        orders = JSON.parse('@json($orderProducts)');
-                        orderProductInfo.classList.remove('hidden');
-                    } else if (this.value === 'servis') {
-                        orders = JSON.parse('@json($orderServices)');
-                        orderServiceInfo.classList.remove('hidden');
+            // Form submission handler to ensure raw values are submitted
+            const paymentForm = document.querySelector('form');
+            paymentForm.addEventListener('submit', function(e) {
+                // Update all raw values before submission
+                updateRawValue(amountInput, amountRawInput);
+                
+                // Update the name attributes to submit raw values
+                amountInput.name = 'amount_formatted';
+                amountRawInput.name = 'amount';
+                
+                // Only handle cash fields if payment method is cash
+                if (methodSelect.value === 'Tunai') {
+                    updateRawValue(cashReceivedInput, cashReceivedRawInput);
+                    updateRawValue(changeReturnedInput, changeReturnedRawInput);
+                    
+                    cashReceivedInput.name = 'cash_received_formatted';
+                    cashReceivedRawInput.name = 'cash_received';
+                    
+                    if (changeReturnedInput.value) {
+                        changeReturnedInput.name = 'change_returned_formatted';
+                        changeReturnedRawInput.name = 'change_returned';
                     }
-
-                    orderSelect.innerHTML = '<option value="">Pilih order</option>';
-                    orders.forEach(order => {
-                        const option = document.createElement('option');
-                        option.value = order.id;
-                        option.textContent = `${order.id} - ${order.customer_name} (${order.payment_status})`;
-                        option.dataset.subTotal = order.sub_total;
-                        option.dataset.discount = order.discount_amount;
-                        option.dataset.grandTotal = order.grand_total;
-                        option.dataset.paidAmount = order.paid_amount || 0;
-                        option.dataset.remainingBalance = order.remaining_balance || order.grand_total;
-                        option.dataset.lastPayment = order.last_payment_at || '-';
-                        option.dataset.status = order.payment_status;
-                        option.dataset.customerName = order.customer_name;
-                        orderSelect.appendChild(option);
-                    });
-
-                    orderSelect.disabled = false;
                 } else {
-                    orderSelect.innerHTML = '<option value="">Pilih order terlebih dahulu</option>';
+                    // For non-cash payments, remove cash_received from form submission
+                    cashReceivedInput.removeAttribute('name');
+                    cashReceivedRawInput.removeAttribute('name');
+                    changeReturnedInput.removeAttribute('name');
+                    changeReturnedRawInput.removeAttribute('name');
                 }
             });
 
-            orderSelect.addEventListener('change', function() {
-                if (this.value) {
-                    const selectedOption = this.options[this.selectedIndex];
-                    currentOrder = {
-                        id: selectedOption.value,
-                        sub_total: parseFloat(selectedOption.dataset.subTotal || 0),
-                        discount: parseFloat(selectedOption.dataset.discount || 0),
-                        grand_total: parseFloat(selectedOption.dataset.grandTotal || 0),
-                        paid_amount: parseFloat(selectedOption.dataset.paidAmount || 0),
-                        remaining_balance: parseFloat(selectedOption.dataset.remainingBalance || selectedOption.dataset.grandTotal || 0),
-                        last_payment: selectedOption.dataset.lastPayment,
-                        status: selectedOption.dataset.status,
-                        customer_name: selectedOption.dataset.customerName
-                    };
+            // Note: amountInput event listener is already added above for cash received validation
 
-                    if (orderTypeSelect.value === 'produk') {
-                        document.getElementById('productSubTotal').textContent = formatRupiah(currentOrder.sub_total);
-                        document.getElementById('productDiscount').textContent = formatRupiah(currentOrder.discount);
-                        document.getElementById('productGrandTotal').textContent = formatRupiah(currentOrder.grand_total);
-                        document.getElementById('productPaidAmount').textContent = formatRupiah(currentOrder.paid_amount);
-                        document.getElementById('productRemainingBalance').textContent = formatRupiah(currentOrder.remaining_balance);
-                        document.getElementById('productLastPayment').textContent = currentOrder.last_payment !== '-' ? new Date(currentOrder.last_payment).toLocaleDateString('id-ID') : '-';
-                        document.getElementById('productPaymentStatus').textContent = currentOrder.status;
-                        document.getElementById('productCustomerName').textContent = currentOrder.customer_name;
-                    } else if (orderTypeSelect.value === 'servis') {
-                        document.getElementById('serviceSubTotal').textContent = formatRupiah(currentOrder.sub_total);
-                        document.getElementById('serviceDiscount').textContent = formatRupiah(currentOrder.discount);
-                        document.getElementById('serviceGrandTotal').textContent = formatRupiah(currentOrder.grand_total);
-                        document.getElementById('servicePaidAmount').textContent = formatRupiah(currentOrder.paid_amount);
-                        document.getElementById('serviceRemainingBalance').textContent = formatRupiah(currentOrder.remaining_balance);
-                        document.getElementById('serviceLastPayment').textContent = currentOrder.last_payment !== '-' ? new Date(currentOrder.last_payment).toLocaleDateString('id-ID') : '-';
-                        document.getElementById('servicePaymentStatus').textContent = currentOrder.status;
-                        document.getElementById('serviceCustomerName').textContent = currentOrder.customer_name;
-                    }
+            // Warranty period validation and estimation
+            const warrantyInput = document.getElementById('warranty_period_months');
+            const warrantyEstimation = document.getElementById('warrantyEstimation');
+            const warrantyEstimationText = document.getElementById('warrantyEstimationText');
+            const warrantyValidationAlert = document.getElementById('warrantyValidationAlert');
+            const warrantyValidationMessage = document.getElementById('warrantyValidationMessage');
 
-                    // Validate payment after order selection
-                    validatePaymentAndCalculateChange();
+            function validateWarrantyAndShowEstimation() {
+                const months = parseInt(warrantyInput.value);
+                
+                // Hide previous alerts
+                warrantyEstimation.classList.add('hidden');
+                warrantyValidationAlert.classList.add('hidden');
+
+                if (warrantyInput.value && (isNaN(months) || months < 1 || months > 60)) {
+                    warrantyValidationMessage.textContent = 'Masa garansi harus berupa angka antara 1-60 bulan.';
+                    warrantyValidationAlert.classList.remove('hidden');
+                    return;
                 }
-            });
-        });
 
-        // Trigger change event on orderTypeSelect on page load
-        window.addEventListener('load', function() {
-            const orderTypeSelect = document.getElementById('order_type');
-            orderTypeSelect.dispatchEvent(new Event('change'));
+                if (months && months > 0) {
+                    const estimatedDate = new Date();
+                    estimatedDate.setMonth(estimatedDate.getMonth() + months);
+                    const formattedDate = estimatedDate.toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                    warrantyEstimationText.textContent = `Estimasi Berakhir Garansi: ${formattedDate}`;
+                    warrantyEstimation.classList.remove('hidden');
+                }
+            }
+
+            warrantyInput.addEventListener('input', validateWarrantyAndShowEstimation);
         });
 
         // Image Upload Functionality

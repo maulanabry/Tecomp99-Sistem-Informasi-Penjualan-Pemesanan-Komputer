@@ -20,12 +20,13 @@ return new class extends Migration
             $table->integer('change_returned')->nullable();
             $table->string('name', 255);
             $table->enum('status', ['menunggu', 'diproses', 'dibayar', 'gagal']);
-            $table->enum('payment_type', ['full', 'down_payment']);
+            $table->enum('payment_type', ['full', 'down_payment', 'cicilan']);
             $table->enum('order_type', ['produk', 'servis']);
             $table->string('proof_photo', 255)->nullable();
             $table->integer('cash_received')->nullable();
             $table->timestamps();
             $table->softDeletes();
+            $table->dateTime('expired_date')->nullable();
 
             $table->foreign('order_product_id')
                 ->references('order_product_id')

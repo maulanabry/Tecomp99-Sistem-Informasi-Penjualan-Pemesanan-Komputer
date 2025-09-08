@@ -7,13 +7,5 @@
         </x-slot:description>
     </x-header>
 
-    <livewire:admin.dashboard-stats />
-
-    <!-- Refresh Interval Script -->
-    <script>
-        // Refresh dashboard stats every 5 minutes
-        setInterval(() => {
-            Livewire.emit('refreshDashboard');
-        }, 300000);
-    </script>
+    <livewire:admin.dashboard-stats wire:poll.5m="$refresh" />
 </x-layout-admin>

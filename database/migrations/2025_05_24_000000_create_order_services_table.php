@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('order_service_id', 50)->primary();
             $table->string('customer_id', 50);
             $table->enum('status_order', ['Menunggu', 'Diproses', 'Dibatalkan', 'Selesai']);
-            $table->enum('status_payment', ['belum_dibayar', 'down_payment', 'lunas', 'dibatalkan']);
+            $table->enum('status_payment', ['belum_dibayar', 'down_payment', 'cicilan', 'lunas', 'dibatalkan']);
             $table->text('complaints')->nullable();
             $table->enum('type', ['reguler', 'onsite']);
             $table->text('device');
