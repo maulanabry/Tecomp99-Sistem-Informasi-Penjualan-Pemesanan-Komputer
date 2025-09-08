@@ -421,6 +421,60 @@ const promoManager = {
 // Initialize promo manager
 promoManager.init();
 
+// Discount Management (similar to admin version)
+const discountManager = {
+    // Cache jQuery selectors
+    $discountAmount: $("#discount_amount"),
+    $discountAmountHidden: $("#discount_amount_hidden"),
+
+    // Initialize discount handling
+    init() {
+        this.bindEvents();
+        this.formatDiscountInput();
+    },
+
+    // Bind event handlers
+    bindEvents() {
+        this.$discountAmount.on("input", () => this.handleDiscountChange());
+        this.$discountAmount.on("blur", () => this.formatDiscountInput());
+    },
+
+    // Format discount input with Indonesian number format
+    formatDiscountInput() {
+        const rawValue = this.$discountAmount.val().replace(/[^\d]/g, "");
+        const numericValue = parseInt(rawValue) || 0;
+
+        // Update hidden field with numeric value
+        this.$discountAmountHidden.val(numericValue);
+
+        // Format display value
+        if (numericValue === 0) {
+            this.$discountAmount.val("0");
+        } else {
+            this.$discountAmount.val(numericValue.toLocaleString("id-ID"));
+        }
+    },
+
+    // Handle discount amount input changes
+    async handleDiscountChange() {
+        try {
+            // Extract numeric value from formatted input
+            const rawValue = this.$discountAmount.val().replace(/[^\d]/g, "");
+            const discount = parseInt(rawValue) || 0;
+
+            // Update hidden field
+            this.$discountAmountHidden.val(discount);
+
+            await calculateTotals();
+        } catch (error) {
+            console.error("Error handling discount change:", error);
+        }
+    },
+};
+
+// Initialize discount manager
+discountManager.init();
+
 // Calculate total weight of all products
 function calculateTotalWeight() {
     let totalWeight = 0;
@@ -585,13 +639,24 @@ async function updateShippingCost(isButtonClick = false) {
             return;
         }
 
-        // Initial validation checks
-        const selectedOption = $("#customer_id").find(":selected");
-        if (!selectedOption.val()) {
+        // Get customer data from Alpine.js component
+        const customerIdInput = document.querySelector(
+            'input[name="customer_id"]'
+        );
+        if (!customerIdInput || !customerIdInput.value) {
             throw new Error("Silakan pilih pelanggan terlebih dahulu.");
         }
 
-        const postalCode = selectedOption.data("postal-code");
+        // Get customer data from global window object (set by Alpine.js)
+        const selectedCustomer = window.selectedCustomerData;
+
+        if (!selectedCustomer || !selectedCustomer.postal_code) {
+            throw new Error(
+                "Data pelanggan tidak ditemukan. Silakan pilih ulang pelanggan."
+            );
+        }
+
+        const postalCode = selectedCustomer.postal_code;
         console.log("Kode pos pelanggan:", postalCode);
 
         // Comprehensive postal code validation
@@ -701,15 +766,19 @@ async function calculateTotals() {
             subtotal += qty * price;
         });
 
-        // Get discount from promo
-        const discountValue = parseInt($("#promo_value").val()) || 0;
-        const discountType = $("#promo_type").val();
-        let discount = 0;
+        // Get discount - prioritize manual discount amount over promo
+        let discount = parseInt($("#discount_amount_hidden").val()) || 0;
 
-        if (discountType === "percentage") {
-            discount = Math.round(subtotal * (discountValue / 100));
-        } else if (discountType === "amount") {
-            discount = discountValue;
+        // If no manual discount, check for promo discount
+        if (discount === 0) {
+            const discountValue = parseInt($("#promo_value").val()) || 0;
+            const discountType = $("#promo_type").val();
+
+            if (discountType === "percentage") {
+                discount = Math.round(subtotal * (discountValue / 100));
+            } else if (discountType === "amount") {
+                discount = discountValue;
+            }
         }
 
         // Get shipping cost

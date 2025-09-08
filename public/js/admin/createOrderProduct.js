@@ -432,6 +432,7 @@ voucherManager.init();
 const discountManager = {
     // Cache jQuery selectors
     $discountAmount: $("#discount_amount"),
+    $discountAmountHidden: $("#discount_amount_hidden"),
     $voucherSection: $("#voucherStatusSection"),
     $voucherDiscountText: $("#voucherDiscountText"),
     $removeVoucherBtn: $("#removeVoucherBtn"),
@@ -439,18 +440,42 @@ const discountManager = {
     // Initialize discount handling
     init() {
         this.bindEvents();
+        this.formatDiscountInput();
     },
 
     // Bind event handlers
     bindEvents() {
         this.$discountAmount.on("input", () => this.handleDiscountChange());
+        this.$discountAmount.on("blur", () => this.formatDiscountInput());
         this.$removeVoucherBtn.on("click", () => this.handleRemoveVoucher());
+    },
+
+    // Format discount input with Indonesian number format
+    formatDiscountInput() {
+        const rawValue = this.$discountAmount.val().replace(/[^\d]/g, "");
+        const numericValue = parseInt(rawValue) || 0;
+
+        // Update hidden field with numeric value
+        this.$discountAmountHidden.val(numericValue);
+
+        // Format display value
+        if (numericValue === 0) {
+            this.$discountAmount.val("0");
+        } else {
+            this.$discountAmount.val(numericValue.toLocaleString("id-ID"));
+        }
     },
 
     // Handle discount amount input changes
     async handleDiscountChange() {
         try {
-            const discount = parseInt(this.$discountAmount.val()) || 0;
+            // Extract numeric value from formatted input
+            const rawValue = this.$discountAmount.val().replace(/[^\d]/g, "");
+            const discount = parseInt(rawValue) || 0;
+
+            // Update hidden field
+            this.$discountAmountHidden.val(discount);
+
             await calculateTotals();
             this.updateVoucherStatus(discount);
         } catch (error) {
@@ -462,7 +487,8 @@ const discountManager = {
     async handleRemoveVoucher() {
         try {
             // Reset discount amount
-            this.$discountAmount.val(0);
+            this.$discountAmount.val("0");
+            this.$discountAmountHidden.val(0);
 
             // Clear voucher data
             $("#voucher_code").val("");
@@ -671,13 +697,24 @@ async function updateShippingCost(isButtonClick = false) {
             return;
         }
 
-        // Initial validation checks
-        const selectedOption = $("#customer_id").find(":selected");
-        if (!selectedOption.val()) {
+        // Get customer data from Alpine.js component
+        const customerIdInput = document.querySelector(
+            'input[name="customer_id"]'
+        );
+        if (!customerIdInput || !customerIdInput.value) {
             throw new Error("Silakan pilih pelanggan terlebih dahulu.");
         }
 
-        const postalCode = selectedOption.data("postal-code");
+        // Get customer data from global window object (set by Alpine.js)
+        const selectedCustomer = window.selectedCustomerData;
+
+        if (!selectedCustomer || !selectedCustomer.postal_code) {
+            throw new Error(
+                "Data pelanggan tidak ditemukan. Silakan pilih ulang pelanggan."
+            );
+        }
+
+        const postalCode = selectedCustomer.postal_code;
         console.log("Kode pos pelanggan:", postalCode);
 
         // Comprehensive postal code validation
@@ -788,7 +825,7 @@ async function calculateTotals() {
         });
 
         // Get discount - prioritize manual discount amount over voucher
-        let discount = parseInt($("#discount_amount").val()) || 0;
+        let discount = parseInt($("#discount_amount_hidden").val()) || 0;
 
         // If no manual discount, check for voucher discount
         if (discount === 0) {
