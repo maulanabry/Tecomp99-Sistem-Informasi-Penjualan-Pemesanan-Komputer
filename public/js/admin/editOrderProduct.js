@@ -435,18 +435,69 @@ const discountManager = {
     // Initialize discount handling
     init() {
         this.bindEvents();
+        this.formatInitialValue();
+    },
+
+    // Format initial discount value on page load
+    formatInitialValue() {
+        const currentValue = this.$discountAmount.val();
+        if (currentValue && !isNaN(currentValue)) {
+            const numericValue =
+                parseInt(currentValue.replace(/[^\d]/g, "")) || 0;
+            if (numericValue > 0) {
+                this.$discountAmount.val(
+                    new Intl.NumberFormat("id-ID").format(numericValue)
+                );
+            }
+        }
     },
 
     // Bind event handlers
     bindEvents() {
-        this.$discountAmount.on("input", () => this.handleDiscountChange());
+        this.$discountAmount.on("input", (e) => this.handleDiscountInput(e));
         this.$removeVoucherBtn.on("click", () => this.handleRemoveVoucher());
+
+        // Handle form submission to convert formatted value back to number
+        $("#orderForm").on("submit", () => this.handleFormSubmit());
     },
 
-    // Handle discount amount input changes
+    // Handle discount input with formatting
+    handleDiscountInput(e) {
+        try {
+            let value = e.target.value.replace(/[^\d]/g, "");
+
+            // Format the input with thousand separators
+            if (value) {
+                e.target.value = new Intl.NumberFormat("id-ID").format(value);
+            } else {
+                e.target.value = "";
+            }
+
+            // Update calculations
+            const discount = parseInt(value) || 0;
+            this.updateVoucherStatus(discount);
+            calculateTotals();
+        } catch (error) {
+            console.error("Error handling discount input:", error);
+        }
+    },
+
+    // Handle form submission
+    handleFormSubmit() {
+        try {
+            // Convert formatted value back to raw number for submission
+            const rawValue = this.$discountAmount.val().replace(/[^\d]/g, "");
+            this.$discountAmount.val(rawValue);
+        } catch (error) {
+            console.error("Error handling form submit:", error);
+        }
+    },
+
+    // Handle discount amount input changes (legacy method for compatibility)
     async handleDiscountChange() {
         try {
-            const discount = parseInt(this.$discountAmount.val()) || 0;
+            const discount =
+                parseInt(this.$discountAmount.val().replace(/[^\d]/g, "")) || 0;
             await calculateTotals();
             this.updateVoucherStatus(discount);
         } catch (error) {
@@ -779,7 +830,8 @@ async function calculateTotals() {
         });
 
         // Get discount - prioritize manual discount amount over promo
-        let discount = parseInt($("#discount_amount").val()) || 0;
+        let discount =
+            parseInt($("#discount_amount").val().replace(/[^\d]/g, "")) || 0;
 
         // If no manual discount, check for promo discount
         if (discount === 0) {

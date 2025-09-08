@@ -19,7 +19,7 @@ const discountDisplay = document.getElementById("discountDisplay");
 const grandTotalDisplay = document.getElementById("grandTotalDisplay");
 
 // Discount Management Elements
-const discountAmountInput = document.getElementById("discount_amount");
+const discountAmountInput = document.getElementById("discount_amount_visible");
 const voucherStatusSection = document.getElementById("voucherStatusSection");
 const voucherDiscountText = document.getElementById("voucherDiscountText");
 const removeVoucherBtn = document.getElementById("removeVoucherBtn");
@@ -281,32 +281,6 @@ function serializeItems() {
     return items;
 }
 
-// Form submission handling
-document.getElementById("orderForm").addEventListener("submit", function (e) {
-    // Validate at least one item
-    if (document.querySelectorAll("#itemsTableBody tr").length === 0) {
-        alert("Harap tambahkan setidaknya satu item ke dalam pesanan.");
-        e.preventDefault();
-        return;
-    }
-
-    // Prepare items JSON
-    const items = serializeItems();
-    itemsInput.value = JSON.stringify(items);
-
-    // Update hidden inputs for sub_total and discount_amount from display
-    const subTotalInput = document.getElementById("sub_total");
-    const discountAmountInput = document.getElementById("discount_amount");
-
-    // Get values from display (remove non-digits)
-    const subtotal =
-        parseInt(subtotalDisplay.textContent.replace(/\D/g, "")) || 0;
-    const discount =
-        parseInt(discountDisplay.textContent.replace(/\D/g, "")) || 0;
-    subTotalInput.value = subtotal;
-    discountAmountInput.value = discount;
-});
-
 calculateTotals();
 
 // Promo code handling
@@ -408,7 +382,10 @@ async function calculateTotals() {
     });
 
     // Get discount - prioritize manual discount amount over promo
-    let discount = parseInt(discountAmountInput.value) || 0;
+    let discountValue = discountAmountInput.value
+        ? discountAmountInput.value.replace(/[^\d]/g, "")
+        : "0";
+    let discount = parseInt(discountValue) || 0;
 
     // If no manual discount, check for promo discount
     if (discount === 0) {
@@ -512,7 +489,6 @@ document.getElementById("orderForm").addEventListener("submit", function (e) {
 
     // Update hidden inputs for sub_total and discount_amount from display
     const subTotalInput = document.getElementById("sub_total");
-    const discountAmountInput = document.getElementById("discount_amount");
 
     // Get values from display (remove non-digits)
     const subtotal =
@@ -520,7 +496,9 @@ document.getElementById("orderForm").addEventListener("submit", function (e) {
     const discount =
         parseInt(discountDisplay.textContent.replace(/\D/g, "")) || 0;
     subTotalInput.value = subtotal;
-    discountAmountInput.value = discount;
+
+    // The discount input formatting is handled by the event listener above
+    // No need to modify discountAmountInput.value here as it's already handled
 });
 
 // Discount Management Functions
@@ -574,7 +552,38 @@ async function handleRemoveVoucher() {
 
 // Event Listeners for Discount Management
 if (discountAmountInput) {
-    discountAmountInput.addEventListener("input", handleDiscountChange);
+    // Format initial discount value on page load
+    const currentValue = discountAmountInput.value;
+    if (currentValue && !isNaN(currentValue)) {
+        const numericValue = parseInt(currentValue.replace(/[^\d]/g, "")) || 0;
+        if (numericValue > 0) {
+            discountAmountInput.value = new Intl.NumberFormat("id-ID").format(
+                numericValue
+            );
+        }
+    }
+
+    discountAmountInput.addEventListener("input", function (e) {
+        let value = e.target.value.replace(/[^\d]/g, "");
+
+        // Format the input with thousand separators
+        if (value) {
+            e.target.value = new Intl.NumberFormat("id-ID").format(value);
+        } else {
+            e.target.value = "";
+        }
+
+        // Update calculations
+        calculateTotals();
+    });
+
+    // Handle form submission to convert formatted value back to number
+    document
+        .getElementById("orderForm")
+        .addEventListener("submit", function () {
+            const rawValue = discountAmountInput.value.replace(/[^\d]/g, "");
+            document.getElementById("discount_amount").value = rawValue;
+        });
 }
 
 if (removeVoucherBtn) {
