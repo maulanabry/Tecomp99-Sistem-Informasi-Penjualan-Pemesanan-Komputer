@@ -60,26 +60,8 @@ class ServiceTicketSeeder extends Seeder
             $estimationDays = $faker->numberBetween(1, 7);
             $estimateDate = $scheduleDate->copy()->addDays($estimationDays);
 
-            // 🔁 Step-by-Step Flow: Ticket status based on order status
-            $ticketStatus = 'Menunggu';
-            switch ($order->status_order) {
-                case 'Diproses':
-                    // Step 3-4: Repair process ongoing
-                    $ticketStatus = $faker->randomElement([
-                        'Menunggu',        // Step 2: In queue
-                        'Diproses',        // Step 3: Technician working
-                        'Perlu Diambil',   // Step 4: Ready for pickup
-                        'Diantar'          // Step 4: Ready for delivery
-                    ]);
-                    break;
-                case 'Selesai':
-                    // Step 5: Delivery/Pickup confirmed
-                    $ticketStatus = 'Selesai';
-                    break;
-                case 'Dibatalkan':
-                    $ticketStatus = 'Dibatalkan';
-                    break;
-            }
+            // 🔁 Step-by-Step Flow: Ticket status must match order status
+            $ticketStatus = $order->status_order;
 
             // Ticket creation time (same as order or slightly after)
             $ticketCreatedAt = $orderCreatedAt->copy()->addMinutes($faker->numberBetween(5, 60));

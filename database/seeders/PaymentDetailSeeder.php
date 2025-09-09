@@ -19,9 +19,9 @@ class PaymentDetailSeeder extends Seeder
         DB::table('payment_details')->where('order_type', 'servis')->delete();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // Get order services that should have payments (not 'Dibatalkan')
+        // Get order services that should have payments (not 'dibatalkan')
         $orderServices = DB::table('order_services')
-            ->where('status_order', '!=', 'Dibatalkan')
+            ->where('status_order', '!=', 'dibatalkan')
             ->where('status_payment', '!=', 'belum_dibayar')
             ->select('order_service_id', 'status_payment', 'grand_total', 'paid_amount', 'created_at', 'last_payment_at')
             ->get();
@@ -34,7 +34,7 @@ class PaymentDetailSeeder extends Seeder
             $orderCreatedAt = Carbon::parse($order->created_at);
             $lastPaymentAt = $order->last_payment_at ? Carbon::parse($order->last_payment_at) : null;
 
-            if ($order->status_payment === 'down_payment') {
+            if ($order->status_payment === 'cicilan') {
                 // Create down payment
                 $paymentId = 'PAY' . str_pad($paymentCounter, 6, '0', STR_PAD_LEFT);
                 $paymentMethod = $faker->randomElement($paymentMethods);
@@ -73,7 +73,7 @@ class PaymentDetailSeeder extends Seeder
                     'change_returned' => $changeReturned,
                     'name' => 'Down Payment Service',
                     'status' => 'dibayar',
-                    'payment_type' => 'down_payment',
+                    'payment_type' => 'cicilan',
                     'order_type' => 'servis',
                     'proof_photo' => $proofPhoto,
                     'created_at' => $paymentTime,
@@ -165,7 +165,7 @@ class PaymentDetailSeeder extends Seeder
                         'change_returned' => $changeReturned1,
                         'name' => 'Down Payment Service',
                         'status' => 'dibayar',
-                        'payment_type' => 'down_payment',
+                        'payment_type' => 'cicilan',
                         'order_type' => 'servis',
                         'proof_photo' => $proofPhoto1,
                         'created_at' => $downPaymentTime,

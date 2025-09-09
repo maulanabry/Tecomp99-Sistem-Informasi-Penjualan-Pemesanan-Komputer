@@ -77,6 +77,27 @@ class ServiceTicket extends Model
         'deleted_at' => 'datetime',
     ];
 
+    /**
+     * Boot method to handle model events
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Enforce that service_ticket status must match order_service.status_order
+        static::saving(function ($ticket) {
+            if ($ticket->orderService && $ticket->status !== $ticket->orderService->status_order) {
+                throw new \Exception('Service ticket status must match the related order service status.');
+            }
+        });
+
+        static::updating(function ($ticket) {
+            if ($ticket->orderService && $ticket->status !== $ticket->orderService->status_order) {
+                throw new \Exception('Service ticket status must match the related order service status.');
+            }
+        });
+    }
+
     public function orderService()
     {
         return $this->belongsTo(OrderService::class, 'order_service_id', 'order_service_id');

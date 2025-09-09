@@ -15,7 +15,18 @@ return new class extends Migration
             $table->string('service_ticket_id')->primary();
             $table->string('order_service_id', 50);
             $table->unsignedBigInteger('admin_id')->nullable();
-            $table->enum('status', ['Menunggu', 'Menuju Lokasi', 'Diproses', 'Diantar', 'Perlu Diambil', 'Selesai', 'Dibatalkan'])
+            $table->enum('status', [
+                'Menunggu',             // order baru masuk
+                'Dijadwalkan',          // sudah ada jadwal servis
+                'Menuju_lokasi',        // teknisi OTW ke lokasi customer (onsite)
+                'Diproses',             // servis sedang dikerjakan
+                'Menunggu_sparepart',   // pending sparepart
+                'Siap_diambil',         // selesai, barang bisa diambil
+                'Diantar',              // selesai, barang sedang diantar ke customer
+                'Selesai',              // servis beres dan diterima customer
+                'Dibatalkan',           // order dibatalkan
+                'Expired'               // order hangus (tidak dibayar/diambil)
+            ])
                 ->default('Menunggu');
             $table->date('schedule_date');
             $table->integer('estimation_days')->nullable();

@@ -14,8 +14,19 @@ return new class extends Migration
         Schema::create('order_services', function (Blueprint $table) {
             $table->string('order_service_id', 50)->primary();
             $table->string('customer_id', 50);
-            $table->enum('status_order', ['Menunggu', 'Diproses', 'Dibatalkan', 'Selesai']);
-            $table->enum('status_payment', ['belum_dibayar', 'down_payment', 'cicilan', 'lunas', 'dibatalkan']);
+            $table->enum('status_order', [
+                'Menunggu',
+                'Dijadwalkan',
+                'Menuju_lokasi',
+                'Diproses',
+                'Menunggu_sparepart',
+                'Siap_diambil',
+                'Diantar',
+                'Selesai',
+                'Dibatalkan',
+                'Expired'
+            ]);
+            $table->enum('status_payment', ['belum_dibayar', 'cicilan', 'lunas', 'dibatalkan']);
             $table->text('complaints')->nullable();
             $table->enum('type', ['reguler', 'onsite']);
             $table->text('device');
@@ -25,6 +36,7 @@ return new class extends Migration
             $table->integer('sub_total')->default(0);
             $table->integer('grand_total')->default(0);
             $table->integer('discount_amount')->default(0);
+            $table->dateTime('expired_date')->nullable();
 
             // Add missing warranty and payment tracking fields
             $table->integer('warranty_period_months')->nullable();

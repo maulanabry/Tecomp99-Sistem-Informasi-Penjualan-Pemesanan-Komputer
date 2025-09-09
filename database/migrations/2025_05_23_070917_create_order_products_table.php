@@ -11,8 +11,15 @@ return new class extends Migration {
             $table->string('order_product_id', 50)->primary(); // e.g. OPRDDMMYY001
             $table->string('customer_id'); // FK ke customers.customer_id
 
-            $table->enum('status_order', ['menunggu', 'diproses', 'dikirim', 'selesai', 'dibatalkan']);
-            $table->enum('status_payment', ['belum_dibayar', 'down_payment', 'cicilan', 'lunas', 'dibatalkan']);
+            $table->enum('status_order', [
+                'Menunggu',
+                'Diproses',
+                'Diantar',
+                'Selesai',
+                'Dibatalkan',
+                'Expired'
+            ]);
+            $table->enum('status_payment', ['belum_dibayar', 'down_payment', 'lunas', 'dibatalkan']);
 
             $table->integer('sub_total');
             $table->integer('discount_amount')->nullable();
@@ -27,6 +34,7 @@ return new class extends Migration {
             $table->integer('paid_amount')->default(0);
             $table->integer('remaining_balance')->default(0);
             $table->timestamp('last_payment_at')->nullable();
+            $table->dateTime('expired_date')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

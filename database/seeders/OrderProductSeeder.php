@@ -36,11 +36,12 @@ class OrderProductSeeder extends Seeder
 
         // Status distributions
         $orderStatuses = [
-            'menunggu' => 5,
-            'diproses' => 8,
-            'dikirim' => 7,
-            'selesai' => 6,
-            'dibatalkan' => 4
+            'Menunggu' => 5,
+            'Diproses' => 8,
+            'Diantar' => 7,
+            'Selesai' => 6,
+            'Dibatalkan' => 4,
+            'Expired' => 3
         ];
 
         $paymentStatuses = [
