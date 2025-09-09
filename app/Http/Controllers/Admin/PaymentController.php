@@ -86,16 +86,24 @@ class PaymentController extends Controller
     {
         try {
             // Basic request validation
-            $request->validate([
+            $validationRules = [
                 'order_type' => 'required|in:produk,servis',
                 'order_id' => 'required|string',
                 'method' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_METHODS)),
                 'amount' => 'required|numeric|min:1',
-                'cash_received' => 'nullable|numeric|min:1',
                 'payment_type' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_TYPES)),
                 'proof_photo' => 'nullable|image|max:2048',
                 'warranty_period_months' => 'nullable|integer|min:1|max:60',
-            ]);
+            ];
+
+            // Add cash_received validation only for cash payments
+            if ($request->method === 'Tunai') {
+                $validationRules['cash_received'] = 'required|numeric|min:1';
+            } else {
+                $validationRules['cash_received'] = 'nullable|numeric';
+            }
+
+            $request->validate($validationRules);
 
             // Get the order
             $order = $request->order_type === 'produk'
@@ -123,7 +131,7 @@ class PaymentController extends Controller
                 'name' => 'admin',
                 'method' => $request->method,
                 'amount' => $request->amount,
-                'cash_received' => $request->cash_received,
+                'cash_received' => $request->method === 'Tunai' ? $request->cash_received : null,
                 'payment_type' => $request->payment_type,
                 'status' => 'pending', // Start as pending until validation passes
             ]);
@@ -199,13 +207,19 @@ class PaymentController extends Controller
             $validationRules = [
                 'method' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_METHODS)),
                 'amount' => 'required|numeric|min:1',
-                'cash_received' => 'nullable|numeric|min:1',
                 'status' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_STATUSES)),
                 'payment_type' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_TYPES)),
                 'proof_photo' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
                 'change_returned' => 'nullable|numeric|min:0',
                 'warranty_period_months' => 'nullable|integer|min:1|max:60',
             ];
+
+            // Add cash_received validation only for cash payments
+            if ($request->method === 'Tunai') {
+                $validationRules['cash_received'] = 'required|numeric|min:1';
+            } else {
+                $validationRules['cash_received'] = 'nullable|numeric';
+            }
 
             // Custom validation messages
             $validationMessages = [
@@ -214,8 +228,6 @@ class PaymentController extends Controller
                 'amount.required' => 'Jumlah pembayaran harus diisi.',
                 'amount.numeric' => 'Jumlah pembayaran harus berupa angka.',
                 'amount.min' => 'Jumlah pembayaran minimal 1.',
-                'cash_received.numeric' => 'Uang diterima harus berupa angka.',
-                'cash_received.min' => 'Uang diterima minimal 1.',
                 'status.required' => 'Status pembayaran harus dipilih.',
                 'status.in' => 'Status pembayaran tidak valid.',
                 'payment_type.required' => 'Tipe pembayaran harus dipilih.',
@@ -229,6 +241,15 @@ class PaymentController extends Controller
                 'warranty_period_months.min' => 'Masa garansi minimal 1 bulan.',
                 'warranty_period_months.max' => 'Masa garansi maksimal 60 bulan.',
             ];
+
+            // Add cash_received messages only for cash payments
+            if ($request->method === 'Tunai') {
+                $validationMessages['cash_received.required'] = 'Uang diterima harus diisi untuk pembayaran tunai.';
+                $validationMessages['cash_received.numeric'] = 'Uang diterima harus berupa angka.';
+                $validationMessages['cash_received.min'] = 'Uang diterima minimal 1.';
+            } else {
+                $validationMessages['cash_received.numeric'] = 'Uang diterima harus berupa angka.';
+            }
 
             $request->validate($validationRules, $validationMessages);
 
@@ -283,7 +304,7 @@ class PaymentController extends Controller
             // Update payment record
             $payment->method = $request->method;
             $payment->amount = $request->amount;
-            $payment->cash_received = $request->cash_received;
+            $payment->cash_received = $request->method === 'Tunai' ? $request->cash_received : null;
             $payment->status = $request->status;
             $payment->payment_type = $request->payment_type;
 

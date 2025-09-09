@@ -20,7 +20,7 @@ class RupiahFormatter {
             allowEmpty: true,
             minValue: 0,
             maxValue: null,
-            placeholder: "Rp 0",
+            placeholder: "",
             onValueChange: null,
             livewire: false,
         };

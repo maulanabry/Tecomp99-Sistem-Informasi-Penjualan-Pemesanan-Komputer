@@ -70,7 +70,8 @@ class PaymentDetail extends Model
 
     const PAYMENT_TYPES = [
         'full' => 'Full Payment',
-        'down_payment' => 'Down Payment'
+        'down_payment' => 'Down Payment',
+        'cicilan' => 'Cicilan'
     ];
 
     const PAYMENT_STATUSES = [
@@ -184,9 +185,32 @@ class PaymentDetail extends Model
                 $errors[] = 'Order tidak dapat menerima pembayaran (sudah lunas atau dibatalkan).';
             }
 
-            // Validate full payment amount
+            // Validate payment amounts based on type and order type
             if ($this->payment_type === 'full' && $this->amount < $order->remaining_balance) {
                 $errors[] = 'Jumlah pembayaran tidak mencukupi untuk pelunasan penuh.';
+            }
+
+            // Validate down payment for product orders (must be exactly 50%)
+            if ($this->order_type === 'produk' && $this->payment_type === 'down_payment') {
+                $expectedDP = round($order->grand_total * 0.5);
+                if ($this->amount != $expectedDP) {
+                    $errors[] = "Down Payment untuk produk harus tepat 50% dari total (Rp " . number_format($expectedDP, 0, ',', '.') . ").";
+                }
+            }
+
+            // Validate cicilan payments
+            if ($this->payment_type === 'cicilan') {
+                if ($this->amount > $order->remaining_balance) {
+                    $errors[] = 'Jumlah cicilan tidak boleh melebihi sisa pembayaran.';
+                }
+
+                // For service orders, validate maximum 2 installments
+                if ($this->order_type === 'servis') {
+                    $existingPayments = $order->paymentDetails()->where('payment_type', 'cicilan')->where('status', 'dibayar')->count();
+                    if ($existingPayments >= 2) {
+                        $errors[] = 'Order servis maksimal 2 kali cicilan.';
+                    }
+                }
             }
         } else {
             $errors[] = 'Order tidak ditemukan.';

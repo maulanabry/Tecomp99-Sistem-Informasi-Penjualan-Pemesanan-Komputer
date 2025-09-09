@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->string('customer_id'); // FK ke customers.customer_id
 
             $table->enum('status_order', ['menunggu', 'diproses', 'dikirim', 'selesai', 'dibatalkan']);
-            $table->enum('status_payment', ['belum_dibayar', 'down_payment', 'lunas', 'dibatalkan']);
+            $table->enum('status_payment', ['belum_dibayar', 'down_payment', 'cicilan', 'lunas', 'dibatalkan']);
 
             $table->integer('sub_total');
             $table->integer('discount_amount')->nullable();

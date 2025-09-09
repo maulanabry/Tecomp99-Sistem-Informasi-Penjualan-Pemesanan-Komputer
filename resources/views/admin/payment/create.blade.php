@@ -1,5 +1,6 @@
 <x-layout-admin>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/currency-formatter.js') }}"></script>
     <div class="max-w-7xl mx-auto p-6" x-data="paymentForm()">
         @if (session('success'))
             <div class="mb-4">
@@ -182,32 +183,20 @@
                         <label for="cash_received" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Uang Diterima <span class="text-red-500">*</span>
                         </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <span class="text-gray-500 dark:text-gray-400 text-sm">Rp</span>
-                            </div>
-                            <input type="text" id="cash_received" name="cash_received"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                placeholder="0"
-                                data-currency="true">
-                            <input type="hidden" id="cash_received_raw" name="cash_received_raw">
-                        </div>
+                        <input type="text" id="cash_received" name="cash_received"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                            placeholder="0"
+                            data-currency="true">
                     </div>
 
                     <div>
                         <label for="amount" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Jumlah Pembayaran <span class="text-red-500">*</span>
                         </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <span class="text-gray-500 dark:text-gray-400 text-sm">Rp</span>
-                            </div>
-                            <input type="text" id="amount" name="amount" required
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                placeholder="0"
-                                data-currency="true">
-                            <input type="hidden" id="amount_raw" name="amount_raw">
-                        </div>
+                        <input type="text" id="amount" name="amount" required
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                            placeholder="0"
+                            data-currency="true">
                         <div id="paymentValidationAlert" class="mt-2 hidden">
                             <div class="p-3 text-sm text-red-800 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-300">
                                 <span id="paymentValidationMessage"></span>
@@ -224,16 +213,10 @@
                         <label for="change_returned" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Kembalian
                         </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <span class="text-gray-500 dark:text-gray-400 text-sm">Rp</span>
-                            </div>
-                            <input type="text" id="change_returned" name="change_returned" readonly
-                                class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                placeholder="0"
-                                data-currency="true">
-                            <input type="hidden" id="change_returned_raw" name="change_returned_raw">
-                        </div>
+                        <input type="text" id="change_returned" name="change_returned" readonly
+                            class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                            placeholder="0"
+                            data-currency="true">
                     </div>
 
                     <div>
@@ -308,7 +291,6 @@
                 </button>
             </div>
         </form>
-    </div>
 
         <!-- Order Selection Modal -->
         <livewire:admin.order-selection-modal />
@@ -440,141 +422,7 @@
             const paymentValidationMessage = document.getElementById('paymentValidationMessage');
             const paymentSuccessMessage = document.getElementById('paymentSuccessMessage');
             
-            // Hidden inputs for raw values
-            const amountRawInput = document.getElementById('amount_raw');
-            const cashReceivedRawInput = document.getElementById('cash_received_raw');
-            const changeReturnedRawInput = document.getElementById('change_returned_raw');
-            
             let currentOrder = null;
-
-            // Currency formatting functions
-            function formatRupiahInput(value) {
-                // Remove all non-digit characters
-                const numericValue = value.toString().replace(/[^\d]/g, '');
-                
-                if (numericValue === '') return '';
-                
-                // Format with thousand separators
-                return new Intl.NumberFormat('id-ID').format(parseInt(numericValue));
-            }
-
-            function parseRupiahInput(value) {
-                // Handle empty or null values
-                if (!value || value === '') return 0;
-                
-                // Convert to string and remove all non-digit characters
-                const numericValue = value.toString().replace(/[^\d]/g, '');
-                return numericValue === '' ? 0 : parseInt(numericValue);
-            }
-
-            function updateRawValue(input, rawInput) {
-                const rawValue = parseRupiahInput(input.value);
-                rawInput.value = rawValue;
-                return rawValue;
-            }
-
-            // Initialize currency formatting for all currency inputs
-            function initializeCurrencyInput(input, rawInput) {
-                // Format on input with debouncing to prevent double formatting
-                let inputTimeout;
-                input.addEventListener('input', function(e) {
-                    clearTimeout(inputTimeout);
-                    inputTimeout = setTimeout(() => {
-                        const cursorPosition = e.target.selectionStart;
-                        const oldValue = e.target.value;
-                        
-                        // Only format if the value has actually changed
-                        const rawValue = parseRupiahInput(oldValue);
-                        const formattedValue = formatRupiahInput(rawValue);
-                        
-                        // Prevent infinite loop by checking if formatting is needed
-                        if (oldValue !== formattedValue) {
-                            e.target.value = formattedValue;
-                            
-                            // Calculate new cursor position
-                            const digitsBefore = oldValue.substring(0, cursorPosition).replace(/[^\d]/g, '').length;
-                            const newPosition = calculateCursorPosition(formattedValue, digitsBefore);
-                            e.target.setSelectionRange(newPosition, newPosition);
-                        }
-                        
-                        // Update raw value
-                        updateRawValue(input, rawInput);
-                    }, 100);
-                });
-
-                // Format on paste
-                input.addEventListener('paste', function(e) {
-                    setTimeout(() => {
-                        const rawValue = parseRupiahInput(e.target.value);
-                        const formattedValue = formatRupiahInput(rawValue);
-                        e.target.value = formattedValue;
-                        updateRawValue(input, rawInput);
-                    }, 0);
-                });
-
-                // Format on focus out
-                input.addEventListener('blur', function(e) {
-                    const rawValue = parseRupiahInput(e.target.value);
-                    const formattedValue = formatRupiahInput(rawValue);
-                    e.target.value = formattedValue;
-                    updateRawValue(input, rawInput);
-                });
-
-                // Prevent non-numeric input
-                input.addEventListener('keypress', function(e) {
-                    // Allow: backspace, delete, tab, escape, enter
-                    if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
-                        // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-                        (e.keyCode === 65 && e.ctrlKey === true) ||
-                        (e.keyCode === 67 && e.ctrlKey === true) ||
-                        (e.keyCode === 86 && e.ctrlKey === true) ||
-                        (e.keyCode === 88 && e.ctrlKey === true)) {
-                        return;
-                    }
-                    // Ensure that it is a number and stop the keypress
-                    if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
-                        e.preventDefault();
-                    }
-                });
-            }
-
-            // Helper function to calculate cursor position after formatting
-            function calculateCursorPosition(formattedValue, digitsBefore) {
-                let position = 0;
-                let digitsFound = 0;
-                
-                for (let i = 0; i < formattedValue.length; i++) {
-                    if (/\d/.test(formattedValue[i])) {
-                        digitsFound++;
-                        if (digitsFound >= digitsBefore) {
-                            position = i + 1;
-                            break;
-                        }
-                    }
-                    position = i + 1;
-                }
-                
-                return position;
-            }
-
-            // Initialize currency inputs
-            initializeCurrencyInput(amountInput, amountRawInput);
-            initializeCurrencyInput(cashReceivedInput, cashReceivedRawInput);
-            initializeCurrencyInput(changeReturnedInput, changeReturnedRawInput);
-
-            // Helper function to get raw numeric value from formatted input
-            function getRawValue(input) {
-                return parseRupiahInput(input.value);
-            }
-
-            // Helper function to set formatted value to input
-            function setFormattedValue(input, rawInput, value) {
-                const formattedValue = formatRupiahInput(value);
-                input.value = formattedValue;
-                if (rawInput) {
-                    rawInput.value = value;
-                }
-            }
 
             // Listen for order selection to update currentOrder
             window.addEventListener('orderSelected', (event) => {
@@ -588,12 +436,12 @@
                     cashReceivedContainer.classList.remove('hidden');
                     cashChangeContainer.classList.remove('hidden');
                     cashReceivedInput.required = true;
-                    
+
                     // Set minimum cash received to match amount if order is selected
                     if (currentOrder) {
-                        const currentAmount = getRawValue(amountInput);
+                        const currentAmount = window.rupiahFormatter.getValue(amountInput);
                         if (currentAmount > 0) {
-                            setFormattedValue(cashReceivedInput, cashReceivedRawInput, currentAmount);
+                            window.rupiahFormatter.setValue(cashReceivedInput, currentAmount);
                         }
                     }
                     calculateChange();
@@ -601,12 +449,16 @@
                     cashReceivedContainer.classList.add('hidden');
                     cashChangeContainer.classList.add('hidden');
                     cashReceivedInput.required = false;
-                    
+
                     // Clear cash fields for non-cash payments
                     cashReceivedInput.value = '';
-                    cashReceivedRawInput.value = '';
                     changeReturnedInput.value = '';
-                    changeReturnedRawInput.value = '';
+
+                    // Clear the hidden input created by currency formatter
+                    const hiddenCashInput = document.querySelector('input[name="cash_received"]');
+                    if (hiddenCashInput && hiddenCashInput.type === 'hidden') {
+                        hiddenCashInput.value = '';
+                    }
                 }
             });
 
@@ -614,12 +466,12 @@
             cashReceivedInput.addEventListener('input', function() {
                 if (!currentOrder) return;
                 
-                const cashReceived = getRawValue(this);
+                const cashReceived = window.rupiahFormatter.getValue(this);
                 const remainingBalance = currentOrder.remaining_balance;
                 
                 // Amount is either remaining balance or cash received, whichever is smaller
                 const newAmount = Math.min(cashReceived, remainingBalance);
-                setFormattedValue(amountInput, amountRawInput, newAmount);
+                window.rupiahFormatter.setValue(amountInput, newAmount);
                 calculateChange();
                 validatePaymentAndCalculateChange();
             });
@@ -627,12 +479,12 @@
             // Update cash received when amount changes (for cash payments)
             amountInput.addEventListener('input', function() {
                 if (methodSelect.value === 'Tunai' && currentOrder) {
-                    const amount = getRawValue(this);
-                    const currentCashReceived = getRawValue(cashReceivedInput);
+                    const amount = window.rupiahFormatter.getValue(this);
+                    const currentCashReceived = window.rupiahFormatter.getValue(cashReceivedInput);
                     
                     // If cash received is less than amount, update it to match amount
                     if (currentCashReceived < amount) {
-                        setFormattedValue(cashReceivedInput, cashReceivedRawInput, amount);
+                        window.rupiahFormatter.setValue(cashReceivedInput, amount);
                     }
                 }
                 validatePaymentAndCalculateChange();
@@ -650,21 +502,21 @@
                     if (paymentType === 'down_payment') {
                         // Product DP must be exactly 50%
                         const dpAmount = Math.round(currentOrder.grand_total * 0.5);
-                        setFormattedValue(amountInput, amountRawInput, dpAmount);
+                        window.rupiahFormatter.setValue(amountInput, dpAmount);
                         amountInput.readOnly = true;
-                        
+
                         // Update cash received for cash payments
                         if (methodSelect.value === 'Tunai') {
-                            setFormattedValue(cashReceivedInput, cashReceivedRawInput, dpAmount);
+                            window.rupiahFormatter.setValue(cashReceivedInput, dpAmount);
                         }
                     } else {
                         amountInput.readOnly = false;
                         if (paymentType === 'full') {
-                            setFormattedValue(amountInput, amountRawInput, remainingBalance);
-                            
+                            window.rupiahFormatter.setValue(amountInput, remainingBalance);
+
                             // Update cash received for cash payments
                             if (methodSelect.value === 'Tunai') {
-                                setFormattedValue(cashReceivedInput, cashReceivedRawInput, remainingBalance);
+                                window.rupiahFormatter.setValue(cashReceivedInput, remainingBalance);
                             }
                         }
                     }
@@ -672,11 +524,11 @@
                     // Service payments are flexible
                     amountInput.readOnly = false;
                     if (paymentType === 'full') {
-                        setFormattedValue(amountInput, amountRawInput, remainingBalance);
-                        
+                        window.rupiahFormatter.setValue(amountInput, remainingBalance);
+
                         // Update cash received for cash payments
                         if (methodSelect.value === 'Tunai') {
-                            setFormattedValue(cashReceivedInput, cashReceivedRawInput, remainingBalance);
+                            window.rupiahFormatter.setValue(cashReceivedInput, remainingBalance);
                         }
                     }
                 }
@@ -688,7 +540,7 @@
             function validatePaymentAndCalculateChange() {
                 if (!currentOrder) return;
 
-                const amount = getRawValue(amountInput);
+                const amount = window.rupiahFormatter.getValue(amountInput);
                 const paymentType = paymentTypeSelect.value;
                 const remainingBalance = currentOrder.remaining_balance || currentOrder.grand_total;
 
@@ -716,6 +568,17 @@
                     return;
                 }
 
+                if (paymentType === 'cicilan') {
+                    if (amount > remainingBalance) {
+                        showValidationError(`Jumlah cicilan tidak boleh melebihi sisa pembayaran (Rp ${formatRupiah(remainingBalance)})`);
+                        return;
+                    }
+                    if (amount <= 0) {
+                        showValidationError('Jumlah cicilan harus lebih dari 0');
+                        return;
+                    }
+                }
+
                 // Calculate change for cash payments
                 if (methodSelect.value === 'Tunai') {
                     calculateChange();
@@ -731,18 +594,19 @@
                     }
                 } else if (paymentType === 'down_payment') {
                     showSuccessMessage(`Down payment sebesar Rp ${formatRupiah(amount)}`);
-                } else {
-                    showSuccessMessage(`Cicilan sebesar Rp ${formatRupiah(amount)}`);
+                } else if (paymentType === 'cicilan') {
+                    const remainingAfterPayment = remainingBalance - amount;
+                    showSuccessMessage(`Cicilan sebesar Rp ${formatRupiah(amount)}. Sisa: Rp ${formatRupiah(remainingAfterPayment)}`);
                 }
             }
 
             function calculateChange() {
                 if (!currentOrder || methodSelect.value !== 'Tunai') return;
-                
-                const cashReceived = getRawValue(cashReceivedInput);
-                const amount = getRawValue(amountInput);
+
+                const cashReceived = window.rupiahFormatter.getValue(cashReceivedInput);
+                const amount = window.rupiahFormatter.getValue(amountInput);
                 const change = Math.max(0, cashReceived - amount);
-                setFormattedValue(changeReturnedInput, changeReturnedRawInput, change);
+                window.rupiahFormatter.setValue(changeReturnedInput, change);
             }
 
             function showValidationError(message) {
@@ -757,43 +621,10 @@
                 paymentValidationAlert.classList.add('hidden');
             }
 
-            // Format number to Indonesian Rupiah
+            // Format number to Indonesian Rupiah (without Rp prefix since currency formatter handles it)
             const formatRupiah = (number) => {
-                return new Intl.NumberFormat('id-ID').format(number);
+                return number.toLocaleString('id-ID');
             };
-
-            // Form submission handler to ensure raw values are submitted
-            const paymentForm = document.querySelector('form');
-            paymentForm.addEventListener('submit', function(e) {
-                // Update all raw values before submission
-                updateRawValue(amountInput, amountRawInput);
-                
-                // Update the name attributes to submit raw values
-                amountInput.name = 'amount_formatted';
-                amountRawInput.name = 'amount';
-                
-                // Only handle cash fields if payment method is cash
-                if (methodSelect.value === 'Tunai') {
-                    updateRawValue(cashReceivedInput, cashReceivedRawInput);
-                    updateRawValue(changeReturnedInput, changeReturnedRawInput);
-                    
-                    cashReceivedInput.name = 'cash_received_formatted';
-                    cashReceivedRawInput.name = 'cash_received';
-                    
-                    if (changeReturnedInput.value) {
-                        changeReturnedInput.name = 'change_returned_formatted';
-                        changeReturnedRawInput.name = 'change_returned';
-                    }
-                } else {
-                    // For non-cash payments, remove cash_received from form submission
-                    cashReceivedInput.removeAttribute('name');
-                    cashReceivedRawInput.removeAttribute('name');
-                    changeReturnedInput.removeAttribute('name');
-                    changeReturnedRawInput.removeAttribute('name');
-                }
-            });
-
-            // Note: amountInput event listener is already added above for cash received validation
 
             // Warranty period validation and estimation
             const warrantyInput = document.getElementById('warranty_period_months');
