@@ -34,14 +34,14 @@ class OrderProductSeeder extends Seeder
         $orders = [];
         $orderItems = [];
 
-        // Status distributions
+        // Status distributions - Updated to match migration ENUMs
         $orderStatuses = [
-            'Menunggu' => 5,
-            'Diproses' => 8,
-            'Diantar' => 7,
-            'Selesai' => 6,
-            'Dibatalkan' => 4,
-            'Expired' => 3
+            'menunggu' => 5,
+            'diproses' => 8,
+            'diantar' => 7,
+            'selesai' => 6,
+            'dibatalkan' => 4,
+            'expired' => 3
         ];
 
         $paymentStatuses = [

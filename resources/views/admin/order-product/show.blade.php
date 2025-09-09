@@ -57,23 +57,26 @@
                                 @method('PUT')
                                 <div class="flex-1 min-w-48">
                                     <label for="status_order" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                                        Status Saat Ini: 
+                                        Status Saat Ini:
                                         <span class="px-2 py-1 text-xs font-medium rounded-full ml-2
                                             @if($orderProduct->status_order === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
                                             @elseif($orderProduct->status_order === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
                                             @elseif($orderProduct->status_order === 'dikirim') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
                                             @elseif($orderProduct->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @elseif($orderProduct->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                            @elseif($orderProduct->status_order === 'expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                             @endif">
-                                            {{ ucfirst($orderProduct->status_order) }}
+                                            {{ str_replace('_', ' ', ucfirst($orderProduct->status_order)) }}
                                         </span>
                                     </label>
                                     <select name="status_order" id="status_order" required
                                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
-                                        <option value="menunggu" {{ $orderProduct->status_order === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                        <option value="diproses" {{ $orderProduct->status_order === 'diproses' ? 'selected' : '' }}>Diproses</option>
-                                        <option value="dikirim" {{ $orderProduct->status_order === 'dikirim' ? 'selected' : '' }}>Dikirim</option>
-                                        <option value="selesai" {{ $orderProduct->status_order === 'selesai' ? 'selected' : '' }}>Selesai</option>
-                                        <option value="dibatalkan" {{ $orderProduct->status_order === 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                                        <option value="Menunggu" {{ $orderProduct->status_order === 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                        <option value="Diproses" {{ $orderProduct->status_order === 'Diproses' ? 'selected' : '' }}>Diproses</option>
+                                        <option value="Diantar" {{ $orderProduct->status_order === 'Diantar' ? 'selected' : '' }}>Diantar</option>
+                                        <option value="Selesai" {{ $orderProduct->status_order === 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                                        <option value="Dibatalkan" {{ $orderProduct->status_order === 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                                        <option value="Expired" {{ $orderProduct->status_order === 'Expired' ? 'selected' : '' }}>Expired</option>
                                     </select>
                                 </div>
                                 <button type="submit" 
@@ -113,13 +116,15 @@
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Order</dt>
                                     <dd class="mt-1">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            {{ $orderProduct->status_order === 'menunggu' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : '' }}
-                                            {{ $orderProduct->status_order === 'diproses' ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : '' }}
-                                            {{ $orderProduct->status_order === 'dikirim' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : '' }}
-                                            {{ $orderProduct->status_order === 'selesai' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : '' }}
-                                            {{ $orderProduct->status_order === 'dibatalkan' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : '' }}">
+                                            @if($orderProduct->status_order === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                            @elseif($orderProduct->status_order === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                            @elseif($orderProduct->status_order === 'dikirim') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                            @elseif($orderProduct->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @elseif($orderProduct->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                            @elseif($orderProduct->status_order === 'expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                            @endif">
                                             <i class="fas fa-circle mr-1"></i>
-                                            {{ ucfirst($orderProduct->status_order) }}
+                                            {{ str_replace('_', ' ', ucfirst($orderProduct->status_order)) }}
                                         </span>
                                     </dd>
                                 </div>

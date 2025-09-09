@@ -130,6 +130,13 @@ class OrderService extends Model
                 $order->remaining_balance = $order->grand_total - ($order->paid_amount ?? 0);
             }
         });
+
+        static::updated(function ($order) {
+            // Sinkronisasi status dengan ServiceTicket ketika status_order berubah
+            if ($order->isDirty('status_order')) {
+                $order->syncServiceTicketStatus();
+            }
+        });
     }
 
     /**
@@ -276,6 +283,79 @@ class OrderService extends Model
     public function tickets()
     {
         return $this->hasMany(ServiceTicket::class, 'order_service_id', 'order_service_id');
+    }
+
+    /**
+     * Sinkronisasi status ServiceTicket dengan status OrderService
+     * Ketika status OrderService berubah, ServiceTicket yang terkait juga akan diperbarui
+     */
+    public function syncServiceTicketStatus()
+    {
+        // Mapping status OrderService (uppercase) ke ServiceTicket (lowercase)
+        $statusMapping = [
+            'Menunggu' => 'menunggu',
+            'Dijadwalkan' => 'dijadwalkan',
+            'Menuju_lokasi' => 'menuju_lokasi',
+            'Diproses' => 'diproses',
+            'Menunggu_sparepart' => 'menunggu_sparepart',
+            'Siap_diambil' => 'siap_diambil',
+            'Diantar' => 'diantar',
+            'Selesai' => 'selesai',
+            'Dibatalkan' => 'dibatalkan',
+            'Expired' => 'expired'
+        ];
+
+        $newTicketStatus = $statusMapping[$this->status_order] ?? 'menunggu';
+
+        // Set session flag untuk bypass validasi
+        session(['syncing_ticket_status' => true]);
+
+        try {
+            // Update semua ServiceTicket yang terkait dengan OrderService ini
+            $this->tickets()->update(['status' => $newTicketStatus]);
+
+            // Buat ServiceAction untuk setiap tiket yang diperbarui
+            foreach ($this->tickets as $ticket) {
+                // Buat deskripsi aksi berdasarkan status baru
+                $actionDescriptions = [
+                    'menunggu' => 'Status order diubah menjadi menunggu',
+                    'dijadwalkan' => 'Status order diubah menjadi dijadwalkan',
+                    'menuju_lokasi' => 'Status order diubah menjadi menuju lokasi',
+                    'diproses' => 'Status order diubah menjadi diproses',
+                    'menunggu_sparepart' => 'Status order diubah menjadi menunggu sparepart',
+                    'siap_diambil' => 'Status order diubah menjadi siap diambil',
+                    'diantar' => 'Status order diubah menjadi diantar',
+                    'selesai' => 'Status order diubah menjadi selesai',
+                    'dibatalkan' => 'Status order diubah menjadi dibatalkan',
+                    'expired' => 'Status order diubah menjadi expired'
+                ];
+
+                $actionDescription = $actionDescriptions[$newTicketStatus] ?? 'Status order diperbarui';
+
+                // Get the next number for this ticket's actions
+                $nextNumber = $ticket->actions()->max('number') + 1 ?? 1;
+
+                // Generate unique service action ID with timestamp and random component
+                do {
+                    $timestamp = now()->format('ymdHis');
+                    $random = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+                    $actionId = 'OSA' . $timestamp . $random;
+                    $exists = \App\Models\ServiceAction::where('service_action_id', $actionId)->exists();
+                } while ($exists);
+
+                // Buat ServiceAction baru
+                \App\Models\ServiceAction::create([
+                    'service_action_id' => $actionId,
+                    'service_ticket_id' => $ticket->service_ticket_id,
+                    'action' => $actionDescription,
+                    'number' => $nextNumber,
+                    'created_at' => now()
+                ]);
+            }
+        } finally {
+            // Hapus session flag setelah selesai
+            session()->forget('syncing_ticket_status');
+        }
     }
 
     /**

@@ -70,9 +70,9 @@ class ServiceTicketTable extends Component
         try {
             $serviceTicket = ServiceTicket::findOrFail($this->selectedServiceTicketId);
 
-            if (!in_array($serviceTicket->status, ['Selesai', 'Dibatalkan'])) {
+            if (!in_array($serviceTicket->status, ['selesai', 'dibatalkan'])) {
                 $serviceTicket->update([
-                    'status' => 'Dibatalkan'
+                    'status' => 'dibatalkan'
                 ]);
 
                 session()->flash('success', 'Tiket servis berhasil dibatalkan.');

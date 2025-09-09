@@ -449,7 +449,7 @@ class OrderProductController extends Controller
     public function updateStatus(Request $request, OrderProduct $orderProduct)
     {
         $validated = $request->validate([
-            'status_order' => 'required|in:menunggu,diproses,dikirim,selesai,dibatalkan',
+            'status_order' => 'required|in:Menunggu,Diproses,Diantar,Selesai,Dibatalkan,Expired',
         ]);
 
         $oldStatus = $orderProduct->status_order;

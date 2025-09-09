@@ -172,11 +172,12 @@
                                 'dikirim' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
                                 'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
                                 'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                'expired' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
                             ];
                             $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
-                            {{ ucfirst($order->status_order) }}
+                            {{ str_replace('_', ' ', ucfirst($order->status_order)) }}
                         </span>
                     </div>
                     <div class="col-span-1 text-sm">
@@ -262,11 +263,12 @@
                                 'dikirim' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
                                 'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
                                 'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                'expired' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
                             ];
                             $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
-                            {{ ucfirst($order->status_order) }}
+                            {{ str_replace('_', ' ', ucfirst($order->status_order)) }}
                         </span>
                     </div>
                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">

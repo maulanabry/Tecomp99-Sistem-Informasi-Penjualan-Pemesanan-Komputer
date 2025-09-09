@@ -16,9 +16,10 @@ class OrderSelectionModal extends Component
     public $searchQuery = '';
     public $orderTypeFilter = '';
     public $statusFilter = '';
+    public $statusOrderFilter = '';
     public $selectedOrder = null;
 
-    protected $listeners = ['openOrderModal' => 'open'];
+    protected $listeners = ['openOrderModal' => 'bukaModal'];
 
     public function mount()
     {
@@ -40,6 +41,11 @@ class OrderSelectionModal extends Component
         $this->resetPage();
     }
 
+    public function updatedStatusOrderFilter()
+    {
+        $this->resetPage();
+    }
+
     public function open()
     {
         $this->show = true;
@@ -48,7 +54,7 @@ class OrderSelectionModal extends Component
     public function close()
     {
         $this->show = false;
-        $this->reset(['searchQuery', 'orderTypeFilter', 'statusFilter']);
+        $this->reset(['searchQuery', 'orderTypeFilter', 'statusFilter', 'statusOrderFilter']);
         $this->resetPage();
     }
 
@@ -99,7 +105,7 @@ class OrderSelectionModal extends Component
         }
 
         if ($this->selectedOrder) {
-            // Dispatch event ke parent component dengan data order
+            // Kirim event ke parent component dengan data order
             $this->dispatch('orderSelected', $this->selectedOrder);
         }
 

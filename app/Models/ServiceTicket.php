@@ -84,16 +84,61 @@ class ServiceTicket extends Model
     {
         parent::boot();
 
-        // Enforce that service_ticket status must match order_service.status_order
+        // Validasi status ServiceTicket harus sesuai dengan OrderService
+        // Kecuali jika sedang dalam proses sinkronisasi otomatis
         static::saving(function ($ticket) {
-            if ($ticket->orderService && $ticket->status !== $ticket->orderService->status_order) {
-                throw new \Exception('Service ticket status must match the related order service status.');
+            // Skip validasi jika sedang dalam proses sinkronisasi
+            if (session('syncing_ticket_status', false)) {
+                return;
+            }
+
+            if ($ticket->orderService) {
+                // Map lowercase ticket status to uppercase order status for comparison
+                $statusMapping = [
+                    'menunggu' => 'Menunggu',
+                    'dijadwalkan' => 'Dijadwalkan',
+                    'menuju_lokasi' => 'Menuju_lokasi',
+                    'diproses' => 'Diproses',
+                    'menunggu_sparepart' => 'Menunggu_sparepart',
+                    'siap_diambil' => 'Siap_diambil',
+                    'diantar' => 'Diantar',
+                    'selesai' => 'Selesai',
+                    'dibatalkan' => 'Dibatalkan',
+                    'expired' => 'Expired',
+                ];
+
+                $mappedOrderStatus = $statusMapping[$ticket->status] ?? $ticket->status;
+                if ($mappedOrderStatus !== $ticket->orderService->status_order) {
+                    throw new \Exception('Status tiket servis harus sesuai dengan status order servis terkait.');
+                }
             }
         });
 
         static::updating(function ($ticket) {
-            if ($ticket->orderService && $ticket->status !== $ticket->orderService->status_order) {
-                throw new \Exception('Service ticket status must match the related order service status.');
+            // Skip validasi jika sedang dalam proses sinkronisasi
+            if (session('syncing_ticket_status', false)) {
+                return;
+            }
+
+            if ($ticket->orderService) {
+                // Map lowercase ticket status to uppercase order status for comparison
+                $statusMapping = [
+                    'menunggu' => 'Menunggu',
+                    'dijadwalkan' => 'Dijadwalkan',
+                    'menuju_lokasi' => 'Menuju_lokasi',
+                    'diproses' => 'Diproses',
+                    'menunggu_sparepart' => 'Menunggu_sparepart',
+                    'siap_diambil' => 'Siap_diambil',
+                    'diantar' => 'Diantar',
+                    'selesai' => 'Selesai',
+                    'dibatalkan' => 'Dibatalkan',
+                    'expired' => 'Expired',
+                ];
+
+                $mappedOrderStatus = $statusMapping[$ticket->status] ?? $ticket->status;
+                if ($mappedOrderStatus !== $ticket->orderService->status_order) {
+                    throw new \Exception('Status tiket servis harus sesuai dengan status order servis terkait.');
+                }
             }
         });
     }

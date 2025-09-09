@@ -182,13 +182,20 @@
                     let statusBadge = '';
                     if (props.status) {
                         const statusColors = {
-                            'Menunggu': 'bg-yellow-100 text-yellow-800',
-                            'Diproses': 'bg-blue-100 text-blue-800',
-                            'Selesai': 'bg-green-100 text-green-800',
-                            'Dibatalkan': 'bg-red-100 text-red-800'
+                            'menunggu': 'bg-yellow-100 text-yellow-800',
+                            'dijadwalkan': 'bg-purple-100 text-purple-800',
+                            'menuju_lokasi': 'bg-orange-100 text-orange-800',
+                            'diproses': 'bg-blue-100 text-blue-800',
+                            'menunggu_sparepart': 'bg-indigo-100 text-indigo-800',
+                            'siap_diambil': 'bg-cyan-100 text-cyan-800',
+                            'diantar': 'bg-pink-100 text-pink-800',
+                            'selesai': 'bg-green-100 text-green-800',
+                            'dibatalkan': 'bg-red-100 text-red-800',
+                            'expired': 'bg-gray-100 text-gray-800'
                         };
                         const colorClass = statusColors[props.status] || 'bg-gray-100 text-gray-800';
-                        statusBadge = `<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${colorClass}">${props.status}</span>`;
+                        const displayStatus = props.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        statusBadge = `<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${colorClass}">${displayStatus}</span>`;
                     }
 
                     let ticketIdRow = '';
@@ -259,7 +266,8 @@
                     tooltip += `Tipe: ${eventTypeLabel}\n`;
                     tooltip += `Customer: ${props.customer_name}\n`;
                     tooltip += `Device: ${props.device}\n`;
-                    tooltip += `Status: ${props.status}`;
+                    const displayStatus = props.status ? props.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Unknown';
+                    tooltip += `Status: ${displayStatus}`;
                     
                     if (props.eventType !== 'reguler') {
                         const startTime = info.event.start.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });

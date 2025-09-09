@@ -25,8 +25,8 @@
                     </p>
                 </div>
                 <div class="flex space-x-3">
-                    @if($ticket->status !== 'Selesai' && $ticket->status !== 'Dibatalkan')
-                        <a href="{{ route('service-tickets.edit', $ticket) }}" 
+                    @if($ticket->status !== 'selesai' && $ticket->status !== 'dibatalkan')
+                        <a href="{{ route('service-tickets.edit', $ticket) }}"
                             class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                             <i class="fas fa-edit mr-2"></i>
                             Edit Tiket
@@ -45,7 +45,7 @@
                 <!-- Main Information -->
                 <div class="lg:col-span-2">
                     <!-- Status Update Section -->
-                    @if($ticket->status !== 'Selesai' && $ticket->status !== 'Dibatalkan')
+                    @if($ticket->status !== 'selesai' && $ticket->status !== 'dibatalkan')
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -59,27 +59,37 @@
                                 @method('PUT')
                                 <div class="flex-1 min-w-48">
                                     <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                                        Status Saat Ini: 
+                                        Status Saat Ini:
                                         <span class="px-2 py-1 text-xs font-medium rounded-full ml-2
-                                            @if($ticket->status === 'Menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
-                                            @elseif($ticket->status === 'Diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
-                                            @elseif($ticket->status === 'Diantar') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
-                                            @elseif($ticket->status === 'Perlu Diambil') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
-                                            @elseif($ticket->status === 'Selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @if($ticket->status === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                            @elseif($ticket->status === 'dijadwalkan') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
+                                            @elseif($ticket->status === 'menuju_lokasi') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                            @elseif($ticket->status === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                            @elseif($ticket->status === 'menunggu_sparepart') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                            @elseif($ticket->status === 'siap_diambil') bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100
+                                            @elseif($ticket->status === 'diantar') bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100
+                                            @elseif($ticket->status === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @elseif($ticket->status === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                            @elseif($ticket->status === 'expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                             @endif">
-                                            {{ $ticket->status }}
+                                            {{ str_replace('_', ' ', ucfirst($ticket->status)) }}
                                         </span>
                                     </label>
                                     <select name="status" id="status" required
                                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
-                                        <option value="Menunggu" {{ $ticket->status === 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                        <option value="Diproses" {{ $ticket->status === 'Diproses' ? 'selected' : '' }}>Diproses</option>
-                                        <option value="Diantar" {{ $ticket->status === 'Diantar' ? 'selected' : '' }}>Diantar</option>
-                                        <option value="Perlu Diambil" {{ $ticket->status === 'Perlu Diambil' ? 'selected' : '' }}>Perlu Diambil</option>
-                                        <option value="Selesai" {{ $ticket->status === 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                                        <option value="menunggu" {{ $ticket->status === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                        <option value="dijadwalkan" {{ $ticket->status === 'dijadwalkan' ? 'selected' : '' }}>Dijadwalkan</option>
+                                        <option value="menuju_lokasi" {{ $ticket->status === 'menuju_lokasi' ? 'selected' : '' }}>Menuju Lokasi</option>
+                                        <option value="diproses" {{ $ticket->status === 'diproses' ? 'selected' : '' }}>Diproses</option>
+                                        <option value="menunggu_sparepart" {{ $ticket->status === 'menunggu_sparepart' ? 'selected' : '' }}>Menunggu Sparepart</option>
+                                        <option value="siap_diambil" {{ $ticket->status === 'siap_diambil' ? 'selected' : '' }}>Siap Diambil</option>
+                                        <option value="diantar" {{ $ticket->status === 'diantar' ? 'selected' : '' }}>Diantar</option>
+                                        <option value="selesai" {{ $ticket->status === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                        <option value="dibatalkan" {{ $ticket->status === 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                                        <option value="expired" {{ $ticket->status === 'expired' ? 'selected' : '' }}>Expired</option>
                                     </select>
                                 </div>
-                                <button type="submit" 
+                                <button type="submit"
                                     class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                     <i class="fas fa-save mr-2"></i>
                                     Update Status
@@ -106,16 +116,20 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
                                     <dd class="mt-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                            @if($ticket->status === 'Menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
-                                            @elseif($ticket->status === 'Diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
-                                            @elseif($ticket->status === 'Diantar') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
-                                            @elseif($ticket->status === 'Perlu Diambil') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
-                                            @elseif($ticket->status === 'Selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
-                                            @elseif($ticket->status === 'Dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            @if($ticket->status === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                            @elseif($ticket->status === 'dijadwalkan') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
+                                            @elseif($ticket->status === 'menuju_lokasi') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                            @elseif($ticket->status === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                            @elseif($ticket->status === 'menunggu_sparepart') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                            @elseif($ticket->status === 'siap_diambil') bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100
+                                            @elseif($ticket->status === 'diantar') bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100
+                                            @elseif($ticket->status === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @elseif($ticket->status === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                            @elseif($ticket->status === 'expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                             @endif">
                                             <i class="fas fa-circle mr-1"></i>
-                                            {{ $ticket->status }}
+                                            {{ str_replace('_', ' ', ucfirst($ticket->status)) }}
                                         </span>
                                     </dd>
                                 </div>
@@ -275,7 +289,7 @@
                                     <i class="fas fa-clipboard-list mr-2 text-primary-500"></i>
                                     Riwayat Tindakan
                                 </h3>
-                                @if($ticket->status !== 'Selesai' && $ticket->status !== 'Dibatalkan')
+                                @if($ticket->status !== 'selesai' && $ticket->status !== 'dibatalkan')
                                     <button data-modal-target="createServiceActionModal" data-modal-toggle="createServiceActionModal"
                                         class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                         <i class="fas fa-plus mr-2"></i>
@@ -301,9 +315,9 @@
                                                     </div>
                                                     <p class="text-sm text-gray-900 dark:text-gray-100">{{ $action->action }}</p>
                                                 </div>
-                                                @if($ticket->status !== 'Selesai' && $ticket->status !== 'Dibatalkan')
+                                                @if($ticket->status !== 'selesai' && $ticket->status !== 'dibatalkan')
                                                     <div class="flex-shrink-0 ml-4">
-                                                        <button data-modal-target="deleteServiceActionModal-{{ $action->service_action_id }}" 
+                                                        <button data-modal-target="deleteServiceActionModal-{{ $action->service_action_id }}"
                                                                 data-modal-toggle="deleteServiceActionModal-{{ $action->service_action_id }}"
                                                                 class="inline-flex items-center px-2 py-1 border border-red-300 dark:border-red-600 shadow-sm text-xs font-medium rounded text-red-700 dark:text-red-400 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                                                             <i class="fas fa-trash text-xs"></i>
@@ -336,8 +350,8 @@
                             </h3>
                         </div>
                         <div class="p-6 space-y-3">
-                            @if($ticket->status !== 'Selesai' && $ticket->status !== 'Dibatalkan')
-                                <a href="{{ route('service-tickets.edit', $ticket) }}" 
+                            @if($ticket->status !== 'selesai' && $ticket->status !== 'dibatalkan')
+                                <a href="{{ route('service-tickets.edit', $ticket) }}"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                     <i class="fas fa-edit mr-2"></i>
                                     Edit Tiket
@@ -362,7 +376,7 @@
                                     Hubungi WhatsApp
                                 </a>
                             @endif
-                            @if($ticket->status !== 'Selesai' && $ticket->status !== 'Dibatalkan')
+                            @if($ticket->status !== 'selesai' && $ticket->status !== 'dibatalkan')
                                 <button onclick="confirmCancel('{{ $ticket->service_ticket_id }}', '{{ $ticket->service_ticket_id }}')"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-gray-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20">
                                     <i class="fas fa-times mr-2"></i>

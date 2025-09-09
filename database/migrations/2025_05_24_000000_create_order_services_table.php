@@ -15,16 +15,16 @@ return new class extends Migration
             $table->string('order_service_id', 50)->primary();
             $table->string('customer_id', 50);
             $table->enum('status_order', [
-                'Menunggu',
-                'Dijadwalkan',
-                'Menuju_lokasi',
-                'Diproses',
-                'Menunggu_sparepart',
-                'Siap_diambil',
-                'Diantar',
-                'Selesai',
-                'Dibatalkan',
-                'Expired'
+                'menunggu',
+                'dijadwalkan',
+                'menuju_lokasi',
+                'diproses',
+                'menunggu_sparepart',
+                'siap_diambil',
+                'diantar',
+                'selesai',
+                'dibatalkan',
+                'expired'
             ]);
             $table->enum('status_payment', ['belum_dibayar', 'cicilan', 'lunas', 'dibatalkan']);
             $table->text('complaints')->nullable();

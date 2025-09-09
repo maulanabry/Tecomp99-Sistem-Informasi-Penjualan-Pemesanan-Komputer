@@ -137,7 +137,7 @@ class ServiceTicketController extends Controller
             ->whereHas('orderService', function ($q) {
                 $q->where('type', 'reguler');
             })
-            ->whereIn('status', ['Menunggu', 'Diproses'])
+            ->whereIn('status', ['menunggu', 'diproses'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -261,7 +261,7 @@ class ServiceTicketController extends Controller
         }
 
         $validated['service_ticket_id'] = "TKT{$today}{$sequence}";
-        $validated['status'] = 'Menunggu';
+        $validated['status'] = 'menunggu';
 
         // Begin transaction
         DB::beginTransaction();
@@ -269,20 +269,17 @@ class ServiceTicketController extends Controller
             // Create service ticket
             $ticket = ServiceTicket::create($validated);
 
-            // Generate action ID with same date format
-            $lastAction = ServiceAction::where('service_action_id', 'like', "ACT{$today}%")
-                ->orderBy('service_action_id', 'desc')
-                ->first();
-
-            $actionSequence = '001';
-            if ($lastAction) {
-                $lastActionSequence = substr($lastAction->service_action_id, -3);
-                $actionSequence = str_pad((int)$lastActionSequence + 1, 3, '0', STR_PAD_LEFT);
-            }
+            // Generate unique service action ID with timestamp and random component
+            do {
+                $timestamp = now()->format('ymdHis');
+                $random = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+                $actionId = 'ACT' . $timestamp . $random;
+                $exists = ServiceAction::where('service_action_id', $actionId)->exists();
+            } while ($exists);
 
             // Create initial service action
             ServiceAction::create([
-                'service_action_id' => "ACT{$today}{$actionSequence}",
+                'service_action_id' => $actionId,
                 'service_ticket_id' => $ticket->service_ticket_id,
                 'action' => 'Tiket Servis Telah Dibuat',
                 'number' => 1, // First action is always number 1
@@ -338,7 +335,7 @@ class ServiceTicketController extends Controller
     public function update(Request $request, ServiceTicket $ticket)
     {
         $rules = [
-            'status' => 'required|in:Menunggu,Diproses,Diantar,Perlu Diambil,Selesai',
+            'status' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,expired',
             'admin_id' => 'required|exists:admins,id',
             'schedule_date' => 'required|date',
             'estimation_days' => 'nullable|integer|min:1',
@@ -387,15 +384,15 @@ class ServiceTicketController extends Controller
         if ($oldStatus !== $ticket->status) {
             try {
                 $type = match ($ticket->status) {
-                    'Selesai' => NotificationType::SERVICE_TICKET_COMPLETED,
+                    'selesai' => NotificationType::SERVICE_TICKET_COMPLETED,
                     default => NotificationType::SERVICE_TICKET_UPDATED
                 };
 
                 $message = match ($ticket->status) {
-                    'Selesai' => "Tiket servis #{$ticket->service_ticket_id} telah selesai",
-                    'Diproses' => "Tiket servis #{$ticket->service_ticket_id} sedang diproses",
-                    'Diantar' => "Tiket servis #{$ticket->service_ticket_id} sedang diantar",
-                    'Perlu Diambil' => "Tiket servis #{$ticket->service_ticket_id} siap diambil",
+                    'selesai' => "Tiket servis #{$ticket->service_ticket_id} telah selesai",
+                    'diproses' => "Tiket servis #{$ticket->service_ticket_id} sedang diproses",
+                    'diantar' => "Tiket servis #{$ticket->service_ticket_id} sedang diantar",
+                    'siap_diambil' => "Tiket servis #{$ticket->service_ticket_id} siap diambil",
                     default => "Status tiket servis #{$ticket->service_ticket_id} diubah menjadi {$ticket->status}"
                 };
 
@@ -583,24 +580,20 @@ class ServiceTicketController extends Controller
             'action' => 'required|string',
         ]);
 
-        // Generate action ID with date format
-        $today = date('dmy');
-        $lastAction = ServiceAction::where('service_action_id', 'like', "ACT{$today}%")
-            ->orderBy('service_action_id', 'desc')
-            ->first();
-
-        $sequence = '001';
-        if ($lastAction) {
-            $lastSequence = substr($lastAction->service_action_id, -3);
-            $sequence = str_pad((int)$lastSequence + 1, 3, '0', STR_PAD_LEFT);
-        }
-
         // Get the next number for this ticket's actions
         $lastNumber = ServiceAction::where('service_ticket_id', $ticket->service_ticket_id)
             ->max('number') ?? 0;
 
+        // Generate unique service action ID with timestamp and random component
+        do {
+            $timestamp = now()->format('ymdHis');
+            $random = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+            $actionId = 'ACT' . $timestamp . $random;
+            $exists = ServiceAction::where('service_action_id', $actionId)->exists();
+        } while ($exists);
+
         ServiceAction::create([
-            'service_action_id' => "ACT{$today}{$sequence}",
+            'service_action_id' => $actionId,
             'service_ticket_id' => $ticket->service_ticket_id,
             'number' => $lastNumber + 1,
             'action' => $validated['action'],
@@ -626,49 +619,99 @@ class ServiceTicketController extends Controller
     public function updateStatus(Request $request, ServiceTicket $ticket)
     {
         $validated = $request->validate([
-            'status' => 'required|in:Menunggu,Diproses,Diantar,Perlu Diambil,Selesai,Dibatalkan',
+            'status' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,expired',
         ]);
 
-        $oldStatus = $ticket->status;
-        $ticket->update($validated);
+        try {
+            DB::beginTransaction();
 
-        // Create notification for ticket update if status changed
-        if ($oldStatus !== $ticket->status) {
-            try {
-                $type = match ($ticket->status) {
-                    'Selesai' => NotificationType::SERVICE_TICKET_COMPLETED,
-                    default => NotificationType::SERVICE_TICKET_UPDATED
-                };
+            $oldStatus = $ticket->status;
 
-                $message = match ($ticket->status) {
-                    'Selesai' => "Tiket servis #{$ticket->service_ticket_id} telah selesai",
-                    'Diproses' => "Tiket servis #{$ticket->service_ticket_id} sedang diproses",
-                    'Diantar' => "Tiket servis #{$ticket->service_ticket_id} sedang diantar",
-                    'Perlu Diambil' => "Tiket servis #{$ticket->service_ticket_id} siap diambil",
-                    default => "Status tiket servis #{$ticket->service_ticket_id} diubah menjadi {$ticket->status}"
-                };
+            // Set session flag to skip validation during sync
+            session(['syncing_ticket_status' => true]);
 
-                $this->createTicketNotification($ticket, $type, $message);
-            } catch (\Exception $e) {
-                Log::error('Failed to create service ticket update notification: ' . $e->getMessage());
+            $ticket->update($validated);
+
+            // Synchronize with OrderService status
+            $this->syncOrderServiceStatus($ticket, $oldStatus);
+
+            // Clear session flag
+            session()->forget('syncing_ticket_status');
+
+            // Create notification for ticket update if status changed
+            if ($oldStatus !== $ticket->status) {
+                try {
+                    $type = match ($ticket->status) {
+                        'selesai' => NotificationType::SERVICE_TICKET_COMPLETED,
+                        default => NotificationType::SERVICE_TICKET_UPDATED
+                    };
+
+                    $message = match ($ticket->status) {
+                        'selesai' => "Tiket servis #{$ticket->service_ticket_id} telah selesai",
+                        'diproses' => "Tiket servis #{$ticket->service_ticket_id} sedang diproses",
+                        'diantar' => "Tiket servis #{$ticket->service_ticket_id} sedang diantar",
+                        'siap_diambil' => "Tiket servis #{$ticket->service_ticket_id} siap diambil",
+                        'menuju_lokasi' => "Teknisi sedang menuju lokasi untuk tiket #{$ticket->service_ticket_id}",
+                        'menunggu_sparepart' => "Tiket #{$ticket->service_ticket_id} menunggu sparepart",
+                        'dijadwalkan' => "Tiket #{$ticket->service_ticket_id} telah dijadwalkan",
+                        default => "Status tiket servis #{$ticket->service_ticket_id} diubah menjadi {$ticket->status}"
+                    };
+
+                    $this->createTicketNotification($ticket, $type, $message);
+                } catch (\Exception $e) {
+                    Log::error('Failed to create service ticket update notification: ' . $e->getMessage());
+                }
             }
-        }
 
-        return redirect()->back()
-            ->with('success', 'Status tiket servis berhasil diperbarui.');
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Status tiket servis berhasil diperbarui.');
+        } catch (\Exception $e) {
+            // Clear session flag on error
+            session()->forget('syncing_ticket_status');
+
+            DB::rollback();
+            return redirect()->back()
+                ->with('error', 'Gagal memperbarui status tiket servis: ' . $e->getMessage());
+        }
     }
 
     public function cancel(ServiceTicket $ticket)
     {
-        if ($ticket->status === 'Dibatalkan' || $ticket->status === 'Selesai') {
+        if ($ticket->status === 'dibatalkan' || $ticket->status === 'selesai') {
             return redirect()->back()
                 ->with('error', 'Tiket tidak dapat dibatalkan.');
         }
 
-        $ticket->update(['status' => 'Dibatalkan']);
+        try {
+            DB::beginTransaction();
 
-        return redirect()->back()
-            ->with('success', 'Tiket servis berhasil dibatalkan.');
+            $oldStatus = $ticket->status;
+
+            // Set session flag to skip validation during sync
+            session(['syncing_ticket_status' => true]);
+
+            $ticket->update(['status' => 'dibatalkan']);
+
+            // Synchronize with OrderService status
+            $this->syncOrderServiceStatus($ticket, $oldStatus);
+
+            // Clear session flag
+            session()->forget('syncing_ticket_status');
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Tiket servis berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            // Clear session flag on error
+            session()->forget('syncing_ticket_status');
+
+            DB::rollback();
+            return redirect()->back()
+                ->with('error', 'Gagal membatalkan tiket servis: ' . $e->getMessage());
+        }
     }
 
     public function recovery()
@@ -796,5 +839,88 @@ class ServiceTicketController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to create teknisi assignment notification: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Synchronize OrderService status with ServiceTicket status
+     */
+    private function syncOrderServiceStatus(ServiceTicket $ticket, string $oldTicketStatus)
+    {
+        $orderService = $ticket->orderService;
+        if (!$orderService) {
+            return;
+        }
+
+        // Status mapping from ServiceTicket to OrderService
+        $statusMapping = [
+            'menunggu' => 'Menunggu',
+            'dijadwalkan' => 'Dijadwalkan',
+            'menuju_lokasi' => 'Menuju_lokasi',
+            'diproses' => 'Diproses',
+            'menunggu_sparepart' => 'Menunggu_sparepart',
+            'siap_diambil' => 'Siap_diambil',
+            'diantar' => 'Diantar',
+            'selesai' => 'Selesai',
+            'dibatalkan' => 'Dibatalkan',
+            'expired' => 'Expired',
+        ];
+
+        $newOrderStatus = $statusMapping[$ticket->status] ?? $orderService->status_order;
+
+        // Only update if the status actually changed
+        if ($orderService->status_order !== $newOrderStatus) {
+            $orderService->update(['status_order' => $newOrderStatus]);
+
+            // Create service action for the order service as well
+            $this->createOrderServiceAction($orderService, $newOrderStatus, $orderService->status_order);
+        }
+    }
+
+    /**
+     * Create service action for OrderService audit trail
+     */
+    private function createOrderServiceAction($orderService, $newStatus, $oldStatus)
+    {
+        // Define action descriptions based on status
+        $actionDescriptions = [
+            'Menunggu' => 'Order servis menunggu konfirmasi',
+            'Dijadwalkan' => 'Order servis telah dijadwalkan',
+            'Menuju_lokasi' => 'Teknisi sedang menuju lokasi',
+            'Diproses' => 'Order servis sedang diproses',
+            'Menunggu_sparepart' => 'Order servis menunggu sparepart',
+            'Siap_diambil' => 'Order servis siap diambil pelanggan',
+            'Diantar' => 'Order servis sedang diantar ke pelanggan',
+            'Selesai' => 'Order servis telah selesai',
+            'Dibatalkan' => 'Order servis dibatalkan',
+            'Expired' => 'Order servis kedaluwarsa',
+        ];
+
+        $action = $actionDescriptions[$newStatus] ?? 'Status order diperbarui';
+
+        // Get the first ticket for this order service
+        $firstTicket = $orderService->tickets()->first();
+        if (!$firstTicket) {
+            return; // No ticket found, skip creating action
+        }
+
+        // Get the next number for this ticket's actions
+        $nextNumber = \App\Models\ServiceAction::where('service_ticket_id', $firstTicket->service_ticket_id)
+            ->max('number') + 1;
+
+        // Generate unique service action ID with timestamp and random component
+        do {
+            $timestamp = now()->format('ymdHis');
+            $random = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+            $actionId = 'OSA' . $timestamp . $random;
+            $exists = \App\Models\ServiceAction::where('service_action_id', $actionId)->exists();
+        } while ($exists);
+
+        \App\Models\ServiceAction::create([
+            'service_action_id' => $actionId,
+            'service_ticket_id' => $firstTicket->service_ticket_id,
+            'number' => $nextNumber,
+            'action' => $action,
+            'created_at' => now(),
+        ]);
     }
 }

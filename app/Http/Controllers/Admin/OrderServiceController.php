@@ -350,10 +350,10 @@ class OrderServiceController extends Controller
                 }
             }
 
-            // Cancel all related service tickets
-            $orderService->tickets()->update([
-                'status' => 'Dibatalkan'
-            ]);
+            // Set session flag to skip validation during sync
+            session(['syncing_ticket_status' => true]);
+
+            $oldStatus = $orderService->status_order;
 
             // Update the status_order to 'Dibatalkan' instead of deleting
             $orderService->update([
@@ -361,11 +361,28 @@ class OrderServiceController extends Controller
                 'status_payment' => 'dibatalkan',
             ]);
 
+            // Cancel all related service tickets and create audit trail
+            if ($orderService->tickets()->exists()) {
+                $tickets = $orderService->tickets()->get();
+
+                foreach ($tickets as $ticket) {
+                    $ticketOldStatus = $ticket->status;
+                    $ticket->update(['status' => 'dibatalkan']);
+                    $this->createServiceAction($ticket, 'dibatalkan', $ticketOldStatus);
+                }
+            }
+
+            // Clear session flag
+            session()->forget('syncing_ticket_status');
+
             DB::commit();
 
             return redirect()->route('order-services.index')
                 ->with('success', 'Order servis dan tiket terkait berhasil dibatalkan.');
         } catch (\Exception $e) {
+            // Clear session flag on error
+            session()->forget('syncing_ticket_status');
+
             DB::rollback();
             return redirect()->route('order-services.index')
                 ->with('error', 'Gagal membatalkan order servis: ' . $e->getMessage());
@@ -375,29 +392,47 @@ class OrderServiceController extends Controller
     public function updateStatus(Request $request, OrderService $orderService)
     {
         $validated = $request->validate([
-            'status_order' => 'required|in:Menunggu,Diproses,Konfirmasi,Diantar,Perlu Diambil,Dibatalkan,Selesai',
+            'status_order' => 'required|in:Menunggu,Dijadwalkan,Menuju_lokasi,Diproses,Menunggu_sparepart,Siap_diambil,Diantar,Selesai,Dibatalkan,Expired',
         ]);
 
         try {
             DB::beginTransaction();
 
             $oldStatus = $orderService->status_order;
+
+            // Set session flag to skip validation during sync
+            session(['syncing_ticket_status' => true]);
+
             $orderService->update($validated);
 
-            // Update related service tickets if status changed to Dibatalkan or Selesai
+            // Comprehensive status mapping between OrderService and ServiceTicket
+            $statusMapping = [
+                'Menunggu' => 'menunggu',
+                'Dijadwalkan' => 'dijadwalkan',
+                'Menuju_lokasi' => 'menuju_lokasi',
+                'Diproses' => 'diproses',
+                'Menunggu_sparepart' => 'menunggu_sparepart',
+                'Siap_diambil' => 'siap_diambil',
+                'Diantar' => 'diantar',
+                'Selesai' => 'selesai',
+                'Dibatalkan' => 'dibatalkan',
+                'Expired' => 'expired',
+            ];
+
+            $newTicketStatus = $statusMapping[$orderService->status_order] ?? 'menunggu';
+
+            // Update all related service tickets to match the new order status
             if ($oldStatus !== $orderService->status_order && $orderService->tickets()->exists()) {
-                if ($orderService->status_order === 'Dibatalkan') {
-                    // Cancel all related service tickets
-                    $orderService->tickets()->update([
-                        'status' => 'Dibatalkan'
-                    ]);
-                } elseif ($orderService->status_order === 'Selesai') {
-                    // Complete all related service tickets that are not already completed or cancelled
-                    $orderService->tickets()
-                        ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
-                        ->update([
-                            'status' => 'Selesai'
-                        ]);
+                $tickets = $orderService->tickets()->get();
+
+                foreach ($tickets as $ticket) {
+                    $ticketOldStatus = $ticket->status;
+
+                    // Update ticket status
+                    $ticket->update(['status' => $newTicketStatus]);
+
+                    // Create service action for audit trail
+                    $this->createServiceAction($ticket, $newTicketStatus, $ticketOldStatus);
                 }
             }
 
@@ -461,21 +496,23 @@ class OrderServiceController extends Controller
                 }
             }
 
+            // Clear session flag
+            session()->forget('syncing_ticket_status');
+
             DB::commit();
 
             $ticketMessage = '';
             if ($orderService->tickets()->exists()) {
                 $ticketCount = $orderService->tickets()->count();
-                if ($orderService->status_order === 'Dibatalkan') {
-                    $ticketMessage = " dan {$ticketCount} tiket servis terkait telah dibatalkan";
-                } elseif ($orderService->status_order === 'Selesai') {
-                    $ticketMessage = " dan {$ticketCount} tiket servis terkait telah diselesaikan";
-                }
+                $ticketMessage = " dan {$ticketCount} tiket servis terkait telah diperbarui";
             }
 
             return redirect()->back()
                 ->with('success', "Status order servis berhasil diperbarui{$ticketMessage}.");
         } catch (\Exception $e) {
+            // Clear session flag on error
+            session()->forget('syncing_ticket_status');
+
             DB::rollback();
             return redirect()->back()
                 ->with('error', 'Gagal memperbarui status order servis: ' . $e->getMessage());
@@ -587,5 +624,42 @@ class OrderServiceController extends Controller
                 'message' => 'Gagal menghapus voucher: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Create service action for audit trail
+     */
+    private function createServiceAction($ticket, $newStatus, $oldStatus)
+    {
+        // Define action descriptions based on status
+        $actionDescriptions = [
+            'menunggu' => 'Tiket masih menunggu konfirmasi',
+            'dijadwalkan' => 'Tiket telah dijadwalkan',
+            'menuju_lokasi' => 'Teknisi dalam perjalanan ke lokasi customer',
+            'diproses' => 'Perbaikan sedang dilakukan',
+            'menunggu_sparepart' => 'Menunggu ketersediaan sparepart',
+            'siap_diambil' => 'Perangkat siap diambil pelanggan',
+            'diantar' => 'Perangkat sedang diantar ke pelanggan',
+            'selesai' => 'Layanan selesai, perangkat diterima pelanggan',
+            'dibatalkan' => 'Tiket layanan dibatalkan',
+            'expired' => 'Tiket layanan kedaluwarsa karena tidak ada pembayaran/diambil',
+        ];
+
+        $action = $actionDescriptions[$newStatus] ?? 'Status tiket diperbarui';
+
+        // Get the next number for this ticket
+        $nextNumber = $ticket->actions()->max('number') + 1;
+
+        // Generate service action ID
+        $actionId = 'SA' . date('dmy') . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        // Create the service action
+        \App\Models\ServiceAction::create([
+            'service_action_id' => $actionId,
+            'service_ticket_id' => $ticket->service_ticket_id,
+            'number' => $nextNumber,
+            'action' => $action,
+            'created_at' => now(),
+        ]);
     }
 }

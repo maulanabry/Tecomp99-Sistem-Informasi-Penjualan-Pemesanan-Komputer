@@ -17,21 +17,45 @@
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'all' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Semua
                 </button>
-                <button wire:click="setActiveTab('Menunggu')"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Menunggu' ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                <button wire:click="setActiveTab('menunggu')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'menunggu' ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Menunggu
                 </button>
-                <button wire:click="setActiveTab('Diproses')"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Diproses' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                <button wire:click="setActiveTab('dijadwalkan')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'dijadwalkan' ? 'border-purple-500 text-purple-600 dark:text-purple-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Dijadwalkan
+                </button>
+                <button wire:click="setActiveTab('menuju_lokasi')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'menuju_lokasi' ? 'border-orange-500 text-orange-600 dark:text-orange-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Menuju Lokasi
+                </button>
+                <button wire:click="setActiveTab('diproses')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'diproses' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Diproses
                 </button>
-                <button wire:click="setActiveTab('Selesai')"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Selesai' ? 'border-green-500 text-green-600 dark:text-green-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                <button wire:click="setActiveTab('menunggu_sparepart')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'menunggu_sparepart' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Menunggu Sparepart
+                </button>
+                <button wire:click="setActiveTab('siap_diambil')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'siap_diambil' ? 'border-cyan-500 text-cyan-600 dark:text-cyan-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Siap Diambil
+                </button>
+                <button wire:click="setActiveTab('diantar')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'diantar' ? 'border-pink-500 text-pink-600 dark:text-pink-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Diantar
+                </button>
+                <button wire:click="setActiveTab('selesai')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'selesai' ? 'border-green-500 text-green-600 dark:text-green-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Selesai
                 </button>
-                <button wire:click="setActiveTab('Dibatalkan')"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'Dibatalkan' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                <button wire:click="setActiveTab('dibatalkan')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'dibatalkan' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Dibatalkan
+                </button>
+                <button wire:click="setActiveTab('expired')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'expired' ? 'border-gray-500 text-gray-600 dark:text-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Expired
                 </button>
             </nav>
         </div>
@@ -177,18 +201,21 @@
                     <div class="col-span-1 text-sm">
                         @php
                             $statusColors = [
-                                'Menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
-                                'Diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
-                                'Konfirmasi' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
-                                'Diantar' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
-                                'Perlu Diambil' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
-                                'Dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
-                                'Selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'dijadwalkan' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
+                                'menuju_lokasi' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+                                'menunggu_sparepart' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
+                                'siap_diambil' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100',
+                                'diantar' => 'bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100',
+                                'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                'expired' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
                             ];
                             $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
-                            {{ $order->status_order }}
+                            {{ str_replace('_', ' ', ucfirst($order->status_order)) }}
                         </span>
                     </div>
                     <div class="col-span-1 text-sm">
@@ -276,18 +303,21 @@
                         <span>Status Order:</span>
                         @php
                             $statusColors = [
-                                'Menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
-                                'Diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
-                                'Konfirmasi' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
-                                'Diantar' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
-                                'Perlu Diambil' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
-                                'Dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
-                                'Selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'dijadwalkan' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
+                                'menuju_lokasi' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+                                'menunggu_sparepart' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
+                                'siap_diambil' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100',
+                                'diantar' => 'bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100',
+                                'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                'expired' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
                             ];
                             $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
-                            {{ $order->status_order }}
+                            {{ str_replace('_', ' ', ucfirst($order->status_order)) }}
                         </span>
                     </div>
                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">

@@ -40,7 +40,15 @@ class OrderServiceTable extends Component
 
     public function setActiveTab($tab)
     {
-        $this->activeTab = $tab;
+        // Map old status values to new ones for backward compatibility
+        $statusMapping = [
+            'Menunggu' => 'menunggu',
+            'Diproses' => 'diproses',
+            'Selesai' => 'selesai',
+            'Dibatalkan' => 'dibatalkan',
+        ];
+
+        $this->activeTab = $statusMapping[$tab] ?? $tab;
         $this->resetPage();
     }
 
@@ -76,9 +84,9 @@ class OrderServiceTable extends Component
         try {
             $orderService = OrderService::findOrFail($this->selectedOrderServiceId);
 
-            if ($orderService->status_order !== 'Selesai' && $orderService->status_payment !== 'lunas') {
+            if ($orderService->status_order !== 'selesai' && $orderService->status_payment !== 'lunas') {
                 $orderService->update([
-                    'status_order' => 'Dibatalkan',
+                    'status_order' => 'dibatalkan',
                     'status_payment' => 'dibatalkan'
                 ]);
 

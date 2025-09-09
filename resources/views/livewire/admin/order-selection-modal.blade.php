@@ -90,20 +90,35 @@
                     </div>
 
                     <!-- Additional Filter Row -->
-                    <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Filter by Status -->
+                    <div class="mt-3 grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Filter by Payment Status -->
                         <div>
-                            <label for="statusFilter" class="sr-only">Filter Status</label>
+                            <label for="statusFilter" class="sr-only">Filter Status Pembayaran</label>
                             <select
                                 wire:model.live="statusFilter"
                                 class="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
                             >
-                                <option value="">Semua Status</option>
+                                <option value="">Semua Status Bayar</option>
                                 <option value="belum_dibayar">Belum Dibayar</option>
                                 <option value="down_payment">Down Payment</option>
                             </select>
                         </div>
-                        
+
+                        <!-- Filter by Order Status -->
+                        <div>
+                            <label for="statusOrderFilter" class="sr-only">Filter Status Order</label>
+                            <select
+                                wire:model.live="statusOrderFilter"
+                                class="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                            >
+                                <option value="">Semua Status Order</option>
+                                <option value="Menunggu">Menunggu</option>
+                                <option value="Diproses">Diproses</option>
+                                <option value="Diantar">Diantar</option>
+                                <option value="Selesai">Selesai</option>
+                            </select>
+                        </div>
+
                         <!-- Info Text -->
                         <div class="md:col-span-2 flex items-center">
                             <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -213,11 +228,18 @@
                                                                 {{ ucfirst(str_replace('_', ' ', $order['status_payment'])) }}
                                                             </span>
                                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                                @if($order['status_order'] === 'menunggu' || $order['status_order'] === 'Menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300
-                                                                @elseif($order['status_order'] === 'diproses' || $order['status_order'] === 'Diproses') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300
-                                                                @elseif($order['status_order'] === 'selesai' || $order['status_order'] === 'Selesai') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300
-                                                                @else bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300 @endif">
-                                                                {{ ucfirst($order['status_order']) }}
+                                                                @if($order['status_order'] === 'Menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                                                @elseif($order['status_order'] === 'Dijadwalkan') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                                                @elseif($order['status_order'] === 'Menuju_lokasi') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                                                @elseif($order['status_order'] === 'Diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                                                @elseif($order['status_order'] === 'Menunggu_sparepart') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                                                @elseif($order['status_order'] === 'Siap_diambil') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
+                                                                @elseif($order['status_order'] === 'Diantar') bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100
+                                                                @elseif($order['status_order'] === 'Selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                                                @elseif($order['status_order'] === 'Dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                                                @elseif($order['status_order'] === 'Expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                                                @else bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 @endif">
+                                                                {{ str_replace('_', ' ', ucfirst($order['status_order'])) }}
                                                             </span>
                                                         </div>
                                                     </td>

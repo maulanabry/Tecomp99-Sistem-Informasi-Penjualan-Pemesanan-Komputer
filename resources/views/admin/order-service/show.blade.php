@@ -43,7 +43,7 @@
                 <!-- Main Information -->
                 <div class="lg:col-span-2">
                     <!-- Status Update Section -->
-                    @if($orderService->status_order !== 'Selesai' && $orderService->status_order !== 'Dibatalkan')
+                    @if($orderService->status_order !== 'selesai' && $orderService->status_order !== 'dibatalkan')
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -59,20 +59,32 @@
                                     <label for="status_order" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                         Status Saat Ini: 
                                         <span class="px-2 py-1 text-xs font-medium rounded-full ml-2
-                                            @if($orderService->status_order === 'Menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
-                                            @elseif($orderService->status_order === 'Diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
-                                            @elseif($orderService->status_order === 'Selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
-                                            @elseif($orderService->status_order === 'Dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                            @if($orderService->status_order === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                            @elseif($orderService->status_order === 'dijadwalkan') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
+                                            @elseif($orderService->status_order === 'menuju_lokasi') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                            @elseif($orderService->status_order === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                            @elseif($orderService->status_order === 'menunggu_sparepart') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                            @elseif($orderService->status_order === 'siap_diambil') bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100
+                                            @elseif($orderService->status_order === 'diantar') bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100
+                                            @elseif($orderService->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @elseif($orderService->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                            @elseif($orderService->status_order === 'expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                             @endif">
-                                            {{ $orderService->status_order }}
+                                            {{ str_replace('_', ' ', ucfirst($orderService->status_order)) }}
                                         </span>
                                     </label>
                                     <select name="status_order" id="status_order" required
                                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
                                         <option value="Menunggu" {{ $orderService->status_order === 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                        <option value="Dijadwalkan" {{ $orderService->status_order === 'Dijadwalkan' ? 'selected' : '' }}>Dijadwalkan</option>
+                                        <option value="Menuju_lokasi" {{ $orderService->status_order === 'Menuju_lokasi' ? 'selected' : '' }}>Menuju Lokasi</option>
                                         <option value="Diproses" {{ $orderService->status_order === 'Diproses' ? 'selected' : '' }}>Diproses</option>
+                                        <option value="Menunggu_sparepart" {{ $orderService->status_order === 'Menunggu_sparepart' ? 'selected' : '' }}>Menunggu Sparepart</option>
+                                        <option value="Siap_diambil" {{ $orderService->status_order === 'Siap_diambil' ? 'selected' : '' }}>Siap Diambil</option>
+                                        <option value="Diantar" {{ $orderService->status_order === 'Diantar' ? 'selected' : '' }}>Diantar</option>
                                         <option value="Selesai" {{ $orderService->status_order === 'Selesai' ? 'selected' : '' }}>Selesai</option>
                                         <option value="Dibatalkan" {{ $orderService->status_order === 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                                        <option value="Expired" {{ $orderService->status_order === 'Expired' ? 'selected' : '' }}>Expired</option>
                                     </select>
                                 </div>
                                 <button type="submit" 
@@ -112,15 +124,19 @@
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Order</dt>
                                     <dd class="mt-1">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            {{ $orderService->status_order === 'Menunggu' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : '' }}
-                                            {{ $orderService->status_order === 'Diproses' ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : '' }}
-                                            {{ $orderService->status_order === 'Konfirmasi' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : '' }}
-                                            {{ $orderService->status_order === 'Diantar' ? 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100' : '' }}
-                                            {{ $orderService->status_order === 'Perlu Diambil' ? 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' : '' }}
-                                            {{ $orderService->status_order === 'Selesai' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : '' }}
-                                            {{ $orderService->status_order === 'Dibatalkan' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : '' }}">
+                                            @if($orderService->status_order === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                            @elseif($orderService->status_order === 'dijadwalkan') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
+                                            @elseif($orderService->status_order === 'menuju_lokasi') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                            @elseif($orderService->status_order === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                            @elseif($orderService->status_order === 'menunggu_sparepart') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                            @elseif($orderService->status_order === 'siap_diambil') bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100
+                                            @elseif($orderService->status_order === 'diantar') bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100
+                                            @elseif($orderService->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @elseif($orderService->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                            @elseif($orderService->status_order === 'expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                            @endif">
                                             <i class="fas fa-circle mr-1"></i>
-                                            {{ $orderService->status_order }}
+                                            {{ str_replace('_', ' ', ucfirst($orderService->status_order)) }}
                                         </span>
                                     </dd>
                                 </div>
@@ -379,13 +395,19 @@
                                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
                                                 <dd class="mt-1">
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                        {{ $ticket->status === 'Menunggu' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : '' }}
-                                                        {{ $ticket->status === 'Diproses' ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : '' }}
-                                                        {{ $ticket->status === 'Diantar' ? 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100' : '' }}
-                                                        {{ $ticket->status === 'Perlu Diambil' ? 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' : '' }}
-                                                        {{ $ticket->status === 'Selesai' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : '' }}">
+                                                        @if($ticket->status === 'Menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                                        @elseif($ticket->status === 'Dijadwalkan') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                                        @elseif($ticket->status === 'Menuju_lokasi') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                                        @elseif($ticket->status === 'Diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                                        @elseif($ticket->status === 'Menunggu_sparepart') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                                        @elseif($ticket->status === 'Siap_diambil') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
+                                                        @elseif($ticket->status === 'Diantar') bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100
+                                                        @elseif($ticket->status === 'Selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                                        @elseif($ticket->status === 'Dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                                        @elseif($ticket->status === 'Expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                                        @endif">
                                                         <i class="fas fa-circle mr-1"></i>
-                                                        {{ $ticket->status }}
+                                                        {{ str_replace('_', ' ', ucfirst($ticket->status)) }}
                                                     </span>
                                                 </dd>
                                             </div>
@@ -398,6 +420,46 @@
                                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $ticket->created_at->format('d F Y H:i') }}</dd>
                                             </div>
                                         </dl>
+
+                                        <!-- Service Action Timeline -->
+                                        @if($ticket->actions->isNotEmpty())
+                                            <div class="mt-6">
+                                                <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">
+                                                    <i class="fas fa-history mr-2 text-primary-500"></i>
+                                                    Timeline Status
+                                                </h4>
+                                                <div class="space-y-4">
+                                                    @foreach($ticket->actions->sortBy('created_at') as $action)
+                                                        <div class="flex items-start space-x-4">
+                                                            <div class="flex-shrink-0">
+                                                                <div class="flex items-center justify-center w-8 h-8 rounded-full
+                                                                    @if($action->action === 'Tiket masih menunggu konfirmasi') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                                                    @elseif($action->action === 'Tiket telah dijadwalkan') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                                                    @elseif($action->action === 'Teknisi dalam perjalanan ke lokasi') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                                                    @elseif($action->action === 'Perbaikan sedang dilakukan') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                                                    @elseif($action->action === 'Menunggu ketersediaan sparepart') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                                                    @elseif($action->action === 'Perangkat siap diambil pelanggan') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
+                                                                    @elseif($action->action === 'Perangkat sedang diantar ke pelanggan') bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100
+                                                                    @elseif($action->action === 'Layanan selesai, perangkat diterima pelanggan') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                                                    @elseif($action->action === 'Tiket layanan dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                                                    @elseif($action->action === 'Tiket layanan kedaluwarsa karena tidak ada pembayaran') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                                                    @else bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 @endif">
+                                                                    <i class="fas fa-clock text-xs"></i>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex-1 min-w-0">
+                                                                <div class="text-sm text-gray-900 dark:text-gray-100">
+                                                                    {{ $action->action }}
+                                                                </div>
+                                                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                                    {{ $action->created_at->format('d F Y H:i') }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
                                 @endforeach
                             @else
@@ -719,7 +781,7 @@
                                 </a>
                             @endif
 
-                            @if($orderService->status_order !== 'Dibatalkan' && $orderService->status_order !== 'Selesai')
+                            @if($orderService->status_order !== 'dibatalkan' && $orderService->status_order !== 'selesai')
                                 <button type="button"
                                     data-modal-target="cancel-order-cancel-order"
                                     data-modal-toggle="cancel-order-cancel-order"

@@ -108,20 +108,17 @@ class ServiceTicketController extends Controller
             // Create service ticket
             $ticket = ServiceTicket::create($validated);
 
-            // Generate action ID with same date format
-            $lastAction = ServiceAction::where('service_action_id', 'like', "ACT{$today}%")
-                ->orderBy('service_action_id', 'desc')
-                ->first();
-
-            $actionSequence = '001';
-            if ($lastAction) {
-                $lastActionSequence = substr($lastAction->service_action_id, -3);
-                $actionSequence = str_pad((int)$lastActionSequence + 1, 3, '0', STR_PAD_LEFT);
-            }
+            // Generate unique service action ID with timestamp and random component
+            do {
+                $timestamp = now()->format('ymdHis');
+                $random = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+                $actionId = 'ACT' . $timestamp . $random;
+                $exists = ServiceAction::where('service_action_id', $actionId)->exists();
+            } while ($exists);
 
             // Create initial service action
             ServiceAction::create([
-                'service_action_id' => "ACT{$today}{$actionSequence}",
+                'service_action_id' => $actionId,
                 'service_ticket_id' => $ticket->service_ticket_id,
                 'action' => 'Tiket Servis Telah Dibuat',
                 'number' => 1, // First action is always number 1
@@ -426,24 +423,20 @@ class ServiceTicketController extends Controller
             'action' => 'required|string|max:500'
         ]);
 
-        // Generate action ID with date format
-        $today = date('dmy');
-        $lastAction = ServiceAction::where('service_action_id', 'like', "ACT{$today}%")
-            ->orderBy('service_action_id', 'desc')
-            ->first();
-
-        $sequence = '001';
-        if ($lastAction) {
-            $lastSequence = substr($lastAction->service_action_id, -3);
-            $sequence = str_pad((int)$lastSequence + 1, 3, '0', STR_PAD_LEFT);
-        }
-
         // Get the next number for this ticket's actions
         $lastNumber = ServiceAction::where('service_ticket_id', $ticket->service_ticket_id)
             ->max('number') ?? 0;
 
+        // Generate unique service action ID with timestamp and random component
+        do {
+            $timestamp = now()->format('ymdHis');
+            $random = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+            $actionId = 'ACT' . $timestamp . $random;
+            $exists = ServiceAction::where('service_action_id', $actionId)->exists();
+        } while ($exists);
+
         ServiceAction::create([
-            'service_action_id' => "ACT{$today}{$sequence}",
+            'service_action_id' => $actionId,
             'service_ticket_id' => $ticket->service_ticket_id,
             'number' => $lastNumber + 1,
             'action' => $request->action,

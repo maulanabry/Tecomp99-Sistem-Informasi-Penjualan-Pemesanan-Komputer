@@ -25,18 +25,18 @@ class ServiceTicketActionSeeder extends Seeder
             ->select('service_tickets.service_ticket_id', 'service_tickets.status', 'service_tickets.created_at', 'service_tickets.schedule_date', 'order_services.type as order_type')
             ->get();
 
-        // Action templates based on ticket status - exact descriptions as provided
+        // Action templates based on ticket status - updated to match all ENUM values
         $actionTemplates = [
-            'Menunggu' => 'Tiket masih menunggu konfirmasi',
-            'Dijadwalkan' => 'Tiket telah dijadwalkan',
-            'Menuju_lokasi' => 'Teknisi dalam perjalanan ke lokasi',
-            'Diproses' => 'Perbaikan sedang dilakukan',
-            'Menunggu_sparepart' => 'Menunggu ketersediaan sparepart',
-            'Siap_diambil' => 'Perangkat siap diambil pelanggan',
-            'Diantar' => 'Perangkat sedang diantar ke pelanggan',
-            'Selesai' => 'Layanan selesai, perangkat diterima pelanggan',
-            'Dibatalkan' => 'Tiket layanan dibatalkan',
-            'Expired' => 'Tiket layanan kedaluwarsa karena tidak ada pembayaran'
+            'menunggu' => 'Tiket masih menunggu konfirmasi',
+            'dijadwalkan' => 'Tiket telah dijadwalkan untuk servis',
+            'menuju_lokasi' => 'Teknisi dalam perjalanan ke lokasi pelanggan',
+            'diproses' => 'Perbaikan perangkat sedang dilakukan teknisi',
+            'menunggu_sparepart' => 'Menunggu ketersediaan sparepart yang diperlukan',
+            'siap_diambil' => 'Perangkat telah selesai diperbaiki dan siap diambil',
+            'diantar' => 'Perangkat sedang dalam proses pengiriman ke pelanggan',
+            'selesai' => 'Layanan servis selesai, perangkat telah diterima pelanggan',
+            'dibatalkan' => 'Tiket layanan telah dibatalkan atas permintaan pelanggan',
+            'expired' => 'Tiket layanan kedaluwarsa karena tidak ada aktivitas pembayaran'
         ];
 
         $serviceActions = [];
@@ -90,28 +90,28 @@ class ServiceTicketActionSeeder extends Seeder
 
         if ($orderType === 'onsite') {
             $sequences = [
-                'Menunggu' => ['Menunggu'],
-                'Dijadwalkan' => ['Menunggu', 'Dijadwalkan'],
-                'Menuju_lokasi' => ['Menunggu', 'Dijadwalkan', 'Menuju_lokasi'],
-                'Diproses' => ['Menunggu', 'Dijadwalkan', 'Menuju_lokasi', 'Diproses'],
-                'Menunggu_sparepart' => ['Menunggu', 'Dijadwalkan', 'Menuju_lokasi', 'Diproses', 'Menunggu_sparepart'],
-                'Siap_diambil' => ['Menunggu', 'Dijadwalkan', 'Menuju_lokasi', 'Diproses', 'Menunggu_sparepart', 'Siap_diambil'],
-                'Diantar' => ['Menunggu', 'Dijadwalkan', 'Menuju_lokasi', 'Diproses', 'Menunggu_sparepart', 'Siap_diambil', 'Diantar'],
-                'Selesai' => ['Menunggu', 'Dijadwalkan', 'Menuju_lokasi', 'Diproses', 'Menunggu_sparepart', 'Siap_diambil', 'Diantar', 'Selesai'],
-                'Dibatalkan' => ['Menunggu', 'Dijadwalkan', 'Menuju_lokasi', 'Diproses', 'Dibatalkan'],
-                'Expired' => ['Menunggu', 'Dijadwalkan', 'Menuju_lokasi', 'Diproses', 'Expired']
+                'menunggu' => ['menunggu'],
+                'dijadwalkan' => ['menunggu', 'dijadwalkan'],
+                'menuju_lokasi' => ['menunggu', 'dijadwalkan', 'menuju_lokasi'],
+                'diproses' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses'],
+                'menunggu_sparepart' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'menunggu_sparepart'],
+                'siap_diambil' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'menunggu_sparepart', 'siap_diambil'],
+                'diantar' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'menunggu_sparepart', 'siap_diambil', 'diantar'],
+                'selesai' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'menunggu_sparepart', 'siap_diambil', 'diantar', 'selesai'],
+                'dibatalkan' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'dibatalkan'],
+                'expired' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'expired']
             ];
         } else {
             // In-store
             $sequences = [
-                'Menunggu' => ['Menunggu'],
-                'Dijadwalkan' => ['Menunggu', 'Dijadwalkan'],
-                'Diproses' => ['Menunggu', 'Dijadwalkan', 'Diproses'],
-                'Menunggu_sparepart' => ['Menunggu', 'Dijadwalkan', 'Diproses', 'Menunggu_sparepart'],
-                'Siap_diambil' => ['Menunggu', 'Dijadwalkan', 'Diproses', 'Menunggu_sparepart', 'Siap_diambil'],
-                'Selesai' => ['Menunggu', 'Dijadwalkan', 'Diproses', 'Menunggu_sparepart', 'Siap_diambil', 'Selesai'],
-                'Dibatalkan' => ['Menunggu', 'Dijadwalkan', 'Diproses', 'Dibatalkan'],
-                'Expired' => ['Menunggu', 'Dijadwalkan', 'Diproses', 'Expired']
+                'menunggu' => ['menunggu'],
+                'dijadwalkan' => ['menunggu', 'dijadwalkan'],
+                'diproses' => ['menunggu', 'dijadwalkan', 'diproses'],
+                'menunggu_sparepart' => ['menunggu', 'dijadwalkan', 'diproses', 'menunggu_sparepart'],
+                'siap_diambil' => ['menunggu', 'dijadwalkan', 'diproses', 'menunggu_sparepart', 'siap_diambil'],
+                'selesai' => ['menunggu', 'dijadwalkan', 'diproses', 'menunggu_sparepart', 'siap_diambil', 'selesai'],
+                'dibatalkan' => ['menunggu', 'dijadwalkan', 'diproses', 'dibatalkan'],
+                'expired' => ['menunggu', 'dijadwalkan', 'diproses', 'expired']
             ];
         }
 

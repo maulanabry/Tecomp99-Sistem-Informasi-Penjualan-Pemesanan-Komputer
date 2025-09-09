@@ -19,9 +19,9 @@ class ServiceTicketSeeder extends Seeder
         DB::table('service_tickets')->delete();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // Get order services that should have tickets (not 'Menunggu')
+        // Get order services that should have tickets (not 'menunggu')
         $orderServices = DB::table('order_services')
-            ->where('status_order', '!=', 'Menunggu')
+            ->where('status_order', '!=', 'menunggu')
             ->select('order_service_id', 'status_order', 'type', 'created_at')
             ->get();
 

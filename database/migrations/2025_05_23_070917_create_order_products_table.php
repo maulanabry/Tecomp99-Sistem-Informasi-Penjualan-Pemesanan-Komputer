@@ -12,12 +12,12 @@ return new class extends Migration {
             $table->string('customer_id'); // FK ke customers.customer_id
 
             $table->enum('status_order', [
-                'Menunggu',
-                'Diproses',
-                'Diantar',
-                'Selesai',
-                'Dibatalkan',
-                'Expired'
+                'menunggu',
+                'diproses',
+                'diantar',
+                'selesai',
+                'dibatalkan',
+                'expired'
             ]);
             $table->enum('status_payment', ['belum_dibayar', 'down_payment', 'lunas', 'dibatalkan']);
 

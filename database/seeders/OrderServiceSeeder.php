@@ -109,16 +109,21 @@ class OrderServiceSeeder extends Seeder
 
         $cleanDiscounts = [25000, 50000, 75000, 100000, 125000, 150000, 200000];
 
-        // 🔁 Step-by-Step Flow Implementation:
-        // Step 1: Create Order Service (menunggu) - 8 orders
-        // Step 2-7: Progress through different stages
+        // 🔁 Implementasi Alur Langkah-demi-Langkah:
+        // Langkah 1: Buat Order Service (Menunggu) - 8 order
+        // Langkah 2-7: Proses melalui berbagai tahapan
 
         $statusDistribution = [
-            'Menunggu' => 8,    // Step 1: Initial orders (no tickets, no items, belum_dibayar)
-            'Diproses' => 12,   // Step 2-4: Orders with tickets in progress
-            'Selesai' => 10,    // Step 7: Completed orders (ticket=selesai, payment=lunas, warranty)
-            'Dibatalkan' => 5,  // Cancelled orders (no payments)
-            'Expired' => 3      // Expired orders
+            'menunggu' => 8,       // Step 1: Initial orders (no tickets, no items, belum_dibayar)
+            'dijadwalkan' => 4,    // Step 2: Orders scheduled
+            'menuju_lokasi' => 3,  // Step 3: Technician en route
+            'diproses' => 5,       // Step 4: Orders with tickets in progress
+            'menunggu_sparepart' => 2, // Step 5: Waiting for spareparts
+            'siap_diambil' => 3,   // Step 6: Ready for pickup
+            'diantar' => 2,        // Step 7: Being delivered
+            'selesai' => 10,       // Step 8: Completed orders (ticket=selesai, payment=lunas, warranty)
+            'dibatalkan' => 5,     // Cancelled orders (no payments)
+            'expired' => 3         // Expired orders
         ];
 
         foreach ($statusDistribution as $status => $count) {
@@ -150,19 +155,29 @@ class OrderServiceSeeder extends Seeder
                 $hasTicket = false;
 
                 switch ($status) {
-                    case 'Menunggu':
+                    case 'menunggu':
                         // Step 1: Initial state
-                        // order_status = "Menunggu"
+                        // order_status = "menunggu"
                         // payment_status = "belum_dibayar"
                         // order_items = []
                         $statusPayment = 'belum_dibayar';
                         $hasTicket = false;
                         break;
 
-                    case 'Diproses':
-                        // Step 2-4: Ticket created, repair in progress
-                        // Step 2: Create service_ticket linked to order_service
-                        // Update order_status = "Diproses"
+                    case 'dijadwalkan':
+                        // Step 2: Order scheduled
+                        $statusPayment = 'belum_dibayar';
+                        $hasTicket = true;
+                        break;
+
+                    case 'menuju_lokasi':
+                        // Step 3: Technician en route
+                        $statusPayment = 'belum_dibayar';
+                        $hasTicket = true;
+                        break;
+
+                    case 'diproses':
+                        // Step 4: Ticket created, repair in progress
                         $hasTicket = true;
 
                         // Payment can vary in this stage
@@ -182,10 +197,40 @@ class OrderServiceSeeder extends Seeder
                         }
                         break;
 
-                    case 'Selesai':
-                        // Step 7: Finalize Order + Warranty
-                        // Condition: ticket_status = "Selesai" AND payment_status = "lunas"
-                        // Action: order_status = "Selesai"
+                    case 'menunggu_sparepart':
+                        // Step 5: Waiting for spareparts
+                        $hasTicket = true;
+                        $statusPayment = $faker->randomElement(['belum_dibayar', 'cicilan']);
+                        if ($statusPayment === 'cicilan') {
+                            $paidAmount = $faker->numberBetween(100000, intval($grandTotal * 0.5));
+                            $lastPaymentAt = $faker->dateTimeBetween($createdAt, 'now');
+                        }
+                        break;
+
+                    case 'siap_diambil':
+                        // Step 6: Ready for pickup
+                        $hasTicket = true;
+                        $statusPayment = $faker->randomElement(['cicilan', 'lunas']);
+                        if ($statusPayment === 'cicilan') {
+                            $paidAmount = $faker->numberBetween(200000, intval($grandTotal * 0.8));
+                        } else {
+                            $paidAmount = $grandTotal;
+                        }
+                        $lastPaymentAt = $faker->dateTimeBetween($createdAt, 'now');
+                        break;
+
+                    case 'diantar':
+                        // Step 7: Being delivered
+                        $hasTicket = true;
+                        $statusPayment = 'lunas';
+                        $paidAmount = $grandTotal;
+                        $lastPaymentAt = $faker->dateTimeBetween($createdAt, 'now');
+                        break;
+
+                    case 'selesai':
+                        // Step 8: Finalize Order + Warranty
+                        // Condition: ticket_status = "selesai" AND payment_status = "lunas"
+                        // Action: order_status = "selesai"
                         $hasTicket = true;
                         $statusPayment = 'lunas';
                         $paidAmount = $grandTotal;
@@ -196,13 +241,13 @@ class OrderServiceSeeder extends Seeder
                         $warrantyExpiredAt = $createdAt->copy()->addMonths($warrantyPeriodMonths);
                         break;
 
-                    case 'Dibatalkan':
+                    case 'dibatalkan':
                         // Cancelled orders: no payments
                         $hasTicket = $faker->boolean(50); // Some may have tickets before cancellation
                         $statusPayment = 'dibatalkan';
                         break;
 
-                    case 'Expired':
+                    case 'expired':
                         // Expired orders: no payments
                         $hasTicket = $faker->boolean(30); // Some may have tickets before expiry
                         $statusPayment = 'belum_dibayar';
