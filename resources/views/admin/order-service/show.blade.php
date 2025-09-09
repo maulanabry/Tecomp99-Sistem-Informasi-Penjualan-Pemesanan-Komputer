@@ -457,8 +457,26 @@
                                             </div>
                                             <div>
                                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
-                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                                    {{ $payment->payment_type === 'full' ? 'Pelunasan' : 'DP (Down Payment)' }}
+                                                <dd class="mt-1">
+                                                    @php
+                                                        $typeLabels = [
+                                                            'full' => 'Pelunasan',
+                                                            'down_payment' => 'DP',
+                                                            'cicilan' => 'Cicilan'
+                                                        ];
+                                                        $typeColors = [
+                                                            'full' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                                            'down_payment' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                                            'cicilan' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100'
+                                                        ];
+                                                        $isExpired = $payment->expired_date && \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($payment->expired_date));
+                                                        $badgeColor = $isExpired ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : ($typeColors[$payment->payment_type] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200');
+                                                        $label = $isExpired ? 'Expired' : ($typeLabels[$payment->payment_type] ?? $payment->payment_type);
+                                                    @endphp
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $badgeColor }}">
+                                                        <i class="fas fa-tag mr-1"></i>
+                                                        {{ $label }}
+                                                    </span>
                                                 </dd>
                                             </div>
                                             <div>
@@ -490,9 +508,110 @@
                                     <i class="fas fa-credit-card text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada pembayaran untuk order ini</p>
                                 </div>
+                        @endif
+                    </div>
+                </div>
+
+                    <!-- Cicilan Section -->
+                    <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-list mr-2 text-primary-500"></i>
+                                Cicilan
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            @php
+                                $cicilanPayments = $orderService->paymentDetails->where('payment_type', 'cicilan')->sortBy('created_at');
+                            @endphp
+                            @if($cicilanPayments->isNotEmpty())
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead>
+                                            <tr>
+                                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Termin
+                                                </th>
+                                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Jumlah
+                                                </th>
+                                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Tanggal
+                                                </th>
+                                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                            @foreach($cicilanPayments as $index => $payment)
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                                    Cicilan {{ $index + 1 }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 text-right">
+                                                    Rp {{ number_format($payment->amount, 0, ',', '.') }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                                    {{ $payment->created_at->format('d F Y') }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    @if($payment->status === 'dibayar')
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                                            <i class="fas fa-check mr-1"></i>
+                                                            Dibayar
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+                                                            <i class="fas fa-clock mr-1"></i>
+                                                            Pending
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center py-8">
+                                    <i class="fas fa-list text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada cicilan untuk order ini</p>
+                                </div>
                             @endif
                         </div>
                     </div>
+
+                    <!-- Batas Waktu Pembayaran -->
+                    @if($orderService->status_order === 'Selesai')
+                        @php
+                            $expiredPayment = $orderService->paymentDetails->whereNotNull('expired_date')->first();
+                        @endphp
+                        @if($expiredPayment)
+                            <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                        <i class="fas fa-clock mr-2 text-primary-500"></i>
+                                        Batas Waktu Pembayaran
+                                    </h3>
+                                </div>
+                                <div class="p-6">
+                                    @php
+                                        $isExpired = \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($expiredPayment->expired_date));
+                                    @endphp
+                                    <div class="flex items-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $isExpired ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' }}">
+                                            <i class="fas {{ $isExpired ? 'fa-times' : 'fa-check' }} mr-1"></i>
+                                            {{ $isExpired ? 'Expired' : 'Masih Berlaku' }}
+                                        </span>
+                                        <span class="ml-4 text-sm text-gray-900 dark:text-gray-100">
+                                            {{ \Carbon\Carbon::parse($expiredPayment->expired_date)->format('d F Y H:i') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endif
 
                     <!-- Order Summary -->
                     <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
