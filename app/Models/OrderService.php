@@ -97,11 +97,13 @@ class OrderService extends Model
         'paid_amount',
         'remaining_balance',
         'last_payment_at',
+        'estimated_completion',
     ];
 
     protected $casts = [
         'warranty_expired_at' => 'datetime',
         'last_payment_at' => 'datetime',
+        'estimated_completion' => 'datetime',
         'paid_amount' => 'decimal:2',
         'remaining_balance' => 'decimal:2',
         'sub_total' => 'decimal:2',

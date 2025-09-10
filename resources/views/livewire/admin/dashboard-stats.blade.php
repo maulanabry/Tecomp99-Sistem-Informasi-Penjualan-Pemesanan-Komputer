@@ -71,6 +71,51 @@
         </div>
     </div>
 
+    <!-- Critical Alerts Section -->
+    @if($expiredOrders['total'] > 0 || $overdueServices['total'] > 0)
+    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-red-800 dark:text-red-200 mb-4 flex items-center">
+            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 mr-2"></i>
+            Perhatian - Tindakan Diperlukan
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @if($expiredOrders['total'] > 0)
+            <a href="{{ route('admin.expired-orders') }}" class="block p-4 bg-red-100 dark:bg-red-800/50 rounded-lg hover:bg-red-200 dark:hover:bg-red-800/70 transition-colors">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-2xl font-bold text-red-800 dark:text-red-200">{{ $expiredOrders['total'] }}</div>
+                        <div class="text-sm text-red-700 dark:text-red-300">Pesanan Expired</div>
+                        <div class="text-xs text-red-600 dark:text-red-400 mt-1">
+                            Produk: {{ $expiredOrders['products'] }} | Servis: {{ $expiredOrders['services'] }}
+                        </div>
+                    </div>
+                    <div class="text-red-600 dark:text-red-400">
+                        <i class="fas fa-clock text-3xl"></i>
+                    </div>
+                </div>
+            </a>
+            @endif
+
+            @if($overdueServices['total'] > 0)
+            <a href="{{ route('admin.overdue-services') }}" class="block p-4 bg-orange-100 dark:bg-orange-800/50 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-800/70 transition-colors">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-2xl font-bold text-orange-800 dark:text-orange-200">{{ $overdueServices['total'] }}</div>
+                        <div class="text-sm text-orange-700 dark:text-orange-300">Servis Terlambat</div>
+                        <div class="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                            Melewati estimasi penyelesaian
+                        </div>
+                    </div>
+                    <div class="text-orange-600 dark:text-orange-400">
+                        <i class="fas fa-exclamation-circle text-3xl"></i>
+                    </div>
+                </div>
+            </a>
+            @endif
+        </div>
+    </div>
+    @endif
+
     <!-- Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- Monthly Revenue Chart -->
@@ -91,12 +136,20 @@
     </div>
 
     <!-- Additional Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <!-- Service Status Chart -->
         <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Servis</h3>
             <div class="h-64">
                 <canvas id="serviceStatusChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Payment Status Chart -->
+        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Pembayaran</h3>
+            <div class="h-64">
+                <canvas id="paymentStatusChart"></canvas>
             </div>
         </div>
 
@@ -144,6 +197,39 @@
                     </div>
                 </div>
                 @endforeach
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Performance Metrics -->
+    <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Metrik Performa Servis</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $servicePerformanceMetrics['current_month_avg_days'] }}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Rata-rata Hari Penyelesaian</div>
+                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Bulan Ini</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $servicePerformanceMetrics['on_time_count'] }}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Tepat Waktu</div>
+                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Bulan Ini</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ $servicePerformanceMetrics['late_count'] }}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Terlambat</div>
+                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Bulan Ini</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    @if($servicePerformanceMetrics['last_month_avg_days'] > 0)
+                        {{ round((($servicePerformanceMetrics['current_month_avg_days'] - $servicePerformanceMetrics['last_month_avg_days']) / $servicePerformanceMetrics['last_month_avg_days']) * 100, 1) }}%
+                    @else
+                        -
+                    @endif
+                </div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Perubahan</div>
+                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">vs Bulan Lalu</div>
             </div>
         </div>
     </div>
@@ -218,10 +304,17 @@
                                 </div>
                             </div>
                         @else
-                            <div class="w-3 h-3 rounded-full flex-shrink-0
-                                @if($ticket['status'] === 'Menunggu') bg-yellow-400
-                                @elseif($ticket['status'] === 'Diproses') bg-blue-400
-                                @elseif($ticket['status'] === 'Selesai') bg-green-400
+                        <div class="w-3 h-3 rounded-full flex-shrink-0
+                                @if($ticket['status'] === 'menunggu') bg-yellow-400
+                                @elseif($ticket['status'] === 'dijadwalkan') bg-orange-400
+                                @elseif($ticket['status'] === 'menuju_lokasi') bg-red-400
+                                @elseif($ticket['status'] === 'diproses') bg-blue-400
+                                @elseif($ticket['status'] === 'menunggu_sparepart') bg-purple-400
+                                @elseif($ticket['status'] === 'siap_diambil') bg-indigo-400
+                                @elseif($ticket['status'] === 'diantar') bg-pink-400
+                                @elseif($ticket['status'] === 'selesai') bg-green-400
+                                @elseif($ticket['status'] === 'dibatalkan') bg-gray-400
+                                @elseif($ticket['status'] === 'expired') bg-red-500
                                 @else bg-gray-400
                                 @endif">
                             </div>
@@ -254,10 +347,17 @@
                     </div>
                     <div class="text-right flex-shrink-0">
                         <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $ticket['schedule'] }}</div>
-                        <div class="text-xs 
-                            @if($ticket['status'] === 'Menunggu') text-yellow-600 dark:text-yellow-400
-                            @elseif($ticket['status'] === 'Diproses') text-blue-600 dark:text-blue-400
-                            @elseif($ticket['status'] === 'Selesai') text-green-600 dark:text-green-400
+                        <div class="text-xs
+                            @if($ticket['status'] === 'menunggu') text-yellow-600 dark:text-yellow-400
+                            @elseif($ticket['status'] === 'dijadwalkan') text-orange-600 dark:text-orange-400
+                            @elseif($ticket['status'] === 'menuju_lokasi') text-red-600 dark:text-red-400
+                            @elseif($ticket['status'] === 'diproses') text-blue-600 dark:text-blue-400
+                            @elseif($ticket['status'] === 'menunggu_sparepart') text-purple-600 dark:text-purple-400
+                            @elseif($ticket['status'] === 'siap_diambil') text-indigo-600 dark:text-indigo-400
+                            @elseif($ticket['status'] === 'diantar') text-pink-600 dark:text-pink-400
+                            @elseif($ticket['status'] === 'selesai') text-green-600 dark:text-green-400
+                            @elseif($ticket['status'] === 'dibatalkan') text-gray-600 dark:text-gray-400
+                            @elseif($ticket['status'] === 'expired') text-red-700 dark:text-red-300
                             @else text-gray-500 dark:text-gray-400
                             @endif">
                             {{ $ticket['status'] }}
@@ -401,6 +501,29 @@
                             ticks: {
                                 stepSize: 1
                             }
+                        }
+                    }
+                }
+            });
+
+            // Payment Status Chart
+            const paymentStatusCtx = document.getElementById('paymentStatusChart').getContext('2d');
+            new Chart(paymentStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: @json($paymentStatusChart['labels']),
+                    datasets: [{
+                        data: @json($paymentStatusChart['data']),
+                        backgroundColor: @json($paymentStatusChart['colors']),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
                         }
                     }
                 }

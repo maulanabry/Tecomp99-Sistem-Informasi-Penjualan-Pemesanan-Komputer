@@ -675,4 +675,12 @@ class OrderProductController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Show expired orders page (now uses Livewire component)
+     */
+    public function expiredOrders()
+    {
+        return view('admin.expired-orders');
+    }
 }

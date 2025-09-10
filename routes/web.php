@@ -445,6 +445,10 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/admin/inventory-alerts', function () {
         return view('admin.inventory-alerts');
     })->name('admin.inventory-alerts');
+
+    // Expired Orders and Overdue Services Routes
+    Route::get('/admin/expired-orders', [\App\Http\Controllers\Admin\OrderProductController::class, 'expiredOrders'])->name('admin.expired-orders');
+    Route::get('/admin/overdue-services', [\App\Http\Controllers\Admin\OrderServiceController::class, 'overdueServices'])->name('admin.overdue-services');
 });
 
 // Teknisi Dashboard

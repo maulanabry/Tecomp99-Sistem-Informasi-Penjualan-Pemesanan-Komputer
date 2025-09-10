@@ -662,4 +662,19 @@ class OrderServiceController extends Controller
             'created_at' => now(),
         ]);
     }
+
+    /**
+     * Show overdue services
+     */
+    public function overdueServices()
+    {
+        $overdueServices = OrderService::whereNotNull('estimated_completion')
+            ->where('estimated_completion', '<', now())
+            ->whereNotIn('status_order', ['selesai', 'dibatalkan', 'expired'])
+            ->with(['customer', 'tickets'])
+            ->orderBy('estimated_completion', 'asc')
+            ->paginate(15);
+
+        return view('admin.overdue-services', compact('overdueServices'));
+    }
 }

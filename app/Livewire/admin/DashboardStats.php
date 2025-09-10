@@ -27,6 +27,10 @@ class DashboardStats extends Component
     public $orderStatusChart;
     public $serviceStatusChart;
     public $inventoryChart;
+    public $expiredOrders;
+    public $overdueServices;
+    public $paymentStatusChart;
+    public $servicePerformanceMetrics;
 
     public function mount()
     {
@@ -141,6 +145,16 @@ class DashboardStats extends Component
 
         // Data untuk chart inventori
         $this->inventoryChart = $this->getInventoryData();
+
+        // Data untuk expired orders dan overdue services
+        $this->expiredOrders = $this->getExpiredOrders();
+        $this->overdueServices = $this->getOverdueServices();
+
+        // Data untuk chart status pembayaran
+        $this->paymentStatusChart = $this->getPaymentStatusData();
+
+        // Data untuk metrik performa servis
+        $this->servicePerformanceMetrics = $this->getServicePerformanceMetrics();
     }
 
     public function refreshDashboard()
@@ -174,32 +188,42 @@ class DashboardStats extends Component
     private function getOrderStatusData()
     {
         $menunggu = OrderProduct::where('status_order', 'menunggu')->count() +
-            OrderService::where('status_order', 'Menunggu')->count();
+            OrderService::where('status_order', 'menunggu')->count();
         $diproses = OrderProduct::where('status_order', 'diproses')->count() +
-            OrderService::where('status_order', 'Diproses')->count();
-        $dikirim = OrderProduct::where('status_order', 'dikirim')->count();
+            OrderService::where('status_order', 'diproses')->count();
+        $diantar = OrderProduct::where('status_order', 'diantar')->count() +
+            OrderService::where('status_order', 'diantar')->count();
         $selesai = OrderProduct::where('status_order', 'selesai')->count() +
-            OrderService::where('status_order', 'Selesai')->count();
+            OrderService::where('status_order', 'selesai')->count();
         $dibatalkan = OrderProduct::where('status_order', 'dibatalkan')->count() +
-            OrderService::where('status_order', 'Dibatalkan')->count();
+            OrderService::where('status_order', 'dibatalkan')->count();
+        $expired = OrderProduct::where('status_order', 'expired')->count() +
+            OrderService::where('status_order', 'expired')->count();
 
         return [
-            'labels' => ['Menunggu', 'Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'],
-            'data' => [$menunggu, $diproses, $dikirim, $selesai, $dibatalkan],
-            'colors' => ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444']
+            'labels' => ['Menunggu', 'Diproses', 'Diantar', 'Selesai', 'Dibatalkan', 'Expired'],
+            'data' => [$menunggu, $diproses, $diantar, $selesai, $dibatalkan, $expired],
+            'colors' => ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444', '#6b7280']
         ];
     }
 
     private function getServiceStatusData()
     {
-        $waiting = ServiceTicket::where('status', 'Menunggu')->count();
-        $inProgress = ServiceTicket::where('status', 'Diproses')->count();
-        $completed = ServiceTicket::where('status', 'Selesai')->count();
+        $menunggu = ServiceTicket::where('status', 'menunggu')->count();
+        $dijadwalkan = ServiceTicket::where('status', 'dijadwalkan')->count();
+        $menuju_lokasi = ServiceTicket::where('status', 'menuju_lokasi')->count();
+        $diproses = ServiceTicket::where('status', 'diproses')->count();
+        $menunggu_sparepart = ServiceTicket::where('status', 'menunggu_sparepart')->count();
+        $siap_diambil = ServiceTicket::where('status', 'siap_diambil')->count();
+        $diantar = ServiceTicket::where('status', 'diantar')->count();
+        $selesai = ServiceTicket::where('status', 'selesai')->count();
+        $dibatalkan = ServiceTicket::where('status', 'dibatalkan')->count();
+        $expired = ServiceTicket::where('status', 'expired')->count();
 
         return [
-            'labels' => ['Menunggu', 'Diproses', 'Selesai'],
-            'data' => [$waiting, $inProgress, $completed],
-            'colors' => ['#f59e0b', '#3b82f6', '#10b981']
+            'labels' => ['Menunggu', 'Dijadwalkan', 'Menuju Lokasi', 'Diproses', 'Menunggu Sparepart', 'Siap Diambil', 'Diantar', 'Selesai', 'Dibatalkan', 'Expired'],
+            'data' => [$menunggu, $dijadwalkan, $menuju_lokasi, $diproses, $menunggu_sparepart, $siap_diambil, $diantar, $selesai, $dibatalkan, $expired],
+            'colors' => ['#f59e0b', '#fbbf24', '#f97316', '#3b82f6', '#8b5cf6', '#a855f7', '#ec4899', '#10b981', '#ef4444', '#6b7280']
         ];
     }
 
@@ -213,6 +237,110 @@ class DashboardStats extends Component
             'labels' => ['Stok Aman', 'Stok Menipis', 'Habis Stok'],
             'data' => [$inStock, $lowStock, $outOfStock],
             'colors' => ['#10b981', '#f59e0b', '#ef4444']
+        ];
+    }
+
+    private function getExpiredOrders()
+    {
+        $expiredProducts = OrderProduct::where('status_order', 'expired')
+            ->orWhere(function ($query) {
+                $query->whereNotNull('expired_date')
+                    ->where('expired_date', '<', now());
+            })
+            ->count();
+
+        $expiredServices = OrderService::where('status_order', 'expired')
+            ->orWhere(function ($query) {
+                $query->whereNotNull('expired_date')
+                    ->where('expired_date', '<', now());
+            })
+            ->count();
+
+        return [
+            'total' => $expiredProducts + $expiredServices,
+            'products' => $expiredProducts,
+            'services' => $expiredServices
+        ];
+    }
+
+    private function getOverdueServices()
+    {
+        $overdueCount = OrderService::whereNotNull('estimated_completion')
+            ->where('estimated_completion', '<', now())
+            ->whereNotIn('status_order', ['selesai', 'dibatalkan', 'expired'])
+            ->count();
+
+        return [
+            'total' => $overdueCount
+        ];
+    }
+
+    private function getPaymentStatusData()
+    {
+        $belumDibayar = OrderProduct::where('status_payment', 'belum_dibayar')->count() +
+            OrderService::where('status_payment', 'belum_dibayar')->count();
+
+        $downPayment = OrderProduct::where('status_payment', 'down_payment')->count() +
+            OrderService::where('status_payment', 'cicilan')->count();
+
+        $lunas = OrderProduct::where('status_payment', 'lunas')->count() +
+            OrderService::where('status_payment', 'lunas')->count();
+
+        $dibatalkan = OrderProduct::where('status_payment', 'dibatalkan')->count() +
+            OrderService::where('status_payment', 'dibatalkan')->count();
+
+        return [
+            'labels' => ['Belum Dibayar', 'Down Payment/Cicilan', 'Lunas', 'Dibatalkan'],
+            'data' => [$belumDibayar, $downPayment, $lunas, $dibatalkan],
+            'colors' => ['#ef4444', '#f59e0b', '#10b981', '#6b7280']
+        ];
+    }
+
+    private function getServicePerformanceMetrics()
+    {
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+        $lastMonth = Carbon::now()->subMonth()->month;
+        $lastMonthYear = Carbon::now()->subMonth()->year;
+
+        // Current month completion time (average days)
+        $currentMonthAvg = OrderService::where('status_order', 'selesai')
+            ->whereMonth('updated_at', $currentMonth)
+            ->whereYear('updated_at', $currentYear)
+            ->whereNotNull('created_at')
+            ->selectRaw('AVG(DATEDIFF(updated_at, created_at)) as avg_days')
+            ->first()
+            ->avg_days ?? 0;
+
+        // Last month completion time
+        $lastMonthAvg = OrderService::where('status_order', 'selesai')
+            ->whereMonth('updated_at', $lastMonth)
+            ->whereYear('updated_at', $lastMonthYear)
+            ->whereNotNull('created_at')
+            ->selectRaw('AVG(DATEDIFF(updated_at, created_at)) as avg_days')
+            ->first()
+            ->avg_days ?? 0;
+
+        // On-time vs Late completions (current month)
+        $totalCompleted = OrderService::where('status_order', 'selesai')
+            ->whereMonth('updated_at', $currentMonth)
+            ->whereYear('updated_at', $currentYear)
+            ->count();
+
+        $onTimeCompleted = OrderService::where('status_order', 'selesai')
+            ->whereMonth('updated_at', $currentMonth)
+            ->whereYear('updated_at', $currentYear)
+            ->whereRaw('DATEDIFF(updated_at, created_at) <= 7') // Assuming 7 days is on-time
+            ->count();
+
+        $lateCompleted = $totalCompleted - $onTimeCompleted;
+
+        return [
+            'current_month_avg_days' => round($currentMonthAvg, 1),
+            'last_month_avg_days' => round($lastMonthAvg, 1),
+            'on_time_count' => $onTimeCompleted,
+            'late_count' => $lateCompleted,
+            'total_completed' => $totalCompleted
         ];
     }
 
