@@ -20,6 +20,7 @@ class ServiceTicketController extends Controller
     {
         $this->notificationService = $notificationService;
     }
+
     public function index()
     {
         return view('admin.service-ticket');
@@ -94,106 +95,6 @@ class ServiceTicketController extends Controller
         return view('admin.service-ticket.calendar', compact('tickets'));
     }
 
-
-    public function calendarEvents()
-    {
-        $serviceTickets = ServiceTicket::with(['orderService.customer'])
-            ->whereHas('orderService', function ($query) {
-                $query->whereNotNull('type');
-            })
-            ->get();
-
-        $events = [];
-
-        // Existing events for onsite visits only
-        foreach ($serviceTickets as $ticket) {
-            // Add visit schedule event for onsite services with enhanced styling
-            if ($ticket->orderService->type === 'onsite' && $ticket->visit_schedule) {
-                $events[] = [
-                    'id' => 'visit_' . $ticket->id,
-                    'title' => "Visit #" . $ticket->service_ticket_id,
-                    'start' => $ticket->visit_schedule,
-                    'end' => \Carbon\Carbon::parse($ticket->visit_schedule)->addHour(),
-                    'backgroundColor' => '#dc3545',
-                    'borderColor' => '#dc3545',
-                    'textColor' => '#ffffff',
-                    'classNames' => ['visit-schedule'],
-                    'display' => 'block',
-                    'extendedProps' => [
-                        'ticket_id' => $ticket->service_ticket_id,
-                        'customer_name' => $ticket->orderService->customer->name,
-                        'type' => $ticket->orderService->type,
-                        'device' => $ticket->orderService->device,
-                        'status' => $ticket->status,
-                        'eventType' => 'visit',
-                        'address' => $ticket->orderService->customer->addresses->first()?->address ?? 'No address'
-                    ]
-                ];
-            }
-        }
-
-        // New logic for reguler queue events with FIFO scheduling from today
-        $regulerTickets = ServiceTicket::with(['orderService.customer'])
-            ->whereHas('orderService', function ($q) {
-                $q->where('type', 'reguler');
-            })
-            ->whereIn('status', ['menunggu', 'diproses'])
-            ->orderBy('created_at', 'asc')
-            ->get();
-
-        // FIFO-based distribution starting from today (prioritize all pending tickets)
-        $queueByDate = [];
-        $maxPerDay = 8;
-        $currentDate = \Carbon\Carbon::today();
-        $ticketIndex = 0;
-
-        // Distribute all active reguler tickets starting from today regardless of creation date
-        // This ensures all pending tickets are prioritized and shown starting from today
-        foreach ($regulerTickets as $ticket) {
-            // Calculate which day this ticket should be assigned to (starting from today)
-            $dayOffset = intval($ticketIndex / $maxPerDay);
-            $assignDate = $currentDate->copy()->addDays($dayOffset)->toDateString();
-
-            // Initialize array if not exists
-            if (!isset($queueByDate[$assignDate])) {
-                $queueByDate[$assignDate] = [];
-            }
-
-            // Add ticket to the queue for the assigned date
-            $queueByDate[$assignDate][] = $ticket;
-            $ticketIndex++;
-        }
-
-        // Generate events for reguler queue
-        foreach ($queueByDate as $date => $tickets) {
-            foreach ($tickets as $index => $ticket) {
-                $queueNumber = $index + 1;
-                $events[] = [
-                    'id' => 'reguler_' . $ticket->service_ticket_id,
-                    'title' => "Antrian #{$queueNumber} - " . $ticket->orderService->customer->name,
-                    'start' => $date,
-                    'allDay' => true,
-                    'backgroundColor' => '#f59e0b', // amber-500
-                    'borderColor' => '#f59e0b',
-                    'textColor' => '#000000',
-                    'classNames' => ['reguler-queue'],
-                    'extendedProps' => [
-                        'ticket_id' => $ticket->service_ticket_id,
-                        'customer_name' => $ticket->orderService->customer->name,
-                        'type' => 'reguler',
-                        'device' => $ticket->orderService->device ?? '',
-                        'status' => $ticket->status,
-                        'eventType' => 'reguler',
-                        'order_service_id' => $ticket->order_service_id,
-                        'created_at' => $ticket->created_at->format('Y-m-d H:i:s')
-                    ]
-                ];
-            }
-        }
-
-        return response()->json($events);
-    }
-
     public function create()
     {
         $orderServices = \App\Models\OrderService::where('hasTicket', false)
@@ -207,8 +108,13 @@ class ServiceTicketController extends Controller
 
     public function store(Request $request)
     {
+        // Debug: Log all request data
+        \Log::info('ServiceTicket Store Request:', $request->all());
+
         // Get the order service to check its type
         $orderService = \App\Models\OrderService::find($request->order_service_id);
+
+        \Log::info('OrderService found:', $orderService ? $orderService->toArray() : 'null');
 
         $rules = [
             'order_service_id' => 'required|exists:order_services,order_service_id',
@@ -220,7 +126,7 @@ class ServiceTicketController extends Controller
         // Add visit schedule validation only for onsite orders
         if ($orderService && $orderService->type === 'onsite') {
             $rules['visit_date'] = 'required|date';
-            $rules['visit_time_slot'] = 'required|in:08:00,09:30,11:00,13:00,14:30,16:00';
+            $rules['visit_time_slot'] = 'required|in:08:00,10:30,13:00,15:30,18:00';
         }
 
         $validated = $request->validate($rules);
@@ -261,13 +167,19 @@ class ServiceTicketController extends Controller
         }
 
         $validated['service_ticket_id'] = "TKT{$today}{$sequence}";
-        $validated['status'] = 'menunggu';
+        $validated['status'] = 'menunggu'; // Set to menunggu when created
 
         // Begin transaction
         DB::beginTransaction();
         try {
+            // Set session flag to bypass validation during creation
+            session(['bypass_ticket_validation' => true]);
+
             // Create service ticket
             $ticket = ServiceTicket::create($validated);
+
+            // Clear session flag
+            session()->forget('bypass_ticket_validation');
 
             // Generate unique service action ID with timestamp and random component
             do {
@@ -281,7 +193,7 @@ class ServiceTicketController extends Controller
             ServiceAction::create([
                 'service_action_id' => $actionId,
                 'service_ticket_id' => $ticket->service_ticket_id,
-                'action' => 'Tiket Servis Telah Dibuat',
+                'action' => 'Tiket Servis Telah Dibuat dan Menunggu Konfirmasi',
                 'number' => 1, // First action is always number 1
                 'created_at' => now(),
             ]);
@@ -290,7 +202,7 @@ class ServiceTicketController extends Controller
             \App\Models\OrderService::where('order_service_id', $validated['order_service_id'])
                 ->update([
                     'hasTicket' => true,
-                    'status_order' => 'Diproses'
+                    'status_order' => 'menunggu'
                 ]);
 
             DB::commit();
@@ -300,7 +212,7 @@ class ServiceTicketController extends Controller
                 $this->createTicketNotification(
                     $ticket,
                     NotificationType::SERVICE_TICKET_CREATED,
-                    "Tiket servis baru dibuat untuk {$ticket->orderService->device}"
+                    "Tiket servis baru dibuat dan menunggu konfirmasi untuk {$ticket->orderService->device}"
                 );
 
                 // Notify the assigned teknisi
@@ -316,7 +228,14 @@ class ServiceTicketController extends Controller
                 ->with('success', 'Tiket servis berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Terjadi kesalahan saat membuat tiket servis.');
+            // Clear session flag on error
+            session()->forget('bypass_ticket_validation');
+            \Log::error('Error creating service ticket:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+            return back()->with('error', 'Terjadi kesalahan saat membuat tiket servis: ' . $e->getMessage());
         }
     }
 
@@ -344,7 +263,7 @@ class ServiceTicketController extends Controller
         // Add visit schedule validation only for onsite orders
         if ($ticket->orderService->type === 'onsite') {
             $rules['visit_date'] = 'required|date';
-            $rules['visit_time_slot'] = 'required|in:08:00,09:30,11:00,13:00,14:30,16:00';
+            $rules['visit_time_slot'] = 'required|in:08:00,10:30,13:00,15:30,18:00';
         }
 
         $validated = $request->validate($rules);
@@ -378,7 +297,14 @@ class ServiceTicketController extends Controller
 
         $oldStatus = $ticket->status;
         $oldAdminId = $ticket->admin_id;
+
+        // Set session flag to bypass validation during update
+        session(['bypass_ticket_validation' => true]);
+
         $ticket->update($validated);
+
+        // Clear session flag
+        session()->forget('bypass_ticket_validation');
 
         // Create notification for ticket update if status changed
         if ($oldStatus !== $ticket->status) {
@@ -438,7 +364,7 @@ class ServiceTicketController extends Controller
         $validated = $request->validate([
             'admin_id' => 'required|exists:admins,id',
             'visit_date' => 'required|date',
-            'visit_time_slot' => 'required|in:08:00,09:30,11:00,13:00,14:30,16:00',
+            'visit_time_slot' => 'required|in:08:00,10:30,13:00,15:30,18:00',
             'exclude_ticket_id' => 'nullable|string'
         ]);
 
@@ -467,12 +393,24 @@ class ServiceTicketController extends Controller
         // Query untuk mendapatkan semua slot yang sudah dibooking
         $query = ServiceTicket::where('admin_id', $validated['admin_id'])
             ->whereDate('visit_schedule', $validated['visit_date'])
-            ->whereNotNull('visit_schedule');
+            ->whereNotNull('visit_schedule')
+            ->whereHas('orderService', function ($q) {
+                $q->where('type', 'onsite'); // Hanya untuk onsite services
+            });
 
         // Exclude ticket tertentu jika sedang edit
         if (!empty($validated['exclude_ticket_id'])) {
             $query->where('service_ticket_id', '!=', $validated['exclude_ticket_id']);
         }
+
+        // Debug: Log query untuk memastikan query benar
+        \Log::info('GetBookedSlots Query:', [
+            'admin_id' => $validated['admin_id'],
+            'visit_date' => $validated['visit_date'],
+            'exclude_ticket_id' => $validated['exclude_ticket_id'] ?? null,
+            'query_sql' => $query->toSql(),
+            'query_bindings' => $query->getBindings()
+        ]);
 
         // Ambil semua waktu yang sudah dibooking
         $bookedSlots = $query->get()
@@ -480,23 +418,40 @@ class ServiceTicketController extends Controller
                 return [
                     'time_slot' => $ticket->visit_schedule->format('H:i'),
                     'ticket_id' => $ticket->service_ticket_id,
-                    'customer_name' => $ticket->orderService->customer->name ?? 'Unknown'
+                    'customer_name' => $ticket->orderService->customer->name ?? 'Unknown',
+                    'order_service_id' => $ticket->orderService->order_service_id ?? '',
+                    'device' => $ticket->orderService->device ?? ''
                 ];
             })
             ->toArray();
+
+        // Debug: Log hasil query
+        \Log::info('Booked slots found:', [
+            'count' => count($bookedSlots),
+            'slots' => $bookedSlots
+        ]);
 
         // Hitung total kunjungan hari ini
         $totalVisitsToday = count($bookedSlots);
         $maxVisitsPerDay = 4;
         $remainingSlots = max(0, $maxVisitsPerDay - $totalVisitsToday);
 
-        return response()->json([
+        $response = [
             'booked_slots' => $bookedSlots,
             'total_visits_today' => $totalVisitsToday,
             'remaining_slots' => $remainingSlots,
             'max_visits_per_day' => $maxVisitsPerDay,
-            'date_full' => $totalVisitsToday >= $maxVisitsPerDay
-        ]);
+            'date_full' => $totalVisitsToday >= $maxVisitsPerDay,
+            'debug_info' => [
+                'admin_id' => $validated['admin_id'],
+                'visit_date' => $validated['visit_date'],
+                'query_executed' => true
+            ]
+        ];
+
+        \Log::info('GetBookedSlots Response:', $response);
+
+        return response()->json($response);
     }
 
     /**
@@ -505,16 +460,33 @@ class ServiceTicketController extends Controller
      */
     private function checkSlotAvailabilityInternal($adminId, $visitDate, $timeSlot, $excludeTicketId = null)
     {
+        // Debug: Log parameter yang diterima
+        \Log::info('CheckSlotAvailabilityInternal called:', [
+            'admin_id' => $adminId,
+            'visit_date' => $visitDate,
+            'time_slot' => $timeSlot,
+            'exclude_ticket_id' => $excludeTicketId
+        ]);
+
         // Cek apakah slot waktu spesifik sudah diambil
         $query = ServiceTicket::where('admin_id', $adminId)
             ->whereDate('visit_schedule', $visitDate)
             ->whereTime('visit_schedule', $timeSlot)
-            ->whereNotNull('visit_schedule');
+            ->whereNotNull('visit_schedule')
+            ->whereHas('orderService', function ($q) {
+                $q->where('type', 'onsite'); // Hanya untuk onsite services
+            });
 
         // Exclude ticket tertentu jika sedang edit
         if ($excludeTicketId) {
             $query->where('service_ticket_id', '!=', $excludeTicketId);
         }
+
+        // Debug: Log query untuk slot spesifik
+        \Log::info('Slot availability query:', [
+            'query_sql' => $query->toSql(),
+            'query_bindings' => $query->getBindings()
+        ]);
 
         $isSlotTaken = $query->exists();
 
@@ -522,6 +494,11 @@ class ServiceTicketController extends Controller
         if ($isSlotTaken) {
             $existingTicket = $query->first();
             $customerName = $existingTicket->orderService->customer->name ?? 'Unknown';
+
+            \Log::info('Slot taken by:', [
+                'customer_name' => $customerName,
+                'ticket_id' => $existingTicket->service_ticket_id
+            ]);
 
             return [
                 'available' => false,
@@ -534,14 +511,28 @@ class ServiceTicketController extends Controller
         // Cek batas maksimal kunjungan harian (maksimal 4 kunjungan per teknisi per hari)
         $dailyVisitsQuery = ServiceTicket::where('admin_id', $adminId)
             ->whereDate('visit_schedule', $visitDate)
-            ->whereNotNull('visit_schedule');
+            ->whereNotNull('visit_schedule')
+            ->whereHas('orderService', function ($q) {
+                $q->where('type', 'onsite'); // Hanya untuk onsite services
+            });
 
         if ($excludeTicketId) {
             $dailyVisitsQuery->where('service_ticket_id', '!=', $excludeTicketId);
         }
 
+        // Debug: Log query untuk daily visits
+        \Log::info('Daily visits query:', [
+            'query_sql' => $dailyVisitsQuery->toSql(),
+            'query_bindings' => $dailyVisitsQuery->getBindings()
+        ]);
+
         $dailyVisitsCount = $dailyVisitsQuery->count();
         $maxVisitsPerDay = 4;
+
+        \Log::info('Daily visits count:', [
+            'current_visits' => $dailyVisitsCount,
+            'max_visits' => $maxVisitsPerDay
+        ]);
 
         // Jika sudah mencapai batas maksimal kunjungan
         if ($dailyVisitsCount >= $maxVisitsPerDay) {
@@ -555,13 +546,17 @@ class ServiceTicketController extends Controller
         }
 
         // Slot tersedia
-        return [
+        $result = [
             'available' => true,
             'message' => 'Slot tersedia',
             'remaining_slots' => $maxVisitsPerDay - $dailyVisitsCount,
             'current_visits' => $dailyVisitsCount,
             'max_visits' => $maxVisitsPerDay
         ];
+
+        \Log::info('Slot availability result:', $result);
+
+        return $result;
     }
 
     public function destroy(ServiceTicket $ticket)
@@ -629,6 +624,7 @@ class ServiceTicketController extends Controller
 
             // Set session flag to skip validation during sync
             session(['syncing_ticket_status' => true]);
+            session(['bypass_ticket_validation' => true]);
 
             $ticket->update($validated);
 
@@ -691,6 +687,7 @@ class ServiceTicketController extends Controller
 
             // Set session flag to skip validation during sync
             session(['syncing_ticket_status' => true]);
+            session(['bypass_ticket_validation' => true]);
 
             $ticket->update(['status' => 'dibatalkan']);
 
@@ -826,7 +823,7 @@ class ServiceTicketController extends Controller
                 $data['visit_schedule'] = $ticket->visit_schedule->format('Y-m-d H:i:s');
                 $data['visit_time'] = $visitTime;
             } else {
-                $message = "Anda ditugaskan untuk tiket servis #{$ticket->service_ticket_id} - {$orderService->device}";
+                $message = "Anda ditugaskan untuk tiket servis #{$ticket->service_ticket_id} yang menunggu konfirmasi - {$orderService->device}";
             }
 
             $this->notificationService->create(

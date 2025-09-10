@@ -193,11 +193,10 @@
                                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('visit_time_slot') border-red-500 @enderror">
                                         <option value="">Pilih slot waktu</option>
                                         <option value="08:00" {{ old('visit_time_slot') === '08:00' ? 'selected' : '' }}>08:00 - 09:30</option>
-                                        <option value="09:30" {{ old('visit_time_slot') === '09:30' ? 'selected' : '' }}>09:30 - 11:00</option>
-                                        <option value="11:00" {{ old('visit_time_slot') === '11:00' ? 'selected' : '' }}>11:00 - 12:30</option>
+                                        <option value="10:30" {{ old('visit_time_slot') === '10:30' ? 'selected' : '' }}>10:30 - 12:00</option>
                                         <option value="13:00" {{ old('visit_time_slot') === '13:00' ? 'selected' : '' }}>13:00 - 14:30</option>
-                                        <option value="14:30" {{ old('visit_time_slot') === '14:30' ? 'selected' : '' }}>14:30 - 16:00</option>
-                                        <option value="16:00" {{ old('visit_time_slot') === '16:00' ? 'selected' : '' }}>16:00 - 17:30</option>
+                                        <option value="15:30" {{ old('visit_time_slot') === '15:30' ? 'selected' : '' }}>15:30 - 17:00</option>
+                                        <option value="18:00" {{ old('visit_time_slot') === '18:00' ? 'selected' : '' }}>18:00 - 19:30</option>
                                     </select>
                                     <div id="slotAvailability" class="mt-2 text-sm"></div>
                                     @error('visit_time_slot')

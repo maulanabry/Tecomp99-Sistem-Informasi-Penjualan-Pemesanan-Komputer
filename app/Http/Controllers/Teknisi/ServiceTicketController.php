@@ -59,7 +59,7 @@ class ServiceTicketController extends Controller
         // Add visit schedule validation only for onsite orders
         if ($orderService && $orderService->type === 'onsite') {
             $rules['visit_date'] = 'required|date';
-            $rules['visit_time_slot'] = 'required|in:08:00,09:30,11:00,13:00,14:30,16:00';
+            $rules['visit_time_slot'] = 'required|in:08:00,10:30,13:00,15:30,18:00';
         }
 
         $validated = $request->validate($rules);
@@ -100,13 +100,19 @@ class ServiceTicketController extends Controller
         }
 
         $validated['service_ticket_id'] = "TKT{$today}{$sequence}";
-        $validated['status'] = 'Menunggu';
+        $validated['status'] = 'diproses'; // Match order service status
 
         // Begin transaction
         DB::beginTransaction();
         try {
+            // Set session flag to bypass validation during creation
+            session(['bypass_ticket_validation' => true]);
+
             // Create service ticket
             $ticket = ServiceTicket::create($validated);
+
+            // Clear session flag
+            session()->forget('bypass_ticket_validation');
 
             // Generate unique service action ID with timestamp and random component
             do {
@@ -150,6 +156,8 @@ class ServiceTicketController extends Controller
                 ->with('success', 'Tiket servis berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollback();
+            // Clear session flag on error
+            session()->forget('bypass_ticket_validation');
             return back()->with('error', 'Terjadi kesalahan saat membuat tiket servis.');
         }
     }
@@ -159,7 +167,7 @@ class ServiceTicketController extends Controller
         $validated = $request->validate([
             'admin_id' => 'required|exists:admins,id',
             'visit_date' => 'required|date',
-            'visit_time_slot' => 'required|in:08:00,09:30,11:00,13:00,14:30,16:00',
+            'visit_time_slot' => 'required|in:08:00,10:30,13:00,15:30,18:00',
             'exclude_ticket_id' => 'nullable|string'
         ]);
 

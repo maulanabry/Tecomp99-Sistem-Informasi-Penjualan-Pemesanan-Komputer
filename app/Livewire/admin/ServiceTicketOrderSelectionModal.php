@@ -37,9 +37,11 @@ class ServiceTicketOrderSelectionModal extends Component
 
     public function open()
     {
+        \Log::info('ServiceTicketOrderSelectionModal: Opening modal');
         $this->show = true;
         $this->reset(['searchQuery', 'typeFilter', 'selectedOrder']);
         $this->resetPage();
+        \Log::info('ServiceTicketOrderSelectionModal: Modal opened successfully');
     }
 
     public function close()
@@ -51,6 +53,8 @@ class ServiceTicketOrderSelectionModal extends Component
 
     public function selectOrder($orderId)
     {
+        \Log::info('ServiceTicketOrderSelectionModal: Selecting order', ['orderId' => $orderId]);
+
         $order = OrderService::with('customer')->find($orderId);
         if ($order) {
             $orderData = [
@@ -64,8 +68,12 @@ class ServiceTicketOrderSelectionModal extends Component
                 'created_at' => $order->created_at,
             ];
 
+            \Log::info('ServiceTicketOrderSelectionModal: Dispatching order data', $orderData);
+
             // Kirim event ke parent component dengan data order sebagai object
             $this->dispatch('serviceTicketOrderSelected', $orderData);
+        } else {
+            \Log::error('ServiceTicketOrderSelectionModal: Order not found', ['orderId' => $orderId]);
         }
 
         $this->close();
