@@ -392,7 +392,7 @@ class OrderServiceController extends Controller
     public function updateStatus(Request $request, OrderService $orderService)
     {
         $validated = $request->validate([
-            'status_order' => 'required|in:Menunggu,Dijadwalkan,Menuju_lokasi,Diproses,Menunggu_sparepart,Siap_diambil,Diantar,Selesai,Dibatalkan,Expired',
+            'status_order' => 'required|in:Menunggu,Dijadwalkan,Menuju_lokasi,Diproses,Menunggu_sparepart,Siap_diambil,Diantar,Selesai,Dibatalkan,Melewati_jatuh_tempo',
         ]);
 
         try {
@@ -416,7 +416,7 @@ class OrderServiceController extends Controller
                 'Diantar' => 'diantar',
                 'Selesai' => 'selesai',
                 'Dibatalkan' => 'dibatalkan',
-                'Expired' => 'expired',
+                'Melewati_jatuh_tempo' => 'melewati_jatuh_tempo',
             ];
 
             $newTicketStatus = $statusMapping[$orderService->status_order] ?? 'menunggu';
@@ -642,7 +642,7 @@ class OrderServiceController extends Controller
             'diantar' => 'Perangkat sedang diantar ke pelanggan',
             'selesai' => 'Layanan selesai, perangkat diterima pelanggan',
             'dibatalkan' => 'Tiket layanan dibatalkan',
-            'expired' => 'Tiket layanan kedaluwarsa karena tidak ada pembayaran/diambil',
+            'melewati_jatuh_tempo' => 'Tiket layanan kedaluwarsa karena tidak ada pembayaran/diambil',
         ];
 
         $action = $actionDescriptions[$newStatus] ?? 'Status tiket diperbarui';
@@ -670,7 +670,7 @@ class OrderServiceController extends Controller
     {
         $overdueServices = OrderService::whereNotNull('estimated_completion')
             ->where('estimated_completion', '<', now())
-            ->whereNotIn('status_order', ['selesai', 'dibatalkan', 'expired'])
+            ->whereNotIn('status_order', ['selesai', 'dibatalkan', 'melewati_jatuh_tempo'])
             ->with(['customer', 'tickets'])
             ->orderBy('estimated_completion', 'asc')
             ->paginate(15);

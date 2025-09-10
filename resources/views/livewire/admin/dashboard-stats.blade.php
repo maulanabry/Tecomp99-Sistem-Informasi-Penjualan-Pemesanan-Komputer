@@ -80,11 +80,11 @@
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @if($expiredOrders['total'] > 0)
-            <a href="{{ route('admin.expired-orders') }}" class="block p-4 bg-red-100 dark:bg-red-800/50 rounded-lg hover:bg-red-200 dark:hover:bg-red-800/70 transition-colors">
+            <a href="{{ route('admin.melewati_jatuh_tempo-orders') }}" class="block p-4 bg-red-100 dark:bg-red-800/50 rounded-lg hover:bg-red-200 dark:hover:bg-red-800/70 transition-colors">
                 <div class="flex items-center justify-between">
                     <div>
                         <div class="text-2xl font-bold text-red-800 dark:text-red-200">{{ $expiredOrders['total'] }}</div>
-                        <div class="text-sm text-red-700 dark:text-red-300">Pesanan Expired</div>
+                        <div class="text-sm text-red-700 dark:text-red-300">Pesanan Melewati Jatuh Tempo</div>
                         <div class="text-xs text-red-600 dark:text-red-400 mt-1">
                             Produk: {{ $expiredOrders['products'] }} | Servis: {{ $expiredOrders['services'] }}
                         </div>
@@ -314,7 +314,7 @@
                                 @elseif($ticket['status'] === 'diantar') bg-pink-400
                                 @elseif($ticket['status'] === 'selesai') bg-green-400
                                 @elseif($ticket['status'] === 'dibatalkan') bg-gray-400
-                                @elseif($ticket['status'] === 'expired') bg-red-500
+                                @elseif($ticket['status'] === 'melewati_jatuh_tempo') bg-red-500
                                 @else bg-gray-400
                                 @endif">
                             </div>
@@ -357,7 +357,7 @@
                             @elseif($ticket['status'] === 'diantar') text-pink-600 dark:text-pink-400
                             @elseif($ticket['status'] === 'selesai') text-green-600 dark:text-green-400
                             @elseif($ticket['status'] === 'dibatalkan') text-gray-600 dark:text-gray-400
-                            @elseif($ticket['status'] === 'expired') text-red-700 dark:text-red-300
+                            @elseif($ticket['status'] === 'melewati_jatuh_tempo') text-red-700 dark:text-red-300
                             @else text-gray-500 dark:text-gray-400
                             @endif">
                             {{ $ticket['status'] }}

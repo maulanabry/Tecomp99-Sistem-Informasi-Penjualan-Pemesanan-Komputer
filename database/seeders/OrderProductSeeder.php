@@ -41,7 +41,7 @@ class OrderProductSeeder extends Seeder
             'diantar' => 7,
             'selesai' => 6,
             'dibatalkan' => 4,
-            'expired' => 3
+            'melewati_jatuh_tempo' => 3
         ];
 
         $paymentStatuses = [

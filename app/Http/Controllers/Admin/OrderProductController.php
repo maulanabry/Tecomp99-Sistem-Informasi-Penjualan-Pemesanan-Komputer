@@ -449,7 +449,7 @@ class OrderProductController extends Controller
     public function updateStatus(Request $request, OrderProduct $orderProduct)
     {
         $validated = $request->validate([
-            'status_order' => 'required|in:Menunggu,Diproses,Diantar,Selesai,Dibatalkan,Expired',
+            'status_order' => 'required|in:Menunggu,Diproses,Diantar,Selesai,Dibatalkan,Melewati_jatuh_tempo',
         ]);
 
         $oldStatus = $orderProduct->status_order;
@@ -677,10 +677,10 @@ class OrderProductController extends Controller
     }
 
     /**
-     * Show expired orders page (now uses Livewire component)
+     * Show melewati_jatuh_tempo orders page (now uses Livewire component)
      */
     public function expiredOrders()
     {
-        return view('admin.expired-orders');
+        return view('admin.melewati_jatuh_tempo-orders');
     }
 }

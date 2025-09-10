@@ -223,7 +223,7 @@ class OrderProduct extends Model
         $expiry = Carbon::parse($this->warranty_expired_at);
 
         if ($expiry->isPast()) {
-            return ['status' => 'expired', 'message' => 'Garansi sudah habis'];
+            return ['status' => 'melewati_jatuh_tempo', 'message' => 'Garansi sudah habis'];
         }
 
         $daysLeft = $now->diffInDays($expiry);

@@ -264,7 +264,7 @@ class VoucherManagementTest extends TestCase
 
         $expiredVoucher = Voucher::create([
             'code' => 'EXPIRED',
-            'name' => 'Voucher Expired',
+            'name' => 'Voucher Melewati_jatuh_tempo',
             'type' => 'percentage',
             'discount_percentage' => 30.00,
             'discount_amount' => null,
@@ -272,7 +272,7 @@ class VoucherManagementTest extends TestCase
             'is_active' => true,
             'used_count' => 0,
             'start_date' => Carbon::today()->subDays(30),
-            'end_date' => Carbon::today()->subDays(1) // Expired
+            'end_date' => Carbon::today()->subDays(1) // Melewati_jatuh_tempo
         ]);
 
         $futureVoucher = Voucher::create([

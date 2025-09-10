@@ -88,7 +88,7 @@ class ServiceTicket extends Model
         // Kecuali jika sedang dalam proses sinkronisasi otomatis
         static::saving(function ($ticket) {
             // Skip validasi jika sedang dalam proses sinkronisasi
-            if (session('syncing_ticket_status', false)) {
+            if (session('syncing_ticket_status', false) || session('bypass_ticket_validation', false)) {
                 return;
             }
 
@@ -104,7 +104,7 @@ class ServiceTicket extends Model
                     'diantar' => 'Diantar',
                     'selesai' => 'Selesai',
                     'dibatalkan' => 'Dibatalkan',
-                    'expired' => 'Expired',
+                    'melewati_jatuh_tempo' => 'Melewati_jatuh_tempo',
                 ];
 
                 $mappedOrderStatus = $statusMapping[$ticket->status] ?? $ticket->status;
@@ -116,7 +116,7 @@ class ServiceTicket extends Model
 
         static::updating(function ($ticket) {
             // Skip validasi jika sedang dalam proses sinkronisasi
-            if (session('syncing_ticket_status', false)) {
+            if (session('syncing_ticket_status', false) || session('bypass_ticket_validation', false)) {
                 return;
             }
 
@@ -132,7 +132,7 @@ class ServiceTicket extends Model
                     'diantar' => 'Diantar',
                     'selesai' => 'Selesai',
                     'dibatalkan' => 'Dibatalkan',
-                    'expired' => 'Expired',
+                    'melewati_jatuh_tempo' => 'Melewati_jatuh_tempo',
                 ];
 
                 $mappedOrderStatus = $statusMapping[$ticket->status] ?? $ticket->status;

@@ -123,7 +123,7 @@ class OrderServiceSeeder extends Seeder
             'diantar' => 2,        // Step 7: Being delivered
             'selesai' => 10,       // Step 8: Completed orders (ticket=selesai, payment=lunas, warranty)
             'dibatalkan' => 5,     // Cancelled orders (no payments)
-            'expired' => 3         // Expired orders
+            'melewati_jatuh_tempo' => 3         // Melewati_jatuh_tempo orders
         ];
 
         foreach ($statusDistribution as $status => $count) {
@@ -247,8 +247,8 @@ class OrderServiceSeeder extends Seeder
                         $statusPayment = 'dibatalkan';
                         break;
 
-                    case 'expired':
-                        // Expired orders: no payments
+                    case 'melewati_jatuh_tempo':
+                        // Melewati_jatuh_tempo orders: no payments
                         $hasTicket = $faker->boolean(30); // Some may have tickets before expiry
                         $statusPayment = 'belum_dibayar';
                         break;

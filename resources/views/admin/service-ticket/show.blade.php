@@ -70,7 +70,7 @@
                                             @elseif($ticket->status === 'diantar') bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100
                                             @elseif($ticket->status === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
                                             @elseif($ticket->status === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
-                                            @elseif($ticket->status === 'expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                            @elseif($ticket->status === 'melewati_jatuh_tempo') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                             @endif">
                                             {{ str_replace('_', ' ', ucfirst($ticket->status)) }}
                                         </span>
@@ -86,7 +86,7 @@
                                         <option value="diantar" {{ $ticket->status === 'diantar' ? 'selected' : '' }}>Diantar</option>
                                         <option value="selesai" {{ $ticket->status === 'selesai' ? 'selected' : '' }}>Selesai</option>
                                         <option value="dibatalkan" {{ $ticket->status === 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
-                                        <option value="expired" {{ $ticket->status === 'expired' ? 'selected' : '' }}>Expired</option>
+                                        <option value="melewati_jatuh_tempo" {{ $ticket->status === 'melewati_jatuh_tempo' ? 'selected' : '' }}>Melewati Jatuh Tempo</option>
                                     </select>
                                 </div>
                                 <button type="submit"
@@ -126,7 +126,7 @@
                                             @elseif($ticket->status === 'diantar') bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100
                                             @elseif($ticket->status === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
                                             @elseif($ticket->status === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
-                                            @elseif($ticket->status === 'expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                            @elseif($ticket->status === 'melewati_jatuh_tempo') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                             @endif">
                                             <i class="fas fa-circle mr-1"></i>
                                             {{ str_replace('_', ' ', ucfirst($ticket->status)) }}

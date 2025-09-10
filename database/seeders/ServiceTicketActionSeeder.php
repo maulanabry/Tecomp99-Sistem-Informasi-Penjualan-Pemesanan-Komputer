@@ -36,7 +36,7 @@ class ServiceTicketActionSeeder extends Seeder
             'diantar' => 'Perangkat sedang dalam proses pengiriman ke pelanggan',
             'selesai' => 'Layanan servis selesai, perangkat telah diterima pelanggan',
             'dibatalkan' => 'Tiket layanan telah dibatalkan atas permintaan pelanggan',
-            'expired' => 'Tiket layanan kedaluwarsa karena tidak ada aktivitas pembayaran'
+            'melewati_jatuh_tempo' => 'Tiket layanan kedaluwarsa karena tidak ada aktivitas pembayaran'
         ];
 
         $serviceActions = [];
@@ -99,7 +99,7 @@ class ServiceTicketActionSeeder extends Seeder
                 'diantar' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'menunggu_sparepart', 'siap_diambil', 'diantar'],
                 'selesai' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'menunggu_sparepart', 'siap_diambil', 'diantar', 'selesai'],
                 'dibatalkan' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'dibatalkan'],
-                'expired' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'expired']
+                'melewati_jatuh_tempo' => ['menunggu', 'dijadwalkan', 'menuju_lokasi', 'diproses', 'melewati_jatuh_tempo']
             ];
         } else {
             // In-store
@@ -111,7 +111,7 @@ class ServiceTicketActionSeeder extends Seeder
                 'siap_diambil' => ['menunggu', 'dijadwalkan', 'diproses', 'menunggu_sparepart', 'siap_diambil'],
                 'selesai' => ['menunggu', 'dijadwalkan', 'diproses', 'menunggu_sparepart', 'siap_diambil', 'selesai'],
                 'dibatalkan' => ['menunggu', 'dijadwalkan', 'diproses', 'dibatalkan'],
-                'expired' => ['menunggu', 'dijadwalkan', 'diproses', 'expired']
+                'melewati_jatuh_tempo' => ['menunggu', 'dijadwalkan', 'diproses', 'melewati_jatuh_tempo']
             ];
         }
 

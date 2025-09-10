@@ -237,7 +237,7 @@
                                                                 @elseif($order['status_order'] === 'Diantar') bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100
                                                                 @elseif($order['status_order'] === 'Selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
                                                                 @elseif($order['status_order'] === 'Dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
-                                                                @elseif($order['status_order'] === 'Expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                                                @elseif($order['status_order'] === 'Melewati_jatuh_tempo') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                                                 @else bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 @endif">
                                                                 {{ str_replace('_', ' ', ucfirst($order['status_order'])) }}
                                                             </span>

@@ -68,7 +68,7 @@
                                             @elseif($orderService->status_order === 'diantar') bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100
                                             @elseif($orderService->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
                                             @elseif($orderService->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
-                                            @elseif($orderService->status_order === 'expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                            @elseif($orderService->status_order === 'melewati_jatuh_tempo') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                             @endif">
                                             {{ str_replace('_', ' ', ucfirst($orderService->status_order)) }}
                                         </span>
@@ -84,7 +84,7 @@
                                         <option value="Diantar" {{ $orderService->status_order === 'Diantar' ? 'selected' : '' }}>Diantar</option>
                                         <option value="Selesai" {{ $orderService->status_order === 'Selesai' ? 'selected' : '' }}>Selesai</option>
                                         <option value="Dibatalkan" {{ $orderService->status_order === 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
-                                        <option value="Expired" {{ $orderService->status_order === 'Expired' ? 'selected' : '' }}>Expired</option>
+                                        <option value="Melewati_jatuh_tempo" {{ $orderService->status_order === 'Melewati_jatuh_tempo' ? 'selected' : '' }}>Melewati Jatuh Tempo</option>
                                     </select>
                                 </div>
                                 <button type="submit" 
@@ -133,7 +133,7 @@
                                             @elseif($orderService->status_order === 'diantar') bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100
                                             @elseif($orderService->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
                                             @elseif($orderService->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
-                                            @elseif($orderService->status_order === 'expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                            @elseif($orderService->status_order === 'melewati_jatuh_tempo') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                             @endif">
                                             <i class="fas fa-circle mr-1"></i>
                                             {{ str_replace('_', ' ', ucfirst($orderService->status_order)) }}
@@ -404,7 +404,7 @@
                                                         @elseif($ticket->status === 'Diantar') bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100
                                                         @elseif($ticket->status === 'Selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
                                                         @elseif($ticket->status === 'Dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
-                                                        @elseif($ticket->status === 'Expired') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                                                        @elseif($ticket->status === 'Melewati_jatuh_tempo') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                                         @endif">
                                                         <i class="fas fa-circle mr-1"></i>
                                                         {{ str_replace('_', ' ', ucfirst($ticket->status)) }}
@@ -533,7 +533,7 @@
                                                         ];
                                                         $isExpired = $payment->expired_date && \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($payment->expired_date));
                                                         $badgeColor = $isExpired ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : ($typeColors[$payment->payment_type] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200');
-                                                        $label = $isExpired ? 'Expired' : ($typeLabels[$payment->payment_type] ?? $payment->payment_type);
+                                                        $label = $isExpired ? 'Melewati Jatuh Tempo' : ($typeLabels[$payment->payment_type] ?? $payment->payment_type);
                                                     @endphp
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $badgeColor }}">
                                                         <i class="fas fa-tag mr-1"></i>
@@ -664,7 +664,7 @@
                                     <div class="flex items-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $isExpired ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' }}">
                                             <i class="fas {{ $isExpired ? 'fa-times' : 'fa-check' }} mr-1"></i>
-                                            {{ $isExpired ? 'Expired' : 'Masih Berlaku' }}
+                                            {{ $isExpired ? 'Melewati Jatuh Tempo' : 'Masih Berlaku' }}
                                         </span>
                                         <span class="ml-4 text-sm text-gray-900 dark:text-gray-100">
                                             {{ \Carbon\Carbon::parse($expiredPayment->expired_date)->format('d F Y H:i') }}

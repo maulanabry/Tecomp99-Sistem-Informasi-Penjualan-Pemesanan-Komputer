@@ -240,7 +240,7 @@
                                         $statusColors = [
                                             'active' => 'bg-green-100 text-green-800',
                                             'expiring_soon' => 'bg-yellow-100 text-yellow-800',
-                                            'expired' => 'bg-red-100 text-red-800',
+                                            'melewati_jatuh_tempo' => 'bg-red-100 text-red-800',
                                             'no_warranty' => 'bg-gray-100 text-gray-800'
                                         ];
                                         $colorClass = $statusColors[$warrantyStatus['status']] ?? 'bg-gray-100 text-gray-800';

@@ -25,7 +25,7 @@ return new class extends Migration
                 'diantar',              // selesai, barang sedang diantar ke customer
                 'selesai',              // servis beres dan diterima customer
                 'dibatalkan',           // order dibatalkan
-                'expired'               // order hangus (tidak dibayar/diambil)
+                'melewati_jatuh_tempo'               // order hangus (tidak dibayar/diambil)
             ])
                 ->default('menunggu');
             $table->date('schedule_date');

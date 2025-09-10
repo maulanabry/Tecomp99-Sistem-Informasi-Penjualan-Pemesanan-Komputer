@@ -468,7 +468,7 @@
                                             <span class="text-green-600">{{ $warrantyStatus['message'] }}</span>
                                         @elseif($warrantyStatus['status'] === 'expiring_soon')
                                             <span class="text-yellow-600">{{ $warrantyStatus['message'] }}</span>
-                                        @elseif($warrantyStatus['status'] === 'expired')
+                                        @elseif($warrantyStatus['status'] === 'melewati_jatuh_tempo')
                                             <span class="text-red-600">{{ $warrantyStatus['message'] }}</span>
                                         @else
                                             <span class="text-gray-600">{{ $warrantyStatus['message'] }}</span>

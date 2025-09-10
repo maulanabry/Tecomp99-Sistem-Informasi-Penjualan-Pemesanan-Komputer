@@ -146,7 +146,7 @@ class DashboardStats extends Component
         // Data untuk chart inventori
         $this->inventoryChart = $this->getInventoryData();
 
-        // Data untuk expired orders dan overdue services
+        // Data untuk melewati_jatuh_tempo orders dan overdue services
         $this->expiredOrders = $this->getExpiredOrders();
         $this->overdueServices = $this->getOverdueServices();
 
@@ -197,12 +197,12 @@ class DashboardStats extends Component
             OrderService::where('status_order', 'selesai')->count();
         $dibatalkan = OrderProduct::where('status_order', 'dibatalkan')->count() +
             OrderService::where('status_order', 'dibatalkan')->count();
-        $expired = OrderProduct::where('status_order', 'expired')->count() +
-            OrderService::where('status_order', 'expired')->count();
+        $melewati_jatuh_tempo = OrderProduct::where('status_order', 'melewati_jatuh_tempo')->count() +
+            OrderService::where('status_order', 'melewati_jatuh_tempo')->count();
 
         return [
-            'labels' => ['Menunggu', 'Diproses', 'Diantar', 'Selesai', 'Dibatalkan', 'Expired'],
-            'data' => [$menunggu, $diproses, $diantar, $selesai, $dibatalkan, $expired],
+            'labels' => ['Menunggu', 'Diproses', 'Diantar', 'Selesai', 'Dibatalkan', 'Melewati_jatuh_tempo'],
+            'data' => [$menunggu, $diproses, $diantar, $selesai, $dibatalkan, $melewati_jatuh_tempo],
             'colors' => ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444', '#6b7280']
         ];
     }
@@ -218,11 +218,11 @@ class DashboardStats extends Component
         $diantar = ServiceTicket::where('status', 'diantar')->count();
         $selesai = ServiceTicket::where('status', 'selesai')->count();
         $dibatalkan = ServiceTicket::where('status', 'dibatalkan')->count();
-        $expired = ServiceTicket::where('status', 'expired')->count();
+        $melewati_jatuh_tempo = ServiceTicket::where('status', 'melewati_jatuh_tempo')->count();
 
         return [
-            'labels' => ['Menunggu', 'Dijadwalkan', 'Menuju Lokasi', 'Diproses', 'Menunggu Sparepart', 'Siap Diambil', 'Diantar', 'Selesai', 'Dibatalkan', 'Expired'],
-            'data' => [$menunggu, $dijadwalkan, $menuju_lokasi, $diproses, $menunggu_sparepart, $siap_diambil, $diantar, $selesai, $dibatalkan, $expired],
+            'labels' => ['Menunggu', 'Dijadwalkan', 'Menuju Lokasi', 'Diproses', 'Menunggu Sparepart', 'Siap Diambil', 'Diantar', 'Selesai', 'Dibatalkan', 'Melewati_jatuh_tempo'],
+            'data' => [$menunggu, $dijadwalkan, $menuju_lokasi, $diproses, $menunggu_sparepart, $siap_diambil, $diantar, $selesai, $dibatalkan, $melewati_jatuh_tempo],
             'colors' => ['#f59e0b', '#fbbf24', '#f97316', '#3b82f6', '#8b5cf6', '#a855f7', '#ec4899', '#10b981', '#ef4444', '#6b7280']
         ];
     }
@@ -242,14 +242,14 @@ class DashboardStats extends Component
 
     private function getExpiredOrders()
     {
-        $expiredProducts = OrderProduct::where('status_order', 'expired')
+        $expiredProducts = OrderProduct::where('status_order', 'melewati_jatuh_tempo')
             ->orWhere(function ($query) {
                 $query->whereNotNull('expired_date')
                     ->where('expired_date', '<', now());
             })
             ->count();
 
-        $expiredServices = OrderService::where('status_order', 'expired')
+        $expiredServices = OrderService::where('status_order', 'melewati_jatuh_tempo')
             ->orWhere(function ($query) {
                 $query->whereNotNull('expired_date')
                     ->where('expired_date', '<', now());
@@ -267,7 +267,7 @@ class DashboardStats extends Component
     {
         $overdueCount = OrderService::whereNotNull('estimated_completion')
             ->where('estimated_completion', '<', now())
-            ->whereNotIn('status_order', ['selesai', 'dibatalkan', 'expired'])
+            ->whereNotIn('status_order', ['selesai', 'dibatalkan', 'melewati_jatuh_tempo'])
             ->count();
 
         return [

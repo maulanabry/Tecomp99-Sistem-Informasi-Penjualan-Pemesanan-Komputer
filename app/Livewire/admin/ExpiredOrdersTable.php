@@ -47,9 +47,9 @@ class ExpiredOrdersTable extends Component
 
     public function render()
     {
-        // Get expired OrderProduct records
+        // Get melewati_jatuh_tempo OrderProduct records
         $expiredOrderProducts = OrderProduct::where(function ($query) {
-            $query->where('status_order', 'expired')
+            $query->where('status_order', 'melewati_jatuh_tempo')
                 ->orWhere(function ($q) {
                     $q->whereNotNull('expired_date')
                         ->where('expired_date', '<', now());
@@ -65,19 +65,19 @@ class ExpiredOrdersTable extends Component
                 });
             })
             ->when($this->statusFilter, function ($query) {
-                if ($this->statusFilter === 'expired') {
-                    $query->where('status_order', 'expired');
+                if ($this->statusFilter === 'melewati_jatuh_tempo') {
+                    $query->where('status_order', 'melewati_jatuh_tempo');
                 } elseif ($this->statusFilter === 'overdue') {
-                    $query->where('status_order', '!=', 'expired')
+                    $query->where('status_order', '!=', 'melewati_jatuh_tempo')
                         ->whereNotNull('expired_date')
                         ->where('expired_date', '<', now());
                 }
             })
             ->orderBy($this->sortField, $this->sortDirection);
 
-        // Get expired OrderService records
+        // Get melewati_jatuh_tempo OrderService records
         $expiredOrderServices = OrderService::where(function ($query) {
-            $query->where('status_order', 'expired')
+            $query->where('status_order', 'melewati_jatuh_tempo')
                 ->orWhere(function ($q) {
                     $q->whereNotNull('expired_date')
                         ->where('expired_date', '<', now());
@@ -94,10 +94,10 @@ class ExpiredOrdersTable extends Component
                 });
             })
             ->when($this->statusFilter, function ($query) {
-                if ($this->statusFilter === 'expired') {
-                    $query->where('status_order', 'expired');
+                if ($this->statusFilter === 'melewati_jatuh_tempo') {
+                    $query->where('status_order', 'melewati_jatuh_tempo');
                 } elseif ($this->statusFilter === 'overdue') {
-                    $query->where('status_order', '!=', 'expired')
+                    $query->where('status_order', '!=', 'melewati_jatuh_tempo')
                         ->whereNotNull('expired_date')
                         ->where('expired_date', '<', now());
                 }
@@ -133,7 +133,7 @@ class ExpiredOrdersTable extends Component
             ['path' => request()->url(), 'pageName' => 'page']
         );
 
-        return view('livewire.admin.expired-orders-table', [
+        return view('livewire.admin.melewati_jatuh_tempo-orders-table', [
             'expiredOrders' => $paginatedOrders
         ]);
     }

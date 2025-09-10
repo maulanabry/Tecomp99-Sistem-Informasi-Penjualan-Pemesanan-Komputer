@@ -246,7 +246,7 @@ class OrderService extends Model
         $expiry = Carbon::parse($this->warranty_expired_at);
 
         if ($expiry->isPast()) {
-            return ['status' => 'expired', 'message' => 'Garansi sudah habis'];
+            return ['status' => 'melewati_jatuh_tempo', 'message' => 'Garansi sudah habis'];
         }
 
         $daysLeft = $now->diffInDays($expiry);
@@ -304,7 +304,7 @@ class OrderService extends Model
             'Diantar' => 'diantar',
             'Selesai' => 'selesai',
             'Dibatalkan' => 'dibatalkan',
-            'Expired' => 'expired'
+            'Melewati_jatuh_tempo' => 'melewati_jatuh_tempo'
         ];
 
         $newTicketStatus = $statusMapping[$this->status_order] ?? 'menunggu';
@@ -329,7 +329,7 @@ class OrderService extends Model
                     'diantar' => 'Status order diubah menjadi diantar',
                     'selesai' => 'Status order diubah menjadi selesai',
                     'dibatalkan' => 'Status order diubah menjadi dibatalkan',
-                    'expired' => 'Status order diubah menjadi expired'
+                    'melewati_jatuh_tempo' => 'Status order diubah menjadi melewati_jatuh_tempo'
                 ];
 
                 $actionDescription = $actionDescriptions[$newTicketStatus] ?? 'Status order diperbarui';

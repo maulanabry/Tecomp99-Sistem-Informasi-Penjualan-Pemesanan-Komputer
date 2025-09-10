@@ -49,7 +49,7 @@
                             <select wire:model.live="statusFilter"
                                     class="block w-full py-2 px-3 border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
                                 <option value="">Semua Status</option>
-                                <option value="expired">Expired</option>
+                                <option value="melewati_jatuh_tempo">Melewati Jatuh Tempo</option>
                                 <option value="overdue">Melewati Batas Waktu</option>
                             </select>
                         </div>
@@ -82,8 +82,8 @@
                         </div>
                     </div>
                     <div class="ml-4">
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Expired</dt>
-                        <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $expiredOrders->where('status_order', 'expired')->count() }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Melewati Jatuh Tempo</dt>
+                        <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $expiredOrders->where('status_order', 'melewati_jatuh_tempo')->count() }}</dd>
                     </div>
                 </div>
             </div>
@@ -99,7 +99,7 @@
                     </div>
                     <div class="ml-4">
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Melewati Batas Waktu</dt>
-                        <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $expiredOrders->where('status_order', '!=', 'expired')->count() }}</dd>
+                        <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $expiredOrders->where('status_order', '!=', 'melewati_jatuh_tempo')->count() }}</dd>
                     </div>
                 </div>
             </div>
@@ -126,7 +126,7 @@
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Daftar Pesanan Expired</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Daftar Pesanan Melewati Jatuh Tempo</h2>
                 <span class="bg-red-100 text-red-800 text-sm font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
                     {{ $expiredOrders->total() }} pesanan
                 </span>
@@ -159,7 +159,7 @@
                                 </div>
                             </div>
                             <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1">Total</div>
-                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1">Tanggal Expired</div>
+                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1">Tanggal Melewati Jatuh Tempo</div>
                             <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1 cursor-pointer" wire:click="sortBy('status_order')">
                                 <div class="flex items-center gap-1">
                                     Status
@@ -214,9 +214,9 @@
                                 @endif
                             </div>
                             <div class="col-span-1">
-                                @if($order->status_order === 'expired')
+                                @if($order->status_order === 'melewati_jatuh_tempo')
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i>Expired
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>Melewati Jatuh Tempo
                                     </span>
                                 @else
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100">
@@ -289,7 +289,7 @@
                                 <span>Total:</span><span>Rp {{ number_format($order->grand_total, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
-                                <span>Tanggal Expired:</span>
+                                <span>Tanggal Melewati Jatuh Tempo:</span>
                                 @if($order->expired_date)
                                     <span>{{ \Carbon\Carbon::parse($order->expired_date)->format('d/m/Y H:i') }}</span>
                                 @else
@@ -298,9 +298,9 @@
                             </div>
                             <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
                                 <span>Status:</span>
-                                @if($order->status_order === 'expired')
+                                @if($order->status_order === 'melewati_jatuh_tempo')
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i>Expired
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>Melewati Jatuh Tempo
                                     </span>
                                 @else
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100">
@@ -351,7 +351,7 @@
                             </div>
                         </div>
                     @empty
-                        <div class="p-4 text-center text-sm text-gray-600 dark:text-gray-300">Tidak ada pesanan expired ditemukan.</div>
+                        <div class="p-4 text-center text-sm text-gray-600 dark:text-gray-300">Tidak ada pesanan melewati jatuh tempo ditemukan.</div>
                     @endforelse
                 </div>
 
@@ -364,7 +364,7 @@
                     <div class="text-gray-400 dark:text-gray-600 mb-4">
                         <i class="fas fa-check-circle text-6xl"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Tidak ada pesanan expired</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Tidak ada pesanan melewati jatuh tempo</h3>
                     <p class="text-gray-500 dark:text-gray-400">Semua pesanan dalam kondisi baik dan belum melewati batas waktu.</p>
                 </div>
             @endif

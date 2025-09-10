@@ -191,7 +191,7 @@
                             'diantar': 'bg-pink-100 text-pink-800',
                             'selesai': 'bg-green-100 text-green-800',
                             'dibatalkan': 'bg-red-100 text-red-800',
-                            'expired': 'bg-gray-100 text-gray-800'
+                            'melewati_jatuh_tempo': 'bg-gray-100 text-gray-800'
                         };
                         const colorClass = statusColors[props.status] || 'bg-gray-100 text-gray-800';
                         const displayStatus = props.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());

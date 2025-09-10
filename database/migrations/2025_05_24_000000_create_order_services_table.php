@@ -24,7 +24,7 @@ return new class extends Migration
                 'diantar',
                 'selesai',
                 'dibatalkan',
-                'expired'
+                'melewati_jatuh_tempo'
             ]);
             $table->enum('status_payment', ['belum_dibayar', 'cicilan', 'lunas', 'dibatalkan']);
             $table->text('complaints')->nullable();

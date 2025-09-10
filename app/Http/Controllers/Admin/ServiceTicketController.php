@@ -335,7 +335,7 @@ class ServiceTicketController extends Controller
     public function update(Request $request, ServiceTicket $ticket)
     {
         $rules = [
-            'status' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,expired',
+            'status' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,melewati_jatuh_tempo',
             'admin_id' => 'required|exists:admins,id',
             'schedule_date' => 'required|date',
             'estimation_days' => 'nullable|integer|min:1',
@@ -619,7 +619,7 @@ class ServiceTicketController extends Controller
     public function updateStatus(Request $request, ServiceTicket $ticket)
     {
         $validated = $request->validate([
-            'status' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,expired',
+            'status' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,melewati_jatuh_tempo',
         ]);
 
         try {
@@ -862,7 +862,7 @@ class ServiceTicketController extends Controller
             'diantar' => 'Diantar',
             'selesai' => 'Selesai',
             'dibatalkan' => 'Dibatalkan',
-            'expired' => 'Expired',
+            'melewati_jatuh_tempo' => 'Melewati_jatuh_tempo',
         ];
 
         $newOrderStatus = $statusMapping[$ticket->status] ?? $orderService->status_order;
@@ -892,7 +892,7 @@ class ServiceTicketController extends Controller
             'Diantar' => 'Order servis sedang diantar ke pelanggan',
             'Selesai' => 'Order servis telah selesai',
             'Dibatalkan' => 'Order servis dibatalkan',
-            'Expired' => 'Order servis kedaluwarsa',
+            'Melewati_jatuh_tempo' => 'Order servis kedaluwarsa',
         ];
 
         $action = $actionDescriptions[$newStatus] ?? 'Status order diperbarui';

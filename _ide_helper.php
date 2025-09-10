@@ -3391,7 +3391,7 @@ namespace Illuminate\Support\Facades {
         }
 
         /**
-         * Determine if the view at the given path is expired.
+         * Determine if the view at the given path is melewati_jatuh_tempo.
          *
          * @param string $path
          * @return bool
@@ -5101,7 +5101,7 @@ namespace Illuminate\Support\Facades {
         }
 
         /**
-         * Remove an item from the cache if it is expired.
+         * Remove an item from the cache if it is melewati_jatuh_tempo.
          *
          * @param string $key
          * @return bool

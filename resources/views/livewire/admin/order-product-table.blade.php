@@ -172,7 +172,7 @@
                                 'dikirim' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
                                 'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
                                 'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
-                                'expired' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
+                                'melewati_jatuh_tempo' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
                             ];
                             $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
@@ -263,7 +263,7 @@
                                 'dikirim' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
                                 'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
                                 'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
-                                'expired' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
+                                'melewati_jatuh_tempo' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
                             ];
                             $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
