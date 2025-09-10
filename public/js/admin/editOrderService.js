@@ -26,99 +26,69 @@ const removeVoucherBtn = document.getElementById("removeVoucherBtn");
 
 // Remove modal event listeners (modals removed)
 
-// Re-attach event listeners after Livewire updates DOM
-document.addEventListener("livewire:load", function () {
-    Livewire.hook("message.processed", (message, component) => {
-        attachAddProductListeners();
-        attachAddServiceListeners();
-    });
+// Event delegation for product buttons - works with Livewire DOM updates
+document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("add-product-btn")) {
+        const card = e.target.closest("[data-product-id]");
+        if (!card) {
+            alert("Error: Product card data not found.");
+            return;
+        }
+        const productId = card.dataset.productId;
+        const productName = card.dataset.productName;
+        const price = parseInt(card.dataset.productPrice);
+        const quantityInput = card.querySelector(".quantity-input");
+        const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+        const maxStock = quantityInput ? parseInt(quantityInput.max) : Infinity;
+
+        if (isNaN(quantity) || quantity < 1) {
+            alert("Kuantitas minimal 1");
+            return;
+        }
+
+        if (quantity > maxStock) {
+            alert("Kuantitas melebihi stok tersedia");
+            return;
+        }
+
+        addItemToTable({
+            id: productId,
+            name: productName,
+            price: price,
+            quantity: quantity,
+            type: "product",
+        });
+    }
 });
 
-// Event Listeners untuk tambah produk
-function attachAddProductListeners() {
-    document.querySelectorAll(".add-product-btn").forEach((button) => {
-        button.addEventListener("click", function () {
-            console.log("Add product button clicked:", this);
-            const card = this.closest("[data-product-id]");
-            console.log("Closest card element:", card);
-            if (!card) {
-                alert("Error: Product card data not found.");
-                return;
-            }
-            const productId = card.dataset.productId;
-            const productName = card.dataset.productName;
-            const price = parseInt(card.dataset.productPrice);
-            const quantityInput = card.querySelector(".quantity-input");
-            const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
-            const maxStock = quantityInput
-                ? parseInt(quantityInput.max)
-                : Infinity;
+// Event delegation for service buttons - works with Livewire DOM updates
+document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("add-service-btn")) {
+        const card = e.target.closest("[data-service-id]");
+        if (!card) {
+            alert("Error: Service card data not found.");
+            return;
+        }
+        const serviceId = card.dataset.serviceId;
+        const serviceName = card.dataset.serviceName;
+        const price = parseInt(card.dataset.servicePrice);
+        const quantityInput = card.querySelector(".quantity-input");
+        const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
 
-            if (isNaN(quantity) || quantity < 1) {
-                alert("Kuantitas minimal 1");
-                return;
-            }
+        if (isNaN(quantity) || quantity < 1) {
+            alert("Kuantitas minimal 1");
+            return;
+        }
 
-            if (quantity > maxStock) {
-                alert("Kuantitas melebihi stok tersedia");
-                return;
-            }
-
-            addItemToTable({
-                id: productId,
-                name: productName,
-                price: price,
-                quantity: quantity,
-                type: "product",
-            });
-
-            // Removed modal hiding for addProductModal
-            // if (typeof addProductModal !== "undefined") {
-            //     addProductModal.classList.add("hidden");
-            // }
+        addItemToTable({
+            id: serviceId,
+            name: serviceName,
+            price: price,
+            quantity: quantity,
+            type: "service",
         });
-    });
-}
-
-attachAddProductListeners();
-
-// Event Listeners untuk tambah servis
-function attachAddServiceListeners() {
-    document.querySelectorAll(".add-service-btn").forEach((button) => {
-        button.addEventListener("click", function () {
-            const card = this.closest("[data-service-id]");
-            if (!card) {
-                alert("Error: Service card data not found.");
-                return;
-            }
-            const serviceId = card.dataset.serviceId;
-            const serviceName = card.dataset.serviceName;
-            const price = parseInt(card.dataset.servicePrice);
-            const quantityInput = card.querySelector(".quantity-input");
-            const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
-
-            if (isNaN(quantity) || quantity < 1) {
-                alert("Kuantitas minimal 1");
-                return;
-            }
-
-            addItemToTable({
-                id: serviceId,
-                name: serviceName,
-                price: price,
-                quantity: quantity,
-                type: "service",
-            });
-
-            // Removed modal hiding for addServiceModal
-            // if (typeof addServiceModal !== "undefined") {
-            //     addServiceModal.classList.add("hidden");
-            // }
-        });
-    });
-}
-
-attachAddServiceListeners();
+    }
+});
 
 // Event Listener untuk quantity inputs yang sudah ada
 document.querySelectorAll(".quantity-input").forEach((input) => {

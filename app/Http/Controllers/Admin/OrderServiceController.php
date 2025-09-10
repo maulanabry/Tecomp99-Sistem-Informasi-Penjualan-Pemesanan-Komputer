@@ -205,8 +205,8 @@ class OrderServiceController extends Controller
     public function update(Request $request, OrderService $orderService)
     {
         $request->validate([
-            'status_order' => 'required|in:Menunggu,Diproses,Konfirmasi,Diantar,Perlu Diambil,Dibatalkan,Selesai',
-            'status_payment' => 'required|in:belum_dibayar,down_payment,lunas,dibatalkan',
+            'status_order' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,melewati_jatuh_tempo',
+            'status_payment' => 'required|in:belum_dibayar,cicilan,lunas,dibatalkan',
             'type' => 'required|in:reguler,onsite',
             'device' => 'required|string',
             'complaints' => 'required|string',
@@ -392,7 +392,7 @@ class OrderServiceController extends Controller
     public function updateStatus(Request $request, OrderService $orderService)
     {
         $validated = $request->validate([
-            'status_order' => 'required|in:Menunggu,Dijadwalkan,Menuju_lokasi,Diproses,Menunggu_sparepart,Siap_diambil,Diantar,Selesai,Dibatalkan,Melewati_jatuh_tempo',
+            'status_order' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,melewati_jatuh_tempo',
         ]);
 
         try {
@@ -407,16 +407,16 @@ class OrderServiceController extends Controller
 
             // Comprehensive status mapping between OrderService and ServiceTicket
             $statusMapping = [
-                'Menunggu' => 'menunggu',
-                'Dijadwalkan' => 'dijadwalkan',
-                'Menuju_lokasi' => 'menuju_lokasi',
-                'Diproses' => 'diproses',
-                'Menunggu_sparepart' => 'menunggu_sparepart',
-                'Siap_diambil' => 'siap_diambil',
-                'Diantar' => 'diantar',
-                'Selesai' => 'selesai',
-                'Dibatalkan' => 'dibatalkan',
-                'Melewati_jatuh_tempo' => 'melewati_jatuh_tempo',
+                'menunggu' => 'menunggu',
+                'dijadwalkan' => 'dijadwalkan',
+                'menuju_lokasi' => 'menuju_lokasi',
+                'diproses' => 'diproses',
+                'menunggu_sparepart' => 'menunggu_sparepart',
+                'siap_diambil' => 'siap_diambil',
+                'diantar' => 'diantar',
+                'selesai' => 'selesai',
+                'dibatalkan' => 'dibatalkan',
+                'melewati_jatuh_tempo' => 'melewati_jatuh_tempo',
             ];
 
             $newTicketStatus = $statusMapping[$orderService->status_order] ?? 'menunggu';
@@ -445,11 +445,11 @@ class OrderServiceController extends Controller
                     };
 
                     $message = match ($orderService->status_order) {
-                        'Selesai' => "Order servis #{$orderService->order_service_id} telah selesai",
-                        'Diproses' => "Order servis #{$orderService->order_service_id} sedang diproses",
-                        'Diantar' => "Order servis #{$orderService->order_service_id} sedang diantar",
-                        'Perlu Diambil' => "Order servis #{$orderService->order_service_id} siap diambil",
-                        'Konfirmasi' => "Order servis #{$orderService->order_service_id} menunggu konfirmasi",
+                        'selesai' => "Order servis #{$orderService->order_service_id} telah selesai",
+                        'diproses' => "Order servis #{$orderService->order_service_id} sedang diproses",
+                        'diantar' => "Order servis #{$orderService->order_service_id} sedang diantar",
+                        'siap_diambil' => "Order servis #{$orderService->order_service_id} siap diambil",
+                        'dijadwalkan' => "Order servis #{$orderService->order_service_id} telah dijadwalkan",
                         default => "Status order servis #{$orderService->order_service_id} diubah menjadi {$orderService->status_order}"
                     };
 
@@ -473,7 +473,7 @@ class OrderServiceController extends Controller
                     $admins = Admin::where('role', 'admin')->get();
                     foreach ($admins as $admin) {
                         $adminType = match ($orderService->status_order) {
-                            'Selesai' => NotificationType::SERVICE_ORDER_COMPLETED,
+                            'selesai' => NotificationType::SERVICE_ORDER_COMPLETED,
                             default => NotificationType::SERVICE_ORDER_STARTED
                         };
 

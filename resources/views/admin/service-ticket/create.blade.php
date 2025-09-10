@@ -1,4 +1,7 @@
 <x-layout-admin>
+    <!-- Include the modal component -->
+    <livewire:admin.service-ticket-order-selection-modal key="service-ticket-modal" />
+
     <div class="py-6">
         @if (session('success'))
             <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
@@ -16,11 +19,11 @@
             <div class="mb-2">
                 <x-breadcrumbs />
             </div>
-            
+
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Buat Tiket Servis</h1>
                 <div class="flex space-x-3">
-                    <a href="{{ route('service-tickets.index') }}" 
+                    <a href="{{ route('service-tickets.index') }}"
                         class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
@@ -33,34 +36,35 @@
                 <div class="p-6">
                     <form action="{{ route('service-tickets.store') }}" method="POST" class="space-y-6">
                         @csrf
-                        
+
                         <!-- Order Selection Section -->
                         <div class="border-b border-gray-200 dark:border-gray-600 pb-6">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
                                 <i class="fas fa-file-alt mr-2 text-primary-500"></i>
                                 Pilih Order Servis
                             </h3>
-                            
+
                             <div class="grid grid-cols-1 gap-6">
                                 <!-- Order Selection -->
                                 <div>
                                     <label for="order_service_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                         Order Servis <span class="text-red-500">*</span>
                                     </label>
-                                    <select name="order_service_id" id="order_service_id" required
-                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('order_service_id') border-red-500 @enderror">
-                                        <option value="">Pilih order servis</option>
-                                        @foreach($orderServices as $order)
-                                            <option value="{{ $order->order_service_id }}" 
-                                                data-type="{{ $order->type }}"
-                                                data-device="{{ $order->device }}"
-                                                data-complaints="{{ $order->complaints }}"
-                                                data-customer="{{ $order->customer->name }}"
-                                                {{ old('order_service_id') === $order->order_service_id ? 'selected' : '' }}>
-                                                {{ $order->order_service_id }} - {{ $order->customer->name }} ({{ ucfirst($order->type) }})
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <div class="flex gap-3">
+                                        <input type="text" id="selected_order_display" readonly
+                                            class="flex-1 block px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-gray-100 sm:text-sm"
+                                            placeholder="Belum ada order servis yang dipilih"
+                                            value="{{ old('order_service_id') ? (collect($orderServices)->where('order_service_id', old('order_service_id'))->first() ? collect($orderServices)->where('order_service_id', old('order_service_id'))->first()->order_service_id . ' - ' . collect($orderServices)->where('order_service_id', old('order_service_id'))->first()->customer->name : '') : '' }}">
+                                        <div wire:ignore>
+                                            <button type="button"
+                                                onclick="openServiceTicketOrderModal()"
+                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                                <i class="fas fa-search mr-2"></i>
+                                                Pilih Order
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="order_service_id" id="order_service_id" required value="{{ old('order_service_id') }}">
                                     @error('order_service_id')
                                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                     @enderror
@@ -255,7 +259,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Ambil semua elemen DOM yang diperlukan
-            const orderSelect = document.getElementById('order_service_id');
+            const selectOrderBtn = document.getElementById('select_order_btn');
+            const selectedOrderDisplay = document.getElementById('selected_order_display');
+            const orderServiceIdInput = document.getElementById('order_service_id');
             const orderInfo = document.getElementById('orderServiceInfo');
             const visitScheduleSection = document.getElementById('visitScheduleSection');
             const scheduleDate = document.getElementById('schedule_date');
@@ -267,54 +273,57 @@
             const visitScheduleHidden = document.getElementById('visit_schedule');
             const slotAvailability = document.getElementById('slotAvailability');
 
-            // Data order services untuk JavaScript
-            const orderServices = {!! json_encode($orderServices->map(function($order) {
-                return [
-                    'order_service_id' => $order->order_service_id,
-                    'device' => $order->device,
-                    'complaints' => $order->complaints,
-                    'customer_name' => $order->customer->name,
-                    'type' => $order->type
-                ];
-            })->values()) !!};
-
             // Variabel untuk menyimpan status loading
             let isCheckingAvailability = false;
 
-            /**
-             * Handler untuk perubahan pilihan order service
-             * Menampilkan informasi order dan menentukan apakah perlu jadwal kunjungan
-             */
-            orderSelect.addEventListener('change', function() {
-                if (this.value) {
-                    const selectedOption = this.options[this.selectedIndex];
-                    const orderType = selectedOption.getAttribute('data-type');
-                    const device = selectedOption.getAttribute('data-device');
-                    const complaints = selectedOption.getAttribute('data-complaints');
-                    const customer = selectedOption.getAttribute('data-customer');
-                    
-                    // Update tampilan informasi order
-                    document.getElementById('deviceInfo').textContent = device || '-';
-                    document.getElementById('complaintsInfo').textContent = complaints || '-';
-                    document.getElementById('customerInfo').textContent = customer || '-';
-                    document.getElementById('typeInfo').textContent = orderType === 'onsite' ? 'Onsite (Kunjungan)' : 'Reguler (Di Toko)';
+            // Listen for order selection event from Livewire
+            Livewire.on('serviceTicketOrderSelected', function(data) {
+                console.log('Order data received:', data);
+
+                // Handle both single object and array format
+                let orderData = data;
+                if (Array.isArray(data) && data.length > 0) {
+                    orderData = data[0];
+                }
+
+                console.log('Processed order data:', orderData);
+
+                // Update form fields
+                if (orderServiceIdInput && orderData.id) {
+                    orderServiceIdInput.value = orderData.id;
+                }
+
+                if (selectedOrderDisplay && orderData.id && orderData.customer_name) {
+                    selectedOrderDisplay.value = orderData.id + ' - ' + orderData.customer_name;
+                }
+
+                // Update order info display with character limits
+                const deviceText = orderData.device ? (orderData.device.length > 50 ? orderData.device.substring(0, 50) + '...' : orderData.device) : '-';
+                const complaintsText = orderData.complaints ? (orderData.complaints.length > 80 ? orderData.complaints.substring(0, 80) + '...' : orderData.complaints) : '-';
+
+                const deviceInfo = document.getElementById('deviceInfo');
+                const complaintsInfo = document.getElementById('complaintsInfo');
+                const customerInfo = document.getElementById('customerInfo');
+                const typeInfo = document.getElementById('typeInfo');
+
+                if (deviceInfo) deviceInfo.textContent = deviceText;
+                if (complaintsInfo) complaintsInfo.textContent = complaintsText;
+                if (customerInfo) customerInfo.textContent = orderData.customer_name || '-';
+                if (typeInfo) typeInfo.textContent = orderData.type === 'onsite' ? 'Onsite (Kunjungan)' : 'Reguler (Di Toko)';
+
+                if (orderInfo) {
                     orderInfo.classList.remove('hidden');
-                    
-                    // Tampilkan/sembunyikan section jadwal kunjungan berdasarkan tipe order
-                    if (orderType === 'onsite') {
-                        visitScheduleSection.classList.remove('hidden');
-                        // Reset dan load ulang slot yang tersedia jika ada teknisi dan tanggal yang dipilih
-                        if (adminSelect.value && visitDate.value) {
-                            loadAvailableSlots();
-                        }
-                    } else {
-                        visitScheduleSection.classList.add('hidden');
-                        clearVisitSchedule();
+                }
+
+                // Tampilkan/sembunyikan section jadwal kunjungan berdasarkan tipe order
+                if (orderData.type === 'onsite') {
+                    if (visitScheduleSection) visitScheduleSection.classList.remove('hidden');
+                    // Reset dan load ulang slot yang tersedia jika ada teknisi dan tanggal yang dipilih
+                    if (adminSelect.value && visitDate.value) {
+                        loadAvailableSlots();
                     }
                 } else {
-                    // Sembunyikan semua info jika tidak ada order yang dipilih
-                    orderInfo.classList.add('hidden');
-                    visitScheduleSection.classList.add('hidden');
+                    if (visitScheduleSection) visitScheduleSection.classList.add('hidden');
                     clearVisitSchedule();
                 }
             });
@@ -545,9 +554,23 @@
             estimationDays.addEventListener('change', updateEstimateDate);
             estimationDays.addEventListener('input', updateEstimateDate);
 
+            // Function to open the service ticket order modal
+            window.openServiceTicketOrderModal = function() {
+                // Dispatch Livewire event to open the modal
+                Livewire.dispatch('openServiceTicketOrderModal');
+            };
+
             // Inisialisasi jika ada nilai lama (old values) saat page load
-            if (orderSelect.value) {
-                orderSelect.dispatchEvent(new Event('change'));
+            if (orderServiceIdInput.value) {
+                // Jika ada old value, trigger event untuk menampilkan informasi order
+                const oldOrderData = {
+                    id: orderServiceIdInput.value,
+                    customer_name: selectedOrderDisplay.value.split(' - ')[1] || '',
+                    device: '',
+                    complaints: '',
+                    type: 'reguler'
+                };
+                Livewire.dispatch('serviceTicketOrderSelected', oldOrderData);
             }
         });
     </script>
