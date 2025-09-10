@@ -49,20 +49,20 @@
                            class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'semua' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Semua
                         </a>
-                        <a href="{{ route('customer.orders.products', ['status' => 'belum_bayar']) }}" 
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'belum_bayar' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                            Belum Bayar
+                        <a href="{{ route('customer.orders.products', ['status' => 'Belum_dibayar']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'Belum_dibayar' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Belum Dibayar
                         </a>
-                        <a href="{{ route('customer.orders.products', ['status' => 'diproses']) }}" 
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'diproses' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <a href="{{ route('customer.orders.products', ['status' => 'Diproses']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'Diproses' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Diproses
                         </a>
-                        <a href="{{ route('customer.orders.products', ['status' => 'selesai']) }}" 
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'selesai' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <a href="{{ route('customer.orders.products', ['status' => 'Selesai']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'Selesai' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Selesai
                         </a>
-                        <a href="{{ route('customer.orders.products', ['status' => 'dibatalkan']) }}" 
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'dibatalkan' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <a href="{{ route('customer.orders.products', ['status' => 'Dibatalkan']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'Dibatalkan' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Dibatalkan
                         </a>
                     </nav>
@@ -115,44 +115,70 @@
                                             <!-- Payment Status -->
                                             @php
                                                 $paymentStatusClass = match($order->status_payment) {
-                                                    'belum_dibayar' => 'bg-red-100 text-red-800',
-                                                    'down_payment' => 'bg-yellow-100 text-yellow-800',
-                                                    'lunas' => 'bg-green-100 text-green-800',
+                                                    'Belum_dibayar' => 'bg-red-100 text-red-800',
+                                                    'Down_payment' => 'bg-yellow-100 text-yellow-800',
+                                                    'Lunas' => 'bg-green-100 text-green-800',
+                                                    'Dibatalkan' => 'bg-red-100 text-red-800',
                                                     default => 'bg-gray-100 text-gray-800'
                                                 };
                                                 $paymentStatusText = match($order->status_payment) {
-                                                    'belum_dibayar' => 'Belum Bayar',
-                                                    'down_payment' => 'DP',
-                                                    'lunas' => 'Lunas',
+                                                    'Belum_dibayar' => 'Belum Dibayar',
+                                                    'Down_payment' => 'Down Payment',
+                                                    'Lunas' => 'Lunas',
+                                                    'Dibatalkan' => 'Dibatalkan',
                                                     default => ucfirst($order->status_payment)
                                                 };
+                                                $paymentStatusTooltip = match($order->status_payment) {
+                                                    'Belum_dibayar' => 'Pembayaran belum dilakukan.',
+                                                    'Down_payment' => 'Down payment 50% telah dibayar, sisa pembayaran menunggu.',
+                                                    'Lunas' => 'Pembayaran telah lunas.',
+                                                    'Dibatalkan' => 'Pembayaran dibatalkan.',
+                                                    default => ''
+                                                };
                                             @endphp
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $paymentStatusClass }}">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $paymentStatusClass }}"
+                                                  title="{{ $paymentStatusTooltip }}">
                                                 {{ $paymentStatusText }}
                                             </span>
                                             
                                             <!-- Order Status -->
                                             @php
                                                 $orderStatusClass = match($order->status_order) {
-                                                    'menunggu_konfirmasi' => 'bg-yellow-100 text-yellow-800',
-                                                    'diproses' => 'bg-blue-100 text-blue-800',
-                                                    'dikemas' => 'bg-indigo-100 text-indigo-800',
-                                                    'dikirim' => 'bg-purple-100 text-purple-800',
-                                                    'selesai' => 'bg-green-100 text-green-800',
-                                                    'dibatalkan' => 'bg-red-100 text-red-800',
+                                                    'Menunggu' => 'bg-yellow-100 text-yellow-800',
+                                                    'Inden' => 'bg-orange-100 text-orange-800',
+                                                    'Siap_Kirim' => 'bg-indigo-100 text-indigo-800',
+                                                    'Diproses' => 'bg-blue-100 text-blue-800',
+                                                    'Dikirim' => 'bg-purple-100 text-purple-800',
+                                                    'Selesai' => 'bg-green-100 text-green-800',
+                                                    'Dibatalkan' => 'bg-red-100 text-red-800',
+                                                    'Melewati_Jatuh_Tempo' => 'bg-red-100 text-red-800',
                                                     default => 'bg-gray-100 text-gray-800'
                                                 };
                                                 $orderStatusText = match($order->status_order) {
-                                                    'menunggu_konfirmasi' => 'Menunggu Konfirmasi',
-                                                    'diproses' => 'Diproses',
-                                                    'dikemas' => 'Dikemas',
-                                                    'dikirim' => 'Dikirim',
-                                                    'selesai' => 'Selesai',
-                                                    'dibatalkan' => 'Dibatalkan',
+                                                    'Menunggu' => 'Menunggu',
+                                                    'Inden' => 'Inden',
+                                                    'Siap_Kirim' => 'Siap Kirim',
+                                                    'Diproses' => 'Diproses',
+                                                    'Dikirim' => 'Dikirim',
+                                                    'Selesai' => 'Selesai',
+                                                    'Dibatalkan' => 'Dibatalkan',
+                                                    'Melewati_Jatuh_Tempo' => 'Melewati Jatuh Tempo',
                                                     default => ucfirst($order->status_order)
                                                 };
+                                                $orderStatusTooltip = match($order->status_order) {
+                                                    'Menunggu' => 'Pesanan sedang menunggu konfirmasi dari admin.',
+                                                    'Inden' => 'Produk sedang dipesan khusus (inden) karena stok tidak tersedia.',
+                                                    'Siap_Kirim' => 'Pesanan sudah siap untuk dikirim ke alamat tujuan.',
+                                                    'Diproses' => 'Pesanan sedang diproses oleh tim kami.',
+                                                    'Dikirim' => 'Pesanan sedang dalam perjalanan ke alamat tujuan.',
+                                                    'Selesai' => 'Pesanan telah selesai dan diterima oleh pelanggan.',
+                                                    'Dibatalkan' => 'Pesanan telah dibatalkan.',
+                                                    'Melewati_Jatuh_Tempo' => 'Pesanan dibatalkan otomatis karena DP tidak dibayar tepat waktu.',
+                                                    default => ''
+                                                };
                                             @endphp
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $orderStatusClass }}">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $orderStatusClass }}"
+                                                  title="{{ $orderStatusTooltip }}">
                                                 {{ $orderStatusText }}
                                             </span>
                                         </div>
@@ -213,8 +239,8 @@
                                             <i class="fas fa-eye mr-2"></i>Lihat Detail
                                         </a>
                                         
-                                        @if($order->status_payment === 'belum_dibayar')
-                                            <a href="{{ route('customer.payment-order.show', $order->order_product_id) }}" 
+                                        @if($order->status_payment === 'Belum_dibayar' || $order->status_payment === 'Down_payment')
+                                            <a href="{{ route('customer.payment-order.show', $order->order_product_id) }}"
                                                class="text-sm bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
                                                 <i class="fas fa-credit-card mr-2"></i>Lakukan Pembayaran
                                             </a>
@@ -222,10 +248,10 @@
                                     </div>
                                     
                                     <div class="flex space-x-2">
-                                        @if($order->status_payment === 'belum_dibayar')
+                                        @if($order->status_payment === 'Belum_dibayar')
                                             <form action="{{ route('customer.orders.products.cancel', $order) }}" method="POST" class="inline">
                                                 @csrf
-                                                <button type="submit" 
+                                                <button type="submit"
                                                         onclick="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')"
                                                         class="text-sm bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors">
                                                     <i class="fas fa-times mr-2"></i>Batalkan
@@ -233,7 +259,7 @@
                                             </form>
                                         @endif
                                         
-                                        @if($order->status_order === 'selesai')
+                                        @if($order->status_order === 'Selesai')
                                             <button class="text-sm bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors cursor-not-allowed" disabled>
                                                 <i class="fas fa-star mr-2"></i>Nilai
                                                 <span class="text-xs">(Segera)</span>
