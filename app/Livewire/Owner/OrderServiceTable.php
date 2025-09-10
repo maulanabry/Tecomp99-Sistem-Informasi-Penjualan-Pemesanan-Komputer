@@ -95,6 +95,23 @@ class OrderServiceTable extends Component
 
     public function render()
     {
+        // Get status counts
+        $statusCounts = OrderService::selectRaw('status_order, COUNT(*) as count')
+            ->groupBy('status_order')
+            ->pluck('count', 'status_order')
+            ->toArray();
+
+        // Ensure all status tabs have a count (default to 0 if not present)
+        $allStatuses = [
+            'Menunggu' => 0,
+            'Diproses' => 0,
+            'Selesai' => 0,
+            'Dibatalkan' => 0,
+        ];
+
+        $statusCounts = array_merge($allStatuses, $statusCounts);
+        $totalCount = array_sum($statusCounts);
+
         return view('livewire.owner.order-service-table', [
             'orderServices' => OrderService::with('customer')
                 ->when($this->search, function ($query) {
@@ -118,7 +135,9 @@ class OrderServiceTable extends Component
                     $query->where('type', $this->typeFilter);
                 })
                 ->orderBy($this->sortField, $this->sortDirection)
-                ->paginate($this->perPage)
+                ->paginate($this->perPage),
+            'statusCounts' => $statusCounts,
+            'totalCount' => $totalCount
         ]);
     }
 }

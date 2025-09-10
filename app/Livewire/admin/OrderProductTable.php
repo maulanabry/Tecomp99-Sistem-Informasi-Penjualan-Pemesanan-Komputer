@@ -97,6 +97,27 @@ class OrderProductTable extends Component
 
     public function render()
     {
+        // Get status counts
+        $statusCounts = OrderProduct::selectRaw('status_order, COUNT(*) as count')
+            ->groupBy('status_order')
+            ->pluck('count', 'status_order')
+            ->toArray();
+
+        // Ensure all status tabs have a count (default to 0 if not present)
+        $allStatuses = [
+            'menunggu' => 0,
+            'inden' => 0,
+            'siap_kirim' => 0,
+            'diproses' => 0,
+            'dikirim' => 0,
+            'selesai' => 0,
+            'dibatalkan' => 0,
+            'melewati_jatuh_tempo' => 0,
+        ];
+
+        $statusCounts = array_merge($allStatuses, $statusCounts);
+        $totalCount = array_sum($statusCounts);
+
         $query = OrderProduct::query()->with('customer');
 
         if ($this->search) {
@@ -126,6 +147,8 @@ class OrderProductTable extends Component
 
         return view('livewire.admin.order-product-table', [
             'orderProducts' => $orderProducts,
+            'statusCounts' => $statusCounts,
+            'totalCount' => $totalCount
         ]);
     }
 }

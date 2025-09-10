@@ -78,6 +78,23 @@ class OrderService extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    // Status constants
+    const STATUS_ORDER_MENUNGGU = 'menunggu';
+    const STATUS_ORDER_DIJADWALKAN = 'dijadwalkan';
+    const STATUS_ORDER_MENUJU_LOKASI = 'menuju_lokasi';
+    const STATUS_ORDER_DIPROSES = 'diproses';
+    const STATUS_ORDER_MENUNGGU_SPAREPART = 'menunggu_sparepart';
+    const STATUS_ORDER_SIAP_DIAMBIL = 'siap_diambil';
+    const STATUS_ORDER_DIANTAR = 'diantar';
+    const STATUS_ORDER_SELESAI = 'selesai';
+    const STATUS_ORDER_DIBATALKAN = 'dibatalkan';
+    const STATUS_ORDER_MELEWATI_JATUH_TEMPO = 'melewati_jatuh_tempo';
+
+    const STATUS_PAYMENT_BELUM_DIBAYAR = 'belum_dibayar';
+    const STATUS_PAYMENT_CICILAN = 'cicilan';
+    const STATUS_PAYMENT_LUNAS = 'lunas';
+    const STATUS_PAYMENT_DIBATALKAN = 'dibatalkan';
+
     protected $fillable = [
         'order_service_id',
         'customer_id',

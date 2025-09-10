@@ -1,8 +1,8 @@
 <div>
-    <!-- Enhanced KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Enhanced KPI Cards - Compact Layout -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-4">
         <!-- Total Revenue -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center">
                 <div class="inline-flex flex-shrink-0 justify-center items-center w-12 h-12 text-green-600 bg-green-100 rounded-lg dark:bg-green-900 dark:text-green-300">
                     <i class="fas fa-money-bill-wave text-xl"></i>
@@ -13,14 +13,21 @@
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Total Pendapatan</div>
                     <div class="text-xs text-green-600 dark:text-green-400 mt-1">
-                        <i class="fas fa-arrow-up"></i> Bulan ini: Rp {{ number_format($monthlyRevenue, 0, ',', '.') }}
+                        <i class="fas fa-arrow-up"></i> Bulan ini: Rp {{ number_format($totalRevenueCurrentMonth, 0, ',', '.') }}
+                        @if($revenueChangePercentage > 0)
+                            <span class="text-green-600">+{{ number_format($revenueChangePercentage, 1) }}%</span>
+                        @elseif($revenueChangePercentage < 0)
+                            <span class="text-red-600">{{ number_format($revenueChangePercentage, 1) }}%</span>
+                        @else
+                            <span class="text-gray-600">0%</span>
+                        @endif>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Pending Orders -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center">
                 <div class="inline-flex flex-shrink-0 justify-center items-center w-12 h-12 text-orange-600 bg-orange-100 rounded-lg dark:bg-orange-900 dark:text-orange-300">
                     <i class="fas fa-clock text-xl"></i>
@@ -29,30 +36,32 @@
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $pendingOrders }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Pesanan Menunggu</div>
                     <div class="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                        <i class="fas fa-exclamation-triangle"></i> Perlu perhatian
+                        <a href="{{ route('order-products.index') }}" class="hover:underline">
+                            <i class="fas fa-external-link-alt"></i> Lihat Pesanan
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Active Service Tickets -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <!-- Orders in Progress -->
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center">
                 <div class="inline-flex flex-shrink-0 justify-center items-center w-12 h-12 text-blue-600 bg-blue-100 rounded-lg dark:bg-blue-900 dark:text-blue-300">
-                    <i class="fas fa-tools text-xl"></i>
+                    <i class="fas fa-cog text-xl"></i>
                 </div>
                 <div class="flex-grow ml-4">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $activeTickets }}</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Tiket Aktif</div>
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $ordersInProgress }}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Pesanan Diproses</div>
                     <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                        <i class="fas fa-wrench"></i> Sedang diproses
+                        <i class="fas fa-spinner fa-spin"></i> Sedang dikerjakan
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Low Stock Alert -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center">
                 <div class="inline-flex flex-shrink-0 justify-center items-center w-12 h-12 text-red-600 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-300">
                     <i class="fas fa-exclamation-triangle text-xl"></i>
@@ -61,9 +70,8 @@
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $lowStockItems }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Stok Menipis</div>
                     <div class="text-xs text-red-600 dark:text-red-400 mt-1">
-                        <i class="fas fa-box"></i> 
                         <a href="{{ route('admin.inventory-alerts') }}" class="hover:underline">
-                            Perlu restock - Lihat Detail
+                            <i class="fas fa-box"></i> Lihat Detail
                         </a>
                     </div>
                 </div>
@@ -71,9 +79,78 @@
         </div>
     </div>
 
+    <!-- Additional Cards - Compact Layout -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-4">
+        <!-- Total Down Payment -->
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center">
+                <div class="inline-flex flex-shrink-0 justify-center items-center w-12 h-12 text-yellow-600 bg-yellow-100 rounded-lg dark:bg-yellow-900 dark:text-yellow-300">
+                    <i class="fas fa-hand-holding-usd text-xl"></i>
+                </div>
+                <div class="flex-grow ml-4">
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $totalDownPayment['count'] }}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Total Down Payment</div>
+                    <div class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                        Rp {{ number_format($totalDownPayment['amount'], 0, ',', '.') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Installments -->
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center">
+                <div class="inline-flex flex-shrink-0 justify-center items-center w-12 h-12 text-purple-600 bg-purple-100 rounded-lg dark:bg-purple-900 dark:text-purple-300">
+                    <i class="fas fa-calendar-alt text-xl"></i>
+                </div>
+                <div class="flex-grow ml-4">
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $totalInstallments['count'] }}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Total Cicilan</div>
+                    <div class="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                        Rp {{ number_format($totalInstallments['amount'], 0, ',', '.') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Customers -->
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center">
+                <div class="inline-flex flex-shrink-0 justify-center items-center w-12 h-12 text-indigo-600 bg-indigo-100 rounded-lg dark:bg-indigo-900 dark:text-indigo-300">
+                    <i class="fas fa-user-plus text-xl"></i>
+                </div>
+                <div class="flex-grow ml-4">
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $newCustomers }}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Pelanggan Baru</div>
+                    <div class="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                        Bulan ini
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Services Not Collected -->
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center">
+                <div class="inline-flex flex-shrink-0 justify-center items-center w-12 h-12 text-pink-600 bg-pink-100 rounded-lg dark:bg-pink-900 dark:text-pink-300">
+                    <i class="fas fa-tools text-xl"></i>
+                </div>
+                <div class="flex-grow ml-4">
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $completedServicesNotCollected }}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Servis Selesai Belum Diambil</div>
+                    <div class="text-xs text-pink-600 dark:text-pink-400 mt-1">
+                        Perlu penagihan
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
     <!-- Critical Alerts Section -->
     @if($expiredOrders['total'] > 0 || $overdueServices['total'] > 0)
-    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 mb-6">
+    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
         <h3 class="text-lg font-semibold text-red-800 dark:text-red-200 mb-4 flex items-center">
             <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 mr-2"></i>
             Perhatian - Tindakan Diperlukan
@@ -117,18 +194,19 @@
     @endif
 
     <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <!-- Monthly Revenue Chart -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pendapatan Bulanan</h3>
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Pendapatan Bulanan (Kotor)</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Order Servis & Order Produk</p>
             <div class="h-64">
                 <canvas id="monthlyRevenueChart"></canvas>
             </div>
         </div>
 
         <!-- Order Status Chart -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Pesanan</h3>
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Produk</h3>
             <div class="h-64">
                 <canvas id="orderStatusChart"></canvas>
             </div>
@@ -136,9 +214,9 @@
     </div>
 
     <!-- Additional Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <!-- Service Status Chart -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Servis</h3>
             <div class="h-64">
                 <canvas id="serviceStatusChart"></canvas>
@@ -146,7 +224,7 @@
         </div>
 
         <!-- Payment Status Chart -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Pembayaran</h3>
             <div class="h-64">
                 <canvas id="paymentStatusChart"></canvas>
@@ -154,7 +232,7 @@
         </div>
 
         <!-- Inventory Status Chart -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Inventori</h3>
             <div class="h-64">
                 <canvas id="inventoryChart"></canvas>
@@ -163,9 +241,9 @@
     </div>
 
     <!-- Top Products and Services Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <!-- Top Products List -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Produk Terlaris</h3>
             <div class="space-y-3">
                 @foreach($topProducts as $product)
@@ -183,7 +261,7 @@
         </div>
 
         <!-- Top Services List -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Layanan Terpopuler</h3>
             <div class="space-y-3">
                 @foreach($topServices as $service)
@@ -201,43 +279,12 @@
         </div>
     </div>
 
-    <!-- Service Performance Metrics -->
-    <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Metrik Performa Servis</h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $servicePerformanceMetrics['current_month_avg_days'] }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">Rata-rata Hari Penyelesaian</div>
-                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Bulan Ini</div>
-            </div>
-            <div class="text-center">
-                <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $servicePerformanceMetrics['on_time_count'] }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">Tepat Waktu</div>
-                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Bulan Ini</div>
-            </div>
-            <div class="text-center">
-                <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ $servicePerformanceMetrics['late_count'] }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">Terlambat</div>
-                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Bulan Ini</div>
-            </div>
-            <div class="text-center">
-                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    @if($servicePerformanceMetrics['last_month_avg_days'] > 0)
-                        {{ round((($servicePerformanceMetrics['current_month_avg_days'] - $servicePerformanceMetrics['last_month_avg_days']) / $servicePerformanceMetrics['last_month_avg_days']) * 100, 1) }}%
-                    @else
-                        -
-                    @endif
-                </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">Perubahan</div>
-                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">vs Bulan Lalu</div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Recent Orders and Today's Schedule -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <!-- Recent Orders -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Pesanan Terbaru</h3>
                 <a href="{{ route('order-products.index') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">Lihat Semua</a>
@@ -277,7 +324,7 @@
         </div>
 
         <!-- Today's Service Schedule -->
-        <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div class="p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Jadwal Servis Hari Ini</h3>
                 <div class="flex space-x-2">
@@ -414,143 +461,155 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Monthly Revenue Chart
-            const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
-            new Chart(monthlyRevenueCtx, {
-                type: 'line',
-                data: {
-                    labels: @json($monthlyRevenueChart['labels']),
-                    datasets: [{
-                        label: 'Pendapatan (Rp)',
-                        data: @json($monthlyRevenueChart['data']),
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+            const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart');
+            if (monthlyRevenueCtx) {
+                new Chart(monthlyRevenueCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: @json($monthlyRevenueChart['labels']),
+                        datasets: [{
+                            label: 'Pendapatan (Rp)',
+                            data: @json($monthlyRevenueChart['data']),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'Rp ' + value.toLocaleString('id-ID');
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'Rp ' + value.toLocaleString('id-ID');
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
 
             // Order Status Chart
-            const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
-            new Chart(orderStatusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: @json($orderStatusChart['labels']),
-                    datasets: [{
-                        data: @json($orderStatusChart['data']),
-                        backgroundColor: @json($orderStatusChart['colors']),
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-
-            // Service Status Chart
-            const serviceStatusCtx = document.getElementById('serviceStatusChart').getContext('2d');
-            new Chart(serviceStatusCtx, {
-                type: 'bar',
-                data: {
-                    labels: @json($serviceStatusChart['labels']),
-                    datasets: [{
-                        label: 'Jumlah Tiket',
-                        data: @json($serviceStatusChart['data']),
-                        backgroundColor: @json($serviceStatusChart['colors']),
-                        borderRadius: 4,
-                        borderSkipped: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+            const orderStatusCtx = document.getElementById('orderStatusChart');
+            if (orderStatusCtx) {
+                new Chart(orderStatusCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: @json($orderStatusChart['labels']),
+                        datasets: [{
+                            data: @json($orderStatusChart['data']),
+                            backgroundColor: @json($orderStatusChart['colors']),
+                            borderWidth: 0
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
                             }
                         }
                     }
-                }
-            });
+                });
+            }
+
+            // Service Status Chart
+            const serviceStatusCtx = document.getElementById('serviceStatusChart');
+            if (serviceStatusCtx) {
+                new Chart(serviceStatusCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: @json($serviceStatusChart['labels']),
+                        datasets: [{
+                            label: 'Jumlah Tiket',
+                            data: @json($serviceStatusChart['data']),
+                            backgroundColor: @json($serviceStatusChart['colors']),
+                            borderRadius: 4,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
 
             // Payment Status Chart
-            const paymentStatusCtx = document.getElementById('paymentStatusChart').getContext('2d');
-            new Chart(paymentStatusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: @json($paymentStatusChart['labels']),
-                    datasets: [{
-                        data: @json($paymentStatusChart['data']),
-                        backgroundColor: @json($paymentStatusChart['colors']),
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
+            const paymentStatusCtx = document.getElementById('paymentStatusChart');
+            if (paymentStatusCtx) {
+                new Chart(paymentStatusCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: @json($paymentStatusChart['labels']),
+                        datasets: [{
+                            data: @json($paymentStatusChart['data']),
+                            backgroundColor: @json($paymentStatusChart['colors']),
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             // Inventory Chart
-            const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
-            new Chart(inventoryCtx, {
-                type: 'pie',
-                data: {
-                    labels: @json($inventoryChart['labels']),
-                    datasets: [{
-                        data: @json($inventoryChart['data']),
-                        backgroundColor: @json($inventoryChart['colors']),
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
+            const inventoryCtx = document.getElementById('inventoryChart');
+            if (inventoryCtx) {
+                new Chart(inventoryCtx.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: @json($inventoryChart['labels']),
+                        datasets: [{
+                            data: @json($inventoryChart['data']),
+                            backgroundColor: @json($inventoryChart['colors']),
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         });
+
+
     </script>
 </div>

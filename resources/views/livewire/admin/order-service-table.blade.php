@@ -13,49 +13,49 @@
         <!-- Status Tabs -->
         <div class="border-b border-gray-200 dark:border-gray-700">
             <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
-                <button wire:click="setActiveTab('all')" 
+                <button wire:click="setActiveTab('all')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'all' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Semua
+                    Semua ({{ $totalCount }})
                 </button>
                 <button wire:click="setActiveTab('menunggu')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'menunggu' ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Menunggu
+                    Menunggu ({{ $statusCounts['menunggu'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('dijadwalkan')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'dijadwalkan' ? 'border-purple-500 text-purple-600 dark:text-purple-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Dijadwalkan
+                    Dijadwalkan ({{ $statusCounts['dijadwalkan'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('menuju_lokasi')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'menuju_lokasi' ? 'border-orange-500 text-orange-600 dark:text-orange-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Menuju Lokasi
+                    Menuju Lokasi ({{ $statusCounts['menuju_lokasi'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('diproses')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'diproses' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Diproses
+                    Diproses ({{ $statusCounts['diproses'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('menunggu_sparepart')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'menunggu_sparepart' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Menunggu Sparepart
+                    Menunggu Sparepart ({{ $statusCounts['menunggu_sparepart'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('siap_diambil')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'siap_diambil' ? 'border-cyan-500 text-cyan-600 dark:text-cyan-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Siap Diambil
+                    Siap Diambil ({{ $statusCounts['siap_diambil'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('diantar')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'diantar' ? 'border-pink-500 text-pink-600 dark:text-pink-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Diantar
+                    Diantar ({{ $statusCounts['diantar'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('selesai')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'selesai' ? 'border-green-500 text-green-600 dark:text-green-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Selesai
+                    Selesai ({{ $statusCounts['selesai'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('dibatalkan')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'dibatalkan' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Dibatalkan
+                    Dibatalkan ({{ $statusCounts['dibatalkan'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('melewati_jatuh_tempo')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'melewati_jatuh_tempo' ? 'border-gray-500 text-gray-600 dark:text-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Melewati Jatuh Tempo
+                    Melewati Jatuh Tempo ({{ $statusCounts['melewati_jatuh_tempo'] ?? 0 }})
                 </button>
             </nav>
         </div>
@@ -242,7 +242,7 @@
                         </span>
                     </div>
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">Rp {{ number_format($order->sub_total, 0, ',', '.') }}</div>
-                    <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">Rp {{ number_format($order->grand_total_amount, 0, ',', '.') }}</div>
+                    <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</div>
                     <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">
                         @if($order->hasDevice)
                             <span class="text-green-500">Ada</span>

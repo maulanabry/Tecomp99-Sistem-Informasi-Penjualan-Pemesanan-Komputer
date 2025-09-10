@@ -13,8 +13,10 @@ return new class extends Migration {
 
             $table->enum('status_order', [
                 'menunggu',
+                'inden',
+                'siap_kirim',
                 'diproses',
-                'diantar',
+                'dikirim',
                 'selesai',
                 'dibatalkan',
                 'melewati_jatuh_tempo'

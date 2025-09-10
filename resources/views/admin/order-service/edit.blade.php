@@ -173,10 +173,16 @@
                         <select id="status_order" name="status_order" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
                             @php
                                 $statusOrderOptions = [
-                                    'Menunggu' => 'Menunggu',
-                                    'Diproses' => 'Diproses',
-                                    'Dibatalkan' => 'Dibatalkan',
-                                    'Selesai' => 'Selesai'
+                                    'menunggu' => 'Menunggu',
+                                    'dijadwalkan' => 'Dijadwalkan',
+                                    'menuju_lokasi' => 'Menuju Lokasi',
+                                    'diproses' => 'Diproses',
+                                    'menunggu_sparepart' => 'Menunggu Sparepart',
+                                    'siap_diambil' => 'Siap Diambil',
+                                    'diantar' => 'Diantar',
+                                    'selesai' => 'Selesai',
+                                    'dibatalkan' => 'Dibatalkan',
+                                    'melewati_jatuh_tempo' => 'Melewati Jatuh Tempo'
                                 ];
                             @endphp
                             @foreach ($statusOrderOptions as $value => $label)

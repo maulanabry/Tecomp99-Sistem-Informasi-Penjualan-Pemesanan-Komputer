@@ -69,6 +69,21 @@ class OrderProduct extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    // Status constants
+    const STATUS_ORDER_MENUNGGU = 'menunggu';
+    const STATUS_ORDER_INDEN = 'inden';
+    const STATUS_ORDER_SIAP_KIRIM = 'siap_kirim';
+    const STATUS_ORDER_DIPROSES = 'diproses';
+    const STATUS_ORDER_DIKIRIM = 'dikirim';
+    const STATUS_ORDER_SELESAI = 'selesai';
+    const STATUS_ORDER_DIBATALKAN = 'dibatalkan';
+    const STATUS_ORDER_MELEWATI_JATUH_TEMPO = 'melewati_jatuh_tempo';
+
+    const STATUS_PAYMENT_BELUM_DIBAYAR = 'belum_dibayar';
+    const STATUS_PAYMENT_DOWN_PAYMENT = 'down_payment';
+    const STATUS_PAYMENT_LUNAS = 'lunas';
+    const STATUS_PAYMENT_DIBATALKAN = 'dibatalkan';
+
     protected $fillable = [
         'order_product_id',
         'customer_id',

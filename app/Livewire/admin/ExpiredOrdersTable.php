@@ -133,7 +133,7 @@ class ExpiredOrdersTable extends Component
             ['path' => request()->url(), 'pageName' => 'page']
         );
 
-        return view('livewire.admin.melewati_jatuh_tempo-orders-table', [
+        return view('livewire.admin.expired-orders-table', [
             'expiredOrders' => $paginatedOrders
         ]);
     }

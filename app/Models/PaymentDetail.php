@@ -75,7 +75,8 @@ class PaymentDetail extends Model
     ];
 
     const PAYMENT_STATUSES = [
-        'pending' => 'Pending',
+        'menunggu' => 'Menunggu',
+        'diproses' => 'Diproses',
         'dibayar' => 'Dibayar',
         'gagal' => 'Gagal'
     ];

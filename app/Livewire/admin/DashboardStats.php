@@ -30,32 +30,109 @@ class DashboardStats extends Component
     public $expiredOrders;
     public $overdueServices;
     public $paymentStatusChart;
-    public $servicePerformanceMetrics;
+
+
+    // New metrics for updated dashboard
+    public $totalRevenueCurrentMonth;
+    public $totalRevenuePreviousMonth;
+    public $revenueChangePercentage;
+    public $ordersInProgress;
+    public $totalDownPayment;
+    public $totalInstallments;
+    public $newCustomers;
+    public $completedServicesNotCollected;
 
     public function mount()
     {
         $this->calculateStats();
     }
 
+
+
     public function calculateStats()
     {
-        // Menghitung total pendapatan
-        $this->totalRevenue = PaymentDetail::where('status', 'dibayar')
-            ->sum('amount');
+        // Menghitung total pendapatan dari orders dengan status_payment = lunas
+        $this->totalRevenue = OrderProduct::where('status_payment', 'lunas')
+            ->sum('grand_total') +
+            OrderService::where('status_payment', 'lunas')
+            ->sum('grand_total');
+
+        // Menghitung total pendapatan bulan ini
+        $this->totalRevenueCurrentMonth = OrderProduct::where('status_payment', 'lunas')
+            ->whereMonth('updated_at', Carbon::now()->month)
+            ->whereYear('updated_at', Carbon::now()->year)
+            ->sum('grand_total') +
+            OrderService::where('status_payment', 'lunas')
+            ->whereMonth('updated_at', Carbon::now()->month)
+            ->whereYear('updated_at', Carbon::now()->year)
+            ->sum('grand_total');
+
+        // Menghitung total pendapatan bulan lalu
+        $this->totalRevenuePreviousMonth = OrderProduct::where('status_payment', 'lunas')
+            ->whereMonth('updated_at', Carbon::now()->subMonth()->month)
+            ->whereYear('updated_at', Carbon::now()->subMonth()->year)
+            ->sum('grand_total') +
+            OrderService::where('status_payment', 'lunas')
+            ->whereMonth('updated_at', Carbon::now()->subMonth()->month)
+            ->whereYear('updated_at', Carbon::now()->subMonth()->year)
+            ->sum('grand_total');
+
+        // Menghitung persentase perubahan
+        if ($this->totalRevenuePreviousMonth > 0) {
+            $this->revenueChangePercentage = (($this->totalRevenueCurrentMonth - $this->totalRevenuePreviousMonth) / $this->totalRevenuePreviousMonth) * 100;
+        } else {
+            $this->revenueChangePercentage = $this->totalRevenueCurrentMonth > 0 ? 100 : 0;
+        }
 
         // Menghitung pesanan yang menunggu
         $this->pendingOrders = OrderProduct::where('status_order', 'menunggu')
             ->count() +
-            OrderService::where('status_order', 'Menunggu')
+            OrderService::where('status_order', 'menunggu')
+            ->count();
+
+        // Menghitung pesanan yang sedang diproses
+        $this->ordersInProgress = OrderProduct::where('status_order', 'diproses')
+            ->count() +
+            OrderService::where('status_order', 'diproses')
             ->count();
 
         // Menghitung tiket servis yang aktif
-        $this->activeTickets = ServiceTicket::whereNotIn('status', ['Selesai', 'Dibatalkan'])
+        $this->activeTickets = ServiceTicket::whereNotIn('status', ['selesai', 'dibatalkan'])
             ->count();
 
         // Mendapatkan produk dengan stok rendah (kurang dari 5 item)
         $this->lowStockItems = Product::where('stock', '<', 5)
             ->where('is_active', true)
+            ->count();
+
+        // Menghitung total down payment
+        $this->totalDownPayment = [
+            'count' => PaymentDetail::where('payment_type', 'down_payment')
+                ->where('status', 'dibayar')
+                ->count(),
+            'amount' => PaymentDetail::where('payment_type', 'down_payment')
+                ->where('status', 'dibayar')
+                ->sum('amount')
+        ];
+
+        // Menghitung total cicilan
+        $this->totalInstallments = [
+            'count' => PaymentDetail::where('payment_type', 'cicilan')
+                ->where('status', 'dibayar')
+                ->count(),
+            'amount' => PaymentDetail::where('payment_type', 'cicilan')
+                ->where('status', 'dibayar')
+                ->sum('amount')
+        ];
+
+        // Menghitung pelanggan baru bulan ini
+        $this->newCustomers = Customer::whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->count();
+
+        // Menghitung servis selesai tapi belum dikumpulkan
+        $this->completedServicesNotCollected = OrderService::where('status_order', 'selesai')
+            ->where('status_payment', '!=', 'lunas')
             ->count();
 
         // Mendapatkan pesanan terbaru
@@ -152,9 +229,6 @@ class DashboardStats extends Component
 
         // Data untuk chart status pembayaran
         $this->paymentStatusChart = $this->getPaymentStatusData();
-
-        // Data untuk metrik performa servis
-        $this->servicePerformanceMetrics = $this->getServicePerformanceMetrics();
     }
 
     public function refreshDashboard()
@@ -171,10 +245,14 @@ class DashboardStats extends Component
             $date = Carbon::now()->subMonths($i);
             $months[] = $date->format('M Y');
 
-            $revenue = PaymentDetail::where('status', 'dibayar')
-                ->whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
-                ->sum('amount');
+            $revenue = OrderProduct::where('status_payment', 'lunas')
+                ->whereYear('updated_at', $date->year)
+                ->whereMonth('updated_at', $date->month)
+                ->sum('grand_total') +
+                OrderService::where('status_payment', 'lunas')
+                ->whereYear('updated_at', $date->year)
+                ->whereMonth('updated_at', $date->month)
+                ->sum('grand_total');
 
             $revenues[] = $revenue;
         }
@@ -189,10 +267,12 @@ class DashboardStats extends Component
     {
         $menunggu = OrderProduct::where('status_order', 'menunggu')->count() +
             OrderService::where('status_order', 'menunggu')->count();
+        $inden = OrderProduct::where('status_order', 'inden')->count();
+        $siap_kirim = OrderProduct::where('status_order', 'siap_kirim')->count();
         $diproses = OrderProduct::where('status_order', 'diproses')->count() +
             OrderService::where('status_order', 'diproses')->count();
-        $diantar = OrderProduct::where('status_order', 'diantar')->count() +
-            OrderService::where('status_order', 'diantar')->count();
+        $dikirim = OrderProduct::where('status_order', 'dikirim')->count() +
+            OrderService::where('status_order', 'dikirim')->count();
         $selesai = OrderProduct::where('status_order', 'selesai')->count() +
             OrderService::where('status_order', 'selesai')->count();
         $dibatalkan = OrderProduct::where('status_order', 'dibatalkan')->count() +
@@ -201,9 +281,9 @@ class DashboardStats extends Component
             OrderService::where('status_order', 'melewati_jatuh_tempo')->count();
 
         return [
-            'labels' => ['Menunggu', 'Diproses', 'Diantar', 'Selesai', 'Dibatalkan', 'Melewati_jatuh_tempo'],
-            'data' => [$menunggu, $diproses, $diantar, $selesai, $dibatalkan, $melewati_jatuh_tempo],
-            'colors' => ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444', '#6b7280']
+            'labels' => ['Menunggu', 'Inden', 'Siap Kirim', 'Diproses', 'Dikirim', 'Selesai', 'Dibatalkan', 'Melewati Jatuh Tempo'],
+            'data' => [$menunggu, $inden, $siap_kirim, $diproses, $dikirim, $selesai, $dibatalkan, $melewati_jatuh_tempo],
+            'colors' => ['#f59e0b', '#ea580c', '#9333ea', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444', '#6b7280']
         ];
     }
 
@@ -296,53 +376,7 @@ class DashboardStats extends Component
         ];
     }
 
-    private function getServicePerformanceMetrics()
-    {
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
-        $lastMonth = Carbon::now()->subMonth()->month;
-        $lastMonthYear = Carbon::now()->subMonth()->year;
 
-        // Current month completion time (average days)
-        $currentMonthAvg = OrderService::where('status_order', 'selesai')
-            ->whereMonth('updated_at', $currentMonth)
-            ->whereYear('updated_at', $currentYear)
-            ->whereNotNull('created_at')
-            ->selectRaw('AVG(DATEDIFF(updated_at, created_at)) as avg_days')
-            ->first()
-            ->avg_days ?? 0;
-
-        // Last month completion time
-        $lastMonthAvg = OrderService::where('status_order', 'selesai')
-            ->whereMonth('updated_at', $lastMonth)
-            ->whereYear('updated_at', $lastMonthYear)
-            ->whereNotNull('created_at')
-            ->selectRaw('AVG(DATEDIFF(updated_at, created_at)) as avg_days')
-            ->first()
-            ->avg_days ?? 0;
-
-        // On-time vs Late completions (current month)
-        $totalCompleted = OrderService::where('status_order', 'selesai')
-            ->whereMonth('updated_at', $currentMonth)
-            ->whereYear('updated_at', $currentYear)
-            ->count();
-
-        $onTimeCompleted = OrderService::where('status_order', 'selesai')
-            ->whereMonth('updated_at', $currentMonth)
-            ->whereYear('updated_at', $currentYear)
-            ->whereRaw('DATEDIFF(updated_at, created_at) <= 7') // Assuming 7 days is on-time
-            ->count();
-
-        $lateCompleted = $totalCompleted - $onTimeCompleted;
-
-        return [
-            'current_month_avg_days' => round($currentMonthAvg, 1),
-            'last_month_avg_days' => round($lastMonthAvg, 1),
-            'on_time_count' => $onTimeCompleted,
-            'late_count' => $lateCompleted,
-            'total_completed' => $totalCompleted
-        ];
-    }
 
     public function render()
     {

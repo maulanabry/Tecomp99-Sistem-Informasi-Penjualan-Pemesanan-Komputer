@@ -33,7 +33,7 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <div class="py-4">
-                @livewire('admin.melewati_jatuh_tempo-orders-table')
+                @livewire('admin.expired-orders-table')
             </div>
         </div>
     </div>

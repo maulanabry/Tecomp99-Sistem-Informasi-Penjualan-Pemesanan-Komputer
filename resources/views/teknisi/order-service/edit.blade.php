@@ -218,7 +218,7 @@
                         </div>
                         <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-600">
                             <span>Total Keseluruhan:</span>
-                            <span id="grandTotalDisplay">Rp {{ number_format($orderService->grand_total_amount, 0, ',', '.') }}</span>
+                            <span id="grandTotalDisplay">Rp {{ number_format($orderService->grand_total, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>

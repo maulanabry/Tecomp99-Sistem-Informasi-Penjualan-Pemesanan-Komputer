@@ -26,85 +26,13 @@ const removeVoucherBtn = document.getElementById("removeVoucherBtn");
 
 // Remove modal event listeners (modals removed)
 
-// Listen for Livewire events for adding items
+// Re-attach event listeners after Livewire updates DOM
 document.addEventListener("livewire:load", function () {
-    Livewire.on("productSelected", (productId) => {
-        // Fetch product details via AJAX or from a global store
-        fetchProductById(productId).then((product) => {
-            addItemToTable({
-                id: product.product_id,
-                name: product.name,
-                price: product.price,
-                quantity: 1,
-                type: "product",
-            });
-        });
-    });
-
-    Livewire.on("serviceSelected", (serviceId) => {
-        // Fetch service details via AJAX or from a global store
-        fetchServiceById(serviceId).then((service) => {
-            addItemToTable({
-                id: service.service_id,
-                name: service.name,
-                price: service.price,
-                quantity: 1,
-                type: "service",
-            });
-        });
-    });
-
-    // Re-attach event listeners after Livewire updates DOM
     Livewire.hook("message.processed", (message, component) => {
         attachAddProductListeners();
         attachAddServiceListeners();
     });
 });
-
-// Fetch product details by ID (assumes an API endpoint exists)
-async function fetchProductById(productId) {
-    const response = await fetch(`/api/products/${productId}`);
-    if (!response.ok) {
-        alert("Gagal mengambil data produk");
-        throw new Error("Failed to fetch product");
-    }
-    return await response.json();
-}
-
-// Fetch service details by ID (assumes an API endpoint exists)
-async function fetchServiceById(serviceId) {
-    const response = await fetch(`/api/services/${serviceId}`);
-    if (!response.ok) {
-        alert("Gagal mengambil data servis");
-        throw new Error("Failed to fetch service");
-    }
-    return await response.json();
-}
-
-// Event Listener untuk quantity inputs yang sudah ada
-document.querySelectorAll(".quantity-input").forEach((input) => {
-    input.addEventListener("change", function () {
-        updateRowTotal(this);
-        calculateTotals();
-    });
-});
-
-// Event Listener untuk tombol hapus yang sudah ada
-document.querySelectorAll(".remove-item-btn").forEach((button) => {
-    button.addEventListener("click", function () {
-        this.closest("tr").remove();
-        calculateTotals();
-    });
-});
-
-// Fungsi untuk update total per baris
-function updateRowTotal(quantityInput) {
-    const row = quantityInput.closest("tr");
-    const price = parseInt(row.dataset.price);
-    const quantity = parseInt(quantityInput.value);
-    const total = price * quantity;
-    row.querySelector(".item-total").textContent = formatRupiah(total);
-}
 
 // Event Listeners untuk tambah produk
 function attachAddProductListeners() {
@@ -191,6 +119,31 @@ function attachAddServiceListeners() {
 }
 
 attachAddServiceListeners();
+
+// Event Listener untuk quantity inputs yang sudah ada
+document.querySelectorAll(".quantity-input").forEach((input) => {
+    input.addEventListener("change", function () {
+        updateRowTotal(this);
+        calculateTotals();
+    });
+});
+
+// Event Listener untuk tombol hapus yang sudah ada
+document.querySelectorAll(".remove-item-btn").forEach((button) => {
+    button.addEventListener("click", function () {
+        this.closest("tr").remove();
+        calculateTotals();
+    });
+});
+
+// Fungsi untuk update total per baris
+function updateRowTotal(quantityInput) {
+    const row = quantityInput.closest("tr");
+    const price = parseInt(row.dataset.price);
+    const quantity = parseInt(quantityInput.value);
+    const total = price * quantity;
+    row.querySelector(".item-total").textContent = formatRupiah(total);
+}
 
 // Fungsi untuk menambahkan item ke tabel
 function addItemToTable(item) {

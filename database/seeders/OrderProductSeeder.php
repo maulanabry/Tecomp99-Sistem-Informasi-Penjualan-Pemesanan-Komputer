@@ -37,8 +37,10 @@ class OrderProductSeeder extends Seeder
         // Status distributions - Updated to match migration ENUMs
         $orderStatuses = [
             'menunggu' => 5,
+            'inden' => 4,
+            'siap_kirim' => 4,
             'diproses' => 8,
-            'diantar' => 7,
+            'dikirim' => 7,
             'selesai' => 6,
             'dibatalkan' => 4,
             'melewati_jatuh_tempo' => 3

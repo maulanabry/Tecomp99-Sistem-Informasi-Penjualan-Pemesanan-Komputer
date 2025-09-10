@@ -1,5 +1,5 @@
 <x-layout-admin>
-    
+
     <x-header>
         <x-slot:title>Dashboard</x-slot:title>
         <x-slot:description>
