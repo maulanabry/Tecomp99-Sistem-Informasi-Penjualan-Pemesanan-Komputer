@@ -58,7 +58,7 @@ class PaymentController extends Controller
                 ];
             });
 
-        // Ambil order servis yang statusnya belum dibayar atau down_payment saja
+        // Ambil order servis yang statusnya belum dibayar atau cicilan saja
         $orderServices = OrderService::with('customer')
             ->whereNotIn('status_payment', ['dibatalkan', 'lunas', 'selesai'])
             ->get()

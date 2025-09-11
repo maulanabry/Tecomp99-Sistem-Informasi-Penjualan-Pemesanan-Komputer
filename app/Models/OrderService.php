@@ -91,7 +91,7 @@ class OrderService extends Model
     const STATUS_ORDER_MELEWATI_JATUH_TEMPO = 'melewati_jatuh_tempo';
 
     const STATUS_PAYMENT_BELUM_DIBAYAR = 'belum_dibayar';
-    const STATUS_PAYMENT_DOWN_PAYMENT = 'down_payment';
+    const STATUS_PAYMENT_CICILAN = 'cicilan';
     const STATUS_PAYMENT_LUNAS = 'lunas';
     const STATUS_PAYMENT_DIBATALKAN = 'dibatalkan';
 
@@ -187,7 +187,7 @@ class OrderService extends Model
         if ($paidAmount >= $this->grand_total) {
             $this->status_payment = self::STATUS_PAYMENT_LUNAS;
         } elseif ($paidAmount > 0) {
-            $this->status_payment = self::STATUS_PAYMENT_DOWN_PAYMENT;
+            $this->status_payment = self::STATUS_PAYMENT_CICILAN;
         } else {
             $this->status_payment = self::STATUS_PAYMENT_BELUM_DIBAYAR;
         }
@@ -245,8 +245,10 @@ class OrderService extends Model
         // Update payment status
         if ($this->remaining_balance <= 0) {
             $this->status_payment = self::STATUS_PAYMENT_LUNAS;
+        } elseif ($this->paid_amount > 0) {
+            $this->status_payment = self::STATUS_PAYMENT_CICILAN;
         } else {
-            $this->status_payment = self::STATUS_PAYMENT_DOWN_PAYMENT;
+            $this->status_payment = self::STATUS_PAYMENT_BELUM_DIBAYAR;
         }
 
         $this->save();

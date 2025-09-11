@@ -372,6 +372,7 @@
                     const statusMap = {
                         'belum_dibayar': 'Belum Dibayar',
                         'down_payment': 'Down Payment',
+                        'cicilan': 'Cicilan',
                         'lunas': 'Lunas',
                         'dibatalkan': 'Dibatalkan'
                     };
