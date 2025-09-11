@@ -1,81 +1,42 @@
-# Fix Admin Issues - Products, Services & Customer Management
+# Fix OrderService Status Payment ENUM Mismatch
 
-## Issues Identified & Fixed:
+## Issue
 
-### Product & Service Admin Buttons:
+SQL Error: `SQLSTATE[01000]: Warning: 1265 Data truncated for column 'status_payment' at row 1`
 
--   [x] Product "Nonaktifkan/Aktifkan" button calls missing route `/admin/product/{productId}/toggle-status`
--   [x] ProductController missing `toggleStatus` method
--   [x] Product delete button routing needs verification
--   [x] Service "Nonaktifkan/Aktifkan" button calls missing route `/admin/service/{serviceId}/toggle-status`
--   [x] ServiceController missing `toggleStatus` method
--   [x] Service delete button routing needs verification
+-   Database ENUM expects: `['belum_dibayar', 'down_payment', 'lunas', 'dibatalkan']`
+-   Code still references old value: `'cicilan'` instead of `'down_payment'`
 
-### Customer Admin Issues:
+## Tasks to Complete
 
--   [x] Customer creation doesn't work properly
--   [x] Missing eye button to show/hide password
--   [x] Missing `email_verified_at` field when creating accounts
--   [x] Need to auto-verify admin-created customer accounts
+### 1. Fix OrderService Model Constants
 
-## Implementation Completed:
+-   [ ] Update STATUS_PAYMENT_CICILAN constant to STATUS_PAYMENT_DOWN_PAYMENT
+-   [ ] Update constant value from 'cicilan' to 'down_payment'
+-   [ ] Update updatePaymentStatus() method logic
 
-### Products & Services:
+### 2. Fix Related Code References
 
--   [x] Add toggle status routes in `routes/web.php`
--   [x] Add `toggleStatus` methods in controllers
--   [x] Fix JavaScript routing in show pages
--   [x] Fix boolean validation issues
+-   [ ] Update any controller validation rules
+-   [ ] Update any other model references
+-   [ ] Check dashboard stats and reports
 
-### Customer Management:
+### 3. Test the Fix
 
--   [x] Fix customer creation functionality
--   [x] Add password visibility toggle (eye button)
--   [x] Auto-set `email_verified_at` for admin-created accounts
--   [x] Update both create and edit forms
+-   [ ] Test payment creation functionality
+-   [ ] Verify existing data compatibility
+-   [ ] Check all payment status transitions
 
-## Changes Made:
+## Files to Edit
 
-### Product & Service Controllers:
+-   app/Models/OrderService.php (primary fix)
+-   app/Livewire/admin/DashboardStats.php (found reference to 'cicilan')
+-   Any other files with 'cicilan' references
 
-1. **routes/web.php**: Added toggle status routes for both products and services
-2. **ProductController.php**: Added toggleStatus method with proper validation
-3. **ServiceController.php**: Added toggleStatus method with proper validation
-4. **show.blade.php files**: Fixed JavaScript URLs and boolean handling
+## Progress
 
-### Customer Management:
-
-1. **CustomerController.php**:
-    - Fixed `store` method to set `email_verified_at` for new accounts
-    - Fixed `update` method to handle email verification properly
-    - Auto-verify admin-created customer accounts
-2. **customer/create.blade.php**:
-    - Added password visibility toggle with eye button
-    - Enhanced form functionality
-3. **customer/edit.blade.php**:
-    - Added password visibility toggle with eye button
-    - Improved user experience
-
-## Key Features Implemented:
-
-### Product & Service Management:
-
-✅ **Toggle Status Functionality**: Both products and services can be activated/deactivated
-✅ **Delete Functionality**: Both can be soft deleted with proper confirmation
-✅ **Proper Validation**: Controllers handle multiple boolean formats
-✅ **User Feedback**: Success/error messages in Indonesian
-
-### Customer Management:
-
-✅ **Account Creation**: Admin can create customer accounts that are auto-verified
-✅ **Password Visibility**: Eye button to show/hide passwords in both create and edit forms
-✅ **Email Verification**: Admin-created accounts are automatically marked as verified
-✅ **Proper Validation**: Enhanced form validation and error handling
-
-## Status:
-
--   **Product/Service buttons**: ✅ Fully functional
--   **Customer creation**: ✅ Fixed and working
--   **Password visibility**: ✅ Eye buttons added to both forms
--   **Email verification**: ✅ Auto-verified for admin-created accounts
--   **All forms**: ✅ Enhanced user experience and validation
+-   [x] Identified root cause
+-   [x] Created plan
+-   [ ] Fix OrderService model
+-   [ ] Fix related references
+-   [ ] Test functionality

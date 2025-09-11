@@ -47,49 +47,164 @@
                     <!-- Progress Tracker -->
                     <div class="bg-white rounded-lg shadow-lg p-6">
                         <h2 class="text-xl font-bold text-gray-900 mb-6">Status Pesanan</h2>
-                        
+
+                        @if($order->status_order === 'melewati_jatuh_tempo')
+                            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-exclamation-triangle text-red-400"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-red-800 font-medium">Cicilan tidak dibayar tepat waktu, layanan otomatis dibatalkan.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="relative">
+                            @php
+                                // Status order mapping for timeline
+                                $statusOrder = [
+                                    'menunggu' => 1,
+                                    'dijadwalkan' => 2,
+                                    'menuju_lokasi' => 3,
+                                    'diproses' => 4,
+                                    'menunggu_sparepart' => 4, // Same as diproses
+                                    'diantar' => 4, // Same as diproses
+                                    'siap_diambil' => 5,
+                                    'selesai' => 6,
+                                    'dibatalkan' => 7,
+                                    'melewati_jatuh_tempo' => 7
+                                ];
+
+                                $currentStatusOrder = $statusOrder[$order->status_order] ?? 1;
+
+                                // Define steps based on service type
+                                if ($order->type === 'onsite') {
+                                    $steps = [
+                                        [
+                                            'title' => 'Pesanan Diterima',
+                                            'description' => 'Pesanan servis onsite Anda telah diterima dan menunggu konfirmasi',
+                                            'icon' => 'fas fa-clipboard-check',
+                                            'order' => 1
+                                        ],
+                                        [
+                                            'title' => 'Dijadwalkan',
+                                            'description' => 'Jadwal kunjungan teknisi telah ditentukan dan dikonfirmasi',
+                                            'icon' => 'fas fa-calendar-check',
+                                            'order' => 2
+                                        ],
+                                        [
+                                            'title' => 'Teknisi Menuju Lokasi',
+                                            'description' => 'Teknisi sedang menuju lokasi Anda untuk melakukan servis',
+                                            'icon' => 'fas fa-route',
+                                            'order' => 3
+                                        ],
+                                        [
+                                            'title' => 'Diproses',
+                                            'description' => 'Teknisi sedang melakukan perbaikan perangkat Anda',
+                                            'icon' => 'fas fa-tools',
+                                            'order' => 4
+                                        ],
+                                        [
+                                            'title' => 'Selesai',
+                                            'description' => 'Perbaikan selesai dan perangkat telah berfungsi normal',
+                                            'icon' => 'fas fa-check-circle',
+                                            'order' => 6
+                                        ]
+                                    ];
+                                } else {
+                                    // Regular service steps (drop-off service)
+                                    $steps = [
+                                        [
+                                            'title' => 'Pesanan Diterima',
+                                            'description' => 'Pesanan servis Anda telah diterima dan menunggu konfirmasi',
+                                            'icon' => 'fas fa-clipboard-check',
+                                            'order' => 1
+                                        ],
+                                        [
+                                            'title' => 'Dijadwalkan',
+                                            'description' => 'Jadwal servis telah ditentukan dan dikonfirmasi',
+                                            'icon' => 'fas fa-calendar-check',
+                                            'order' => 2
+                                        ],
+                                        [
+                                            'title' => 'Diproses',
+                                            'description' => 'Tim teknisi sedang melakukan perbaikan perangkat Anda',
+                                            'icon' => 'fas fa-tools',
+                                            'order' => 4
+                                        ],
+                                        [
+                                            'title' => 'Siap Diambil',
+                                            'description' => 'Perbaikan selesai dan perangkat siap diambil',
+                                            'icon' => 'fas fa-box-open',
+                                            'order' => 5
+                                        ],
+                                        [
+                                            'title' => 'Selesai',
+                                            'description' => 'Perbaikan selesai dan perangkat telah diambil pelanggan',
+                                            'icon' => 'fas fa-check-circle',
+                                            'order' => 6
+                                        ]
+                                    ];
+                                }
+
+                                // Determine status for each step
+                                foreach ($steps as &$step) {
+                                    if ($step['order'] < $currentStatusOrder) {
+                                        $step['status'] = 'completed';
+                                        $step['date'] = $order->updated_at;
+                                    } elseif ($step['order'] === $currentStatusOrder) {
+                                        $step['status'] = 'current';
+                                        $step['date'] = $order->updated_at;
+                                    } else {
+                                        $step['status'] = 'pending';
+                                        $step['date'] = null;
+                                    }
+                                }
+                            @endphp
+
                             @foreach($steps as $index => $step)
                                 <div class="flex items-start mb-8 {{ $loop->last ? 'mb-0' : '' }}">
                                     <!-- Step Icon -->
                                     <div class="flex-shrink-0 relative">
-                                        <div class="flex items-center justify-center w-12 h-12 rounded-full border-2 
-                                            @if($step['status'] === 'completed') 
+                                        <div class="flex items-center justify-center w-12 h-12 rounded-full border-2
+                                            @if($step['status'] === 'completed')
                                                 bg-green-100 border-green-500 text-green-600
-                                            @elseif($step['status'] === 'current') 
+                                            @elseif($step['status'] === 'current')
                                                 bg-blue-100 border-blue-500 text-blue-600 animate-pulse
-                                            @else 
+                                            @else
                                                 bg-gray-100 border-gray-300 text-gray-400
                                             @endif
                                         ">
                                             <i class="{{ $step['icon'] }} text-lg"></i>
                                         </div>
-                                        
+
                                         @if(!$loop->last)
-                                            <div class="absolute top-12 left-1/2 transform -translate-x-1/2 w-0.5 h-16 
+                                            <div class="absolute top-12 left-1/2 transform -translate-x-1/2 w-0.5 h-16
                                                 @if($step['status'] === 'completed') bg-green-500 @else bg-gray-300 @endif
                                             "></div>
                                         @endif
                                     </div>
-                                    
+
                                     <!-- Step Content -->
                                     <div class="ml-4 flex-1">
                                         <div class="flex items-center justify-between">
-                                            <h3 class="text-lg font-semibold 
+                                            <h3 class="text-lg font-semibold
                                                 @if($step['status'] === 'completed') text-green-800
                                                 @elseif($step['status'] === 'current') text-blue-800
                                                 @else text-gray-500 @endif
                                             ">
                                                 {{ $step['title'] }}
                                             </h3>
-                                            
+
                                             @if($step['date'])
                                                 <span class="text-sm text-gray-500">
                                                     {{ $step['date']->format('d/m/Y H:i') }}
                                                 </span>
                                             @endif
                                         </div>
-                                        
+
                                         <p class="text-gray-600 mt-1">{{ $step['description'] }}</p>
                                     </div>
                                 </div>

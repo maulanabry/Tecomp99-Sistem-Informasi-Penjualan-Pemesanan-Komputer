@@ -104,43 +104,91 @@ class OrderServiceForm extends Component
         }
     }
 
+
+
     public function checkSlotAvailability()
     {
         if (!$this->tanggal_kunjungan) {
+            // Reset all slots to available if no date selected
+            $this->slotsStatus = [];
+            foreach ($this->availableSlots as $slot) {
+                $this->slotsStatus[$slot] = [
+                    'available' => true,
+                    'count' => 0,
+                    'reason' => null
+                ];
+            }
             return;
         }
 
         $selectedDate = $this->tanggal_kunjungan;
 
-        // Get all existing onsite orders
-        $existingOrders = OrderService::where('type', 'onsite')
-            ->whereNotNull('note')
+        // Get all existing onsite service tickets for this date (GLOBAL - all technicians)
+        $existingTickets = ServiceTicket::whereDate('visit_schedule', $selectedDate)
+            ->whereNotNull('visit_schedule')
+            ->whereHas('orderService', function ($q) {
+                $q->where('type', 'onsite');
+            })
+            ->with('orderService')
             ->get();
 
-        // Extract booked slots for the selected date
+        // Count total daily visits (GLOBAL limit)
+        $totalDailyVisits = $existingTickets->count();
+        $maxVisitsPerDay = 4; // Global limit across all technicians
+
+        // Extract booked slots (GLOBAL - any technician booking blocks the slot)
         $bookedSlots = [];
-        foreach ($existingOrders as $order) {
-            $note = json_decode($order->note, true);
-            if (isset($note['tanggal_kunjungan']) && isset($note['slot_waktu'])) {
-                // Check if the visit date matches our selected date
-                if ($note['tanggal_kunjungan'] === $selectedDate) {
-                    $bookedSlots[] = $note['slot_waktu'];
+        foreach ($existingTickets as $ticket) {
+            if ($ticket->visit_schedule) {
+                $slotTime = $ticket->visit_schedule->format('H:i');
+                // Map slot time back to slot format (e.g., "08:00" -> "08:00 - 09:30")
+                $slot = $this->mapTimeToSlot($slotTime);
+                if ($slot) {
+                    $bookedSlots[] = $slot;
                 }
             }
         }
 
-        // Check availability for each slot (max 1 booking per slot)
+        // Check availability for each slot
         $this->slotsStatus = [];
         foreach ($this->availableSlots as $slot) {
             $slotBookingCount = array_count_values($bookedSlots)[$slot] ?? 0;
+            $isSlotAvailable = $slotBookingCount < 1; // Max 1 booking per slot globally
+            $isGlobalDailyLimitReached = $totalDailyVisits >= $maxVisitsPerDay;
+
+            $reason = null;
+            if (!$isSlotAvailable) {
+                $reason = 'Slot sudah dibooking teknisi lain';
+            } elseif ($isGlobalDailyLimitReached) {
+                $reason = 'Batas maksimal pesanan onsite hari ini sudah tercapai';
+                $isSlotAvailable = false;
+            }
+
             $this->slotsStatus[$slot] = [
-                'available' => $slotBookingCount < 1, // Max 1 booking per slot
-                'count' => $slotBookingCount
+                'available' => $isSlotAvailable,
+                'count' => $slotBookingCount,
+                'reason' => $reason
             ];
         }
 
         // Update disabled dates for datepicker
         $this->updateDisabledDates();
+    }
+
+    /**
+     * Map time slot back to slot format
+     */
+    private function mapTimeToSlot($time)
+    {
+        $timeMappings = [
+            '08:00' => '08:00 - 09:30',
+            '10:30' => '10:30 - 12:00',
+            '13:00' => '13:00 - 14:30',
+            '15:30' => '15:30 - 17:00',
+            '18:00' => '18:00 - 19:30',
+        ];
+
+        return $timeMappings[$time] ?? null;
     }
 
     private function updateDisabledDates()
@@ -218,17 +266,32 @@ class OrderServiceForm extends Component
         $selectedDate = $this->tanggal_kunjungan;
         $selectedSlot = $this->slot_waktu;
 
-        // Get all existing onsite orders
-        $existingOrders = OrderService::where('type', 'onsite')
-            ->whereNotNull('note')
+        // Check if slot is still available globally
+        $existingTickets = ServiceTicket::whereDate('visit_schedule', $selectedDate)
+            ->whereNotNull('visit_schedule')
+            ->whereHas('orderService', function ($q) {
+                $q->where('type', 'onsite');
+            })
             ->get();
 
-        // Check if the selected slot is already taken
+        // Count total daily visits
+        $totalDailyVisits = $existingTickets->count();
+        $maxVisitsPerDay = 4;
+
+        // Check if daily limit is reached
+        if ($totalDailyVisits >= $maxVisitsPerDay) {
+            $this->addError('slot_waktu', 'Batas maksimal pesanan onsite hari ini sudah tercapai.');
+            $this->checkSlotAvailability();
+            return;
+        }
+
+        // Check if specific slot is taken
         $slotTaken = false;
-        foreach ($existingOrders as $order) {
-            $note = json_decode($order->note, true);
-            if (isset($note['tanggal_kunjungan']) && isset($note['slot_waktu'])) {
-                if ($note['tanggal_kunjungan'] === $selectedDate && $note['slot_waktu'] === $selectedSlot) {
+        foreach ($existingTickets as $ticket) {
+            if ($ticket->visit_schedule) {
+                $slotTime = $ticket->visit_schedule->format('H:i');
+                $slot = $this->mapTimeToSlot($slotTime);
+                if ($slot === $selectedSlot) {
                     $slotTaken = true;
                     break;
                 }
@@ -236,8 +299,7 @@ class OrderServiceForm extends Component
         }
 
         if ($slotTaken) {
-            $this->addError('slot_waktu', 'Slot waktu yang dipilih sudah penuh. Silakan pilih slot lain.');
-            // Refresh slot availability
+            $this->addError('slot_waktu', 'Slot sudah terisi, silakan pilih waktu lain.');
             $this->checkSlotAvailability();
             return;
         }
@@ -265,6 +327,8 @@ class OrderServiceForm extends Component
             'discount_amount' => 0,
             'paid_amount' => 0,
             'remaining_balance' => 0,
+            'visit_slot' => $this->slot_waktu,
+            'visit_date' => $this->tanggal_kunjungan,
         ]);
 
         // Handle file uploads
@@ -414,17 +478,22 @@ class OrderServiceForm extends Component
             $visitSchedule = Carbon::parse($this->tanggal_kunjungan . ' ' . $startTime);
         }
 
-        // Create service ticket
+        // Create service ticket with bypass validation to avoid status sync issues
+        session(['bypass_ticket_validation' => true]);
+
         ServiceTicket::create([
             'service_ticket_id' => $ticketId,
             'order_service_id' => $orderService->order_service_id,
-            'admin_id' => null, // Will be assigned later by admin
-            'status' => 'Menunggu',
+            'admin_id' => null, // Technician will be assigned later by admin
+            'status' => 'menunggu', // Use lowercase to match database enum
             'schedule_date' => $visitSchedule ? $visitSchedule->toDateString() : Carbon::tomorrow()->toDateString(),
             'visit_schedule' => $visitSchedule,
             'estimation_days' => null, // Will be set by technician
             'estimate_date' => null, // Will be calculated later
         ]);
+
+        // Clear the bypass session
+        session()->forget('bypass_ticket_validation');
 
         // Update order service to indicate it has a ticket
         $orderService->update(['hasTicket' => true]);

@@ -161,11 +161,11 @@
                                             <select name="visit_time_slot" id="visit_time_slot"
                                                 class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('visit_time_slot') border-red-500 @enderror">
                                                 <option value="">Pilih slot waktu</option>
-                                                <option value="08:00" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '08:00' ? '08:00' : '') === '08:00' ? 'selected' : '' }}>08:00 - 09:30</option>
-                                                <option value="10:30" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '10:30' ? '10:30' : '') === '10:30' ? 'selected' : '' }}>10:30 - 12:00</option>
-                                                <option value="13:00" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '13:00' ? '13:00' : '') === '13:00' ? 'selected' : '' }}>13:00 - 14:30</option>
-                                                <option value="15:30" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '15:30' ? '15:30' : '') === '15:30' ? 'selected' : '' }}>15:30 - 17:00</option>
-                                                <option value="18:00" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '18:00' ? '18:00' : '') === '18:00' ? 'selected' : '' }}>18:00 - 19:30</option>
+                                                <option value="08:00" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '08:00' ? '08:00' : '') === '08:00' ? 'selected' : '' }}>08.00 – 09.30</option>
+                                                <option value="10:30" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '10:30' ? '10:30' : '') === '10:30' ? 'selected' : '' }}>10.30 – 12.00</option>
+                                                <option value="13:00" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '13:00' ? '13:00' : '') === '13:00' ? 'selected' : '' }}>13.00 – 14.30</option>
+                                                <option value="15:30" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '15:30' ? '15:30' : '') === '15:30' ? 'selected' : '' }}>15.30 – 17.00</option>
+                                                <option value="18:00" {{ old('visit_time_slot', $ticket->visit_schedule && $ticket->visit_schedule->format('H:i') === '18:00' ? '18:00' : '') === '18:00' ? 'selected' : '' }}>18.00 – 19.30</option>
                                             </select>
                                             <div id="slotAvailability" class="mt-2 text-sm"></div>
                                             @error('visit_time_slot')
@@ -315,6 +315,39 @@
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Keluhan</dt>
                                     <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $ticket->orderService->complaints }}</dd>
                                 </div>
+                                @if($ticket->orderService->type === 'onsite')
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Kunjungan Lama</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                        @if($ticket->visit_schedule)
+                                            {{ $ticket->visit_schedule->format('d F Y') }}
+                                        @else
+                                            <span class="text-gray-500 italic">Belum ditentukan</span>
+                                        @endif
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Slot Waktu Kunjungan Lama</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                        @if($ticket->visit_schedule)
+                                            @php
+                                                $timeSlot = $ticket->visit_schedule->format('H:i');
+                                                $slotMapping = [
+                                                    '08:00' => '08.00 – 09.30',
+                                                    '10:30' => '10.30 – 12.00',
+                                                    '13:00' => '13.00 – 14.30',
+                                                    '15:30' => '15.30 – 17.00',
+                                                    '18:00' => '18.00 – 19.30'
+                                                ];
+                                                $slotDisplay = $slotMapping[$timeSlot] ?? $timeSlot;
+                                            @endphp
+                                            {{ $slotDisplay }}
+                                        @else
+                                            <span class="text-gray-500 italic">Belum ditentukan</span>
+                                        @endif
+                                    </dd>
+                                </div>
+                                @endif
                             </dl>
                             
                             <div class="mt-4">
@@ -358,7 +391,8 @@
                         if (option.value) {
                             option.disabled = false;
                             option.style.color = '';
-                            option.textContent = option.textContent.replace(' (Tidak Tersedia)', '');
+                            // Remove both old and new booking indicators
+                            option.textContent = option.textContent.replace(' (Tidak Tersedia)', '').replace(/ \(Dipesan - .*\)$/, '');
                         }
                     });
                 }
@@ -390,7 +424,8 @@
                         body: JSON.stringify({
                             admin_id: adminSelect.value,
                             visit_date: visitDate.value,
-                            exclude_ticket_id: currentTicketId
+                            exclude_ticket_id: currentTicketId,
+                            exclude_order_service_id: '{{ $ticket->orderService->order_service_id }}'
                         })
                     });
 
@@ -399,14 +434,14 @@
                     // Reset semua option terlebih dahulu
                     resetTimeSlotOptions();
                     
-                    // Nonaktifkan slot yang sudah dibooking (kecuali tiket saat ini)
+                    // Nonaktifkan semua slot yang sudah dibooking (kecuali tiket saat ini)
                     if (data.booked_slots && data.booked_slots.length > 0) {
                         data.booked_slots.forEach(bookedSlot => {
                             const option = Array.from(visitTimeSlot.options).find(opt => opt.value === bookedSlot.time_slot);
                             if (option) {
                                 option.disabled = true;
                                 option.style.color = '#9CA3AF'; // text-gray-400
-                                option.textContent += ` (Tidak Tersedia - ${bookedSlot.customer_name})`;
+                                option.textContent += ` (Dipesan - ${bookedSlot.customer_name})`;
                             }
                         });
                     }
@@ -472,7 +507,8 @@
                             admin_id: adminSelect.value,
                             visit_date: visitDate.value,
                             visit_time_slot: visitTimeSlot.value,
-                            exclude_ticket_id: currentTicketId
+                            exclude_ticket_id: currentTicketId,
+                            exclude_order_service_id: '{{ $ticket->orderService->order_service_id }}'
                         })
                     });
 

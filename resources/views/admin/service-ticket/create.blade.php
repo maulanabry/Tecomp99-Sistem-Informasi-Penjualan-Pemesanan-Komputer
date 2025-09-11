@@ -175,11 +175,11 @@
                                     <select name="visit_time_slot" id="visit_time_slot"
                                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('visit_time_slot') border-red-500 @enderror">
                                         <option value="">Pilih slot waktu</option>
-                                        <option value="08:00" {{ old('visit_time_slot') === '08:00' ? 'selected' : '' }}>08:00 - 09:30</option>
-                                        <option value="10:30" {{ old('visit_time_slot') === '10:30' ? 'selected' : '' }}>10:30 - 12:00</option>
-                                        <option value="13:00" {{ old('visit_time_slot') === '13:00' ? 'selected' : '' }}>13:00 - 14:30</option>
-                                        <option value="15:30" {{ old('visit_time_slot') === '15:30' ? 'selected' : '' }}>15:30 - 17:00</option>
-                                        <option value="18:00" {{ old('visit_time_slot') === '18:00' ? 'selected' : '' }}>18:00 - 19:30</option>
+                                        <option value="08:00" {{ old('visit_time_slot') === '08:00' ? 'selected' : '' }}>08.00 – 09.30</option>
+                                        <option value="10:30" {{ old('visit_time_slot') === '10:30' ? 'selected' : '' }}>10.30 – 12.00</option>
+                                        <option value="13:00" {{ old('visit_time_slot') === '13:00' ? 'selected' : '' }}>13.00 – 14.30</option>
+                                        <option value="15:30" {{ old('visit_time_slot') === '15:30' ? 'selected' : '' }}>15.30 – 17.00</option>
+                                        <option value="18:00" {{ old('visit_time_slot') === '18:00' ? 'selected' : '' }}>18.00 – 19.30</option>
                                     </select>
                                     <div id="slotAvailability" class="mt-2 text-sm"></div>
                                     @error('visit_time_slot')
@@ -277,6 +277,7 @@
 
             // Listen for order selection event from Livewire
             Livewire.on('serviceTicketOrderSelected', function(data) {
+                console.log('serviceTicketOrderSelected event triggered');
                 console.log('Order data received:', data);
 
                 // Handle both single object and array format
@@ -350,7 +351,8 @@
                         if (option.value) {
                             option.disabled = false;
                             option.style.color = '';
-                            option.textContent = option.textContent.replace(' (Tidak Tersedia)', '');
+                            // Remove both old and new booking indicators
+                            option.textContent = option.textContent.replace(' (Tidak Tersedia)', '').replace(/ \(Dipesan - .*\)$/, '');
                         }
                     });
                 }
@@ -361,7 +363,14 @@
              * Menonaktifkan slot yang sudah dibooking
              */
             async function loadAvailableSlots() {
+                console.log('loadAvailableSlots called', {
+                    adminSelect: adminSelect?.value,
+                    visitDate: visitDate?.value,
+                    orderServiceId: orderServiceIdInput?.value
+                });
+
                 if (!adminSelect.value || !visitDate.value) {
+                    console.log('Missing required values, resetting slots');
                     resetTimeSlotOptions();
                     if (slotAvailability) slotAvailability.innerHTML = '';
                     return;
@@ -381,23 +390,25 @@
                         },
                         body: JSON.stringify({
                             admin_id: adminSelect.value,
-                            visit_date: visitDate.value
+                            visit_date: visitDate.value,
+                            exclude_order_service_id: orderServiceIdInput.value
                         })
                     });
 
                     const data = await response.json();
-                    
+                    console.log('AJAX response received:', data);
+
                     // Reset semua option terlebih dahulu
                     resetTimeSlotOptions();
                     
-                    // Nonaktifkan slot yang sudah dibooking
+                    // Nonaktifkan semua slot yang sudah dibooking
                     if (data.booked_slots && data.booked_slots.length > 0) {
                         data.booked_slots.forEach(bookedSlot => {
                             const option = Array.from(visitTimeSlot.options).find(opt => opt.value === bookedSlot.time_slot);
                             if (option) {
                                 option.disabled = true;
                                 option.style.color = '#9CA3AF'; // text-gray-400
-                                option.textContent += ` (Tidak Tersedia - ${bookedSlot.customer_name})`;
+                                option.textContent += ` (Dipesan - ${bookedSlot.customer_name})`;
                             }
                         });
                     }
@@ -461,7 +472,8 @@
                         body: JSON.stringify({
                             admin_id: adminSelect.value,
                             visit_date: visitDate.value,
-                            visit_time_slot: visitTimeSlot.value
+                            visit_time_slot: visitTimeSlot.value,
+                            exclude_order_service_id: orderServiceIdInput.value
                         })
                     });
 

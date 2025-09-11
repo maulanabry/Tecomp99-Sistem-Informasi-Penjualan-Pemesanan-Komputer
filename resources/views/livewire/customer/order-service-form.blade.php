@@ -132,6 +132,8 @@
                 </div>
             </div>
 
+
+
             <!-- Jadwal Kunjungan -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <h3 class="font-medium text-blue-900 mb-4">
@@ -146,7 +148,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Slot Waktu *</label>
-                        <select wire:model="slot_waktu" 
+                        <select wire:model="slot_waktu"
                                 wire:key="slot-select-{{ $tanggal_kunjungan }}"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                             <option value="">
@@ -159,25 +161,37 @@
                             @if(!empty($tanggal_kunjungan))
                                 @foreach ($availableSlots as $slot)
                                     @php
-                                        $isAvailable = !isset($slotsStatus[$slot]) || $slotsStatus[$slot]['available'];
+                                        $slotInfo = $slotsStatus[$slot] ?? ['available' => true, 'reason' => null];
+                                        $isAvailable = $slotInfo['available'];
+                                        $reason = $slotInfo['reason'];
                                     @endphp
-                                    <option value="{{ $slot }}" 
-                                            @if(!$isAvailable) disabled @endif>
-                                        {{ $slot }}
-                                        @if(!$isAvailable) - PENUH @endif
+                                    <option value="{{ $slot }}"
+                                            @if(!$isAvailable) disabled @endif
+                                            @if($reason) title="{{ $reason }}" @endif>
+                                        {{ str_replace([':', ' - '], ['.', ' – '], $slot) }}
+                                        @if(!$isAvailable)
+                                            @if(strpos($reason, 'batas maksimal') !== false)
+                                                - KUOTA PENUH
+                                            @else
+                                                - TIDAK TERSEDIA
+                                            @endif
+                                        @endif
                                     </option>
                                 @endforeach
                             @endif
                         </select>
                         @error('slot_waktu') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                        
+
                         @if(!empty($tanggal_kunjungan) && !empty($slotsStatus))
-                            <div class="mt-2 text-xs text-gray-500" wire:key="date-info-{{ $tanggal_kunjungan }}">
-                                Slot tersedia untuk tanggal {{ \Carbon\Carbon::parse($tanggal_kunjungan)->format('d F Y') }}
+                            <div class="mt-2 text-xs text-gray-500" wire:key="slot-info-{{ $tanggal_kunjungan }}">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Slot tersedia pada tanggal {{ \Carbon\Carbon::parse($tanggal_kunjungan)->format('d F Y') }}
                             </div>
                         @endif
                     </div>
                 </div>
+
+
             </div>
 
             <!-- File Upload -->

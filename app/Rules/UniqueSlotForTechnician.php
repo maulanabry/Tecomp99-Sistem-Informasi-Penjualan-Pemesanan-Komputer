@@ -50,9 +50,7 @@ class UniqueSlotForTechnician implements ValidationRule
         $isSlotTaken = $query->exists();
 
         if ($isSlotTaken) {
-            $existingTicket = $query->first();
-            $customerName = $existingTicket->orderService->customer->name ?? 'Unknown';
-            $fail("Slot {$value} sudah diambil oleh {$customerName}");
+            $fail("Slot sudah terisi, silakan pilih waktu lain.");
             return;
         }
 
@@ -72,7 +70,7 @@ class UniqueSlotForTechnician implements ValidationRule
         $maxVisitsPerDay = 4;
 
         if ($dailyVisitsCount >= $maxVisitsPerDay) {
-            $fail('Teknisi sudah mencapai batas maksimal kunjungan hari ini (' . $maxVisitsPerDay . ' kunjungan)');
+            $fail('Teknisi sudah penuh pada tanggal ini.');
             return;
         }
     }

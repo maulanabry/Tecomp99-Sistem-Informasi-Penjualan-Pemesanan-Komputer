@@ -19,7 +19,7 @@ class OrderSelectionModal extends Component
     public $statusOrderFilter = '';
     public $selectedOrder = null;
 
-    protected $listeners = ['openOrderModal' => 'bukaModal'];
+    protected $listeners = ['openOrderModal' => 'open'];
 
     public function mount()
     {

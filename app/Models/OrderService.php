@@ -91,7 +91,7 @@ class OrderService extends Model
     const STATUS_ORDER_MELEWATI_JATUH_TEMPO = 'melewati_jatuh_tempo';
 
     const STATUS_PAYMENT_BELUM_DIBAYAR = 'belum_dibayar';
-    const STATUS_PAYMENT_CICILAN = 'cicilan';
+    const STATUS_PAYMENT_DOWN_PAYMENT = 'down_payment';
     const STATUS_PAYMENT_LUNAS = 'lunas';
     const STATUS_PAYMENT_DIBATALKAN = 'dibatalkan';
 
@@ -115,12 +115,16 @@ class OrderService extends Model
         'remaining_balance',
         'last_payment_at',
         'estimated_completion',
+        'assigned_admin_id',
+        'visit_slot',
+        'visit_date',
     ];
 
     protected $casts = [
         'warranty_expired_at' => 'datetime',
         'last_payment_at' => 'datetime',
         'estimated_completion' => 'datetime',
+        'visit_date' => 'date',
         'paid_amount' => 'decimal:2',
         'remaining_balance' => 'decimal:2',
         'sub_total' => 'decimal:2',
@@ -181,11 +185,11 @@ class OrderService extends Model
         $this->last_payment_at = $lastPaymentDate ? Carbon::parse($lastPaymentDate) : null;
 
         if ($paidAmount >= $this->grand_total) {
-            $this->status_payment = 'lunas';
+            $this->status_payment = self::STATUS_PAYMENT_LUNAS;
         } elseif ($paidAmount > 0) {
-            $this->status_payment = 'down_payment';
+            $this->status_payment = self::STATUS_PAYMENT_DOWN_PAYMENT;
         } else {
-            $this->status_payment = 'belum_dibayar';
+            $this->status_payment = self::STATUS_PAYMENT_BELUM_DIBAYAR;
         }
         $this->save();
     }
@@ -240,9 +244,9 @@ class OrderService extends Model
 
         // Update payment status
         if ($this->remaining_balance <= 0) {
-            $this->status_payment = 'lunas';
+            $this->status_payment = self::STATUS_PAYMENT_LUNAS;
         } else {
-            $this->status_payment = 'down_payment';
+            $this->status_payment = self::STATUS_PAYMENT_DOWN_PAYMENT;
         }
 
         $this->save();
@@ -304,6 +308,11 @@ class OrderService extends Model
         return $this->hasMany(ServiceTicket::class, 'order_service_id', 'order_service_id');
     }
 
+    public function assignedAdmin()
+    {
+        return $this->belongsTo(Admin::class, 'assigned_admin_id', 'id');
+    }
+
     /**
      * Sinkronisasi status ServiceTicket dengan status OrderService
      * Ketika status OrderService berubah, ServiceTicket yang terkait juga akan diperbarui
@@ -325,6 +334,11 @@ class OrderService extends Model
         ];
 
         $newTicketStatus = $statusMapping[$this->status_order] ?? 'menunggu';
+
+        // Jika status berubah ke dijadwalkan dan belum ada ticket, buat ticket baru
+        if ($this->status_order === 'Dijadwalkan' && !$this->hasTicket) {
+            $this->createServiceTicketOnSchedule();
+        }
 
         // Set session flag untuk bypass validasi
         session(['syncing_ticket_status' => true]);
@@ -375,6 +389,59 @@ class OrderService extends Model
             // Hapus session flag setelah selesai
             session()->forget('syncing_ticket_status');
         }
+    }
+
+    /**
+     * Create service ticket when order status changes to dijadwalkan
+     */
+    private function createServiceTicketOnSchedule()
+    {
+        // Generate service ticket ID
+        $ticketId = $this->generateServiceTicketId();
+
+        // Parse visit schedule from visit_date and visit_slot
+        $visitSchedule = null;
+        if ($this->visit_date && $this->visit_slot) {
+            // Extract start time from slot (e.g., "08:00 - 09:30" -> "08:00")
+            $startTime = explode(' - ', $this->visit_slot)[0];
+            $visitSchedule = Carbon::parse($this->visit_date . ' ' . $startTime);
+        }
+
+        // Create service ticket
+        ServiceTicket::create([
+            'service_ticket_id' => $ticketId,
+            'order_service_id' => $this->order_service_id,
+            'admin_id' => $this->assigned_admin_id,
+            'status' => 'dijadwalkan',
+            'schedule_date' => $visitSchedule ? $visitSchedule->toDateString() : Carbon::tomorrow()->toDateString(),
+            'visit_schedule' => $visitSchedule,
+            'estimation_days' => null, // Will be set by technician
+            'estimate_date' => null, // Will be calculated later
+        ]);
+
+        // Update order service to indicate it has a ticket
+        $this->update(['hasTicket' => true]);
+    }
+
+    /**
+     * Generate service ticket ID
+     */
+    private function generateServiceTicketId()
+    {
+        $date = now()->format('dmy');
+        $lastTicket = ServiceTicket::withTrashed()
+            ->where('service_ticket_id', 'like', "TKT{$date}%")
+            ->orderBy('service_ticket_id', 'desc')
+            ->first();
+
+        if (!$lastTicket) {
+            return "TKT{$date}001";
+        }
+
+        $lastNumber = (int) substr($lastTicket->service_ticket_id, -3);
+        $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+
+        return "TKT{$date}{$newNumber}";
     }
 
     /**

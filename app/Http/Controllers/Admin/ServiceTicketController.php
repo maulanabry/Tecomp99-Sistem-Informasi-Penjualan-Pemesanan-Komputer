@@ -137,7 +137,9 @@ class ServiceTicketController extends Controller
             $isSlotAvailable = $this->checkSlotAvailabilityInternal(
                 $validated['admin_id'],
                 $validated['visit_date'],
-                $validated['visit_time_slot']
+                $validated['visit_time_slot'],
+                null,
+                $orderService->order_service_id
             );
 
             if (!$isSlotAvailable['available']) {
@@ -284,7 +286,8 @@ class ServiceTicketController extends Controller
                 $validated['admin_id'],
                 $validated['visit_date'],
                 $validated['visit_time_slot'],
-                $ticket->service_ticket_id
+                $ticket->service_ticket_id,
+                $ticket->orderService->order_service_id
             );
 
             if (!$isSlotAvailable['available']) {
@@ -292,6 +295,7 @@ class ServiceTicketController extends Controller
             }
 
             $validated['visit_schedule'] = $validated['visit_date'] . ' ' . $validated['visit_time_slot'] . ':00';
+
             unset($validated['visit_date'], $validated['visit_time_slot']);
         }
 
@@ -365,14 +369,16 @@ class ServiceTicketController extends Controller
             'admin_id' => 'required|exists:admins,id',
             'visit_date' => 'required|date',
             'visit_time_slot' => 'required|in:08:00,10:30,13:00,15:30,18:00',
-            'exclude_ticket_id' => 'nullable|string'
+            'exclude_ticket_id' => 'nullable|string',
+            'exclude_order_service_id' => 'nullable|string'
         ]);
 
         $result = $this->checkSlotAvailabilityInternal(
             $validated['admin_id'],
             $validated['visit_date'],
             $validated['visit_time_slot'],
-            $validated['exclude_ticket_id'] ?? null
+            $validated['exclude_ticket_id'] ?? null,
+            $validated['exclude_order_service_id'] ?? null
         );
 
         return response()->json($result);
@@ -387,40 +393,51 @@ class ServiceTicketController extends Controller
         $validated = $request->validate([
             'admin_id' => 'required|exists:admins,id',
             'visit_date' => 'required|date',
-            'exclude_ticket_id' => 'nullable|string'
+            'exclude_ticket_id' => 'nullable|string',
+            'exclude_order_service_id' => 'nullable|string'
         ]);
 
-        // Query untuk mendapatkan semua slot yang sudah dibooking
-        $query = ServiceTicket::where('admin_id', $validated['admin_id'])
-            ->whereDate('visit_schedule', $validated['visit_date'])
-            ->whereNotNull('visit_schedule')
-            ->whereHas('orderService', function ($q) {
-                $q->where('type', 'onsite'); // Hanya untuk onsite services
-            });
+        // Query untuk mendapatkan semua OrderService yang sudah dibooking untuk tanggal tertentu
+        $query = \App\Models\OrderService::where('visit_date', $validated['visit_date'])
+            ->whereNotNull('visit_slot')
+            ->where('type', 'onsite') // Hanya untuk onsite services
+            ->with(['customer', 'tickets']);
 
-        // Exclude ticket tertentu jika sedang edit
-        if (!empty($validated['exclude_ticket_id'])) {
-            $query->where('service_ticket_id', '!=', $validated['exclude_ticket_id']);
+        // Exclude order service tertentu jika sedang edit
+        if (!empty($validated['exclude_order_service_id'])) {
+            $query->where('order_service_id', '!=', $validated['exclude_order_service_id']);
         }
 
-        // Debug: Log query untuk memastikan query benar
+        // Debug: Log query
         \Log::info('GetBookedSlots Query:', [
             'admin_id' => $validated['admin_id'],
             'visit_date' => $validated['visit_date'],
             'exclude_ticket_id' => $validated['exclude_ticket_id'] ?? null,
+            'exclude_order_service_id' => $validated['exclude_order_service_id'] ?? null,
             'query_sql' => $query->toSql(),
             'query_bindings' => $query->getBindings()
         ]);
 
-        // Ambil semua waktu yang sudah dibooking
+        // Ambil semua slot yang sudah dibooking
         $bookedSlots = $query->get()
-            ->map(function ($ticket) {
+            ->map(function ($orderService) use ($validated) {
+                // Extract time slot from visit_slot (e.g., "08:00 - 09:30" -> "08:00")
+                $timeSlot = explode(' - ', $orderService->visit_slot)[0];
+
+                // Check if technician is assigned
+                $ticket = $orderService->tickets->first();
+                $technicianAssigned = $ticket && $ticket->admin_id;
+                $assignedToCurrentTechnician = $technicianAssigned && $ticket->admin_id == $validated['admin_id'];
+
                 return [
-                    'time_slot' => $ticket->visit_schedule->format('H:i'),
-                    'ticket_id' => $ticket->service_ticket_id,
-                    'customer_name' => $ticket->orderService->customer->name ?? 'Unknown',
-                    'order_service_id' => $ticket->orderService->order_service_id ?? '',
-                    'device' => $ticket->orderService->device ?? ''
+                    'time_slot' => $timeSlot,
+                    'customer_name' => $orderService->customer->name ?? 'Unknown',
+                    'order_service_id' => $orderService->order_service_id,
+                    'device' => $orderService->device ?? '',
+                    'technician_assigned' => $technicianAssigned,
+                    'assigned_to_current' => $assignedToCurrentTechnician,
+                    'ticket_id' => $ticket ? $ticket->service_ticket_id : null,
+                    'slot_disabled' => true // Disable all booked slots to prevent double booking
                 ];
             })
             ->toArray();
@@ -431,17 +448,17 @@ class ServiceTicketController extends Controller
             'slots' => $bookedSlots
         ]);
 
-        // Hitung total kunjungan hari ini
-        $totalVisitsToday = count($bookedSlots);
+        // Hitung total kunjungan hari ini untuk teknisi ini
+        $technicianVisitsToday = collect($bookedSlots)->where('assigned_to_current', true)->count();
         $maxVisitsPerDay = 4;
-        $remainingSlots = max(0, $maxVisitsPerDay - $totalVisitsToday);
+        $remainingSlots = max(0, $maxVisitsPerDay - $technicianVisitsToday);
 
         $response = [
             'booked_slots' => $bookedSlots,
-            'total_visits_today' => $totalVisitsToday,
+            'total_visits_today' => $technicianVisitsToday,
             'remaining_slots' => $remainingSlots,
             'max_visits_per_day' => $maxVisitsPerDay,
-            'date_full' => $totalVisitsToday >= $maxVisitsPerDay,
+            'date_full' => $technicianVisitsToday >= $maxVisitsPerDay,
             'debug_info' => [
                 'admin_id' => $validated['admin_id'],
                 'visit_date' => $validated['visit_date'],
@@ -458,53 +475,55 @@ class ServiceTicketController extends Controller
      * Method internal untuk mengecek ketersediaan slot waktu tertentu
      * Digunakan oleh checkSlotAvailability dan proses validasi form
      */
-    private function checkSlotAvailabilityInternal($adminId, $visitDate, $timeSlot, $excludeTicketId = null)
+    private function checkSlotAvailabilityInternal($adminId, $visitDate, $timeSlot, $excludeTicketId = null, $excludeOrderServiceId = null)
     {
         // Debug: Log parameter yang diterima
         \Log::info('CheckSlotAvailabilityInternal called:', [
             'admin_id' => $adminId,
             'visit_date' => $visitDate,
             'time_slot' => $timeSlot,
-            'exclude_ticket_id' => $excludeTicketId
+            'exclude_ticket_id' => $excludeTicketId,
+            'exclude_order_service_id' => $excludeOrderServiceId
         ]);
 
         // Cek apakah slot waktu spesifik sudah diambil
-        $query = ServiceTicket::where('admin_id', $adminId)
-            ->whereDate('visit_schedule', $visitDate)
-            ->whereTime('visit_schedule', $timeSlot)
-            ->whereNotNull('visit_schedule')
-            ->whereHas('orderService', function ($q) {
-                $q->where('type', 'onsite'); // Hanya untuk onsite services
-            });
+        $slotString = $timeSlot . ' - ' . date('H:i', strtotime($timeSlot) + 5400); // Add 1.5 hours
+        $query = \App\Models\OrderService::where('visit_date', $visitDate)
+            ->where('visit_slot', $slotString)
+            ->where('type', 'onsite')
+            ->with(['customer', 'tickets']);
 
-        // Exclude ticket tertentu jika sedang edit
-        if ($excludeTicketId) {
-            $query->where('service_ticket_id', '!=', $excludeTicketId);
+        // Exclude order service tertentu jika sedang edit
+        if ($excludeOrderServiceId) {
+            $query->where('order_service_id', '!=', $excludeOrderServiceId);
         }
 
         // Debug: Log query untuk slot spesifik
         \Log::info('Slot availability query:', [
             'query_sql' => $query->toSql(),
-            'query_bindings' => $query->getBindings()
+            'query_bindings' => $query->getBindings(),
+            'slot_string' => $slotString
         ]);
 
-        $isSlotTaken = $query->exists();
+        $orderService = $query->first();
 
-        // Jika slot sudah diambil, return tidak tersedia
-        if ($isSlotTaken) {
-            $existingTicket = $query->first();
-            $customerName = $existingTicket->orderService->customer->name ?? 'Unknown';
+        // Jika slot sudah diambil
+        if ($orderService) {
+            $ticket = $orderService->tickets->first();
+            $customerName = $orderService->customer->name ?? 'Unknown';
 
             \Log::info('Slot taken by:', [
                 'customer_name' => $customerName,
-                'ticket_id' => $existingTicket->service_ticket_id
+                'order_service_id' => $orderService->order_service_id,
+                'ticket_id' => $ticket ? $ticket->service_ticket_id : null
             ]);
 
+            // Slot sudah dipesan, tidak tersedia untuk booking baru
             return [
                 'available' => false,
-                'message' => "Slot sudah diambil oleh {$customerName}",
+                'message' => "Slot sudah dipesan oleh {$customerName}",
                 'reason' => 'slot_taken',
-                'existing_ticket' => $existingTicket->service_ticket_id
+                'existing_ticket' => $ticket ? $ticket->service_ticket_id : null
             ];
         }
 

@@ -85,32 +85,70 @@
                     <!-- Progress Tracker -->
                     <div class="bg-white rounded-lg shadow-lg p-6">
                         <h2 class="text-xl font-bold text-gray-900 mb-6">Status Pesanan</h2>
-                        
+
+                        @if($order->status_order === 'melewati_jatuh_tempo')
+                            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-exclamation-triangle text-red-400"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-red-800 font-medium">Cicilan tidak dibayar tepat waktu, layanan otomatis dibatalkan.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="relative">
                             @php
-                                // Different steps for onsite vs regular service
+                                // Status order mapping for timeline
+                                $statusOrder = [
+                                    'menunggu' => 1,
+                                    'dijadwalkan' => 2,
+                                    'menuju_lokasi' => 3,
+                                    'diproses' => 4,
+                                    'menunggu_sparepart' => 4, // Same as diproses
+                                    'diantar' => 4, // Same as diproses
+                                    'siap_diambil' => 5,
+                                    'selesai' => 6,
+                                    'dibatalkan' => 7,
+                                    'melewati_jatuh_tempo' => 7
+                                ];
+
+                                $currentStatusOrder = $statusOrder[$order->status_order] ?? 1;
+
+                                // Define steps based on service type
                                 if ($order->type === 'onsite') {
                                     $steps = [
                                         [
                                             'title' => 'Pesanan Diterima',
                                             'description' => 'Pesanan servis onsite Anda telah diterima dan menunggu konfirmasi',
                                             'icon' => 'fas fa-clipboard-check',
-                                            'status' => 'completed',
-                                            'date' => $order->created_at
+                                            'order' => 1
                                         ],
                                         [
                                             'title' => 'Dijadwalkan',
                                             'description' => 'Jadwal kunjungan teknisi telah ditentukan dan dikonfirmasi',
                                             'icon' => 'fas fa-calendar-check',
-                                            'status' => $order->status_order === 'Diproses' ? 'current' : ($order->status_order === 'Selesai' ? 'completed' : 'pending'),
-                                            'date' => $order->status_order === 'Diproses' ? $order->updated_at : null
+                                            'order' => 2
+                                        ],
+                                        [
+                                            'title' => 'Teknisi Menuju Lokasi',
+                                            'description' => 'Teknisi sedang menuju lokasi Anda untuk melakukan servis',
+                                            'icon' => 'fas fa-route',
+                                            'order' => 3
+                                        ],
+                                        [
+                                            'title' => 'Diproses',
+                                            'description' => 'Teknisi sedang melakukan perbaikan perangkat Anda',
+                                            'icon' => 'fas fa-tools',
+                                            'order' => 4
                                         ],
                                         [
                                             'title' => 'Selesai',
                                             'description' => 'Perbaikan selesai dan perangkat telah berfungsi normal',
                                             'icon' => 'fas fa-check-circle',
-                                            'status' => $order->status_order === 'Selesai' ? 'completed' : 'pending',
-                                            'date' => $order->status_order === 'Selesai' ? $order->updated_at : null
+                                            'order' => 6
                                         ]
                                     ];
                                 } else {
@@ -120,24 +158,47 @@
                                             'title' => 'Pesanan Diterima',
                                             'description' => 'Pesanan servis Anda telah diterima dan menunggu konfirmasi',
                                             'icon' => 'fas fa-clipboard-check',
-                                            'status' => 'completed',
-                                            'date' => $order->created_at
+                                            'order' => 1
                                         ],
                                         [
-                                            'title' => 'Konfirmasi & Diagnosa',
-                                            'description' => 'Tim teknisi sedang melakukan diagnosa perangkat',
-                                            'icon' => 'fas fa-search',
-                                            'status' => $order->status_order === 'Diproses' ? 'current' : ($order->status_order === 'Selesai' ? 'completed' : 'pending'),
-                                            'date' => $order->status_order === 'Diproses' ? $order->updated_at : null
+                                            'title' => 'Dijadwalkan',
+                                            'description' => 'Jadwal servis telah ditentukan dan dikonfirmasi',
+                                            'icon' => 'fas fa-calendar-check',
+                                            'order' => 2
+                                        ],
+                                        [
+                                            'title' => 'Diproses',
+                                            'description' => 'Tim teknisi sedang melakukan perbaikan perangkat Anda',
+                                            'icon' => 'fas fa-tools',
+                                            'order' => 4
+                                        ],
+                                        [
+                                            'title' => 'Siap Diambil',
+                                            'description' => 'Perbaikan selesai dan perangkat siap diambil',
+                                            'icon' => 'fas fa-box-open',
+                                            'order' => 5
                                         ],
                                         [
                                             'title' => 'Selesai',
-                                            'description' => 'Perbaikan selesai dan perangkat siap diambil',
+                                            'description' => 'Perbaikan selesai dan perangkat telah diambil pelanggan',
                                             'icon' => 'fas fa-check-circle',
-                                            'status' => $order->status_order === 'Selesai' ? 'completed' : 'pending',
-                                            'date' => $order->status_order === 'Selesai' ? $order->updated_at : null
+                                            'order' => 6
                                         ]
                                     ];
+                                }
+
+                                // Determine status for each step
+                                foreach ($steps as &$step) {
+                                    if ($step['order'] < $currentStatusOrder) {
+                                        $step['status'] = 'completed';
+                                        $step['date'] = $order->updated_at;
+                                    } elseif ($step['order'] === $currentStatusOrder) {
+                                        $step['status'] = 'current';
+                                        $step['date'] = $order->updated_at;
+                                    } else {
+                                        $step['status'] = 'pending';
+                                        $step['date'] = null;
+                                    }
                                 }
                             @endphp
                             
