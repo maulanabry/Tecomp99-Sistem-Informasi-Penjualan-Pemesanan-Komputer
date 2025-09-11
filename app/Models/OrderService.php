@@ -524,13 +524,21 @@ class OrderService extends Model
         // 3) Aturan expired_date (hanya jika payment bukan lunas)
         switch ($this->status_payment) {
             case 'belum_dibayar':
-                // +1 day dari order dibuat
-                $this->expired_date = Carbon::parse($orderDate)->addDay();
+                // hanya berlaku jika status_order = diproses atau menunggu_sparepart
+                if (in_array($this->status_order, ['diproses', 'menunggu_sparepart'])) {
+                    $this->expired_date = Carbon::parse($orderDate)->addDay();
+                } else {
+                    $this->expired_date = null;
+                }
                 break;
 
             case 'cicilan':
-                // +7 hari maksimal untuk cicilan berikutnya
-                $this->expired_date = Carbon::parse($orderDate)->addDays(7);
+                // hanya berlaku jika status_order = siap_diambil
+                if ($this->status_order === 'siap_diambil') {
+                    $this->expired_date = Carbon::parse($orderDate)->addDays(7);
+                } else {
+                    $this->expired_date = null;
+                }
                 break;
 
             default:
