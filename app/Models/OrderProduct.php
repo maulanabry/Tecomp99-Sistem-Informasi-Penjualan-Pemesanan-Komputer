@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @property string $order_product_id
@@ -158,27 +159,66 @@ class OrderProduct extends Model
      */
     public function updateExpiredDate()
     {
-        $orderDate = $this->created_at ?: now();
+        $now = Carbon::now();
+        $orderDate = $this->created_at ?? $now;
 
+        // 1) Jika status_payment = 'lunas' => selalu clear expired_date
         if ($this->status_payment === 'lunas') {
             $this->expired_date = null;
             return;
         }
 
-        if (in_array($this->status_order, ['dikirim', 'selesai'])) {
-            $this->status_payment = 'lunas';
-            $this->expired_date = null;
+        // 2) Validasi kompatibilitas antara status_order dan status_payment
+        if ($this->isDirty('status_order') || $this->isDirty('status_payment')) {
+            switch ($this->status_order) {
+                case 'inden':
+                    if ($this->status_payment !== 'down_payment') {
+                        session()->flash('error', 'Status "inden" mengharuskan status pembayaran = down_payment.');
+                        return false;
+                    }
+                    break;
+
+                case 'siap_kirim':
+                    if (! in_array($this->status_payment, ['down_payment', 'lunas'])) {
+                        session()->flash('error', 'Status "siap_kirim" mengharuskan status pembayaran = down_payment atau lunas.');
+                        return false;
+                    }
+                    break;
+
+                case 'diproses':
+                    if ($this->status_payment !== 'lunas') {
+                        session()->flash('error', 'Status "diproses" mengharuskan pembayaran sudah lunas.');
+                        return false;
+                    }
+                    break;
+
+                case 'dikirim':
+                case 'selesai':
+                    if ($this->status_payment !== 'lunas') {
+                        session()->flash('error', "Tidak bisa mengubah status menjadi {$this->status_order} karena pembayaran belum lunas.");
+                        return false;
+                    }
+                    break;
+            }
+        }
+
+        // 3) Aturan expired_date (hanya jika payment bukan lunas)
+        if ($this->status_order === 'menunggu' && $this->status_payment === 'belum_dibayar') {
+            $this->expired_date = Carbon::parse($orderDate)->addDay();
             return;
         }
 
-        if ($this->status_order === 'menunggu' && $this->status_payment === 'belum_dibayar') {
-            $this->expired_date = $orderDate->copy()->addDays(1);
-        } elseif (in_array($this->status_order, ['menunggu', 'inden']) && $this->status_payment === 'down_payment') {
-            $this->expired_date = $orderDate->copy()->addDays(2);
-        } elseif ($this->status_order === 'siap_kirim' && $this->status_payment === 'down_payment') {
-            $this->expired_date = $this->updated_at->copy()->addDays(3);
-        } else {
-            $this->expired_date = null;
+        if (in_array($this->status_order, ['menunggu', 'inden']) && $this->status_payment === 'down_payment') {
+            $this->expired_date = Carbon::parse($orderDate)->addDays(2);
+            return;
         }
+
+        if ($this->status_order === 'siap_kirim' && $this->status_payment === 'down_payment') {
+            $this->expired_date = $now->copy()->addDays(3);
+            return;
+        }
+
+        // default: clear expired_date
+        $this->expired_date = null;
     }
 }
