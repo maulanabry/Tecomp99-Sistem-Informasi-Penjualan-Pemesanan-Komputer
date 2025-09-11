@@ -124,7 +124,7 @@ $(document).ready(function () {
             $customerInfo.removeClass("hidden");
         } else {
             $customerInfo.addClass("hidden");
-            $("#shipping_cost").val(0);
+            $("#shipping_cost").val("0");
             $("#shipping_cost_hidden").val(0);
             $("#shippingCostDisplay").text("Rp 0");
 
@@ -151,7 +151,7 @@ $("#order_type").on("change", async function () {
     } else {
         $("#shippingCostContainer").addClass("hidden");
         $("#checkOngkirBtn").parent().addClass("hidden");
-        $("#shipping_cost").val(0);
+        $("#shipping_cost").val("0");
         $("#shipping_cost_hidden").val(0);
         $("#shippingCostDisplay").text("Rp 0");
 
@@ -166,7 +166,9 @@ $("#order_type").on("change", async function () {
 
 // Handle shipping cost input changes
 $("#shipping_cost").on("input", function () {
-    const cost = parseInt($(this).val()) || 0;
+    const rawValue = $(this).val().replace(/[^\d]/g, "");
+    const cost = parseInt(rawValue) || 0;
+    $(this).val(new Intl.NumberFormat("id-ID").format(cost));
     $("#shippingCostDisplay").text(formatRupiah(cost));
     $("#shipping_cost_hidden").val(cost);
 
@@ -456,9 +458,6 @@ const discountManager = {
     bindEvents() {
         this.$discountAmount.on("input", (e) => this.handleDiscountInput(e));
         this.$removeVoucherBtn.on("click", () => this.handleRemoveVoucher());
-
-        // Handle form submission to convert formatted value back to number
-        $("#orderForm").on("submit", () => this.handleFormSubmit());
     },
 
     // Handle discount input with formatting
@@ -479,17 +478,6 @@ const discountManager = {
             calculateTotals();
         } catch (error) {
             console.error("Error handling discount input:", error);
-        }
-    },
-
-    // Handle form submission
-    handleFormSubmit() {
-        try {
-            // Convert formatted value back to raw number for submission
-            const rawValue = this.$discountAmount.val().replace(/[^\d]/g, "");
-            this.$discountAmount.val(rawValue);
-        } catch (error) {
-            console.error("Error handling form submit:", error);
         }
     },
 
@@ -714,16 +702,22 @@ async function updateShippingCost(isButtonClick = false) {
         }
 
         // Initial validation checks
-        const selectedOption = $("#customer_id").find(":selected");
-        if (!selectedOption.val()) {
+        const selectedCustomer = window.selectedCustomerData;
+        if (!selectedCustomer || !selectedCustomer.customer_id) {
             throw new Error("Silakan pilih pelanggan terlebih dahulu.");
         }
 
-        const postalCode = selectedOption.data("postal-code");
+        const postalCode = selectedCustomer.postal_code;
         console.log("Kode pos pelanggan:", postalCode);
 
         // Comprehensive postal code validation
-        if (!postalCode || postalCode === "-") {
+        if (
+            !postalCode ||
+            postalCode === "" ||
+            postalCode === "-" ||
+            postalCode === "null" ||
+            postalCode === null
+        ) {
             throw new Error(
                 "Alamat pelanggan tidak lengkap. Pastikan alamat dan kode pos telah diisi dengan benar."
             );
@@ -778,7 +772,9 @@ async function updateShippingCost(isButtonClick = false) {
 
             // Update UI with shipping cost
             console.log("Biaya pengiriman:", shippingCost);
-            $("#shipping_cost").val(shippingCost);
+            $("#shipping_cost").val(
+                new Intl.NumberFormat("id-ID").format(shippingCost)
+            );
             $("#shipping_cost_hidden").val(shippingCost);
             $("#shippingCostDisplay").text(
                 `Rp ${shippingCost.toLocaleString("id-ID")}`
@@ -812,7 +808,7 @@ async function updateShippingCost(isButtonClick = false) {
 
 // Helper function to reset shipping cost
 async function resetShippingCost() {
-    $("#shipping_cost").val(0);
+    $("#shipping_cost").val("0");
     $("#shipping_cost_hidden").val(0);
     $("#shippingCostDisplay").text("Rp 0");
     await calculateTotals();
@@ -846,7 +842,7 @@ async function calculateTotals() {
         }
 
         // Get shipping cost
-        const shippingCost = parseInt($("#shipping_cost").val()) || 0;
+        const shippingCost = parseInt($("#shipping_cost_hidden").val()) || 0;
 
         // Update displays
         updateDisplays(subtotal, discount, shippingCost);
@@ -936,10 +932,22 @@ $("#orderForm").validate({
 
 // On form submit, validate and prepare data
 $("#orderForm").on("submit", async function (e) {
-    e.preventDefault();
+    // Convert formatted values before validation
+    try {
+        const discountRawValue = $("#discount_amount")
+            .val()
+            .replace(/[^\d]/g, "");
+        $("#discount_amount").val(discountRawValue);
+
+        const shippingRawValue = $("#shipping_cost_hidden").val();
+        $("#shipping_cost").val(shippingRawValue);
+    } catch (error) {
+        console.error("Error converting values:", error);
+    }
 
     // Validate at least one product
     if ($("#productItemsTableBody tr").length === 0) {
+        e.preventDefault();
         utils.showError(
             "Harap tambahkan setidaknya satu produk ke dalam pesanan."
         );
@@ -957,12 +965,12 @@ $("#orderForm").on("submit", async function (e) {
     });
 
     if (hasInvalidQuantity) {
+        e.preventDefault();
         utils.showError("Kuantitas produk harus lebih dari 0.");
         return;
     }
 
-    // Submit the form
-    this.submit();
+    // Form will submit normally
 });
 
 // Export modules and functions for external use

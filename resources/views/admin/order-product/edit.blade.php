@@ -170,7 +170,7 @@
                 </div>
                 <div id="shippingCostContainer" class="mt-4 {{ $orderProduct->type == 'pengiriman' ? '' : 'hidden' }}">
                     <label for="shipping_cost" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Ongkos Kirim (Rp)</label>
-                    <input type="number" id="shipping_cost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" value="{{ $orderProduct->shipping_cost ?? 0 }}" min="0" step="1000" readonly data-currency="true" />
+                    <input type="text" id="shipping_cost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" value="{{ number_format($orderProduct->shipping_cost ?? 0, 0, ',', '.') }}" readonly data-currency="true" />
                     <input type="hidden" id="shipping_cost_hidden" name="shipping_cost" value="{{ $orderProduct->shipping_cost ?? 0 }}" />
                 </div>
             </div>
@@ -241,12 +241,9 @@
                     <div class="mb-4">
                         <label for="discount_amount" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Jumlah Diskon (Rp)</label>
                         <input type="text" id="discount_amount" name="discount_amount"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                            placeholder="0"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"                
                             value="{{ number_format($orderProduct->discount_amount ?? 0, 0, ',', '.') }}"
-                            data-currency="true"
-                            inputmode="numeric"
-                            pattern="[0-9.,]*">
+                            data-currency="true">
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Admin dapat mengubah jumlah diskon secara manual. Gunakan format: 10.000 untuk sepuluh ribu</p>
                     </div>
 
@@ -413,10 +410,16 @@
                             product_orders_count: {{ $orderProduct->customer->product_orders_count }},
                             total_points: {{ $orderProduct->customer->total_points }}
                         };
-                        
+
                         // Store customer data globally for jQuery access
                         window.selectedCustomerData = this.selectedCustomer;
+                    @else
+                        // Initialize empty customer data if no customer
+                        window.selectedCustomerData = null;
                     @endif
+
+                    // Ensure customer data is available for JavaScript
+                    window.selectedCustomerData = window.selectedCustomerData || null;
 
                     // Listen for customer selection from modal
                     window.addEventListener('customerSelected', (event) => {
