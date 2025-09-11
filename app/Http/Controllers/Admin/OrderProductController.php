@@ -15,6 +15,7 @@ use App\Enums\NotificationType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class OrderProductController extends Controller
 {
@@ -407,6 +408,12 @@ class OrderProductController extends Controller
             return redirect()
                 ->route('order-products.show', $orderProduct)
                 ->with('success', 'Order produk berhasil diperbarui');
+        } catch (ValidationException $e) {
+            DB::rollback();
+            return back()
+                ->withInput()
+                ->withErrors($e->errors())
+                ->with('error', 'Validasi gagal: ' . collect($e->errors())->flatten()->implode(', '));
         } catch (\Exception $e) {
             DB::rollback();
             return back()
@@ -440,76 +447,85 @@ class OrderProductController extends Controller
 
     public function updateStatus(Request $request, OrderProduct $orderProduct)
     {
-
-
         $validated = $request->validate([
             'status_order' => 'required|in:menunggu,inden,siap_kirim,diproses,dikirim,selesai,dibatalkan,melewati_jatuh_tempo',
         ]);
 
-        $oldStatus = $orderProduct->status_order;
-        $orderProduct->update($validated);
+        try {
+            $newStatus = $validated['status_order'];
+            $oldStatus = $orderProduct->status_order;
 
-        // Create notification for status update if status changed
-        if ($oldStatus !== $orderProduct->status_order) {
-            try {
-                $type = NotificationType::CUSTOMER_ORDER_PRODUCT_STATUS_UPDATED;
+            $orderProduct->update($validated);
 
-                $message = match ($orderProduct->status_order) {
-                    'selesai' => "Order produk #{$orderProduct->order_product_id} telah selesai",
-                    'diproses' => "Order produk #{$orderProduct->order_product_id} sedang diproses",
-                    'dikirim' => "Order produk #{$orderProduct->order_product_id} sedang dikirim",
-                    'menunggu' => "Order produk #{$orderProduct->order_product_id} menunggu konfirmasi",
-                    'inden' => "Order produk #{$orderProduct->order_product_id} dalam status inden",
-                    'siap_kirim' => "Order produk #{$orderProduct->order_product_id} siap dikirim",
-                    default => "Status order produk #{$orderProduct->order_product_id} diubah menjadi {$orderProduct->status_order}"
-                };
+            // Create notification for status update if status changed
+            if ($oldStatus !== $orderProduct->status_order) {
+                try {
+                    $type = NotificationType::CUSTOMER_ORDER_PRODUCT_STATUS_UPDATED;
 
-                // Notify customer
-                if ($orderProduct->customer) {
-                    $this->notificationService->create(
-                        notifiable: $orderProduct->customer,
-                        type: $type,
-                        subject: $orderProduct,
-                        message: $message,
-                        data: [
-                            'order_id' => $orderProduct->order_product_id,
-                            'status' => $orderProduct->status_order,
-                            'total' => $orderProduct->grand_total,
-                            'type' => $orderProduct->type
-                        ]
-                    );
-                }
-
-                // Notify all admins
-                $admins = Admin::where('role', 'admin')->get();
-                foreach ($admins as $admin) {
-                    $adminType = match ($orderProduct->status_order) {
-                        'selesai' => NotificationType::PRODUCT_ORDER_SHIPPED,
-                        'dikirim' => NotificationType::PRODUCT_ORDER_SHIPPED,
-                        default => NotificationType::PRODUCT_ORDER_CREATED
+                    $message = match ($orderProduct->status_order) {
+                        'selesai' => "Order produk #{$orderProduct->order_product_id} telah selesai",
+                        'diproses' => "Order produk #{$orderProduct->order_product_id} sedang diproses",
+                        'dikirim' => "Order produk #{$orderProduct->order_product_id} sedang dikirim",
+                        'menunggu' => "Order produk #{$orderProduct->order_product_id} menunggu konfirmasi",
+                        'inden' => "Order produk #{$orderProduct->order_product_id} dalam status inden",
+                        'siap_kirim' => "Order produk #{$orderProduct->order_product_id} siap dikirim",
+                        default => "Status order produk #{$orderProduct->order_product_id} diubah menjadi {$orderProduct->status_order}"
                     };
 
-                    $this->notificationService->create(
-                        notifiable: $admin,
-                        type: $adminType,
-                        subject: $orderProduct,
-                        message: "Status order produk #{$orderProduct->order_product_id} diubah menjadi {$orderProduct->status_order}",
-                        data: [
-                            'order_id' => $orderProduct->order_product_id,
-                            'customer_name' => $orderProduct->customer->name,
-                            'status' => $orderProduct->status_order,
-                            'total' => $orderProduct->grand_total,
-                            'type' => $orderProduct->type
-                        ]
-                    );
-                }
-            } catch (\Exception $e) {
-                Log::error('Failed to create order product status update notification: ' . $e->getMessage());
-            }
-        }
+                    // Notify customer
+                    if ($orderProduct->customer) {
+                        $this->notificationService->create(
+                            notifiable: $orderProduct->customer,
+                            type: $type,
+                            subject: $orderProduct,
+                            message: $message,
+                            data: [
+                                'order_id' => $orderProduct->order_product_id,
+                                'status' => $orderProduct->status_order,
+                                'total' => $orderProduct->grand_total,
+                                'type' => $orderProduct->type
+                            ]
+                        );
+                    }
 
-        return redirect()->back()
-            ->with('success', 'Status order produk berhasil diperbarui.');
+                    // Notify all admins
+                    $admins = Admin::where('role', 'admin')->get();
+                    foreach ($admins as $admin) {
+                        $adminType = match ($orderProduct->status_order) {
+                            'selesai' => NotificationType::PRODUCT_ORDER_SHIPPED,
+                            'dikirim' => NotificationType::PRODUCT_ORDER_SHIPPED,
+                            default => NotificationType::PRODUCT_ORDER_CREATED
+                        };
+
+                        $this->notificationService->create(
+                            notifiable: $admin,
+                            type: $adminType,
+                            subject: $orderProduct,
+                            message: "Status order produk #{$orderProduct->order_product_id} diubah menjadi {$orderProduct->status_order}",
+                            data: [
+                                'order_id' => $orderProduct->order_product_id,
+                                'customer_name' => $orderProduct->customer->name,
+                                'status' => $orderProduct->status_order,
+                                'total' => $orderProduct->grand_total,
+                                'type' => $orderProduct->type
+                            ]
+                        );
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to create order product status update notification: ' . $e->getMessage());
+                }
+            }
+
+            return redirect()->back()
+                ->with('success', 'Status order produk berhasil diperbarui.');
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->with('error', 'Validasi gagal: ' . collect($e->errors())->flatten()->implode(', '));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal memperbarui status order: ' . $e->getMessage());
+        }
     }
 
     public function destroy(OrderProduct $orderProduct)

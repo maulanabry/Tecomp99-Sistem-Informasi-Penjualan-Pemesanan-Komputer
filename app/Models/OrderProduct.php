@@ -165,6 +165,7 @@ class OrderProduct extends Model
         // 1) Jika status_payment = 'lunas' => selalu clear expired_date
         if ($this->status_payment === 'lunas') {
             $this->expired_date = null;
+            \Log::info("OrderProduct {$this->order_product_id}: expired_date cleared because status_payment is lunas");
             return;
         }
 
@@ -174,29 +175,45 @@ class OrderProduct extends Model
                 case 'inden':
                     if ($this->status_payment !== 'down_payment') {
                         session()->flash('error', 'Status "inden" mengharuskan status pembayaran = down_payment.');
-                        return false;
+                        throw ValidationException::withMessages([
+                            'status_order' => ['Status "inden" mengharuskan status pembayaran = down_payment.'],
+                        ]);
                     }
                     break;
 
                 case 'siap_kirim':
                     if (! in_array($this->status_payment, ['down_payment', 'lunas'])) {
                         session()->flash('error', 'Status "siap_kirim" mengharuskan status pembayaran = down_payment atau lunas.');
-                        return false;
+                        throw ValidationException::withMessages([
+                            'status_order' => ['Status "siap_kirim" mengharuskan status pembayaran = down_payment atau lunas.'],
+                        ]);
                     }
                     break;
 
                 case 'diproses':
                     if ($this->status_payment !== 'lunas') {
                         session()->flash('error', 'Status "diproses" mengharuskan pembayaran sudah lunas.');
-                        return false;
+                        throw ValidationException::withMessages([
+                            'status_order' => ['Status "diproses" mengharuskan pembayaran sudah lunas.'],
+                        ]);
                     }
                     break;
 
                 case 'dikirim':
+                    if ($this->status_payment !== 'lunas') {
+                        session()->flash('error', 'Status "dikirim" mengharuskan pembayaran sudah lunas.');
+                        throw ValidationException::withMessages([
+                            'status_order' => ['Status "dikirim" mengharuskan pembayaran sudah lunas.'],
+                        ]);
+                    }
+                    break;
+
                 case 'selesai':
                     if ($this->status_payment !== 'lunas') {
-                        session()->flash('error', "Tidak bisa mengubah status menjadi {$this->status_order} karena pembayaran belum lunas.");
-                        return false;
+                        session()->flash('error', 'Status "selesai" mengharuskan pembayaran sudah lunas.');
+                        throw ValidationException::withMessages([
+                            'status_order' => ['Status "selesai" mengharuskan pembayaran sudah lunas.'],
+                        ]);
                     }
                     break;
             }
@@ -205,20 +222,24 @@ class OrderProduct extends Model
         // 3) Aturan expired_date (hanya jika payment bukan lunas)
         if ($this->status_order === 'menunggu' && $this->status_payment === 'belum_dibayar') {
             $this->expired_date = Carbon::parse($orderDate)->addDay();
+            \Log::info("OrderProduct {$this->order_product_id}: expired_date set to {$this->expired_date} for status_order menunggu and status_payment belum_dibayar");
             return;
         }
 
         if (in_array($this->status_order, ['menunggu', 'inden']) && $this->status_payment === 'down_payment') {
             $this->expired_date = Carbon::parse($orderDate)->addDays(2);
+            \Log::info("OrderProduct {$this->order_product_id}: expired_date set to {$this->expired_date} for status_order {$this->status_order} and status_payment down_payment");
             return;
         }
 
         if ($this->status_order === 'siap_kirim' && $this->status_payment === 'down_payment') {
             $this->expired_date = $now->copy()->addDays(3);
+            \Log::info("OrderProduct {$this->order_product_id}: expired_date set to {$this->expired_date} for status_order siap_kirim and status_payment down_payment");
             return;
         }
 
         // default: clear expired_date
         $this->expired_date = null;
+        \Log::info("OrderProduct {$this->order_product_id}: expired_date cleared for status_order {$this->status_order} and status_payment {$this->status_payment}");
     }
 }

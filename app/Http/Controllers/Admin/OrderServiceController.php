@@ -13,6 +13,7 @@ use App\Enums\NotificationType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class OrderServiceController extends Controller
 {
@@ -326,6 +327,12 @@ class OrderServiceController extends Controller
 
             return redirect()->route('order-services.show', $orderService)
                 ->with('success', 'Order servis berhasil diperbarui.');
+        } catch (ValidationException $e) {
+            DB::rollback();
+            return back()
+                ->withInput()
+                ->withErrors($e->errors())
+                ->with('error', 'Validasi gagal: ' . collect($e->errors())->flatten()->implode(', '));
         } catch (\Exception $e) {
             DB::rollback();
             return back()
@@ -391,8 +398,6 @@ class OrderServiceController extends Controller
 
     public function updateStatus(Request $request, OrderService $orderService)
     {
-
-
         $validated = $request->validate([
             'status_order' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,melewati_jatuh_tempo',
         ]);
@@ -401,101 +406,78 @@ class OrderServiceController extends Controller
             DB::beginTransaction();
 
             $oldStatus = $orderService->status_order;
+            $newStatus = $validated['status_order'];
+
+            if ($oldStatus === $newStatus) {
+                return redirect()->back()
+                    ->with('info', "Status order servis sudah dalam status {$newStatus}.");
+            }
 
             // Set session flag to skip validation during sync
             session(['syncing_ticket_status' => true]);
 
-            $orderService->update($validated);
+            // Update order service status
+            $orderService->update(['status_order' => $newStatus]);
 
-            // Comprehensive status mapping between OrderService and ServiceTicket
-            $statusMapping = [
-                'menunggu' => 'menunggu',
-                'dijadwalkan' => 'dijadwalkan',
-                'menuju_lokasi' => 'menuju_lokasi',
-                'diproses' => 'diproses',
-                'menunggu_sparepart' => 'menunggu_sparepart',
-                'siap_diambil' => 'siap_diambil',
-                'diantar' => 'diantar',
-                'selesai' => 'selesai',
-                'dibatalkan' => 'dibatalkan',
-                'melewati_jatuh_tempo' => 'melewati_jatuh_tempo',
-            ];
-
-            $newTicketStatus = $statusMapping[$orderService->status_order] ?? 'menunggu';
-
-            // Update all related service tickets to match the new order status
-            if ($oldStatus !== $orderService->status_order && $orderService->tickets()->exists()) {
+            // Update related tickets
+            if ($orderService->tickets()->exists()) {
                 $tickets = $orderService->tickets()->get();
 
                 foreach ($tickets as $ticket) {
                     $ticketOldStatus = $ticket->status;
-
-                    // Update ticket status
-                    $ticket->update(['status' => $newTicketStatus]);
-
-                    // Create service action for audit trail
-                    $this->createServiceAction($ticket, $newTicketStatus, $ticketOldStatus);
+                    $ticket->update(['status' => $newStatus]);
+                    $this->createServiceAction($ticket, $newStatus, $ticketOldStatus);
                 }
             }
 
-            // Create notification for status update if status changed
-            if ($oldStatus !== $orderService->status_order) {
-                try {
-                    $type = match ($orderService->status_order) {
-                        'Selesai' => NotificationType::CUSTOMER_ORDER_SERVICE_STATUS_UPDATED,
-                        default => NotificationType::CUSTOMER_ORDER_SERVICE_STATUS_UPDATED
-                    };
+            // Notification messages
+            $customerMessages = [
+                'selesai' => "Order servis #{$orderService->order_service_id} telah selesai",
+                'diproses' => "Order servis #{$orderService->order_service_id} sedang diproses",
+                'diantar' => "Order servis #{$orderService->order_service_id} sedang diantar",
+                'siap_diambil' => "Order servis #{$orderService->order_service_id} siap diambil",
+                'dijadwalkan' => "Order servis #{$orderService->order_service_id} telah dijadwalkan",
+            ];
 
-                    $message = match ($orderService->status_order) {
-                        'selesai' => "Order servis #{$orderService->order_service_id} telah selesai",
-                        'diproses' => "Order servis #{$orderService->order_service_id} sedang diproses",
-                        'diantar' => "Order servis #{$orderService->order_service_id} sedang diantar",
-                        'siap_diambil' => "Order servis #{$orderService->order_service_id} siap diambil",
-                        'dijadwalkan' => "Order servis #{$orderService->order_service_id} telah dijadwalkan",
-                        default => "Status order servis #{$orderService->order_service_id} diubah menjadi {$orderService->status_order}"
-                    };
+            $customerMessage = $customerMessages[$newStatus]
+                ?? "Status order servis #{$orderService->order_service_id} diubah menjadi {$newStatus}";
 
-                    // Notify customer
-                    if ($orderService->customer) {
-                        $this->notificationService->create(
-                            notifiable: $orderService->customer,
-                            type: $type,
-                            subject: $orderService,
-                            message: $message,
-                            data: [
-                                'order_id' => $orderService->order_service_id,
-                                'status' => $orderService->status_order,
-                                'device' => $orderService->device,
-                                'type' => $orderService->type
-                            ]
-                        );
-                    }
+            // Notify customer
+            if ($orderService->customer) {
+                $this->notificationService->create(
+                    notifiable: $orderService->customer,
+                    type: NotificationType::CUSTOMER_ORDER_SERVICE_STATUS_UPDATED,
+                    subject: $orderService,
+                    message: $customerMessage,
+                    data: [
+                        'order_id' => $orderService->order_service_id,
+                        'status' => $newStatus,
+                        'device' => $orderService->device,
+                        'type' => $orderService->type
+                    ]
+                );
+            }
 
-                    // Notify all admins
-                    $admins = Admin::where('role', 'admin')->get();
-                    foreach ($admins as $admin) {
-                        $adminType = match ($orderService->status_order) {
-                            'selesai' => NotificationType::SERVICE_ORDER_COMPLETED,
-                            default => NotificationType::SERVICE_ORDER_STARTED
-                        };
+            // Notify all admins
+            $admins = Admin::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                $adminType = $newStatus === 'selesai'
+                    ? NotificationType::SERVICE_ORDER_COMPLETED
+                    : NotificationType::SERVICE_ORDER_STARTED;
 
-                        $this->notificationService->create(
-                            notifiable: $admin,
-                            type: $adminType,
-                            subject: $orderService,
-                            message: "Status order servis #{$orderService->order_service_id} diubah menjadi {$orderService->status_order}",
-                            data: [
-                                'order_id' => $orderService->order_service_id,
-                                'customer_name' => $orderService->customer->name,
-                                'status' => $orderService->status_order,
-                                'device' => $orderService->device,
-                                'type' => $orderService->type
-                            ]
-                        );
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Failed to create order service status update notification: ' . $e->getMessage());
-                }
+                $this->notificationService->create(
+                    notifiable: $admin,
+                    type: $adminType,
+                    subject: $orderService,
+                    message: "Status order servis #{$orderService->order_service_id} diubah menjadi {$newStatus}",
+                    data: [
+                        'order_id' => $orderService->order_service_id,
+                        'customer_name' => $orderService->customer->name,
+                        'status' => $newStatus,
+                        'device' => $orderService->device,
+                        'type' => $orderService->type
+                    ]
+                );
             }
 
             // Clear session flag
@@ -510,16 +492,21 @@ class OrderServiceController extends Controller
             }
 
             return redirect()->back()
-                ->with('success', "Status order servis berhasil diperbarui{$ticketMessage}.");
-        } catch (\Exception $e) {
-            // Clear session flag on error
+                ->with('success', "Status order servis berhasil diperbarui menjadi {$newStatus}{$ticketMessage}.");
+        } catch (ValidationException $e) {
             session()->forget('syncing_ticket_status');
-
+            DB::rollback();
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->with('error', 'Validasi gagal: ' . collect($e->errors())->flatten()->implode(', '));
+        } catch (\Exception $e) {
+            session()->forget('syncing_ticket_status');
             DB::rollback();
             return redirect()->back()
                 ->with('error', 'Gagal memperbarui status order servis: ' . $e->getMessage());
         }
     }
+
 
     public function destroy(OrderService $orderService)
     {

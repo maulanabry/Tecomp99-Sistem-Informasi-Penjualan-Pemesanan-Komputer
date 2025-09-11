@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @property string $order_service_id
@@ -460,29 +461,85 @@ class OrderService extends Model
      */
     public function updateExpiredDate()
     {
-        // If status_payment is lunas, always set expired_date to NULL
-        if ($this->status_payment === self::STATUS_PAYMENT_LUNAS) {
+        $now = Carbon::now();
+        $orderDate = $this->created_at ?? $now;
+
+        // 1) Jika status_payment = 'lunas' → clear expired_date
+        if ($this->status_payment === 'lunas') {
             $this->expired_date = null;
             return;
         }
 
-        // If status_order is selesai or diantar, set status_payment to lunas and expired_date to NULL
-        if (in_array($this->status_order, [self::STATUS_ORDER_SELESAI, self::STATUS_ORDER_DIANTAR])) {
-            $this->status_payment = self::STATUS_PAYMENT_LUNAS;
-            $this->expired_date = null;
-            return;
+        // 2) Validasi kompatibilitas status_order & status_payment
+        if ($this->isDirty('status_order') || $this->isDirty('status_payment')) {
+            switch ($this->status_order) {
+                case 'menunggu':
+                case 'dijadwalkan':
+                case 'menuju_lokasi':
+                    if ($this->status_payment !== 'belum_dibayar') {
+                        throw ValidationException::withMessages([
+                            'status_order' => ["Status {$this->status_order} mengharuskan status pembayaran = belum_dibayar."],
+                        ]);
+                    }
+                    break;
+
+                case 'diproses':
+                    if (!in_array($this->status_payment, ['belum_dibayar', 'cicilan', 'lunas'])) {
+                        throw ValidationException::withMessages([
+                            'status_order' => ["Status diproses mengharuskan pembayaran = belum_dibayar, cicilan, atau lunas."],
+                        ]);
+                    }
+                    break;
+
+                case 'menunggu_sparepart':
+                case 'siap_diambil':
+                case 'diantar':
+                    if (!in_array($this->status_payment, ['cicilan', 'lunas'])) {
+                        throw ValidationException::withMessages([
+                            'status_order' => ["Status {$this->status_order} hanya mengizinkan pembayaran cicilan atau lunas."],
+                        ]);
+                    }
+                    break;
+
+                case 'selesai':
+                    if ($this->status_payment !== 'lunas') {
+                        throw ValidationException::withMessages([
+                            'status_order' => ["Status selesai hanya bisa jika pembayaran lunas 100%."],
+                        ]);
+                    }
+                    break;
+
+                case 'melewati_jatuh_tempo':
+                    if ($this->status_payment !== 'cicilan') {
+                        throw ValidationException::withMessages([
+                            'status_order' => ["Status melewati_jatuh_tempo hanya berlaku jika sedang cicilan."],
+                        ]);
+                    }
+                    break;
+
+                    // dibatalkan → no strict requirement
+            }
         }
 
-        // If status_order is siap_diambil or diantar and status_payment is cicilan, set expired_date to updated_at + 14 days
-        if (in_array($this->status_order, [self::STATUS_ORDER_SIAP_DIAMBIL, self::STATUS_ORDER_DIANTAR]) && $this->status_payment === self::STATUS_PAYMENT_CICILAN) {
-            $updateDate = $this->updated_at ?? Carbon::now();
-            $this->expired_date = $updateDate->copy()->addDays(14);
-            return;
-        }
+        // 3) Aturan expired_date (hanya jika payment bukan lunas)
+        switch ($this->status_payment) {
+            case 'belum_dibayar':
+                // +1 day dari order dibuat
+                $this->expired_date = Carbon::parse($orderDate)->addDay();
+                break;
 
-        // For other cases, set expired_date to NULL
-        $this->expired_date = null;
+            case 'cicilan':
+                // +7 hari maksimal untuk cicilan berikutnya
+                $this->expired_date = Carbon::parse($orderDate)->addDays(7);
+                break;
+
+            default:
+                // clear expired_date untuk lunas atau dibatalkan
+                $this->expired_date = null;
+                break;
+        }
     }
+
 
     /**
      * Get the promo applied to this order (if any).
