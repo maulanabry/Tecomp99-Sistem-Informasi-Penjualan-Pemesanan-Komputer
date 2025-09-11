@@ -144,11 +144,15 @@ $(document).ready(function () {
 // Order type and shipping cost logic
 $("#order_type").on("change", async function () {
     const isDelivery = $(this).val() === "Pengiriman";
+    console.log("Order type changed to:", $(this).val());
+    console.log("Is delivery:", isDelivery);
 
     if (isDelivery) {
+        console.log("Showing shipping container");
         $("#shippingCostContainer").removeClass("hidden");
         $("#checkOngkirBtn").parent().removeClass("hidden");
     } else {
+        console.log("Hiding shipping container");
         $("#shippingCostContainer").addClass("hidden");
         $("#checkOngkirBtn").parent().addClass("hidden");
         $("#shipping_cost").val("0");
@@ -161,6 +165,27 @@ $("#order_type").on("change", async function () {
                 error
             );
         });
+    }
+});
+
+// Initial check for order type
+$(document).ready(function () {
+    const initialValue = $("#order_type").val();
+    console.log("Initial order type value:", initialValue);
+    const isDelivery = initialValue === "Pengiriman";
+    console.log("Initial is delivery:", isDelivery);
+
+    if (isDelivery) {
+        console.log("Initial: showing shipping container");
+        $("#shippingCostContainer").removeClass("hidden");
+        $("#checkOngkirBtn").parent().removeClass("hidden");
+    } else {
+        console.log("Initial: hiding shipping container");
+        $("#shippingCostContainer").addClass("hidden");
+        $("#checkOngkirBtn").parent().addClass("hidden");
+        $("#shipping_cost").val("0");
+        $("#shipping_cost_hidden").val(0);
+        $("#shippingCostDisplay").text("Rp 0");
     }
 });
 
@@ -932,25 +957,37 @@ $("#orderForm").validate({
 
 // On form submit, validate and prepare data
 $("#orderForm").on("submit", async function (e) {
+    // Ensure totals are calculated and items are updated
+    try {
+        await calculateTotals();
+    } catch (error) {
+        console.error("Error calculating totals:", error);
+        utils.showError("Error calculating totals: " + error.message);
+        e.preventDefault();
+        return;
+    }
+
     // Convert formatted values before validation
     try {
-        const discountRawValue = $("#discount_amount")
-            .val()
-            .replace(/[^\d]/g, "");
+        const discountRawValue =
+            $("#discount_amount").val().replace(/[^\d]/g, "") || "0";
         $("#discount_amount").val(discountRawValue);
 
         const shippingRawValue = $("#shipping_cost_hidden").val();
         $("#shipping_cost").val(shippingRawValue);
     } catch (error) {
         console.error("Error converting values:", error);
+        utils.showError("Error converting values: " + error.message);
+        e.preventDefault();
+        return;
     }
 
     // Validate at least one product
     if ($("#productItemsTableBody tr").length === 0) {
-        e.preventDefault();
         utils.showError(
             "Harap tambahkan setidaknya satu produk ke dalam pesanan."
         );
+        e.preventDefault();
         return;
     }
 
@@ -965,12 +1002,13 @@ $("#orderForm").on("submit", async function (e) {
     });
 
     if (hasInvalidQuantity) {
-        e.preventDefault();
         utils.showError("Kuantitas produk harus lebih dari 0.");
+        e.preventDefault();
         return;
     }
 
-    // Form will submit normally
+    // Submit the form
+    this.submit();
 });
 
 // Export modules and functions for external use

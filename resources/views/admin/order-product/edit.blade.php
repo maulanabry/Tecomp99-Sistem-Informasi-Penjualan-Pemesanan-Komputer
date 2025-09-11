@@ -241,7 +241,7 @@
                     <div class="mb-4">
                         <label for="discount_amount" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Jumlah Diskon (Rp)</label>
                         <input type="text" id="discount_amount" name="discount_amount"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"                
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                             value="{{ number_format($orderProduct->discount_amount ?? 0, 0, ',', '.') }}"
                             data-currency="true">
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Admin dapat mengubah jumlah diskon secara manual. Gunakan format: 10.000 untuk sepuluh ribu</p>
@@ -428,8 +428,51 @@
 
                     // The discount functionality is handled by the existing editOrderProduct.js file
                     // No additional discount handling needed here
+                },
+
+                // Handle order type change to show/hide shipping cost section
+                handleOrderTypeChange() {
+                    const orderType = document.getElementById('order_type').value;
+                    const isPengiriman = orderType === 'Pengiriman';
+                    const container = document.getElementById('shippingCostContainer');
+                    if (container) {
+                        container.classList.toggle('hidden', !isPengiriman);
+                    }
                 }
             }
         }
+
+        // Initialize order type change handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderTypeSelect = document.getElementById('order_type');
+            if (orderTypeSelect) {
+                console.log('Order type select found, adding change listener');
+                orderTypeSelect.addEventListener('change', function() {
+                    console.log('Order type changed to:', this.value);
+                    const isPengiriman = this.value === 'Pengiriman';
+                    console.log('Is Pengiriman:', isPengiriman);
+                    const container = document.getElementById('shippingCostContainer');
+                    if (container) {
+                        console.log('Container found, toggling hidden class');
+                        container.classList.toggle('hidden', !isPengiriman);
+                        console.log('Container classes after toggle:', container.className);
+                    } else {
+                        console.error('Shipping cost container not found!');
+                    }
+                });
+
+                // Also handle initial state
+                const initialValue = orderTypeSelect.value;
+                console.log('Initial order type value:', initialValue);
+                const isInitialPengiriman = initialValue === 'Pengiriman';
+                const container = document.getElementById('shippingCostContainer');
+                if (container) {
+                    container.classList.toggle('hidden', !isInitialPengiriman);
+                    console.log('Initial container classes:', container.className);
+                }
+            } else {
+                console.error('Order type select not found!');
+            }
+        });
     </script>
 </x-layout-admin>

@@ -259,7 +259,7 @@ class OrderProductController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,customer_id',
             'order_type' => 'required|in:Pengiriman,Langsung',
-            'status_order' => 'required|in:menunggu,inden,siap_kirim,diproses,dikirim,selesai,dibatalkan',
+            'status_order' => 'required|in:menunggu,inden,siap_kirim,diproses,dikirim,selesai,dibatalkan,melewati_jatuh_tempo',
             'items' => 'required|json',
             'shipping_cost' => 'nullable|integer|min:0',
             'discount_amount' => 'nullable|integer|min:0',
@@ -449,7 +449,7 @@ class OrderProductController extends Controller
     public function updateStatus(Request $request, OrderProduct $orderProduct)
     {
         $validated = $request->validate([
-            'status_order' => 'required|in:Menunggu,Inden,Siap_Kirim,Diproses,Dikirim,Selesai,Dibatalkan,Melewati_jatuh_tempo',
+            'status_order' => 'required|in:menunggu,inden,siap_kirim,diproses,dikirim,selesai,dibatalkan,melewati_jatuh_tempo',
         ]);
 
         $oldStatus = $orderProduct->status_order;
