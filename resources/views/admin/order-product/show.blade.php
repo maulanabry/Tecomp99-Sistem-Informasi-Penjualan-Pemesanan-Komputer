@@ -25,12 +25,14 @@
                     </p>
                 </div>
                 <div class="flex space-x-3">
-                    <a href="{{ route('order-products.edit', $orderProduct) }}" 
+                    @if($orderProduct->status_payment !== 'lunas')
+                    <a href="{{ route('order-products.edit', $orderProduct) }}"
                         class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                         <i class="fas fa-edit mr-2"></i>
                         Edit Order
                     </a>
-                    <a href="{{ route('order-products.index') }}" 
+                    @endif
+                    <a href="{{ route('order-products.index') }}"
                         class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
@@ -171,6 +173,63 @@
                                 <div class="md:col-span-2">
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Catatan</dt>
                                     <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $orderProduct->note }}</dd>
+                                </div>
+                                @endif
+                                @if($orderProduct->expired_date)
+                                <div class="md:col-span-2">
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Batas Waktu Pembayaran</dt>
+                                    <dd class="mt-1">
+                                        @php
+                                            $now = \Carbon\Carbon::now();
+                                            $expiredDate = \Carbon\Carbon::parse($orderProduct->expired_date);
+                                            $isExpired = $now->gt($expiredDate);
+                                            $daysLeft = $now->diffInDays($expiredDate, false);
+                                        @endphp
+                                        <div class="flex items-center space-x-2">
+                                            @if($isExpired)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                    Sudah Melewati Jatuh Tempo
+                                                </span>
+                                            @elseif($daysLeft <= 1)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    Segera Jatuh Tempo
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    Masih Berlaku
+                                                </span>
+                                            @endif
+                                            <span class="text-sm text-gray-900 dark:text-gray-100">
+                                                {{ $expiredDate->format('d F Y H:i') }}
+                                                @if(!$isExpired && $daysLeft > 0)
+                                                    @if($daysLeft < 1)
+                                                        (kurang dari 1 hari lagi)
+                                                    @else
+                                                        ({{ ceil($daysLeft) }} hari lagi)
+                                                    @endif
+                                                @endif
+                                            </span>
+                                        </div>
+                                        @if($isExpired || $daysLeft <= 1)
+                                            <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                                                <div class="flex">
+                                                    <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5 mr-2"></i>
+                                                    <div>
+                                                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                                            @if($isExpired)
+                                                                Order ini sudah melewati batas waktu pembayaran. Segera hubungi customer untuk mengingatkan pembayaran.
+                                                            @else
+                                                                Order ini akan segera jatuh tempo. Pastikan customer menyelesaikan pembayaran sebelum tanggal tersebut.
+                                                            @endif
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </dd>
                                 </div>
                                 @endif
                             </dl>
@@ -512,34 +571,55 @@
                     </div>
 
                     <!-- Batas Waktu Pembayaran -->
-                    @if($orderProduct->status_order === 'selesai')
-                        @php
-                            $expiredPayment = $orderProduct->payments->whereNotNull('expired_date')->first();
-                        @endphp
-                        @if($expiredPayment)
-                            <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                        <i class="fas fa-clock mr-2 text-primary-500"></i>
-                                        Batas Waktu Pembayaran
-                                    </h3>
-                                </div>
-                                <div class="p-6">
-                                    @php
-                                        $isExpired = \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($expiredPayment->expired_date));
-                                    @endphp
-                                    <div class="flex items-center">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $isExpired ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' }}">
-                                            <i class="fas {{ $isExpired ? 'fa-times' : 'fa-check' }} mr-1"></i>
-                                            {{ $isExpired ? 'Melewati Jatuh Tempo' : 'Masih Berlaku' }}
-                                        </span>
-                                        <span class="ml-4 text-sm text-gray-900 dark:text-gray-100">
-                                            {{ \Carbon\Carbon::parse($expiredPayment->expired_date)->format('d F Y H:i') }}
-                                        </span>
-                                    </div>
-                                </div>
+                    @if($orderProduct->expired_date)
+                        <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                    <i class="fas fa-clock mr-2 text-primary-500"></i>
+                                    Batas Waktu Pembayaran
+                                </h3>
                             </div>
-                        @endif
+                            <div class="p-6">
+                                @php
+                                    $now = \Carbon\Carbon::now();
+                                    $expiredDate = \Carbon\Carbon::parse($orderProduct->expired_date);
+                                    $isExpired = $now->gt($expiredDate);
+                                    $daysLeft = $now->diffInDays($expiredDate, false);
+                                @endphp
+                                <div class="flex items-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $isExpired ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : ($daysLeft <= 1 ? 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100') }}">
+                                        <i class="fas {{ $isExpired ? 'fa-times' : ($daysLeft <= 1 ? 'fa-exclamation-triangle' : 'fa-check') }} mr-1"></i>
+                                        {{ $isExpired ? 'Melewati Jatuh Tempo' : ($daysLeft <= 1 ? 'Segera Jatuh Tempo' : 'Masih Berlaku') }}
+                                    </span>
+                                    <span class="ml-4 text-sm text-gray-900 dark:text-gray-100">
+                                        {{ $expiredDate->format('d F Y H:i') }}
+                                        @if(!$isExpired && $daysLeft > 0)
+                                            @if($daysLeft < 1)
+                                                (kurang dari 1 hari lagi)
+                                            @else
+                                                ({{ ceil($daysLeft) }} hari lagi)
+                                            @endif
+                                        @endif
+                                    </span>
+                                </div>
+                                @if($isExpired || $daysLeft <= 1)
+                                    <div class="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                                        <div class="flex">
+                                            <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5 mr-2"></i>
+                                            <div>
+                                                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                                    @if($isExpired)
+                                                        Order ini sudah melewati batas waktu pembayaran. Segera hubungi customer untuk mengingatkan pembayaran.
+                                                    @else
+                                                        Order ini akan segera jatuh tempo. Pastikan customer menyelesaikan pembayaran sebelum tanggal tersebut.
+                                                    @endif
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
                     @endif
 
                     <!-- Order Summary -->
@@ -604,11 +684,13 @@
                             </h3>
                         </div>
                         <div class="p-6 space-y-3">
-                            <a href="{{ route('order-products.edit', $orderProduct) }}" 
+                            @if($orderProduct->status_payment !== 'lunas')
+                            <a href="{{ route('order-products.edit', $orderProduct) }}"
                                 class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                 <i class="fas fa-edit mr-2"></i>
                                 Edit Order
                             </a>
+                            @endif
                             
                             @if($orderProduct->type === 'pengiriman')
                                 <a href="{{ route('order-products.edit-shipping', $orderProduct) }}" 

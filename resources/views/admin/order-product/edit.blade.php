@@ -154,19 +154,7 @@
                             * Pilih "Pengiriman" untuk menghitung ongkos kirim JNE REG
                         </div>
                     </div>
-                    <div>
-                        <label for="status_order" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Status Pesanan</label>
-                        <select id="status_order" name="status_order" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-                            <option value="menunggu" {{ $orderProduct->status_order == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                            <option value="inden" {{ $orderProduct->status_order == 'inden' ? 'selected' : '' }}>Inden</option>
-                            <option value="siap_kirim" {{ $orderProduct->status_order == 'siap_kirim' ? 'selected' : '' }}>Siap Kirim</option>
-                            <option value="diproses" {{ $orderProduct->status_order == 'diproses' ? 'selected' : '' }}>Diproses</option>
-                            <option value="dikirim" {{ $orderProduct->status_order == 'dikirim' ? 'selected' : '' }}>Dikirim</option>
-                            <option value="selesai" {{ $orderProduct->status_order == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                            <option value="dibatalkan" {{ $orderProduct->status_order == 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
-                            <option value="melewati_jatuh_tempo" {{ $orderProduct->status_order == 'melewati_jatuh_tempo' ? 'selected' : '' }}>Melewati Jatuh Tempo</option>
-                        </select>
-                    </div>
+
                 </div>
                 <div id="shippingCostContainer" class="mt-4 {{ $orderProduct->type == 'pengiriman' ? '' : 'hidden' }}">
                     <label for="shipping_cost" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Ongkos Kirim (Rp)</label>

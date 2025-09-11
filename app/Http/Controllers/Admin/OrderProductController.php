@@ -259,7 +259,6 @@ class OrderProductController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,customer_id',
             'order_type' => 'required|in:Pengiriman,Langsung',
-            'status_order' => 'required|in:menunggu,inden,siap_kirim,diproses,dikirim,selesai,dibatalkan,melewati_jatuh_tempo',
             'items' => 'required|json',
             'shipping_cost' => 'nullable|integer|min:0',
             'discount_amount' => 'nullable|integer|min:0',
@@ -352,12 +351,8 @@ class OrderProductController extends Controller
             $grandTotal = $subtotal + $shippingCost - $discount;
 
             // Update order product
-            // Store previous status for comparison
-            $previousStatus = $orderProduct->status_order;
-
             $orderProduct->update([
                 'customer_id' => $validated['customer_id'],
-                'status_order' => $validated['status_order'],
                 'sub_total' => $subtotal,
                 'discount_amount' => $discount,
                 'shipping_cost' => $shippingCost,
@@ -367,10 +362,7 @@ class OrderProductController extends Controller
                 'warranty_period_months' => $validated['warranty_period_months'] ?? null,
             ]);
 
-            // If order is being completed, set warranty expiration
-            if ($previousStatus !== 'selesai' && $validated['status_order'] === 'selesai') {
-                $orderProduct->updateWarrantyExpiration(now());
-            }
+            // Warranty expiration is handled separately, not tied to status changes in edit form
 
             // Update payment status
             $orderProduct->updatePaymentStatus();
@@ -448,6 +440,8 @@ class OrderProductController extends Controller
 
     public function updateStatus(Request $request, OrderProduct $orderProduct)
     {
+
+
         $validated = $request->validate([
             'status_order' => 'required|in:menunggu,inden,siap_kirim,diproses,dikirim,selesai,dibatalkan,melewati_jatuh_tempo',
         ]);

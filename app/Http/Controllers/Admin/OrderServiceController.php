@@ -391,6 +391,8 @@ class OrderServiceController extends Controller
 
     public function updateStatus(Request $request, OrderService $orderService)
     {
+
+
         $validated = $request->validate([
             'status_order' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,melewati_jatuh_tempo',
         ]);

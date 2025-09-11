@@ -118,6 +118,7 @@ class OrderService extends Model
         'assigned_admin_id',
         'visit_slot',
         'visit_date',
+        'expired_date',
     ];
 
     protected $casts = [
@@ -125,6 +126,7 @@ class OrderService extends Model
         'last_payment_at' => 'datetime',
         'estimated_completion' => 'datetime',
         'visit_date' => 'date',
+        'expired_date' => 'datetime',
         'paid_amount' => 'decimal:2',
         'remaining_balance' => 'decimal:2',
         'sub_total' => 'decimal:2',
@@ -151,6 +153,13 @@ class OrderService extends Model
             if (!$order->exists) {
                 $order->paid_amount = $order->paid_amount ?? 0;
                 $order->remaining_balance = $order->grand_total - ($order->paid_amount ?? 0);
+                $order->status_payment = $order->status_payment ?? self::STATUS_PAYMENT_BELUM_DIBAYAR;
+                $order->expired_date = null; // As per rules
+            }
+
+            // Update expired_date based on rules
+            if (!$order->exists || $order->isDirty('status_order') || $order->isDirty('status_payment')) {
+                $order->updateExpiredDate();
             }
         });
 
@@ -444,6 +453,35 @@ class OrderService extends Model
         $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
 
         return "TKT{$date}{$newNumber}";
+    }
+
+    /**
+     * Update expired_date based on current status and rules
+     */
+    public function updateExpiredDate()
+    {
+        // If status_payment is lunas, always set expired_date to NULL
+        if ($this->status_payment === self::STATUS_PAYMENT_LUNAS) {
+            $this->expired_date = null;
+            return;
+        }
+
+        // If status_order is selesai or diantar, set status_payment to lunas and expired_date to NULL
+        if (in_array($this->status_order, [self::STATUS_ORDER_SELESAI, self::STATUS_ORDER_DIANTAR])) {
+            $this->status_payment = self::STATUS_PAYMENT_LUNAS;
+            $this->expired_date = null;
+            return;
+        }
+
+        // If status_order is siap_diambil or diantar and status_payment is cicilan, set expired_date to updated_at + 14 days
+        if (in_array($this->status_order, [self::STATUS_ORDER_SIAP_DIAMBIL, self::STATUS_ORDER_DIANTAR]) && $this->status_payment === self::STATUS_PAYMENT_CICILAN) {
+            $updateDate = $this->updated_at ?? Carbon::now();
+            $this->expired_date = $updateDate->copy()->addDays(14);
+            return;
+        }
+
+        // For other cases, set expired_date to NULL
+        $this->expired_date = null;
     }
 
     /**

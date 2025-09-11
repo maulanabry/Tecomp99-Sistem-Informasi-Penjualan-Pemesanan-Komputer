@@ -83,5 +83,22 @@ class OrderServiceObserver
                 ]
             );
         }
+
+        // Check if expired_date is set and notify about payment deadline
+        if ($orderService->isDirty('expired_date') && $orderService->expired_date) {
+            $this->notificationService->create(
+                notifiable: $customer,
+                type: NotificationType::CUSTOMER_ORDER_SERVICE_STATUS_UPDATED,
+                subject: $orderService,
+                message: "Batas waktu pembayaran untuk pesanan servis #{$orderService->order_service_id} adalah: " . $orderService->expired_date->format('d F Y H:i'),
+                data: [
+                    'order_id' => $orderService->order_service_id,
+                    'device' => $orderService->device,
+                    'expired_date' => $orderService->expired_date->toISOString(),
+                    'type' => 'servis',
+                    'action_url' => route('customer.orders.services.show', $orderService->order_service_id)
+                ]
+            );
+        }
     }
 }
