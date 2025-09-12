@@ -166,7 +166,7 @@ class OrderService extends Model
 
         static::updated(function ($order) {
             // Sinkronisasi status dengan ServiceTicket ketika status_order berubah
-            if ($order->isDirty('status_order')) {
+            if ($order->isDirty('status_order') && !session('updating_ticket_status', false)) {
                 $order->syncServiceTicketStatus();
             }
         });
@@ -483,11 +483,23 @@ class OrderService extends Model
                     break;
 
                 case 'menunggu_sparepart':
-                case 'siap_diambil':
-                case 'diantar':
                     if (!in_array($this->status_payment, ['cicilan', 'lunas'])) {
                         throw ValidationException::withMessages([
                             'status_order' => ["Status {$this->status_order} hanya mengizinkan pembayaran cicilan atau lunas."],
+                        ]);
+                    }
+                    break;
+                case 'siap_diambil':
+                    if (!in_array($this->status_payment, ['cicilan', 'lunas', 'belum_dibayar'])) {
+                        throw ValidationException::withMessages([
+                            'status_order' => ["Status {$this->status_order} hanya mengizinkan pembayaran = belum_dibayar, cicilan, atau lunas"],
+                        ]);
+                    }
+                    break;
+                case 'diantar':
+                    if (!in_array($this->status_payment, ['lunas'])) {
+                        throw ValidationException::withMessages([
+                            'status_order' => ["Status {$this->status_order} hanya mengizinkan pembayaran  lunas."],
                         ]);
                     }
                     break;
@@ -501,9 +513,9 @@ class OrderService extends Model
                     break;
 
                 case 'melewati_jatuh_tempo':
-                    if ($this->status_payment !== 'cicilan') {
+                    if ($this->status_payment !== ['cicilan', 'belum_dibayar']) {
                         throw ValidationException::withMessages([
-                            'status_order' => ["Status melewati jatuh_tempo hanya berlaku jika sedang cicilan."],
+                            'status_order' => ["Status melewati jatuh_tempo hanya berlaku jika sedang cicilan atau belum dibayar."],
                         ]);
                     }
                     break;
@@ -515,9 +527,10 @@ class OrderService extends Model
         // 3) Aturan expired_date (hanya jika payment bukan lunas)
         switch ($this->status_payment) {
             case 'belum_dibayar':
-                // hanya berlaku jika status_order = diproses atau menunggu_sparepart
-                if (in_array($this->status_order, ['diproses', 'menunggu_sparepart'])) {
-                    $this->expired_date = Carbon::parse($orderDate)->addDay();
+                if (in_array($this->status_order, ['menunggu_sparepart'])) {
+                    $this->expired_date = Carbon::parse($now)->addDay(2);
+                } else if (in_array($this->status_order, ['siap_diambil'])) {
+                    $this->expired_date = Carbon::parse($now)->addDay(14);
                 } else {
                     $this->expired_date = null;
                 }
@@ -526,7 +539,7 @@ class OrderService extends Model
             case 'cicilan':
                 // hanya berlaku jika status_order = siap_diambil
                 if ($this->status_order === 'siap_diambil') {
-                    $this->expired_date = Carbon::parse($orderDate)->addDays(7);
+                    $this->expired_date = Carbon::parse($now)->addDays(14);
                 } else {
                     $this->expired_date = null;
                 }
@@ -536,6 +549,26 @@ class OrderService extends Model
                 // clear expired_date untuk lunas atau dibatalkan
                 $this->expired_date = null;
                 break;
+        }
+    }
+
+    // Mengecek Apakah order sudah melewati expired_date
+    public function checkExpiredStatus()
+    {
+        if ($this->expired_date && $this->expired_date->isPast()) {
+            if (in_array($this->status_payment, [
+                self::STATUS_PAYMENT_BELUM_DIBAYAR,
+                self::STATUS_PAYMENT_CICILAN
+            ])) {
+                if ($this->status_order !== self::STATUS_ORDER_MELEWATI_JATUH_TEMPO) {
+                    $this->update([
+                        'status_order' => self::STATUS_ORDER_MELEWATI_JATUH_TEMPO
+
+                    ]);
+                    // Sinkronisasi status tiket servis jika order melewati jatuh tempo
+                    $this->syncServiceTicketStatus();
+                }
+            }
         }
     }
 
