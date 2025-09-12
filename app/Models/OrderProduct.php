@@ -67,6 +67,21 @@ class OrderProduct extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    // Status constants
+    const STATUS_ORDER_MENUNGGU = 'menunggu';
+    const STATUS_ORDER_INDEN = 'inden';
+    const STATUS_ORDER_SIAP_KIRIM = 'siap_kirim';
+    const STATUS_ORDER_DIPROSES = 'diproses';
+    const STATUS_ORDER_DIKIRIM = 'dikirim';
+    const STATUS_ORDER_SELESAI = 'selesai';
+    const STATUS_ORDER_DIBATALKAN = 'dibatalkan';
+    const STATUS_ORDER_MELEWATI_JATUH_TEMPO = 'melewati_jatuh_tempo';
+
+    const STATUS_PAYMENT_BELUM_DIBAYAR = 'belum_dibayar';
+    const STATUS_PAYMENT_DOWN_PAYMENT = 'down_payment';
+    const STATUS_PAYMENT_LUNAS = 'lunas';
+    const STATUS_PAYMENT_DIBATALKAN = 'dibatalkan';
+
     protected $fillable = [
         'order_product_id',
         'customer_id',
@@ -241,5 +256,121 @@ class OrderProduct extends Model
         // default: clear expired_date
         $this->expired_date = null;
         \Log::info("OrderProduct {$this->order_product_id}: expired_date cleared for status_order {$this->status_order} and status_payment {$this->status_payment}");
+    }
+
+    /**
+     * Check if payment can be made for this order
+     */
+    public function canAcceptPayment()
+    {
+        return !in_array($this->status_payment, ['lunas', 'dibatalkan']);
+    }
+
+    /**
+     * Update payment status and amounts based on related payments
+     */
+    public function updatePaymentStatus()
+    {
+        $paidAmount = $this->paymentDetails()->where('status', 'dibayar')->sum('amount');
+        $this->paid_amount = $paidAmount;
+        $this->remaining_balance = max(0, $this->grand_total - $paidAmount);
+        $lastPaymentDate = $this->paymentDetails()->where('status', 'dibayar')->latest('created_at')->value('created_at');
+        $this->last_payment_at = $lastPaymentDate ? Carbon::parse($lastPaymentDate) : null;
+
+        if ($paidAmount >= $this->grand_total) {
+            $this->status_payment = self::STATUS_PAYMENT_LUNAS;
+        } elseif ($paidAmount > 0) {
+            // For OrderProduct, we use 'down_payment' instead of 'cicilan'
+            $this->status_payment = self::STATUS_PAYMENT_DOWN_PAYMENT;
+        } else {
+            $this->status_payment = self::STATUS_PAYMENT_BELUM_DIBAYAR;
+        }
+        $this->save();
+    }
+
+    /**
+     * Validate payment amount and type
+     */
+    public function validatePayment($amount, $paymentType)
+    {
+        $errors = [];
+
+        if (!$this->canAcceptPayment()) {
+            $errors[] = 'Pembayaran tidak dapat dilakukan untuk pesanan yang sudah lunas atau dibatalkan.';
+            return $errors;
+        }
+
+        if ($paymentType === 'full' && $amount < $this->remaining_balance) {
+            $errors[] = 'Total pembayaran tidak mencukupi untuk pelunasan penuh. Minimum: Rp ' . number_format($this->remaining_balance, 0, ',', '.');
+        }
+
+        if ($amount <= 0) {
+            $errors[] = 'Jumlah pembayaran harus lebih dari 0.';
+        }
+
+        // Validate down payment for product orders (must be exactly 50%)
+        if ($paymentType === 'down_payment') {
+            $expectedDP = round($this->grand_total * 0.5);
+            if ($amount != $expectedDP) {
+                $errors[] = "Down Payment untuk produk harus tepat 50% dari total (Rp " . number_format($expectedDP, 0, ',', '.') . ").";
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Process payment and update order status
+     */
+    public function processPayment($amount, $paymentType)
+    {
+        $this->paid_amount += $amount;
+        $this->remaining_balance = max(0, $this->grand_total - $this->paid_amount);
+        $this->last_payment_at = now();
+
+        // Calculate change if overpayment
+        $changeReturned = 0;
+        if ($this->paid_amount > $this->grand_total) {
+            $changeReturned = $this->paid_amount - $this->grand_total;
+            $this->paid_amount = $this->grand_total;
+            $this->remaining_balance = 0;
+        }
+
+        // Update payment status
+        if ($this->remaining_balance <= 0) {
+            $this->status_payment = self::STATUS_PAYMENT_LUNAS;
+        } elseif ($this->paid_amount > 0) {
+            $this->status_payment = self::STATUS_PAYMENT_DOWN_PAYMENT;
+        } else {
+            $this->status_payment = self::STATUS_PAYMENT_BELUM_DIBAYAR;
+        }
+
+        $this->save();
+
+        return $changeReturned;
+    }
+
+    /**
+     * Get warranty status information
+     */
+    public function getWarrantyStatusAttribute()
+    {
+        if (!$this->warranty_expired_at) {
+            return ['status' => 'no_warranty', 'message' => 'Tidak ada garansi'];
+        }
+
+        $now = Carbon::now();
+        $expiry = Carbon::parse($this->warranty_expired_at);
+
+        if ($expiry->isPast()) {
+            return ['status' => 'melewati_jatuh_tempo', 'message' => 'Garansi sudah habis'];
+        }
+
+        $daysLeft = $now->diffInDays($expiry);
+        if ($daysLeft <= 30) {
+            return ['status' => 'expiring_soon', 'message' => "{$daysLeft} hari lagi habis garansi"];
+        }
+
+        return ['status' => 'active', 'message' => "Garansi berlaku sampai {$expiry->format('d/m/Y')}"];
     }
 }

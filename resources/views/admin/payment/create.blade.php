@@ -166,7 +166,17 @@
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Rincian Pembayaran</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+                    <div>
+                        <label for="payment_type" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                            Tipe Pembayaran <span class="text-red-500">*</span>
+                        </label>
+                        <select id="payment_type" name="payment_type" required
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="">Pilih tipe pembayaran</option>
+                            <option value="full">Full</option>
+                            <option value="down_payment">Down Payment</option>
+                        </select>
+                    </div>
                     <div>
                         <label for="method" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Metode Pembayaran <span class="text-red-500">*</span>
@@ -176,6 +186,7 @@
                             <option value="">Pilih metode pembayaran</option>
                             <option value="Tunai">Tunai</option>
                             <option value="Bank BCA">Bank BCA</option>
+                             <option value="QRIS">QRIS</option>
                         </select>
                     </div>
 
@@ -219,17 +230,7 @@
                             data-currency="true">
                     </div>
 
-                    <div>
-                        <label for="payment_type" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                            Tipe Pembayaran <span class="text-red-500">*</span>
-                        </label>
-                        <select id="payment_type" name="payment_type" required
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                            <option value="">Pilih tipe pembayaran</option>
-                            <option value="full">Full</option>
-                            <option value="down_payment">Down Payment</option>
-                        </select>
-                    </div>
+
 
                     <div>
                         <label for="warranty_period_months" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">

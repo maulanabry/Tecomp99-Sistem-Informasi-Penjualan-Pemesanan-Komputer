@@ -65,7 +65,8 @@ class PaymentDetail extends Model
 
     const PAYMENT_METHODS = [
         'Tunai' => 'Tunai',
-        'Bank BCA' => 'Bank BCA'
+        'Bank BCA' => 'Bank BCA',
+        'QRIS' => 'QRIS'
     ];
 
     const PAYMENT_TYPES = [
