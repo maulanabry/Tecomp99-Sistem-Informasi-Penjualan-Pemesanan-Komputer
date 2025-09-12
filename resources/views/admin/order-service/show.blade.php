@@ -73,19 +73,19 @@
                                             {{ str_replace('_', ' ', ucfirst($orderService->status_order)) }}
                                         </span>
                                     </label>
-                                    <select name="status_order" id="status_order" required
-                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
-                                        <option value="Menunggu" {{ $orderService->status_order === 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                        <option value="Dijadwalkan" {{ $orderService->status_order === 'Dijadwalkan' ? 'selected' : '' }}>Dijadwalkan</option>
-                                        <option value="Menuju_lokasi" {{ $orderService->status_order === 'Menuju_lokasi' ? 'selected' : '' }}>Menuju Lokasi</option>
-                                        <option value="Diproses" {{ $orderService->status_order === 'Diproses' ? 'selected' : '' }}>Diproses</option>
-                                        <option value="Menunggu_sparepart" {{ $orderService->status_order === 'Menunggu_sparepart' ? 'selected' : '' }}>Menunggu Sparepart</option>
-                                        <option value="Siap_diambil" {{ $orderService->status_order === 'Siap_diambil' ? 'selected' : '' }}>Siap Diambil</option>
-                                        <option value="Diantar" {{ $orderService->status_order === 'Diantar' ? 'selected' : '' }}>Diantar</option>
-                                        <option value="Selesai" {{ $orderService->status_order === 'Selesai' ? 'selected' : '' }}>Selesai</option>
-                                        <option value="Dibatalkan" {{ $orderService->status_order === 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
-                                        <option value="Melewati_jatuh_tempo" {{ $orderService->status_order === 'Melewati_jatuh_tempo' ? 'selected' : '' }}>Melewati Jatuh Tempo</option>
-                                    </select>
+        <select name="status_order" id="status_order" required
+            class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+            <option value="menunggu" {{ $orderService->status_order === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+            <option value="dijadwalkan" {{ $orderService->status_order === 'dijadwalkan' ? 'selected' : '' }}>Dijadwalkan</option>
+            <option value="menuju_lokasi" {{ $orderService->status_order === 'menuju_lokasi' ? 'selected' : '' }}>Menuju Lokasi</option>
+            <option value="diproses" {{ $orderService->status_order === 'diproses' ? 'selected' : '' }}>Diproses</option>
+            <option value="menunggu_sparepart" {{ $orderService->status_order === 'menunggu_sparepart' ? 'selected' : '' }}>Menunggu Sparepart</option>
+            <option value="siap_diambil" {{ $orderService->status_order === 'siap_diambil' ? 'selected' : '' }}>Siap Diambil</option>
+            <option value="diantar" {{ $orderService->status_order === 'diantar' ? 'selected' : '' }}>Diantar</option>
+            <option value="selesai" {{ $orderService->status_order === 'selesai' ? 'selected' : '' }}>Selesai</option>
+            <option value="dibatalkan" {{ $orderService->status_order === 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+            <option value="melewati_jatuh_tempo" {{ $orderService->status_order === 'melewati_jatuh_tempo' ? 'selected' : '' }}>Melewati Jatuh Tempo</option>
+        </select>
                                 </div>
                                 <button type="submit" 
                                     class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">

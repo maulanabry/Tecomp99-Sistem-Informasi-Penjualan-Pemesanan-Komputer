@@ -93,22 +93,8 @@ class ServiceTicket extends Model
             }
 
             if ($ticket->orderService) {
-                // Map lowercase ticket status to uppercase order status for comparison
-                $statusMapping = [
-                    'menunggu' => 'Menunggu',
-                    'dijadwalkan' => 'Dijadwalkan',
-                    'menuju_lokasi' => 'Menuju_lokasi',
-                    'diproses' => 'Diproses',
-                    'menunggu_sparepart' => 'Menunggu_sparepart',
-                    'siap_diambil' => 'Siap_diambil',
-                    'diantar' => 'Diantar',
-                    'selesai' => 'Selesai',
-                    'dibatalkan' => 'Dibatalkan',
-                    'melewati_jatuh_tempo' => 'Melewati_jatuh_tempo',
-                ];
-
-                $mappedOrderStatus = $statusMapping[$ticket->status] ?? $ticket->status;
-                if ($mappedOrderStatus !== $ticket->orderService->status_order) {
+                // Compare statuses case-insensitively since both should be lowercase
+                if (strtolower($ticket->status) !== strtolower($ticket->orderService->status_order)) {
                     throw new \Exception('Status tiket servis harus sesuai dengan status order servis terkait.');
                 }
             }
@@ -121,22 +107,8 @@ class ServiceTicket extends Model
             }
 
             if ($ticket->orderService) {
-                // Map lowercase ticket status to uppercase order status for comparison
-                $statusMapping = [
-                    'menunggu' => 'Menunggu',
-                    'dijadwalkan' => 'Dijadwalkan',
-                    'menuju_lokasi' => 'Menuju_lokasi',
-                    'diproses' => 'Diproses',
-                    'menunggu_sparepart' => 'Menunggu_sparepart',
-                    'siap_diambil' => 'Siap_diambil',
-                    'diantar' => 'Diantar',
-                    'selesai' => 'Selesai',
-                    'dibatalkan' => 'Dibatalkan',
-                    'melewati_jatuh_tempo' => 'Melewati_jatuh_tempo',
-                ];
-
-                $mappedOrderStatus = $statusMapping[$ticket->status] ?? $ticket->status;
-                if ($mappedOrderStatus !== $ticket->orderService->status_order) {
+                // Compare statuses case-insensitively since both should be lowercase
+                if (strtolower($ticket->status) !== strtolower($ticket->orderService->status_order)) {
                     throw new \Exception('Status tiket servis harus sesuai dengan status order servis terkait.');
                 }
             }

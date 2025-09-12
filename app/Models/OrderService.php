@@ -473,15 +473,6 @@ class OrderService extends Model
         // 2) Validasi kompatibilitas status_order & status_payment
         if ($this->isDirty('status_order') || $this->isDirty('status_payment')) {
             switch ($this->status_order) {
-                case 'menunggu':
-                case 'dijadwalkan':
-                case 'menuju_lokasi':
-                    if ($this->status_payment !== 'belum_dibayar') {
-                        throw ValidationException::withMessages([
-                            'status_order' => ["Status {$this->status_order} mengharuskan status pembayaran = belum_dibayar."],
-                        ]);
-                    }
-                    break;
 
                 case 'diproses':
                     if (!in_array($this->status_payment, ['belum_dibayar', 'cicilan', 'lunas'])) {
@@ -512,7 +503,7 @@ class OrderService extends Model
                 case 'melewati_jatuh_tempo':
                     if ($this->status_payment !== 'cicilan') {
                         throw ValidationException::withMessages([
-                            'status_order' => ["Status melewati_jatuh_tempo hanya berlaku jika sedang cicilan."],
+                            'status_order' => ["Status melewati jatuh_tempo hanya berlaku jika sedang cicilan."],
                         ]);
                     }
                     break;

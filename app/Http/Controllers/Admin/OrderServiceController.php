@@ -124,7 +124,7 @@ class OrderServiceController extends Controller
             $orderService = OrderService::create([
                 'order_service_id' => $orderServiceId,
                 'customer_id' => $customer->customer_id,
-                'status_order' => 'Menunggu',
+                'status_order' => 'menunggu',
                 'status_payment' => 'belum_dibayar',
                 'complaints' => $request->complaints,
                 'type' => $request->type,
