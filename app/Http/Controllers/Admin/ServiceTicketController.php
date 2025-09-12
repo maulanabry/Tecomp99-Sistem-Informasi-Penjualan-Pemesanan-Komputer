@@ -310,6 +310,11 @@ class ServiceTicketController extends Controller
         // Clear session flag
         session()->forget('bypass_ticket_validation');
 
+        // Sync OrderService status if ticket status changed
+        if ($oldStatus !== $ticket->status) {
+            $this->syncOrderServiceStatus($ticket, $oldStatus);
+        }
+
         // Create notification for ticket update if status changed
         if ($oldStatus !== $ticket->status) {
             try {

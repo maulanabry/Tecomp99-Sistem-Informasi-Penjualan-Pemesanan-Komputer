@@ -43,7 +43,7 @@
                 <!-- Main Information -->
                 <div class="lg:col-span-2">
                     <!-- Status Update Section -->
-                    @if($orderService->status_order !== 'selesai' && $orderService->status_order !== 'dibatalkan' && $orderService->status_payment !== 'lunas')
+                    @if($orderService->status_order !== 'selesai' && $orderService->status_order !== 'dibatalkan' )
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">

@@ -92,6 +92,32 @@ class ServiceTicket extends Model
                 return;
             }
 
+            // Validate status compatibility with OrderService payment when status changes
+            if ($ticket->isDirty('status') && $ticket->orderService) {
+                $order = $ticket->orderService;
+                $originalStatus = $order->status_order;
+
+                // Temporarily set order status to new ticket status to validate compatibility
+                $order->status_order = $ticket->status;
+
+                try {
+                    $order->updateExpiredDate();
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    // Reset order status
+                    $order->status_order = $originalStatus;
+
+                    // Get error message in Bahasa Indonesia
+                    $messages = $e->errors();
+                    $errorMessage = isset($messages['status_order']) ? implode(', ', $messages['status_order']) : 'Status tidak kompatibel dengan kondisi pembayaran.';
+
+                    throw new \Exception('Tidak dapat mengubah status tiket: ' . $errorMessage);
+                }
+
+                // Reset order status after validation
+                $order->status_order = $originalStatus;
+            }
+
+            // Existing validation: status must match OrderService
             if ($ticket->orderService) {
                 // Compare statuses case-insensitively since both should be lowercase
                 if (strtolower($ticket->status) !== strtolower($ticket->orderService->status_order)) {
@@ -106,10 +132,59 @@ class ServiceTicket extends Model
                 return;
             }
 
+            // Validate status compatibility with OrderService payment when status changes
+            if ($ticket->isDirty('status') && $ticket->orderService) {
+                $order = $ticket->orderService;
+                $originalStatus = $order->status_order;
+
+                // Temporarily set order status to new ticket status to validate compatibility
+                $order->status_order = $ticket->status;
+
+                try {
+                    $order->updateExpiredDate();
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    // Reset order status
+                    $order->status_order = $originalStatus;
+
+                    // Get error message in Bahasa Indonesia
+                    $messages = $e->errors();
+                    $errorMessage = isset($messages['status_order']) ? implode(', ', $messages['status_order']) : 'Status tidak kompatibel dengan kondisi pembayaran.';
+
+                    throw new \Exception('Tidak dapat mengubah status tiket: ' . $errorMessage);
+                }
+
+                // Reset order status after validation
+                $order->status_order = $originalStatus;
+            }
+
+            // Existing validation: status must match OrderService
             if ($ticket->orderService) {
                 // Compare statuses case-insensitively since both should be lowercase
                 if (strtolower($ticket->status) !== strtolower($ticket->orderService->status_order)) {
                     throw new \Exception('Status tiket servis harus sesuai dengan status order servis terkait.');
+                }
+            }
+        });
+
+        // Sync OrderService status when ServiceTicket status changes
+        static::updated(function ($ticket) {
+            if ($ticket->isDirty('status') && $ticket->orderService) {
+                $order = $ticket->orderService;
+
+                // Skip if already syncing to prevent loops
+                if (session('updating_ticket_status', false)) {
+                    return;
+                }
+
+                // Update OrderService status to match if different
+                if ($order->status_order !== $ticket->status) {
+                    session(['updating_ticket_status' => true]);
+
+                    try {
+                        $order->update(['status_order' => $ticket->status]);
+                    } finally {
+                        session()->forget('updating_ticket_status');
+                    }
                 }
             }
         });

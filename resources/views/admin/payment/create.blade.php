@@ -175,6 +175,7 @@
                             <option value="">Pilih tipe pembayaran</option>
                             <option value="full">Full</option>
                             <option value="down_payment">Down Payment</option>
+                            <option value="cicilan">Cicilan</option>
                         </select>
                     </div>
                     <div>
@@ -335,23 +336,22 @@
 
                 updatePaymentOptions() {
                     if (!this.selectedOrder) return;
-                    
+
                     const paymentTypeSelect = document.getElementById('payment_type');
                     const amountInput = document.getElementById('amount');
-                    
+
                     if (!paymentTypeSelect) return;
-                    
+
                     // Clear existing options
                     paymentTypeSelect.innerHTML = '<option value="">Pilih tipe pembayaran</option>';
-                    
+
                     // Add options based on order type and business rules
                     if (this.selectedOrder.type === 'produk') {
-                        // Product payment rules
+                        // Product payment rules: full and down_payment only
                         paymentTypeSelect.innerHTML += '<option value="full">Full Payment</option>';
                         paymentTypeSelect.innerHTML += '<option value="down_payment">Down Payment (50%)</option>';
-                        paymentTypeSelect.innerHTML += '<option value="cicilan">Cicilan</option>';
                     } else if (this.selectedOrder.type === 'servis') {
-                        // Service payment rules
+                        // Service payment rules: full and cicilan only
                         paymentTypeSelect.innerHTML += '<option value="full">Full Payment</option>';
                         paymentTypeSelect.innerHTML += '<option value="cicilan">Cicilan</option>';
                     }
