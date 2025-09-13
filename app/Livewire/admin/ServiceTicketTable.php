@@ -12,7 +12,7 @@ class ServiceTicketTable extends Component
 
     public $search = '';
     public $sortField = 'created_at';
-    public $sortDirection = 'asc';
+    public $sortDirection = 'desc';
     public $activeTab = 'all';
     public $serviceTypeFilter = '';
     public $perPage = 10;

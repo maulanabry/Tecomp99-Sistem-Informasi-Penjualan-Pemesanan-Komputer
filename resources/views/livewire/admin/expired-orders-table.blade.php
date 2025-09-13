@@ -49,7 +49,6 @@
                             <select wire:model.live="statusFilter"
                                     class="block w-full py-2 px-3 border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
                                 <option value="">Semua Status</option>
-                                <option value="melewati_jatuh_tempo">Melewati Jatuh Tempo</option>
                                 <option value="overdue">Melewati Batas Waktu</option>
                             </select>
                         </div>
@@ -72,7 +71,7 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
                 <div class="flex items-center">
@@ -82,24 +81,8 @@
                         </div>
                     </div>
                     <div class="ml-4">
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Melewati Jatuh Tempo</dt>
-                        <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $expiredOrders->where('status_order', 'melewati_jatuh_tempo')->count() }}</dd>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-clock text-orange-600 dark:text-orange-400"></i>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Melewati Batas Waktu</dt>
-                        <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $expiredOrders->where('status_order', '!=', 'melewati_jatuh_tempo')->count() }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pesanan Kedaluwarsa</dt>
+                        <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $expiredOrders->total() }}</dd>
                     </div>
                 </div>
             </div>
@@ -115,7 +98,7 @@
                     </div>
                     <div class="ml-4">
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Pesanan</dt>
-                        <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $expiredOrders->total() }}</dd>
+                        <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $expiredOrders->count() }}</dd>
                     </div>
                 </div>
             </div>
@@ -126,7 +109,7 @@
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Daftar Pesanan Melewati Jatuh Tempo</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Daftar Pesanan Kedaluwarsa</h2>
                 <span class="bg-red-100 text-red-800 text-sm font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
                     {{ $expiredOrders->total() }} pesanan
                 </span>
@@ -136,8 +119,8 @@
                 <!-- Desktop Table Header -->
                 <div class="hidden md:block">
                     <div class="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-                        <div class="grid grid-cols-8 gap-4 px-6 py-3">
-                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1 cursor-pointer" wire:click="sortBy('order_product_id')">
+                        <div class="grid grid-cols-9 gap-4 px-6 py-3">
+                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 cursor-pointer" wire:click="sortBy('order_product_id')">
                                 <div class="flex items-center gap-1">
                                     ID Order
                                     @if ($sortField === 'order_product_id')
@@ -147,8 +130,8 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1">Tipe</div>
-                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1 cursor-pointer" wire:click="sortBy('customer.name')">
+                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100">Tipe</div>
+                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 cursor-pointer" wire:click="sortBy('customer.name')">
                                 <div class="flex items-center gap-1">
                                     Pelanggan
                                     @if ($sortField === 'customer.name')
@@ -158,11 +141,10 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1">Total</div>
-                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1">Tanggal Melewati Jatuh Tempo</div>
-                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1 cursor-pointer" wire:click="sortBy('status_order')">
+                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100">Total</div>
+                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 cursor-pointer" wire:click="sortBy('status_order')">
                                 <div class="flex items-center gap-1">
-                                    Status
+                                    Status Order
                                     @if ($sortField === 'status_order')
                                         <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
                                     @else
@@ -170,7 +152,18 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1 cursor-pointer" wire:click="sortBy('created_at')">
+                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 cursor-pointer" wire:click="sortBy('status_payment')">
+                                <div class="flex items-center gap-1">
+                                    Status Bayar
+                                    @if ($sortField === 'status_payment')
+                                        <span class="text-xs">{{ $sortDirection === 'asc' ? '˄' : '˅' }}</span>
+                                    @else
+                                        <span class="text-xs">˄˅</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100">Tanggal Kedaluwarsa</div>
+                            <div class="text-left font-semibold text-sm text-gray-900 dark:text-gray-100 cursor-pointer" wire:click="sortBy('created_at')">
                                 <div class="flex items-center gap-1">
                                     Tanggal Dibuat
                                     @if ($sortField === 'created_at')
@@ -180,7 +173,7 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="text-center font-semibold text-sm text-gray-900 dark:text-gray-100 col-span-1">Aksi</div>
+                            <div class="text-center font-semibold text-sm text-gray-900 dark:text-gray-100">Aksi</div>
                         </div>
                     </div>
                 </div>
@@ -189,11 +182,11 @@
                 <div class="bg-white dark:bg-gray-800 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                     @forelse ($expiredOrders as $order)
                         <!-- Desktop Row -->
-                        <div class="hidden md:grid grid-cols-8 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                            <div class="col-span-1 text-sm font-medium text-gray-900 dark:text-white">
+                        <div class="hidden md:grid grid-cols-9 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                            <div class="text-sm font-medium text-gray-900 dark:text-white">
                                 {{ $order->order_product_id ?? $order->order_service_id }}
                             </div>
-                            <div class="col-span-1">
+                            <div>
                                 @if(isset($order->order_product_id))
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
                                         <i class="fas fa-box mr-1"></i>Produk
@@ -204,28 +197,54 @@
                                     </span>
                                 @endif
                             </div>
-                            <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">{{ $order->customer ? $order->customer->name : '-' }}</div>
-                            <div class="col-span-1 text-sm text-gray-700 dark:text-gray-300">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</div>
-                            <div class="col-span-1 text-sm text-gray-500 dark:text-gray-400">
+                            <div class="text-sm text-gray-700 dark:text-gray-300">{{ $order->customer ? $order->customer->name : '-' }}</div>
+                            <div class="text-sm text-gray-700 dark:text-gray-300">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</div>
+                            <div>
+                                @php
+                                    $statusOrder = $order->status_order;
+                                    $statusColors = [
+                                        'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                        'dijadwalkan' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
+                                        'menuju_lokasi' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                        'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+                                        'menunggu_sparepart' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
+                                        'siap_diambil' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100',
+                                        'diantar' => 'bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100',
+                                        'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                        'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                                    ];
+                                    $colorClass = $statusColors[$statusOrder] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                                    $displayStatus = ucwords(str_replace('_', ' ', $statusOrder));
+                                @endphp
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $colorClass }}">
+                                    {{ $displayStatus }}
+                                </span>
+                            </div>
+                            <div>
+                                @php
+                                    $statusPayment = $order->status_payment;
+                                    $paymentColors = [
+                                        'belum_dibayar' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                        'cicilan' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                        'lunas' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                        'dibatalkan' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+                                    ];
+                                    $paymentColorClass = $paymentColors[$statusPayment] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                                    $displayPaymentStatus = ucwords(str_replace('_', ' ', $statusPayment));
+                                @endphp
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $paymentColorClass }}">
+                                    {{ $displayPaymentStatus }}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
                                 @if($order->expired_date)
                                     {{ \Carbon\Carbon::parse($order->expired_date)->format('d/m/Y H:i') }}
                                 @else
                                     <span class="text-gray-400">N/A</span>
                                 @endif
                             </div>
-                            <div class="col-span-1">
-                                @if($order->status_order === 'melewati_jatuh_tempo')
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i>Melewati Jatuh Tempo
-                                    </span>
-                                @else
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100">
-                                        <i class="fas fa-clock mr-1"></i>Melewati Batas Waktu
-                                    </span>
-                                @endif
-                            </div>
-                            <div class="col-span-1 text-sm text-gray-500 dark:text-gray-400">{{ $order->created_at->format('d M Y') }}</div>
-                            <div class="col-span-1 text-center">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ $order->created_at->format('d M Y') }}</div>
+                            <div class="text-center">
                                 <x-action-dropdown>
                                     @if(isset($order->order_product_id))
                                         <a href="{{ route('order-products.show', $order) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">
@@ -289,23 +308,50 @@
                                 <span>Total:</span><span>Rp {{ number_format($order->grand_total, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
-                                <span>Tanggal Melewati Jatuh Tempo:</span>
+                                <span>Status Order:</span>
+                                @php
+                                    $statusOrder = $order->status_order;
+                                    $statusColors = [
+                                        'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                        'dijadwalkan' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
+                                        'menuju_lokasi' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                        'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+                                        'menunggu_sparepart' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
+                                        'siap_diambil' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100',
+                                        'diantar' => 'bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100',
+                                        'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                        'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                                    ];
+                                    $colorClass = $statusColors[$statusOrder] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                                    $displayStatus = ucwords(str_replace('_', ' ', $statusOrder));
+                                @endphp
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $colorClass }}">
+                                    {{ $displayStatus }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
+                                <span>Status Bayar:</span>
+                                @php
+                                    $statusPayment = $order->status_payment;
+                                    $paymentColors = [
+                                        'belum_dibayar' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                        'cicilan' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                        'lunas' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                        'dibatalkan' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+                                    ];
+                                    $paymentColorClass = $paymentColors[$statusPayment] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                                    $displayPaymentStatus = ucwords(str_replace('_', ' ', $statusPayment));
+                                @endphp
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $paymentColorClass }}">
+                                    {{ $displayPaymentStatus }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
+                                <span>Tanggal Kedaluwarsa:</span>
                                 @if($order->expired_date)
                                     <span>{{ \Carbon\Carbon::parse($order->expired_date)->format('d/m/Y H:i') }}</span>
                                 @else
                                     <span class="text-gray-400">N/A</span>
-                                @endif
-                            </div>
-                            <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
-                                <span>Status:</span>
-                                @if($order->status_order === 'melewati_jatuh_tempo')
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i>Melewati Jatuh Tempo
-                                    </span>
-                                @else
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100">
-                                        <i class="fas fa-clock mr-1"></i>Melewati Batas Waktu
-                                    </span>
                                 @endif
                             </div>
                             <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">
@@ -364,8 +410,8 @@
                     <div class="text-gray-400 dark:text-gray-600 mb-4">
                         <i class="fas fa-check-circle text-6xl"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Tidak ada pesanan melewati jatuh tempo</h3>
-                    <p class="text-gray-500 dark:text-gray-400">Semua pesanan dalam kondisi baik dan belum melewati batas waktu.</p>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Tidak ada pesanan kedaluwarsa</h3>
+                    <p class="text-gray-500 dark:text-gray-400">Semua pesanan dalam kondisi baik dan belum kedaluwarsa.</p>
                 </div>
             @endif
         </div>
