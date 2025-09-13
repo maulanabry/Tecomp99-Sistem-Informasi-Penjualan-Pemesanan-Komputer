@@ -836,7 +836,7 @@
                             @endif
 
                             @if($orderService->tickets->isEmpty())
-                                <a href="{{ route('service-tickets.create') }}?order_service_id={{ $orderService->id }}"
+                                <a href="{{ route('service-tickets.create') }}?order_service_id={{ $orderService->order_service_id }}"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
                                     <i class="fas fa-ticket-alt mr-2"></i>
                                     Buat Tiket Servis
@@ -844,7 +844,7 @@
                             @endif
 
                             @if($orderService->paymentDetails->isEmpty())
-                                <a href="{{ route('payments.create') }}?order_service_id={{ $orderService->id }}"
+                                <a href="{{ route('payments.create') }}?order_service_id={{ $orderService->order_service_id }}"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 border border-purple-300 shadow-sm text-sm font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-900/20">
                                     <i class="fas fa-credit-card mr-2"></i>
                                     Tambah Pembayaran

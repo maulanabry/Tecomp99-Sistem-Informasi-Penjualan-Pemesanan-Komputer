@@ -155,10 +155,23 @@
                                         </thead>
                                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                                             @foreach($orders as $order)
-                                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                                                @php
+                                                    // Cek apakah order ini adalah pre-selected dari halaman sebelumnya
+                                                    // Pre-selection terjadi ketika admin mengklik "Tambah Tiket Service" dari halaman detail order service
+                                                    // Order yang pre-selected akan ditandai dengan background biru dan badge "Dipilih"
+                                                    $isPreSelected = $preSelectedOrder && $preSelectedOrder['id'] === $order->order_service_id;
+                                                @endphp
+                                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 {{ $isPreSelected ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500' : '' }}">
                                                     <td class="px-6 py-4 whitespace-nowrap">
                                                         <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                             {{ $order->order_service_id }}
+                                                            @if($isPreSelected)
+                                                                <!-- Badge menunjukkan bahwa order ini sudah dipilih sebelumnya -->
+                                                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                                                                    <i class="fas fa-star mr-1"></i>
+                                                                    Dipilih
+                                                                </span>
+                                                            @endif
                                                         </div>
                                                         <div class="text-xs text-gray-500 dark:text-gray-400">
                                                             Status: {{ ucfirst(str_replace('_', ' ', $order->status_order)) }}

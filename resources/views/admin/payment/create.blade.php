@@ -295,7 +295,10 @@
         </form>
 
         <!-- Order Selection Modal -->
-        <livewire:admin.order-selection-modal />
+        <livewire:admin.order-selection-modal
+            :preSelectedOrder="$preSelectedOrder"
+            :preSelectedOrderType="$preSelectedOrderType"
+        />
     </div>
 
     <script>
@@ -396,12 +399,30 @@
                 },
 
                 init() {
+                    // Jika ada pre-selected order dari halaman detail order service atau produk, set secara otomatis
+                    // Ini memungkinkan admin langsung memproses pembayaran tanpa perlu memilih order manual
+                    @if($preSelectedOrder)
+                        this.selectedOrder = @json($preSelectedOrder);
+                        this.selectedOrderId = '{{ $preSelectedOrder['id'] }}';
+                        this.selectedOrderType = '{{ $preSelectedOrderType }}';
+
+                        // Update payment options based on pre-selected order
+                        this.$nextTick(() => {
+                            this.updatePaymentOptions();
+                            // Buka modal pemilihan order secara otomatis agar admin dapat melihat order yang sudah dipilih
+                            // Order yang dipilih akan ditandai dengan bintang dan badge "Dipilih"
+                            setTimeout(() => {
+                                this.openOrderModal();
+                            }, 500);
+                        });
+                    @endif
+
                     // Listen for order selection from modal
                     window.addEventListener('orderSelected', (event) => {
                         this.selectedOrder = event.detail[0];
                         this.selectedOrderId = event.detail[0].id;
                         this.selectedOrderType = event.detail[0].type;
-                        
+
                         // Update payment options based on selected order
                         this.$nextTick(() => {
                             this.updatePaymentOptions();

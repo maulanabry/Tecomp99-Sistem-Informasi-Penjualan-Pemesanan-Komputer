@@ -38,8 +38,58 @@ class PaymentController extends Controller
         return view('admin.payment.show', compact('payment'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        // Cek apakah ada order_service_id atau order_product_id yang dikirim dari halaman detail order
+        $preSelectedOrder = null;
+        $preSelectedOrderType = null;
+
+        if ($request->has('order_service_id')) {
+            $orderService = OrderService::with('customer')->where('order_service_id', $request->order_service_id)->first();
+            if ($orderService && !in_array($orderService->status_payment, ['dibatalkan', 'lunas', 'selesai'])) {
+                $preSelectedOrder = [
+                    'id' => $orderService->order_service_id,
+                    'type' => 'servis',
+                    'customer_name' => $orderService->customer->name,
+                    'customer_id' => $orderService->customer_id,
+                    'sub_total' => (float) $orderService->sub_total,
+                    'discount_amount' => (float) $orderService->discount_amount,
+                    'grand_total' => (float) $orderService->grand_total,
+                    'paid_amount' => (float) $orderService->paid_amount,
+                    'remaining_balance' => (float) $orderService->remaining_balance,
+                    'status_order' => $orderService->status_order,
+                    'status_payment' => $orderService->status_payment,
+                    'last_payment_at' => $orderService->last_payment_at,
+                    'created_at' => $orderService->created_at,
+                    'device' => $orderService->device,
+                    'order_type_display' => 'Servis',
+                ];
+                $preSelectedOrderType = 'servis';
+            }
+        } elseif ($request->has('order_product_id')) {
+            $orderProduct = OrderProduct::with('customer')->where('order_product_id', $request->order_product_id)->first();
+            if ($orderProduct && !in_array($orderProduct->status_payment, ['dibatalkan', 'lunas'])) {
+                $preSelectedOrder = [
+                    'id' => $orderProduct->order_product_id,
+                    'type' => 'produk',
+                    'customer_name' => $orderProduct->customer->name,
+                    'customer_id' => $orderProduct->customer_id,
+                    'sub_total' => (float) $orderProduct->sub_total,
+                    'discount_amount' => (float) $orderProduct->discount_amount,
+                    'grand_total' => (float) $orderProduct->grand_total,
+                    'paid_amount' => (float) $orderProduct->paid_amount,
+                    'remaining_balance' => (float) $orderProduct->remaining_balance,
+                    'status_order' => $orderProduct->status_order,
+                    'status_payment' => $orderProduct->status_payment,
+                    'last_payment_at' => $orderProduct->last_payment_at,
+                    'created_at' => $orderProduct->created_at,
+                    'shipping_cost' => (float) $orderProduct->shipping_cost,
+                    'order_type_display' => 'Produk',
+                ];
+                $preSelectedOrderType = 'produk';
+            }
+        }
+
         // Ambil order produk yang statusnya belum dibayar atau down_payment saja
         $orderProducts = OrderProduct::with('customer')
             ->whereNotIn('status_payment', ['dibatalkan', 'lunas', 'selesai'])
@@ -79,6 +129,8 @@ class PaymentController extends Controller
         return view('admin.payment.create', [
             'orderProducts' => $orderProducts,
             'orderServices' => $orderServices,
+            'preSelectedOrder' => $preSelectedOrder,
+            'preSelectedOrderType' => $preSelectedOrderType,
         ]);
     }
 

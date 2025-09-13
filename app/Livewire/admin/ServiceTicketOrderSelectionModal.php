@@ -18,6 +18,9 @@ class ServiceTicketOrderSelectionModal extends Component
     public $sortDirection = 'desc';
     public $selectedOrder = null;
 
+    // Properties untuk pre-selection order dari halaman detail
+    public $preSelectedOrder;
+
     protected $listeners = ['openServiceTicketOrderModal' => 'open', 'openModal' => 'open'];
 
     public function mount()

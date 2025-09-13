@@ -19,6 +19,10 @@ class OrderSelectionModal extends Component
     public $statusOrderFilter = '';
     public $selectedOrder = null;
 
+    // Properties untuk pre-selection order dari halaman detail
+    public $preSelectedOrder;
+    public $preSelectedOrderType;
+
     protected $listeners = ['openOrderModal' => 'open'];
 
     public function mount()

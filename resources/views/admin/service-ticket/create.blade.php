@@ -1,6 +1,6 @@
 <x-layout-admin>
     <!-- Include the modal component -->
-    <livewire:admin.service-ticket-order-selection-modal key="service-ticket-modal" />
+    <livewire:admin.service-ticket-order-selection-modal key="service-ticket-modal" :preSelectedOrder="$preSelectedOrder ?? null" />
 
     <div class="py-6">
         @if (session('success'))
@@ -586,6 +586,13 @@
                 };
                 Livewire.dispatch('serviceTicketOrderSelected', oldOrderData);
             }
+
+            // Jika ada pre-selected order, buka modal secara otomatis
+            @if(isset($preSelectedOrder) && $preSelectedOrder)
+                setTimeout(() => {
+                    openServiceTicketOrderModal();
+                }, 500);
+            @endif
         });
     </script>
 </x-layout-admin>

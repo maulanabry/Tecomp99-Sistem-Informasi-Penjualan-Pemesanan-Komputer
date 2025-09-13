@@ -706,7 +706,7 @@
                             @endif
 
                             @if($orderProduct->payments->isEmpty())
-                                <a href="{{ route('payments.create') }}?order_product_id={{ $orderProduct->id }}"
+                                <a href="{{ route('payments.create') }}?order_product_id={{ $orderProduct->order_product_id }}"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 border border-green-300 shadow-sm text-sm font-medium rounded-md text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-gray-700 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-900/20">
                                     <i class="fas fa-credit-card mr-2"></i>
                                     Tambah Pembayaran

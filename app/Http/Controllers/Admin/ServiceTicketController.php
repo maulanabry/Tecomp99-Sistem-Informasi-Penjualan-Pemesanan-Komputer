@@ -195,7 +195,7 @@ class ServiceTicketController extends Controller
         return response()->json($events);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $orderServices = \App\Models\OrderService::where('hasTicket', false)
             ->with('customer')
@@ -203,7 +203,25 @@ class ServiceTicketController extends Controller
 
         $technicians = \App\Models\Admin::where('role', 'teknisi')->get();
 
-        return view('admin.service-ticket.create', compact('orderServices', 'technicians'));
+        // Cek apakah ada order_service_id yang dikirim dari halaman detail order service
+        $preSelectedOrder = null;
+        if ($request->has('order_service_id')) {
+            $orderService = \App\Models\OrderService::with('customer')->where('order_service_id', $request->order_service_id)->first();
+            if ($orderService && !$orderService->hasTicket) {
+                $preSelectedOrder = [
+                    'id' => $orderService->order_service_id,
+                    'customer_name' => $orderService->customer->name ?? '',
+                    'customer_id' => $orderService->customer_id ?? '',
+                    'device' => $orderService->device ?? '',
+                    'complaints' => $orderService->complaints ?? '',
+                    'type' => $orderService->type ?? 'reguler',
+                    'status_order' => $orderService->status_order ?? '',
+                    'created_at' => $orderService->created_at,
+                ];
+            }
+        }
+
+        return view('admin.service-ticket.create', compact('orderServices', 'technicians', 'preSelectedOrder'));
     }
 
     public function store(Request $request)
@@ -502,15 +520,17 @@ class ServiceTicketController extends Controller
             'exclude_order_service_id' => 'nullable|string'
         ]);
 
-        // Query untuk mendapatkan semua OrderService yang sudah dibooking untuk tanggal tertentu
-        $query = \App\Models\OrderService::where('visit_date', $validated['visit_date'])
-            ->whereNotNull('visit_slot')
-            ->where('type', 'onsite') // Hanya untuk onsite services
-            ->with(['customer', 'tickets']);
+        // Query untuk mendapatkan semua ServiceTicket yang sudah dibooking untuk tanggal tertentu
+        $query = ServiceTicket::whereDate('visit_schedule', $validated['visit_date'])
+            ->whereNotNull('visit_schedule')
+            ->whereHas('orderService', function ($q) {
+                $q->where('type', 'onsite'); // Hanya untuk onsite services
+            })
+            ->with(['orderService.customer']);
 
-        // Exclude order service tertentu jika sedang edit
-        if (!empty($validated['exclude_order_service_id'])) {
-            $query->where('order_service_id', '!=', $validated['exclude_order_service_id']);
+        // Exclude ticket tertentu jika sedang edit
+        if (!empty($validated['exclude_ticket_id'])) {
+            $query->where('service_ticket_id', '!=', $validated['exclude_ticket_id']);
         }
 
         // Debug: Log query
@@ -525,23 +545,15 @@ class ServiceTicketController extends Controller
 
         // Ambil semua slot yang sudah dibooking
         $bookedSlots = $query->get()
-            ->map(function ($orderService) use ($validated) {
-                // Extract time slot from visit_slot (e.g., "08:00 - 09:30" -> "08:00")
-                $timeSlot = explode(' - ', $orderService->visit_slot)[0];
-
-                // Check if technician is assigned
-                $ticket = $orderService->tickets->first();
-                $technicianAssigned = $ticket && $ticket->admin_id;
-                $assignedToCurrentTechnician = $technicianAssigned && $ticket->admin_id == $validated['admin_id'];
-
+            ->map(function ($ticket) use ($validated) {
                 return [
-                    'time_slot' => $timeSlot,
-                    'customer_name' => $orderService->customer->name ?? 'Unknown',
-                    'order_service_id' => $orderService->order_service_id,
-                    'device' => $orderService->device ?? '',
-                    'technician_assigned' => $technicianAssigned,
-                    'assigned_to_current' => $assignedToCurrentTechnician,
-                    'ticket_id' => $ticket ? $ticket->service_ticket_id : null,
+                    'time_slot' => $ticket->visit_schedule->format('H:i'),
+                    'customer_name' => $ticket->orderService->customer->name ?? 'Unknown',
+                    'order_service_id' => $ticket->order_service_id,
+                    'device' => $ticket->orderService->device ?? '',
+                    'technician_assigned' => true,
+                    'assigned_to_current' => $ticket->admin_id == $validated['admin_id'],
+                    'ticket_id' => $ticket->service_ticket_id,
                     'slot_disabled' => true // Disable all booked slots to prevent double booking
                 ];
             })
@@ -592,35 +604,34 @@ class ServiceTicketController extends Controller
         ]);
 
         // Cek apakah slot waktu spesifik sudah diambil
-        $slotString = $timeSlot . ' - ' . date('H:i', strtotime($timeSlot) + 5400); // Add 1.5 hours
-        $query = \App\Models\OrderService::where('visit_date', $visitDate)
-            ->where('visit_slot', $slotString)
-            ->where('type', 'onsite')
-            ->with(['customer', 'tickets']);
+        $query = ServiceTicket::whereDate('visit_schedule', $visitDate)
+            ->whereRaw("TIME(visit_schedule) = ?", [$timeSlot . ':00'])
+            ->whereHas('orderService', function ($q) {
+                $q->where('type', 'onsite');
+            })
+            ->with(['orderService.customer']);
 
-        // Exclude order service tertentu jika sedang edit
-        if ($excludeOrderServiceId) {
-            $query->where('order_service_id', '!=', $excludeOrderServiceId);
+        // Exclude ticket tertentu jika sedang edit
+        if ($excludeTicketId) {
+            $query->where('service_ticket_id', '!=', $excludeTicketId);
         }
 
         // Debug: Log query untuk slot spesifik
         \Log::info('Slot availability query:', [
             'query_sql' => $query->toSql(),
-            'query_bindings' => $query->getBindings(),
-            'slot_string' => $slotString
+            'query_bindings' => $query->getBindings()
         ]);
 
-        $orderService = $query->first();
+        $ticket = $query->first();
 
         // Jika slot sudah diambil
-        if ($orderService) {
-            $ticket = $orderService->tickets->first();
-            $customerName = $orderService->customer->name ?? 'Unknown';
+        if ($ticket) {
+            $customerName = $ticket->orderService->customer->name ?? 'Unknown';
 
             \Log::info('Slot taken by:', [
                 'customer_name' => $customerName,
-                'order_service_id' => $orderService->order_service_id,
-                'ticket_id' => $ticket ? $ticket->service_ticket_id : null
+                'order_service_id' => $ticket->order_service_id,
+                'ticket_id' => $ticket->service_ticket_id
             ]);
 
             // Slot sudah dipesan, tidak tersedia untuk booking baru
@@ -628,7 +639,7 @@ class ServiceTicketController extends Controller
                 'available' => false,
                 'message' => "Slot sudah dipesan oleh {$customerName}",
                 'reason' => 'slot_taken',
-                'existing_ticket' => $ticket ? $ticket->service_ticket_id : null
+                'existing_ticket' => $ticket->service_ticket_id
             ];
         }
 

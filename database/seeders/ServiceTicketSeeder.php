@@ -25,9 +25,9 @@ class ServiceTicketSeeder extends Seeder
             ->select('order_service_id', 'status_order', 'type', 'created_at')
             ->get();
 
-        // Get available technicians (admin with role 'teknisi' or 'admin')
+        // Get available technicians (admin with role 'teknisi')
         $technicians = DB::table('admins')
-            ->whereIn('role', ['teknisi', 'admin'])
+            ->whereIn('role', ['teknisi'])
             ->pluck('id')
             ->toArray();
 
