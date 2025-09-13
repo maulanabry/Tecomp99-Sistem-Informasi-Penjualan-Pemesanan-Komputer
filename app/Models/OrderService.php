@@ -89,7 +89,6 @@ class OrderService extends Model
     const STATUS_ORDER_DIANTAR = 'diantar';
     const STATUS_ORDER_SELESAI = 'selesai';
     const STATUS_ORDER_DIBATALKAN = 'dibatalkan';
-    const STATUS_ORDER_MELEWATI_JATUH_TEMPO = 'melewati_jatuh_tempo';
 
     const STATUS_PAYMENT_BELUM_DIBAYAR = 'belum_dibayar';
     const STATUS_PAYMENT_CICILAN = 'cicilan';
@@ -341,8 +340,7 @@ class OrderService extends Model
             'Siap_diambil' => 'siap_diambil',
             'Diantar' => 'diantar',
             'Selesai' => 'selesai',
-            'Dibatalkan' => 'dibatalkan',
-            'Melewati_jatuh_tempo' => 'melewati_jatuh_tempo'
+            'Dibatalkan' => 'dibatalkan'
         ];
 
         $newTicketStatus = $statusMapping[$this->status_order] ?? 'menunggu';
@@ -464,9 +462,10 @@ class OrderService extends Model
         $now = Carbon::now();
         $orderDate = $this->created_at ?? $now;
 
-        // 1) Jika status_payment = 'lunas' → clear expired_date
+        // 1) Jika status_payment = 'lunas' → clear expired_date and is_expired
         if ($this->status_payment === 'lunas') {
             $this->expired_date = null;
+            $this->is_expired = false;
             return;
         }
 
@@ -552,24 +551,50 @@ class OrderService extends Model
         }
     }
 
-    // Mengecek Apakah order sudah melewati expired_date
+    /**
+     * Mengecek dan memperbarui status order yang sudah melewati expired_date
+     * Method ini lebih efisien dengan logging dan validasi tambahan
+     */
     public function checkExpiredStatus()
     {
-        if ($this->expired_date && $this->expired_date->isPast()) {
-            if (in_array($this->status_payment, [
-                self::STATUS_PAYMENT_BELUM_DIBAYAR,
-                self::STATUS_PAYMENT_CICILAN
-            ])) {
-                if ($this->status_order !== self::STATUS_ORDER_MELEWATI_JATUH_TEMPO) {
-                    $this->update([
-                        'status_order' => self::STATUS_ORDER_MELEWATI_JATUH_TEMPO
-
-                    ]);
-                    // Sinkronisasi status tiket servis jika order melewati jatuh tempo
-                    $this->syncServiceTicketStatus();
-                }
-            }
+        // Pastikan expired_date ada dan sudah lewat
+        if (!$this->expired_date || !$this->expired_date->isPast()) {
+            $this->is_expired = false;
+            $this->save();
+            return false; // Tidak ada yang perlu dilakukan
         }
+
+        // Pastikan status pembayaran memenuhi syarat
+        if (!in_array($this->status_payment, [
+            self::STATUS_PAYMENT_BELUM_DIBAYAR,
+            self::STATUS_PAYMENT_CICILAN
+        ])) {
+            $this->is_expired = false;
+            $this->save();
+            return false; // Status pembayaran tidak memenuhi syarat
+        }
+
+        // Pastikan belum expired
+        if ($this->is_expired) {
+            return false; // Sudah expired
+        }
+
+        // Log aktivitas sebelum update
+        \Log::info("Order Service {$this->order_service_id} melewati jatuh tempo", [
+            'expired_date' => $this->expired_date->toDateTimeString(),
+            'status_payment' => $this->status_payment,
+            'status_order' => $this->status_order,
+        ]);
+
+        // Lakukan update flag
+        $this->update([
+            'is_expired' => true
+        ]);
+
+        // Log setelah update berhasil
+        \Log::info("Order Service {$this->order_service_id} is_expired berhasil diperbarui ke true");
+
+        return true; // Menunjukkan ada perubahan
     }
 
 

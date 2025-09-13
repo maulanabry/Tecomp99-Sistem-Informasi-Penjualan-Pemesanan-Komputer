@@ -24,7 +24,6 @@ return new class extends Migration
                 'diantar',
                 'selesai',
                 'dibatalkan',
-                'melewati_jatuh_tempo'
             ]);
             $table->enum('status_payment', ['belum_dibayar', 'cicilan', 'lunas', 'dibatalkan']);
             $table->text('complaints')->nullable();
@@ -37,6 +36,7 @@ return new class extends Migration
             $table->integer('grand_total')->default(0);
             $table->integer('discount_amount')->default(0);
             $table->dateTime('expired_date')->nullable();
+            $table->boolean('is_expired')->default(false);
 
             // Add missing warranty and payment tracking fields
             $table->integer('warranty_period_months')->nullable();

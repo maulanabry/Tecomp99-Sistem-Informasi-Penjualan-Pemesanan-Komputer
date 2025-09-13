@@ -122,8 +122,7 @@ class OrderServiceSeeder extends Seeder
             'siap_diambil' => 3,   // Step 6: Ready for pickup
             'diantar' => 2,        // Step 7: Being delivered
             'selesai' => 10,       // Step 8: Completed orders (ticket=selesai, payment=lunas, warranty)
-            'dibatalkan' => 5,     // Cancelled orders (no payments)
-            'melewati_jatuh_tempo' => 3         // Melewati_jatuh_tempo orders
+            'dibatalkan' => 5      // Cancelled orders (no payments)
         ];
 
         foreach ($statusDistribution as $status => $count) {
@@ -153,6 +152,8 @@ class OrderServiceSeeder extends Seeder
                 $warrantyPeriodMonths = null;
                 $warrantyExpiredAt = null;
                 $hasTicket = false;
+                $expiredDate = null;
+                $isExpired = false;
 
                 switch ($status) {
                     case 'menunggu':
@@ -205,6 +206,11 @@ class OrderServiceSeeder extends Seeder
                             $paidAmount = $faker->numberBetween(100000, intval($grandTotal * 0.5));
                             $lastPaymentAt = $faker->dateTimeBetween($createdAt, 'now');
                         }
+                        // Set expired_date for some
+                        if ($faker->boolean(30)) {
+                            $expiredDate = $faker->dateTimeBetween('-10 days', '-1 day');
+                            $isExpired = true;
+                        }
                         break;
 
                     case 'siap_diambil':
@@ -217,6 +223,11 @@ class OrderServiceSeeder extends Seeder
                             $paidAmount = $grandTotal;
                         }
                         $lastPaymentAt = $faker->dateTimeBetween($createdAt, 'now');
+                        // Set expired_date for some unpaid
+                        if ($statusPayment === 'cicilan' && $faker->boolean(20)) {
+                            $expiredDate = $faker->dateTimeBetween('-5 days', '-1 day');
+                            $isExpired = true;
+                        }
                         break;
 
                     case 'diantar':
@@ -246,12 +257,6 @@ class OrderServiceSeeder extends Seeder
                         $hasTicket = $faker->boolean(50); // Some may have tickets before cancellation
                         $statusPayment = 'dibatalkan';
                         break;
-
-                    case 'melewati_jatuh_tempo':
-                        // Melewati_jatuh_tempo orders: no payments
-                        $hasTicket = $faker->boolean(30); // Some may have tickets before expiry
-                        $statusPayment = 'belum_dibayar';
-                        break;
                 }
 
                 $remainingBalance = max(0, $grandTotal - $paidAmount);
@@ -270,6 +275,8 @@ class OrderServiceSeeder extends Seeder
                     'sub_total' => $subTotal,
                     'grand_total' => $grandTotal,
                     'discount_amount' => $discountAmount,
+                    'expired_date' => $expiredDate,
+                    'is_expired' => $isExpired,
                     'warranty_period_months' => $warrantyPeriodMonths,
                     'warranty_expired_at' => $warrantyExpiredAt,
                     'paid_amount' => $paidAmount,

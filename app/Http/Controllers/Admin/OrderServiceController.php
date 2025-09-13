@@ -31,7 +31,10 @@ class OrderServiceController extends Controller
 
     public function show(OrderService $orderService)
     {
+
         $orderService->load(['customer.addresses', 'tickets', 'items', 'paymentDetails']);
+
+
         return view('admin.order-service.show', compact('orderService'));
     }
 
@@ -206,7 +209,7 @@ class OrderServiceController extends Controller
     public function update(Request $request, OrderService $orderService)
     {
         $request->validate([
-            'status_order' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,melewati_jatuh_tempo',
+            'status_order' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan',
             'status_payment' => 'required|in:belum_dibayar,cicilan,lunas,dibatalkan',
             'type' => 'required|in:reguler,onsite',
             'device' => 'required|string',
@@ -399,7 +402,7 @@ class OrderServiceController extends Controller
     public function updateStatus(Request $request, OrderService $orderService)
     {
         $validated = $request->validate([
-            'status_order' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan,melewati_jatuh_tempo',
+            'status_order' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan',
         ]);
 
         try {
@@ -631,7 +634,6 @@ class OrderServiceController extends Controller
             'diantar' => 'Perangkat sedang diantar ke pelanggan',
             'selesai' => 'Layanan selesai, perangkat diterima pelanggan',
             'dibatalkan' => 'Tiket layanan dibatalkan',
-            'melewati_jatuh_tempo' => 'Tiket layanan kedaluwarsa karena tidak ada pembayaran/diambil',
         ];
 
         $action = $actionDescriptions[$newStatus] ?? 'Status tiket diperbarui';
@@ -659,7 +661,7 @@ class OrderServiceController extends Controller
     {
         $overdueServices = OrderService::whereNotNull('estimated_completion')
             ->where('estimated_completion', '<', now())
-            ->whereNotIn('status_order', ['selesai', 'dibatalkan', 'melewati_jatuh_tempo'])
+            ->whereNotIn('status_order', ['selesai', 'dibatalkan'])
             ->with(['customer', 'tickets'])
             ->orderBy('estimated_completion', 'asc')
             ->paginate(15);

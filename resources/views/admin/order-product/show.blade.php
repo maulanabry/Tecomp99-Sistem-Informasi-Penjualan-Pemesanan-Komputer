@@ -68,7 +68,6 @@
                                             @elseif($orderProduct->status_order === 'dikirim') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
                                             @elseif($orderProduct->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
                                             @elseif($orderProduct->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
-                                            @elseif($orderProduct->status_order === 'melewati_jatuh_tempo') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
                                             @endif">
                                             {{ str_replace('_', ' ', ucfirst($orderProduct->status_order)) }}
                                         </span>
@@ -82,7 +81,6 @@
                                         <option value="dikirim" {{ $orderProduct->status_order === 'dikirim' ? 'selected' : '' }}>Dikirim</option>
                                         <option value="selesai" {{ $orderProduct->status_order === 'selesai' ? 'selected' : '' }}>Selesai</option>
                                         <option value="dibatalkan" {{ $orderProduct->status_order === 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
-                                        <option value="melewati_jatuh_tempo" {{ $orderProduct->status_order === 'melewati_jatuh_tempo' ? 'selected' : '' }}>Melewati Jatuh Tempo</option>
                                     </select>
                                 </div>
                                 <button type="submit" 
@@ -121,19 +119,26 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Order</dt>
                                     <dd class="mt-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            @if($orderProduct->status_order === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
-                                            @elseif($orderProduct->status_order === 'inden') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
-                                            @elseif($orderProduct->status_order === 'siap_kirim') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
-                                            @elseif($orderProduct->status_order === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
-                                            @elseif($orderProduct->status_order === 'dikirim') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
-                                            @elseif($orderProduct->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
-                                            @elseif($orderProduct->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
-                                            @elseif($orderProduct->status_order === 'melewati_jatuh_tempo') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
-                                            @endif">
-                                            <i class="fas fa-circle mr-1"></i>
-                                            {{ str_replace('_', ' ', ucfirst($orderProduct->status_order)) }}
-                                        </span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                @if($orderProduct->status_order === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                                @elseif($orderProduct->status_order === 'inden') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                                @elseif($orderProduct->status_order === 'siap_kirim') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
+                                                @elseif($orderProduct->status_order === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                                @elseif($orderProduct->status_order === 'dikirim') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                                @elseif($orderProduct->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                                @elseif($orderProduct->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                                @endif">
+                                                <i class="fas fa-circle mr-1"></i>
+                                                {{ str_replace('_', ' ', ucfirst($orderProduct->status_order)) }}
+                                            </span>
+                                            @if($orderProduct->is_expired)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                    Expired
+                                                </span>
+                                            @endif
+                                        </div>
                                     </dd>
                                 </div>
                                 <div>

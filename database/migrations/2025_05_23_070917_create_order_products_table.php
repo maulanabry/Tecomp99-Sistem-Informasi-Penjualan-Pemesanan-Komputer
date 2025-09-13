@@ -19,7 +19,6 @@ return new class extends Migration {
                 'dikirim',
                 'selesai',
                 'dibatalkan',
-                'melewati_jatuh_tempo'
             ]);
             $table->enum('status_payment', ['belum_dibayar', 'down_payment', 'lunas', 'dibatalkan']);
 
@@ -37,6 +36,7 @@ return new class extends Migration {
             $table->integer('remaining_balance')->default(0);
             $table->timestamp('last_payment_at')->nullable();
             $table->dateTime('expired_date')->nullable();
+            $table->boolean('is_expired')->default(false);
 
             $table->timestamps();
             $table->softDeletes();

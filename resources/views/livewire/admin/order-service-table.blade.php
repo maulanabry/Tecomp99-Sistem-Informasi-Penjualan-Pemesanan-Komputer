@@ -53,9 +53,9 @@
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'dibatalkan' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Dibatalkan ({{ $statusCounts['dibatalkan'] ?? 0 }})
                 </button>
-                <button wire:click="setActiveTab('melewati_jatuh_tempo')"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'melewati_jatuh_tempo' ? 'border-gray-500 text-gray-600 dark:text-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Melewati Jatuh Tempo ({{ $statusCounts['melewati_jatuh_tempo'] ?? 0 }})
+                <button wire:click="setActiveTab('expired')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'expired' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Melewati Batas Waktu ({{ $expiredCount ?? 0 }})
                 </button>
             </nav>
         </div>

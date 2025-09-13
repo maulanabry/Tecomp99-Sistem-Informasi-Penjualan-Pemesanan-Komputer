@@ -112,8 +112,10 @@ class OrderProductTable extends Component
             'dikirim' => 0,
             'selesai' => 0,
             'dibatalkan' => 0,
-            'melewati_jatuh_tempo' => 0,
         ];
+
+        // Get expired count separately
+        $expiredCount = OrderProduct::where('is_expired', true)->where('status_order', '!=', 'dibatalkan')->count();
 
         $statusCounts = array_merge($allStatuses, $statusCounts);
         $totalCount = array_sum($statusCounts);
@@ -130,8 +132,12 @@ class OrderProductTable extends Component
         }
 
         // Filter by active tab instead of statusOrderFilter
-        if ($this->activeTab !== 'all') {
+        if ($this->activeTab !== 'all' && $this->activeTab !== 'expired') {
             $query->where('status_order', $this->activeTab);
+        }
+
+        if ($this->activeTab === 'expired') {
+            $query->where('is_expired', true)->where('status_order', '!=', 'dibatalkan');
         }
 
         if ($this->statusPaymentFilter) {
@@ -148,7 +154,8 @@ class OrderProductTable extends Component
         return view('livewire.admin.order-product-table', [
             'orderProducts' => $orderProducts,
             'statusCounts' => $statusCounts,
-            'totalCount' => $totalCount
+            'totalCount' => $totalCount,
+            'expiredCount' => $expiredCount
         ]);
     }
 }

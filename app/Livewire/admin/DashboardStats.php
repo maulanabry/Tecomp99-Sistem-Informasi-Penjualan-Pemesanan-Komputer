@@ -277,13 +277,11 @@ class DashboardStats extends Component
             OrderService::where('status_order', 'selesai')->count();
         $dibatalkan = OrderProduct::where('status_order', 'dibatalkan')->count() +
             OrderService::where('status_order', 'dibatalkan')->count();
-        $melewati_jatuh_tempo = OrderProduct::where('status_order', 'melewati_jatuh_tempo')->count() +
-            OrderService::where('status_order', 'melewati_jatuh_tempo')->count();
 
         return [
-            'labels' => ['Menunggu', 'Inden', 'Siap Kirim', 'Diproses', 'Dikirim', 'Selesai', 'Dibatalkan', 'Melewati Jatuh Tempo'],
-            'data' => [$menunggu, $inden, $siap_kirim, $diproses, $dikirim, $selesai, $dibatalkan, $melewati_jatuh_tempo],
-            'colors' => ['#f59e0b', '#ea580c', '#9333ea', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444', '#6b7280']
+            'labels' => ['Menunggu', 'Inden', 'Siap Kirim', 'Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'],
+            'data' => [$menunggu, $inden, $siap_kirim, $diproses, $dikirim, $selesai, $dibatalkan],
+            'colors' => ['#f59e0b', '#ea580c', '#9333ea', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444']
         ];
     }
 
@@ -322,19 +320,8 @@ class DashboardStats extends Component
 
     private function getExpiredOrders()
     {
-        $expiredProducts = OrderProduct::where('status_order', 'melewati_jatuh_tempo')
-            ->orWhere(function ($query) {
-                $query->whereNotNull('expired_date')
-                    ->where('expired_date', '<', now());
-            })
-            ->count();
-
-        $expiredServices = OrderService::where('status_order', 'melewati_jatuh_tempo')
-            ->orWhere(function ($query) {
-                $query->whereNotNull('expired_date')
-                    ->where('expired_date', '<', now());
-            })
-            ->count();
+        $expiredProducts = OrderProduct::where('is_expired', true)->count();
+        $expiredServices = OrderService::where('is_expired', true)->count();
 
         return [
             'total' => $expiredProducts + $expiredServices,
@@ -347,7 +334,7 @@ class DashboardStats extends Component
     {
         $overdueCount = OrderService::whereNotNull('estimated_completion')
             ->where('estimated_completion', '<', now())
-            ->whereNotIn('status_order', ['selesai', 'dibatalkan', 'melewati_jatuh_tempo'])
+            ->whereNotIn('status_order', ['selesai', 'dibatalkan'])
             ->count();
 
         return [

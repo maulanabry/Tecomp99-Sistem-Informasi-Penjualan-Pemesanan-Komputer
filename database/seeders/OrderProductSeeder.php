@@ -42,8 +42,7 @@ class OrderProductSeeder extends Seeder
             'diproses' => 8,
             'dikirim' => 7,
             'selesai' => 6,
-            'dibatalkan' => 4,
-            'melewati_jatuh_tempo' => 3
+            'dibatalkan' => 4
         ];
 
         $paymentStatuses = [
@@ -133,6 +132,8 @@ class OrderProductSeeder extends Seeder
             // Calculate payment amounts
             $paidAmount = 0;
             $remainingBalance = $grandTotal;
+            $expiredDate = null;
+            $isExpired = false;
 
             if ($paymentStatus === 'lunas') {
                 $paidAmount = $grandTotal;
@@ -140,6 +141,11 @@ class OrderProductSeeder extends Seeder
             } elseif ($paymentStatus === 'down_payment') {
                 $paidAmount = $faker->numberBetween(100000, $grandTotal - 50000);
                 $remainingBalance = $grandTotal - $paidAmount;
+                // Set expired_date for some down_payment orders
+                if ($faker->boolean(25)) {
+                    $expiredDate = $faker->dateTimeBetween('-7 days', '-1 day');
+                    $isExpired = true;
+                }
             }
 
             $orders[] = [
@@ -153,6 +159,8 @@ class OrderProductSeeder extends Seeder
                 'grand_total' => $grandTotal,
                 'type' => 'langsung',
                 'note' => $faker->optional(0.3)->sentence(),
+                'expired_date' => $expiredDate,
+                'is_expired' => $isExpired,
                 'warranty_period_months' => $faker->optional(0.7)->numberBetween(3, 24),
                 'paid_amount' => $paidAmount,
                 'remaining_balance' => $remainingBalance,
@@ -227,6 +235,8 @@ class OrderProductSeeder extends Seeder
             // Calculate payment amounts
             $paidAmount = 0;
             $remainingBalance = $grandTotal;
+            $expiredDate = null;
+            $isExpired = false;
 
             if ($paymentStatus === 'lunas') {
                 $paidAmount = $grandTotal;
@@ -234,6 +244,11 @@ class OrderProductSeeder extends Seeder
             } elseif ($paymentStatus === 'down_payment') {
                 $paidAmount = $faker->numberBetween(100000, $grandTotal - 50000);
                 $remainingBalance = $grandTotal - $paidAmount;
+                // Set expired_date for some down_payment orders
+                if ($faker->boolean(25)) {
+                    $expiredDate = $faker->dateTimeBetween('-7 days', '-1 day');
+                    $isExpired = true;
+                }
             }
 
             $orders[] = [
@@ -247,6 +262,8 @@ class OrderProductSeeder extends Seeder
                 'grand_total' => $grandTotal,
                 'type' => 'pengiriman',
                 'note' => $faker->optional(0.3)->sentence(),
+                'expired_date' => $expiredDate,
+                'is_expired' => $isExpired,
                 'warranty_period_months' => $faker->optional(0.7)->numberBetween(3, 24),
                 'paid_amount' => $paidAmount,
                 'remaining_balance' => $remainingBalance,

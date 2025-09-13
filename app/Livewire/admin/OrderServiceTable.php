@@ -120,8 +120,10 @@ class OrderServiceTable extends Component
             'diantar' => 0,
             'selesai' => 0,
             'dibatalkan' => 0,
-            'melewati_jatuh_tempo' => 0,
         ];
+
+        // Get expired count separately
+        $expiredCount = OrderService::where('is_expired', true)->count();
 
         $statusCounts = array_merge($allStatuses, $statusCounts);
         $totalCount = array_sum($statusCounts);
@@ -139,8 +141,11 @@ class OrderServiceTable extends Component
                             });
                     });
                 })
-                ->when($this->activeTab !== 'all', function ($query) {
+                ->when($this->activeTab !== 'all' && $this->activeTab !== 'expired', function ($query) {
                     $query->where('status_order', $this->activeTab);
+                })
+                ->when($this->activeTab === 'expired', function ($query) {
+                    $query->where('is_expired', true);
                 })
                 ->when($this->statusPaymentFilter, function ($query) {
                     $query->where('status_payment', $this->statusPaymentFilter);
@@ -151,7 +156,8 @@ class OrderServiceTable extends Component
                 ->orderBy($this->sortField, $this->sortDirection)
                 ->paginate($this->perPage),
             'statusCounts' => $statusCounts,
-            'totalCount' => $totalCount
+            'totalCount' => $totalCount,
+            'expiredCount' => $expiredCount
         ]);
     }
 }

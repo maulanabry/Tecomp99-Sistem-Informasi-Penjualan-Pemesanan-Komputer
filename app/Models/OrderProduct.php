@@ -75,7 +75,6 @@ class OrderProduct extends Model
     const STATUS_ORDER_DIKIRIM = 'dikirim';
     const STATUS_ORDER_SELESAI = 'selesai';
     const STATUS_ORDER_DIBATALKAN = 'dibatalkan';
-    const STATUS_ORDER_MELEWATI_JATUH_TEMPO = 'melewati_jatuh_tempo';
 
     const STATUS_PAYMENT_BELUM_DIBAYAR = 'belum_dibayar';
     const STATUS_PAYMENT_DOWN_PAYMENT = 'down_payment';
@@ -177,9 +176,10 @@ class OrderProduct extends Model
         $now = Carbon::now();
         $orderDate = $this->created_at ?? $now;
 
-        // 1) Jika status_payment = 'lunas' => selalu clear expired_date
+        // 1) Jika status_payment = 'lunas' => selalu clear expired_date and is_expired
         if ($this->status_payment === 'lunas') {
             $this->expired_date = null;
+            $this->is_expired = false;
             \Log::info("OrderProduct {$this->order_product_id}: expired_date cleared because status_payment is lunas");
             return;
         }
@@ -256,6 +256,51 @@ class OrderProduct extends Model
         // default: clear expired_date
         $this->expired_date = null;
         \Log::info("OrderProduct {$this->order_product_id}: expired_date cleared for status_order {$this->status_order} and status_payment {$this->status_payment}");
+    }
+
+    /**
+     * Mengecek dan memperbarui status order yang sudah melewati expired_date
+     */
+    public function checkExpiredStatus()
+    {
+        // Pastikan expired_date ada dan sudah lewat
+        if (!$this->expired_date || !$this->expired_date->isPast()) {
+            $this->is_expired = false;
+            $this->save();
+            return false; // Tidak ada yang perlu dilakukan
+        }
+
+        // Pastikan status pembayaran memenuhi syarat
+        if (!in_array($this->status_payment, [
+            self::STATUS_PAYMENT_BELUM_DIBAYAR,
+            self::STATUS_PAYMENT_DOWN_PAYMENT
+        ])) {
+            $this->is_expired = false;
+            $this->save();
+            return false; // Status pembayaran tidak memenuhi syarat
+        }
+
+        // Pastikan belum expired
+        if ($this->is_expired) {
+            return false; // Sudah expired
+        }
+
+        // Log aktivitas sebelum update
+        \Log::info("Order Product {$this->order_product_id} melewati jatuh tempo", [
+            'expired_date' => $this->expired_date->toDateTimeString(),
+            'status_payment' => $this->status_payment,
+            'status_order' => $this->status_order,
+        ]);
+
+        // Lakukan update flag
+        $this->update([
+            'is_expired' => true
+        ]);
+
+        // Log setelah update berhasil
+        \Log::info("Order Product {$this->order_product_id} is_expired berhasil diperbarui ke true");
+
+        return true; // Menunjukkan ada perubahan
     }
 
     /**
