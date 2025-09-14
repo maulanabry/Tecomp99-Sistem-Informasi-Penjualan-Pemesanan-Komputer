@@ -17,72 +17,147 @@
         <form action="{{ route('owner.payments.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
-            <!-- Jenis Order -->
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Jenis Order</h2>
-                <div>
-                    <label for="order_type" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Pilih Jenis Order <span class="text-red-500">*</span>
-                    </label>
-                    <select id="order_type" name="order_type" required
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <option value="">Pilih jenis order</option>
-                        <option value="produk">Produk</option>
-                        <option value="servis">Servis</option>
-                    </select>
-                </div>
-            </div>
-
             <!-- Pilih Order -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Pilih Order</h2>
-                <div>
-                    <label for="order_id" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Pilih Order <span class="text-red-500">*</span>
+
+                <!-- Order Selection Button -->
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                        Pilih Order untuk Pembayaran <span class="text-red-500">*</span>
                     </label>
-                    <select id="order_id" name="order_id" required disabled
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <option value="">Pilih order terlebih dahulu</option>
-                    </select>
+                    <button
+                        type="button"
+                        @click="openOrderModal()"
+                        class="w-full flex items-center justify-between px-4 py-3 text-left bg-gray-50 border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-primary-300 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-primary-800 transition-colors duration-200"
+                    >
+                        <span x-text="selectedOrder ? selectedOrder.id + ' - ' + selectedOrder.customer_name + ' (' + selectedOrder.order_type_display + ')' : 'Klik untuk memilih order...'"
+                              class="text-sm text-gray-900 dark:text-gray-100"
+                              :class="!selectedOrder ? 'text-gray-500 dark:text-gray-400' : ''">
+                        </span>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
                 </div>
 
-                <!-- Order Info Display -->
-                <div id="orderProductInfo" class="mt-4 hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Informasi Order Produk</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <p><span class="font-medium">Sub Total:</span> Rp <span id="productSubTotal">0</span></p>
-                                <p><span class="font-medium">Diskon:</span> Rp <span id="productDiscount">0</span></p>
-                                <p><span class="font-medium">Total Pembayaran:</span> Rp <span id="productGrandTotal">0</span></p>
-                                <p><span class="font-medium">Customer:</span> <span id="productCustomerName">-</span></p>
+                <!-- Hidden inputs for form submission -->
+                <input type="hidden" name="order_type" x-model="selectedOrderType" required>
+                <input type="hidden" name="order_id" x-model="selectedOrderId" required>
+                @error('order_type')
+                    <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                @enderror
+                @error('order_id')
+                    <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                @enderror
+
+                <!-- Selected Order Info Display -->
+                <div x-show="selectedOrder"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform scale-95"
+                     x-transition:enter-end="opacity-100 transform scale-100"
+                     class="mt-4 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
+
+                    <!-- Order Header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="h-12 w-12 rounded-full flex items-center justify-center"
+                                 :class="selectedOrder && selectedOrder.type === 'produk' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-green-100 dark:bg-green-900'">
+                                <span class="text-lg font-medium"
+                                      :class="selectedOrder && selectedOrder.type === 'produk' ? 'text-blue-700 dark:text-blue-300' : 'text-green-700 dark:text-green-300'"
+                                      x-text="selectedOrder ? selectedOrder.order_type_display.substring(0, 2).toUpperCase() : ''">
+                                </span>
                             </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white" x-text="selectedOrder?.id"></h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" x-text="selectedOrder ? selectedOrder.order_type_display + ' - ' + selectedOrder.customer_name : ''"></p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            @click="clearOrder()"
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            title="Hapus pilihan order"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Financial Information -->
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                </svg>
+                                Informasi Keuangan
+                            </h4>
                             <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <p><span class="font-medium">Status Pembayaran:</span> <span id="productPaymentStatus">-</span></p>
-                                <p><span class="font-medium">Sudah Dibayar:</span> Rp <span id="productPaidAmount">0</span></p>
-                                <p><span class="font-medium">Sisa Pembayaran:</span> <span class="font-bold text-red-600 dark:text-red-400">Rp <span id="productRemainingBalance">0</span></span></p>
-                                <p><span class="font-medium">Pembayaran Terakhir:</span> <span id="productLastPayment">-</span></p>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Sub Total:</span>
+                                    <span x-text="selectedOrder ? 'Rp ' + formatRupiah(selectedOrder.sub_total) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Diskon:</span>
+                                    <span x-text="selectedOrder ? 'Rp ' + formatRupiah(selectedOrder.discount_amount) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between border-t pt-2">
+                                    <span class="font-medium">Total:</span>
+                                    <span class="font-bold" x-text="selectedOrder ? 'Rp ' + formatRupiah(selectedOrder.grand_total) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Sudah Dibayar:</span>
+                                    <span class="text-green-600 dark:text-green-400" x-text="selectedOrder ? 'Rp ' + formatRupiah(selectedOrder.paid_amount) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Sisa Pembayaran:</span>
+                                    <span class="font-bold text-red-600 dark:text-red-400" x-text="selectedOrder ? 'Rp ' + formatRupiah(selectedOrder.remaining_balance) : '-'"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Information -->
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Status Order
+                            </h4>
+                            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Status Pembayaran:</span>
+                                    <span x-text="selectedOrder ? formatPaymentStatus(selectedOrder.status_payment) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Status Order:</span>
+                                    <span x-text="selectedOrder ? formatOrderStatus(selectedOrder.status_order) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Tanggal Order:</span>
+                                    <span x-text="selectedOrder ? formatDate(selectedOrder.created_at) : '-'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Pembayaran Terakhir:</span>
+                                    <span x-text="selectedOrder && selectedOrder.last_payment_at ? formatDate(selectedOrder.last_payment_at) : 'Belum ada'"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="orderServiceInfo" class="mt-4 hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Informasi Order Servis</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <p><span class="font-medium">Sub Total:</span> Rp <span id="serviceSubTotal">0</span></p>
-                                <p><span class="font-medium">Diskon:</span> Rp <span id="serviceDiscount">0</span></p>
-                                <p><span class="font-medium">Total Pembayaran:</span> Rp <span id="serviceGrandTotal">0</span></p>
-                                <p><span class="font-medium">Customer:</span> <span id="serviceCustomerName">-</span></p>
-                            </div>
-                            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <p><span class="font-medium">Status Pembayaran:</span> <span id="servicePaymentStatus">-</span></p>
-                                <p><span class="font-medium">Sudah Dibayar:</span> Rp <span id="servicePaidAmount">0</span></p>
-                                <p><span class="font-medium">Sisa Pembayaran:</span> <span class="font-bold text-red-600 dark:text-red-400">Rp <span id="serviceRemainingBalance">0</span></span></p>
-                                <p><span class="font-medium">Pembayaran Terakhir:</span> <span id="serviceLastPayment">-</span></p>
-                            </div>
+                    <!-- Additional Info for Service Orders -->
+                    <div x-show="selectedOrder && selectedOrder.type === 'servis'" class="mt-4 bg-white dark:bg-gray-800 p-4 rounded-lg">
+                        <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Detail Servis
+                        </h4>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                            <p><span class="font-medium">Perangkat:</span> <span x-text="selectedOrder?.device || '-'"></span></p>
                         </div>
                     </div>
                 </div>
@@ -152,6 +227,7 @@
                             <option value="">Pilih tipe pembayaran</option>
                             <option value="full">Full</option>
                             <option value="down_payment">Down Payment</option>
+                            <option value="cicilan">Cicilan</option>
                         </select>
                     </div>
 
@@ -215,6 +291,12 @@
                 </button>
             </div>
         </form>
+
+        <!-- Order Selection Modal -->
+        <livewire:owner.order-selection-modal
+            :preSelectedOrder="$preSelectedOrder"
+            :preSelectedOrderType="$preSelectedOrderType"
+        />
     </div>
 
         <script>

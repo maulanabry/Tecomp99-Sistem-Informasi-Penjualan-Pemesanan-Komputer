@@ -40,7 +40,7 @@
             <div class="py-4"> 
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-3 text-gray-900 dark:text-gray-100">
-                        @livewire('owner.order-product-table')
+                        @livewire('owner.order-product-table', ['statusCounts' => $statusCounts ?? [], 'expiredCount' => $expiredCount ?? 0, 'totalCount' => $totalCount ?? 0])
                     </div>
                 </div>
             </div>

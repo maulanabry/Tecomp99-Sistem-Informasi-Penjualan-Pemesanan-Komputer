@@ -161,7 +161,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <div class="text-2xl font-bold text-red-800 dark:text-red-200">{{ $expiredOrders['total'] }}</div>
-                        <div class="text-sm text-red-700 dark:text-red-300">Pesanan Melewati Jatuh Tempo</div>
+                        <div class="text-sm text-red-700 dark:text-red-300">Pesanan Melewati Batas Waktu</div>
                         <div class="text-xs text-red-600 dark:text-red-400 mt-1">
                             Produk: {{ $expiredOrders['products'] }} | Servis: {{ $expiredOrders['services'] }}
                         </div>

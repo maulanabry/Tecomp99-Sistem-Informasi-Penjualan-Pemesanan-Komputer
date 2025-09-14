@@ -249,12 +249,13 @@ class OrderProductController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,customer_id',
             'order_type' => 'required|in:Pengiriman,Langsung',
-            'status_order' => 'required|in:menunggu,diproses,dikirim,selesai,dibatalkan',
             'items' => 'required|json',
             'shipping_cost' => 'nullable|integer|min:0',
+            'discount_amount' => 'nullable|integer|min:0',
             'voucher_code' => 'nullable|string',
             'voucher_id' => 'nullable|exists:vouchers,voucher_id',
             'note' => 'nullable|string',
+            'warranty_period_months' => 'nullable|integer|min:0|max:60',
         ]);
 
         try {
@@ -296,9 +297,14 @@ class OrderProductController extends Controller
                 $totalWeight += $item['quantity'] * $product->weight;
             }
 
-            // Hitung diskon
-            $discount = 0;
-            if (!empty($validated['voucher_code'])) {
+            // Calculate shipping cost first
+            $shippingCost = $validated['order_type'] === 'Pengiriman' ? ($validated['shipping_cost'] ?? 0) : 0;
+
+            // Calculate discount - prioritize manual discount amount
+            $discount = $validated['discount_amount'] ?? 0;
+
+            // If no manual discount but voucher code provided, calculate voucher discount
+            if ($discount == 0 && !empty($validated['voucher_code'])) {
                 // Cari voucher berdasarkan kode, lalu validasi
                 $voucher = Voucher::where('code', $validated['voucher_code'])
                     ->where('is_active', true)
@@ -332,16 +338,16 @@ class OrderProductController extends Controller
                 }
             }
 
-            $shippingCost = $validated['order_type'] === 'Pengiriman' ? ($validated['shipping_cost'] ?? 0) : 0;
+            // Ensure discount doesn't exceed subtotal + shipping
+            $maxDiscount = $subtotal + $shippingCost;
+            if ($discount > $maxDiscount) {
+                $discount = $maxDiscount;
+            }
             $grandTotal = $subtotal - $discount + $shippingCost;
 
             // Update order produk
-            // Simpan status sebelumnya untuk perbandingan
-            $previousStatus = $orderProduct->status_order;
-
             $orderProduct->update([
                 'customer_id' => $validated['customer_id'],
-                'status_order' => $validated['status_order'],
                 'sub_total' => $subtotal,
                 'discount_amount' => $discount,
                 'shipping_cost' => $shippingCost,
@@ -350,11 +356,6 @@ class OrderProductController extends Controller
                 'note' => $validated['note'] ?? null,
                 'warranty_period_months' => $validated['warranty_period_months'] ?? null,
             ]);
-
-            // Jika order sedang diselesaikan, set tanggal kedaluwarsa garansi
-            if ($previousStatus !== 'selesai' && $validated['status_order'] === 'selesai') {
-                $orderProduct->updateWarrantyExpiration(now());
-            }
 
             // Update status pembayaran
             $orderProduct->updatePaymentStatus();

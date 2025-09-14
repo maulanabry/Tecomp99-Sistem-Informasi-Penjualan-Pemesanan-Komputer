@@ -25,11 +25,13 @@
                     </p>
                 </div>
                 <div class="flex space-x-3">
+                    @if($orderProduct->status_payment !== 'lunas')
                     <a href="{{ route('pemilik.order-produk.edit', $orderProduct) }}" 
                         class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                         <i class="fas fa-edit mr-2"></i>
                         Edit Order
                     </a>
+                    @endif
                     <a href="{{ route('pemilik.order-produk.index') }}" 
                         class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-arrow-left mr-2"></i>
@@ -60,16 +62,21 @@
                                         Status Saat Ini: 
                                         <span class="px-2 py-1 text-xs font-medium rounded-full ml-2
                                             @if($orderProduct->status_order === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                            @elseif($orderProduct->status_order === 'inden') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                            @elseif($orderProduct->status_order === 'siap_kirim') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
                                             @elseif($orderProduct->status_order === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
                                             @elseif($orderProduct->status_order === 'dikirim') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
                                             @elseif($orderProduct->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                            @elseif($orderProduct->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
                                             @endif">
-                                            {{ ucfirst($orderProduct->status_order) }}
+                                            {{ str_replace('_', ' ', ucfirst($orderProduct->status_order)) }}
                                         </span>
                                     </label>
                                     <select name="status_order" id="status_order" required
                                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
                                         <option value="menunggu" {{ $orderProduct->status_order === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                        <option value="inden" {{ $orderProduct->status_order === 'inden' ? 'selected' : '' }}>Inden</option>
+                                        <option value="siap_kirim" {{ $orderProduct->status_order === 'siap_kirim' ? 'selected' : '' }}>Siap Kirim</option>
                                         <option value="diproses" {{ $orderProduct->status_order === 'diproses' ? 'selected' : '' }}>Diproses</option>
                                         <option value="dikirim" {{ $orderProduct->status_order === 'dikirim' ? 'selected' : '' }}>Dikirim</option>
                                         <option value="selesai" {{ $orderProduct->status_order === 'selesai' ? 'selected' : '' }}>Selesai</option>
@@ -112,15 +119,26 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status Order</dt>
                                     <dd class="mt-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            {{ $orderProduct->status_order === 'menunggu' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : '' }}
-                                            {{ $orderProduct->status_order === 'diproses' ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : '' }}
-                                            {{ $orderProduct->status_order === 'dikirim' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : '' }}
-                                            {{ $orderProduct->status_order === 'selesai' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : '' }}
-                                            {{ $orderProduct->status_order === 'dibatalkan' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : '' }}">
-                                            <i class="fas fa-circle mr-1"></i>
-                                            {{ ucfirst($orderProduct->status_order) }}
-                                        </span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                @if($orderProduct->status_order === 'menunggu') bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                                @elseif($orderProduct->status_order === 'inden') bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
+                                                @elseif($orderProduct->status_order === 'siap_kirim') bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100
+                                                @elseif($orderProduct->status_order === 'diproses') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                                @elseif($orderProduct->status_order === 'dikirim') bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100
+                                                @elseif($orderProduct->status_order === 'selesai') bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                                @elseif($orderProduct->status_order === 'dibatalkan') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100
+                                                @endif">
+                                                <i class="fas fa-circle mr-1"></i>
+                                                {{ str_replace('_', ' ', ucfirst($orderProduct->status_order)) }}
+                                            </span>
+                                            @if($orderProduct->is_expired)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                    Expired
+                                                </span>
+                                            @endif
+                                        </div>
                                     </dd>
                                 </div>
                                 <div>
@@ -160,6 +178,63 @@
                                 <div class="md:col-span-2">
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Catatan</dt>
                                     <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $orderProduct->note }}</dd>
+                                </div>
+                                @endif
+                                @if($orderProduct->expired_date)
+                                <div class="md:col-span-2">
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Batas Waktu Pembayaran</dt>
+                                    <dd class="mt-1">
+                                        @php
+                                            $now = \Carbon\Carbon::now();
+                                            $expiredDate = \Carbon\Carbon::parse($orderProduct->expired_date);
+                                            $isExpired = $now->gt($expiredDate);
+                                            $daysLeft = $now->diffInDays($expiredDate, false);
+                                        @endphp
+                                        <div class="flex items-center space-x-2">
+                                            @if($isExpired)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                    Sudah Melewati Batas Waktu / Kedaluwarsa
+                                                </span>
+                                            @elseif($daysLeft <= 1)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    Segera Kedaluwarsa
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    Masih Berlaku
+                                                </span>
+                                            @endif
+                                            <span class="text-sm text-gray-900 dark:text-gray-100">
+                                                {{ $expiredDate->format('d F Y H:i') }}
+                                                @if(!$isExpired && $daysLeft > 0)
+                                                    @if($daysLeft < 1)
+                                                        (kurang dari 1 hari lagi)
+                                                    @else
+                                                        ({{ ceil($daysLeft) }} hari lagi)
+                                                    @endif
+                                                @endif
+                                            </span>
+                                        </div>
+                                        @if($isExpired || $daysLeft <= 1)
+                                            <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                                                <div class="flex">
+                                                    <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5 mr-2"></i>
+                                                    <div>
+                                                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                                            @if($isExpired)
+                                                                Order ini sudah melewati batas waktu pembayaran. Segera hubungi customer untuk mengingatkan pembayaran.
+                                                            @else
+                                                                Order ini akan segera jatuh tempo. Pastikan customer menyelesaikan pembayaran sebelum tanggal tersebut.
+                                                            @endif
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </dd>
                                 </div>
                                 @endif
                             </dl>
@@ -374,8 +449,26 @@
                                             </div>
                                             <div>
                                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
-                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                                    {{ $payment->payment_type === 'full' ? 'Pelunasan' : 'DP (Down Payment)' }}
+                                                <dd class="mt-1">
+                                                    @php
+                                                        $typeLabels = [
+                                                            'full' => 'Pelunasan',
+                                                            'down_payment' => 'DP',
+                                                            'cicilan' => 'Cicilan'
+                                                        ];
+                                                        $typeColors = [
+                                                            'full' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                                                            'down_payment' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                                            'cicilan' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100'
+                                                        ];
+                                                        $isExpired = $payment->expired_date && \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($payment->expired_date));
+                                                        $badgeColor = $isExpired ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : ($typeColors[$payment->payment_type] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200');
+                                                        $label = $isExpired ? 'Melewati Jatuh Tempo' : ($typeLabels[$payment->payment_type] ?? $payment->payment_type);
+                                                    @endphp
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $badgeColor }}">
+                                                        <i class="fas fa-tag mr-1"></i>
+                                                        {{ $label }}
+                                                    </span>
                                                 </dd>
                                             </div>
                                             <div>
@@ -405,6 +498,76 @@
                                 <div class="text-center py-8">
                                     <i class="fas fa-credit-card text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada pembayaran untuk order ini</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Cicilan Section -->
+                    <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-list mr-2 text-primary-500"></i>
+                                Cicilan
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            @php
+                                $cicilanPayments = $orderProduct->payments->where('payment_type', 'cicilan')->sortBy('created_at');
+                            @endphp
+                            @if($cicilanPayments->isNotEmpty())
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead>
+                                            <tr>
+                                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Termin
+                                                </th>
+                                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Jumlah
+                                                </th>
+                                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Tanggal
+                                                </th>
+                                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                            @foreach($cicilanPayments as $index => $payment)
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                                    Cicilan {{ $index + 1 }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 text-right">
+                                                    Rp {{ number_format($payment->amount, 0, ',', '.') }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                                    {{ $payment->created_at->format('d F Y') }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    @if($payment->status === 'dibayar')
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                                            <i class="fas fa-check mr-1"></i>
+                                                            Dibayar
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+                                                            <i class="fas fa-clock mr-1"></i>
+                                                            Pending
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center py-8">
+                                    <i class="fas fa-list text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada cicilan untuk order ini</p>
                                 </div>
                             @endif
                         </div>

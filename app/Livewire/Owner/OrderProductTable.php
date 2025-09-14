@@ -97,6 +97,35 @@ class OrderProductTable extends Component
 
     public function render()
     {
+        // Get status counts
+        $statusCounts = OrderProduct::selectRaw('status_order, COUNT(*) as count')
+            ->groupBy('status_order')
+            ->pluck('count', 'status_order')
+            ->toArray();
+
+        // Ensure all status tabs have a count (default to 0 if not present)
+        $allStatuses = [
+            'menunggu' => 0,
+            'inden' => 0,
+            'siap_kirim' => 0,
+            'diproses' => 0,
+            'dikirim' => 0,
+            'selesai' => 0,
+            'dibatalkan' => 0,
+        ];
+
+        // Get expired count separately
+        $expiredCount = OrderProduct::where('is_expired', true)->where('status_order', '!=', 'dibatalkan')->count();
+
+        // Get will expire count (orders with expired_date in future but not yet expired)
+        $willExpireCount = OrderProduct::where('expired_date', '>', now())
+            ->where('is_expired', false)
+            ->where('status_order', '!=', 'dibatalkan')
+            ->count();
+
+        $statusCounts = array_merge($allStatuses, $statusCounts);
+        $totalCount = array_sum($statusCounts);
+
         $query = OrderProduct::query()->with('customer');
 
         if ($this->search) {
@@ -109,8 +138,18 @@ class OrderProductTable extends Component
         }
 
         // Filter by active tab instead of statusOrderFilter
-        if ($this->activeTab !== 'all') {
+        if ($this->activeTab !== 'all' && $this->activeTab !== 'expired' && $this->activeTab !== 'will_expire') {
             $query->where('status_order', $this->activeTab);
+        }
+
+        if ($this->activeTab === 'expired') {
+            $query->where('is_expired', true)->where('status_order', '!=', 'dibatalkan');
+        }
+
+        if ($this->activeTab === 'will_expire') {
+            $query->where('expired_date', '>', now())
+                ->where('is_expired', false)
+                ->where('status_order', '!=', 'dibatalkan');
         }
 
         if ($this->statusPaymentFilter) {
@@ -126,6 +165,10 @@ class OrderProductTable extends Component
 
         return view('livewire.owner.order-product-table', [
             'orderProducts' => $orderProducts,
+            'statusCounts' => $statusCounts,
+            'totalCount' => $totalCount,
+            'expiredCount' => $expiredCount,
+            'willExpireCount' => $willExpireCount
         ]);
     }
 }

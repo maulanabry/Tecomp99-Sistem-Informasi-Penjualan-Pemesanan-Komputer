@@ -101,6 +101,7 @@
                                         @php
                                             $statusConfig = [
                                                 'menunggu' => ['bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100', 'fas fa-clock'],
+                                                'diproses' => ['bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100', 'fas fa-cog'],
                                                 'dibayar' => ['bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100', 'fas fa-check-circle'],
                                                 'gagal' => ['bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100', 'fas fa-times-circle'],
                                             ];
@@ -127,6 +128,22 @@
                                     <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold text-green-600 dark:text-green-400">Rp {{ number_format($payment->change_returned, 0, ',', '.') }}</dd>
                                 </div>
                                 @endif
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
+                                    <dd class="mt-1">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $payment->payment_type === 'full' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : ($payment->payment_type === 'down_payment' ? 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' : 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100') }}">
+                                            <i class="fas {{ $payment->payment_type === 'full' ? 'fa-money-check-alt' : ($payment->payment_type === 'down_payment' ? 'fa-hand-holding-usd' : 'fa-credit-card') }} mr-1"></i>
+                                            @php
+                                                $typeLabels = [
+                                                    'full' => 'Pelunasan',
+                                                    'down_payment' => 'DP (Down Payment)',
+                                                    'cicilan' => 'Cicilan'
+                                                ];
+                                                echo $typeLabels[$payment->payment_type] ?? ucfirst($payment->payment_type);
+                                            @endphp
+                                        </span>
+                                    </dd>
+                                </div>
                             </dl>
                         </div>
                     </div>
@@ -309,9 +326,16 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
                                     <dd class="mt-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $payment->payment_type === 'full' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' }}">
-                                            <i class="fas {{ $payment->payment_type === 'full' ? 'fa-money-check-alt' : 'fa-hand-holding-usd' }} mr-1"></i>
-                                            {{ $payment->payment_type === 'full' ? 'Pelunasan' : 'DP (Down Payment)' }}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $payment->payment_type === 'full' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : ($payment->payment_type === 'down_payment' ? 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' : 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100') }}">
+                                            <i class="fas {{ $payment->payment_type === 'full' ? 'fa-money-check-alt' : ($payment->payment_type === 'down_payment' ? 'fa-hand-holding-usd' : 'fa-credit-card') }} mr-1"></i>
+                                            @php
+                                                $typeLabels = [
+                                                    'full' => 'Pelunasan',
+                                                    'down_payment' => 'DP (Down Payment)',
+                                                    'cicilan' => 'Cicilan'
+                                                ];
+                                                echo $typeLabels[$payment->payment_type] ?? ucfirst($payment->payment_type);
+                                            @endphp
                                         </span>
                                     </dd>
                                 </div>
@@ -378,7 +402,8 @@
                                             <div>
                                                 @php
                                                     $iconColors = [
-                                                        'pending' => 'bg-yellow-500',
+                                                        'menunggu' => 'bg-yellow-500',
+                                                        'diproses' => 'bg-blue-500',
                                                         'dibayar' => 'bg-green-500',
                                                         'gagal' => 'bg-red-500',
                                                     ];
@@ -392,6 +417,11 @@
                                                     @elseif($historyPayment->status === 'gagal')
                                                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                        </svg>
+                                                    @elseif($historyPayment->status === 'diproses')
+                                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                         </svg>
                                                     @else
                                                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -410,7 +440,14 @@
                                                     </p>
                                                     <p class="text-sm text-gray-500 dark:text-gray-400">
                                                         {{ $historyPayment->method }} - Rp {{ number_format($historyPayment->amount, 0, ',', '.') }}
-                                                        ({{ $historyPayment->payment_type === 'full' ? 'Full Payment' : 'Down Payment' }})
+                                                        (@php
+                                                            $typeLabels = [
+                                                                'full' => 'Full Payment',
+                                                                'down_payment' => 'Down Payment',
+                                                                'cicilan' => 'Cicilan'
+                                                            ];
+                                                            echo '(' . ($typeLabels[$historyPayment->payment_type] ?? $historyPayment->payment_type) . ')';
+                                                        @endphp)
                                                     </p>
                                                 </div>
                                                 <div class="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
@@ -492,6 +529,13 @@
             } elseif ($payment->order_type === 'servis' && $payment->orderService && $payment->orderService->customer) {
                 $customerName = $payment->orderService->customer->name;
             }
+
+            $statusConfig = [
+                'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+                'dibayar' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+                'gagal' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+            ];
         @endphp
 
         <x-cancel-payment-modal 

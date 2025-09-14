@@ -295,27 +295,27 @@ const productList = {
 // Initialize product list management
 productList.init();
 
-// Promo code management
-const promoManager = {
+// Voucher code management
+const voucherManager = {
     // Cache jQuery selectors
-    $code: $("#promo_code"),
-    $id: $("#promo_id"),
-    $type: $("#promo_type"),
-    $value: $("#promo_value"),
-    $info: $("#promoInfo"),
-    $success: $("#promoSuccess"),
-    $error: $("#promoError"),
-    $applyBtn: $("#applyPromoBtn"),
+    $code: $("#voucher_code"),
+    $id: $("#voucher_id"),
+    $type: $("#voucher_type"),
+    $value: $("#voucher_value"),
+    $info: $("#voucherInfo"),
+    $success: $("#voucherSuccess"),
+    $error: $("#voucherError"),
+    $applyBtn: $("#applyVoucherBtn"),
 
-    // Initialize promo handling
+    // Initialize voucher handling
     init() {
         this.bindEvents();
     },
 
     // Bind event handlers
     bindEvents() {
-        this.$code.on("input", () => this.handlePromoInput());
-        this.$applyBtn.on("click", () => this.handleApplyPromo());
+        this.$code.on("input", () => this.handleVoucherInput());
+        this.$applyBtn.on("click", () => this.handleApplyVoucher());
     },
 
     // Show error message
@@ -332,8 +332,8 @@ const promoManager = {
         this.$success.removeClass("hidden").text(message);
     },
 
-    // Clear promo data
-    async clearPromo() {
+    // Clear voucher data
+    async clearVoucher() {
         this.$id.val("");
         this.$type.val("");
         this.$value.val("");
@@ -342,7 +342,7 @@ const promoManager = {
             await calculateTotals();
         } catch (error) {
             console.error(
-                "Error calculating totals after clearing promo:",
+                "Error calculating totals after clearing voucher:",
                 error
             );
         }
@@ -361,19 +361,22 @@ const promoManager = {
         return subtotal;
     },
 
-    // Handle promo code input changes
-    async handlePromoInput() {
+    // Handle voucher code input changes
+    async handleVoucherInput() {
         if (!this.$code.val().trim()) {
-            await this.clearPromo();
+            await this.clearVoucher();
+            // Hide any existing messages when input is cleared
+            this.$info.addClass("hidden");
         }
     },
 
-    // Handle apply promo button clicks
-    async handleApplyPromo() {
+    // Handle apply voucher button clicks
+    async handleApplyVoucher() {
         try {
             const code = this.$code.val().trim();
             if (!code) {
-                this.showError("Masukkan kode promo");
+                this.showError("Masukkan kode voucher");
+                utils.showError("Masukkan kode voucher");
                 return;
             }
 
@@ -399,30 +402,144 @@ const promoManager = {
                 throw new Error(response.message);
             }
 
-            // Store promo data
+            // Store voucher data
             this.$id.val(response.voucher_id);
             this.$type.val(response.discount_type);
             this.$value.val(response.discount_value);
 
-            // Show success message
-            this.showSuccess(
-                `Promo "${
-                    response.voucher_name
-                }" berhasil diterapkan! (${formatRupiah(response.discount)})`
-            );
+            // Show success message in both UI areas
+            const successMessage = `Voucher "${
+                response.voucher_name
+            }" berhasil diterapkan! Diskon: ${formatRupiah(response.discount)}`;
+            this.showSuccess(successMessage);
+            utils.showSuccess(successMessage);
+
             await calculateTotals();
         } catch (error) {
-            console.error("Error applying promo:", error);
-            this.showError(error.message);
-            await this.clearPromo();
+            console.error("Error applying voucher:", error);
+            const errorMessage =
+                error.message || "Terjadi kesalahan saat memvalidasi voucher";
+            this.showError(errorMessage);
+            utils.showError(errorMessage);
+            await this.clearVoucher();
         } finally {
             utils.hideLoading(this.$applyBtn, "Terapkan");
         }
     },
 };
 
-// Initialize promo manager
-promoManager.init();
+// Initialize voucher manager
+voucherManager.init();
+
+// Discount Management
+const discountManager = {
+    // Cache jQuery selectors
+    $discountAmount: $("#discount_amount"),
+    $discountAmountHidden: $("#discount_amount_hidden"),
+    $voucherSection: $("#voucherStatusSection"),
+    $voucherDiscountText: $("#voucherDiscountText"),
+    $removeVoucherBtn: $("#removeVoucherBtn"),
+
+    // Initialize discount handling
+    init() {
+        this.bindEvents();
+        this.formatDiscountInput();
+    },
+
+    // Bind event handlers
+    bindEvents() {
+        this.$discountAmount.on("input", () => this.handleDiscountChange());
+        this.$discountAmount.on("blur", () => this.formatDiscountInput());
+        this.$removeVoucherBtn.on("click", () => this.handleRemoveVoucher());
+    },
+
+    // Format discount input with Indonesian number format
+    formatDiscountInput() {
+        const rawValue = this.$discountAmount.val().replace(/[^\d]/g, "");
+        const numericValue = parseInt(rawValue) || 0;
+
+        // Update hidden field with numeric value
+        this.$discountAmountHidden.val(numericValue);
+
+        // Format display value
+        if (numericValue === 0) {
+            this.$discountAmount.val("0");
+        } else {
+            this.$discountAmount.val(numericValue.toLocaleString("id-ID"));
+        }
+    },
+
+    // Handle discount amount input changes
+    async handleDiscountChange() {
+        try {
+            // Extract numeric value from formatted input
+            const rawValue = this.$discountAmount.val().replace(/[^\d]/g, "");
+            const discount = parseInt(rawValue) || 0;
+
+            // Update hidden field
+            this.$discountAmountHidden.val(discount);
+
+            await calculateTotals();
+            this.updateVoucherStatus(discount);
+        } catch (error) {
+            console.error("Error handling discount change:", error);
+        }
+    },
+
+    // Handle remove voucher button click
+    async handleRemoveVoucher() {
+        try {
+            // Reset discount amount
+            this.$discountAmount.val("0");
+            this.$discountAmountHidden.val(0);
+
+            // Clear voucher data
+            $("#voucher_code").val("");
+            $("#voucher_id").val("");
+            $("#voucher_type").val("");
+            $("#voucher_value").val("");
+            $("#voucherInfo").addClass("hidden");
+
+            // Recalculate totals
+            await calculateTotals();
+
+            // Show success message in both UI areas
+            const successMessage = "Voucher berhasil dihapus";
+            utils.showSuccess(successMessage);
+
+            // Also hide the voucher status section
+            this.updateVoucherStatus(0);
+        } catch (error) {
+            console.error("Error removing voucher:", error);
+            const errorMessage = "Gagal menghapus voucher";
+            utils.showError(errorMessage);
+        }
+    },
+
+    // Update voucher status section
+    updateVoucherStatus(discount) {
+        if (discount > 0) {
+            this.$voucherSection.removeClass("hidden");
+            this.$voucherSection.removeClass(
+                "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+            );
+            this.$voucherSection.addClass(
+                "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+            );
+            this.$voucherDiscountText.text(`Diskon: ${formatRupiah(discount)}`);
+        } else {
+            this.$voucherSection.addClass("hidden");
+        }
+    },
+};
+
+// Initialize discount manager
+discountManager.init();
+
+// Update voucher status function (called from calculateTotals)
+function updateVoucherStatus(discount) {
+    discountManager.updateVoucherStatus(discount);
+}
 
 // Calculate total weight of all products
 function calculateTotalWeight() {
@@ -704,15 +821,19 @@ async function calculateTotals() {
             subtotal += qty * price;
         });
 
-        // Get discount from promo
-        const discountValue = parseInt($("#promo_value").val()) || 0;
-        const discountType = $("#promo_type").val();
-        let discount = 0;
+        // Get discount - prioritize manual discount amount over voucher
+        let discount = parseInt($("#discount_amount_hidden").val()) || 0;
 
-        if (discountType === "percentage") {
-            discount = Math.round(subtotal * (discountValue / 100));
-        } else if (discountType === "amount") {
-            discount = discountValue;
+        // If no manual discount, check for voucher discount
+        if (discount === 0) {
+            const discountValue = parseInt($("#voucher_value").val()) || 0;
+            const discountType = $("#voucher_type").val();
+
+            if (discountType === "percentage") {
+                discount = Math.round(subtotal * (discountValue / 100));
+            } else if (discountType === "amount") {
+                discount = discountValue;
+            }
         }
 
         // Get shipping cost
@@ -720,6 +841,9 @@ async function calculateTotals() {
 
         // Update displays
         updateDisplays(subtotal, discount, shippingCost);
+
+        // Update voucher status section
+        updateVoucherStatus(discount);
 
         // Update items JSON for form submission
         const items = [];
@@ -749,8 +873,8 @@ async function calculateTotals() {
 // Update display values
 function updateDisplays(subtotal, discount, shippingCost) {
     try {
-        // Calculate grand total
-        const grandTotal = subtotal - discount + shippingCost;
+        // Calculate grand total using correct formula: Subtotal + Shipping - Discount
+        const grandTotal = subtotal + shippingCost - discount;
 
         // Log for debugging
         console.log("Updating displays with:", {
@@ -828,6 +952,21 @@ $("#orderForm").on("submit", async function (e) {
         return;
     }
 
+    // Convert formatted values before validation
+    try {
+        const discountRawValue =
+            $("#discount_amount").val().replace(/[^\d]/g, "") || "0";
+        $("#discount_amount").val(discountRawValue);
+        $("#discount_amount_hidden").val(discountRawValue);
+
+        const shippingRawValue = $("#shipping_cost_hidden").val();
+        $("#shipping_cost").val(shippingRawValue);
+    } catch (error) {
+        console.error("Error converting values:", error);
+        utils.showError("Error converting values: " + error.message);
+        return;
+    }
+
     // Submit the form
     this.submit();
 });
@@ -836,7 +975,8 @@ $("#orderForm").on("submit", async function (e) {
 const exports = {
     utils,
     productList,
-    promoManager,
+    voucherManager,
+    discountManager,
     calculateTotals,
     updateShippingCost,
     calculateTotalWeight,

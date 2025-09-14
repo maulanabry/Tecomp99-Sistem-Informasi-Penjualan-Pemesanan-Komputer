@@ -39,8 +39,51 @@ class PaymentController extends Controller
         return view('owner.payment.show', compact('payment'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        // Check for pre-selected order from query parameters
+        $preSelectedOrder = null;
+        $preSelectedOrderType = null;
+
+        if ($request->has('order_product_id')) {
+            $order = OrderProduct::with('customer')->find($request->order_product_id);
+            if ($order) {
+                $preSelectedOrder = [
+                    'id' => $order->order_product_id,
+                    'customer_name' => $order->customer->name,
+                    'sub_total' => (float) $order->sub_total,
+                    'discount_amount' => (float) $order->discount_amount,
+                    'grand_total' => (float) $order->grand_total,
+                    'paid_amount' => (float) $order->paid_amount,
+                    'remaining_balance' => (float) $order->remaining_balance,
+                    'last_payment_at' => $order->last_payment_at ? $order->last_payment_at->toISOString() : null,
+                    'payment_status' => $order->status_payment,
+                    'type' => 'produk',
+                    'order_type_display' => 'Order Produk'
+                ];
+                $preSelectedOrderType = 'produk';
+            }
+        } elseif ($request->has('order_service_id')) {
+            $order = OrderService::with('customer')->find($request->order_service_id);
+            if ($order) {
+                $preSelectedOrder = [
+                    'id' => $order->order_service_id,
+                    'customer_name' => $order->customer->name,
+                    'sub_total' => (float) $order->sub_total,
+                    'discount_amount' => (float) $order->discount_amount,
+                    'grand_total' => (float) $order->grand_total,
+                    'paid_amount' => (float) $order->paid_amount,
+                    'remaining_balance' => (float) $order->remaining_balance,
+                    'last_payment_at' => $order->last_payment_at ? $order->last_payment_at->toISOString() : null,
+                    'payment_status' => $order->status_payment,
+                    'type' => 'servis',
+                    'order_type_display' => 'Order Servis',
+                    'device' => $order->device
+                ];
+                $preSelectedOrderType = 'servis';
+            }
+        }
+
         // Ambil order produk yang statusnya belum dibayar atau down_payment saja
         $orderProducts = OrderProduct::with('customer')
             ->whereNotIn('status_payment', ['dibatalkan', 'lunas', 'selesai'])
@@ -55,7 +98,9 @@ class PaymentController extends Controller
                     'paid_amount' => (float) $order->paid_amount,
                     'remaining_balance' => (float) $order->remaining_balance,
                     'last_payment_at' => $order->last_payment_at ? $order->last_payment_at->toISOString() : null,
-                    'payment_status' => $order->status_payment
+                    'payment_status' => $order->status_payment,
+                    'type' => 'produk',
+                    'order_type_display' => 'Order Produk'
                 ];
             });
 
@@ -73,13 +118,18 @@ class PaymentController extends Controller
                     'paid_amount' => (float) $order->paid_amount,
                     'remaining_balance' => (float) $order->remaining_balance,
                     'last_payment_at' => $order->last_payment_at ? $order->last_payment_at->toISOString() : null,
-                    'payment_status' => $order->status_payment
+                    'payment_status' => $order->status_payment,
+                    'type' => 'servis',
+                    'order_type_display' => 'Order Servis',
+                    'device' => $order->device
                 ];
             });
 
         return view('owner.payment.create', [
             'orderProducts' => $orderProducts,
             'orderServices' => $orderServices,
+            'preSelectedOrder' => $preSelectedOrder,
+            'preSelectedOrderType' => $preSelectedOrderType,
         ]);
     }
 

@@ -7,12 +7,12 @@ use App\Models\OrderService;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\Admin;
-use App\Models\User;
 use App\Services\NotificationService;
 use App\Enums\NotificationType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class OrderServiceController extends Controller
 {
@@ -122,7 +122,7 @@ class OrderServiceController extends Controller
             $orderService = OrderService::create([
                 'order_service_id' => $orderServiceId,
                 'customer_id' => $customer->customer_id,
-                'status_order' => 'Menunggu',
+                'status_order' => 'menunggu',
                 'status_payment' => 'belum_dibayar',
                 'complaints' => $request->complaints,
                 'type' => $request->type,
@@ -138,9 +138,8 @@ class OrderServiceController extends Controller
             // Increment service_orders_count for the customer
             $customer->increment('service_orders_count');
 
-            // Create notifications for all admins and owners after order service is saved
+            // Create notifications for all admins after order service is saved
             $admins = Admin::all();
-            $owners = User::where('role', 'pemilik')->get();
 
             // Notifikasi untuk Admin
             foreach ($admins as $admin) {
@@ -148,23 +147,6 @@ class OrderServiceController extends Controller
                     notifiable: $admin,
                     type: NotificationType::SERVICE_ORDER_CREATED,
                     subject: $orderService->fresh(), // Ensure we have the saved model with ID
-                    message: "Pesanan servis baru #{$orderServiceId} dari {$customer->name}",
-                    data: [
-                        'order_id' => $orderServiceId,
-                        'customer_name' => $customer->name,
-                        'device' => $request->device,
-                        'type' => $request->type,
-                        'complaints' => $request->complaints
-                    ]
-                );
-            }
-
-            // Notifikasi untuk Owner/Pemilik
-            foreach ($owners as $owner) {
-                $this->notificationService->create(
-                    notifiable: $owner,
-                    type: NotificationType::SERVICE_ORDER_CREATED,
-                    subject: $orderService->fresh(),
                     message: "Pesanan servis baru #{$orderServiceId} dari {$customer->name}",
                     data: [
                         'order_id' => $orderServiceId,
@@ -194,26 +176,27 @@ class OrderServiceController extends Controller
     /**
      * Helper method to update stock and sold count for items
      */
-    private function updateItemStock($item, $isIncrease = true)
+    private function updateItemStock($item, $isIncrease = true, $quantity = null)
     {
+        $qty = $quantity ?? $item->quantity;
         if ($item->item_type === 'App\\Models\\Product') {
             $product = Product::find($item->item_id);
             if ($product) {
                 if ($isIncrease) {
-                    $product->decrement('stock', $item->quantity);
-                    $product->increment('sold_count', $item->quantity);
+                    $product->decrement('stock', $qty);
+                    $product->increment('sold_count', $qty);
                 } else {
-                    $product->increment('stock', $item->quantity);
-                    $product->decrement('sold_count', $item->quantity);
+                    $product->increment('stock', $qty);
+                    $product->decrement('sold_count', $qty);
                 }
             }
         } elseif ($item->item_type === 'App\\Models\\Service') {
             $service = Service::find($item->item_id);
             if ($service) {
                 if ($isIncrease) {
-                    $service->increment('sold_count', $item->quantity);
+                    $service->increment('sold_count', $qty);
                 } else {
-                    $service->decrement('sold_count', $item->quantity);
+                    $service->decrement('sold_count', $qty);
                 }
             }
         }
@@ -222,8 +205,7 @@ class OrderServiceController extends Controller
     public function update(Request $request, OrderService $orderService)
     {
         $request->validate([
-            'status_order' => 'required|in:Menunggu,Diproses,Konfirmasi,Diantar,Perlu Diambil,Dibatalkan,Selesai',
-            'status_payment' => 'required|in:belum_dibayar,down_payment,lunas,dibatalkan',
+            'status_payment' => 'required|in:belum_dibayar,cicilan,lunas,dibatalkan',
             'type' => 'required|in:reguler,onsite',
             'device' => 'required|string',
             'complaints' => 'required|string',
@@ -240,6 +222,11 @@ class OrderServiceController extends Controller
             // Store previous status for comparison
             $previousStatus = $orderService->status_order;
 
+            // Validate discount amount doesn't exceed subtotal
+            if ($request->discount_amount > $request->sub_total) {
+                throw new \Exception('Jumlah diskon tidak boleh melebihi subtotal');
+            }
+
             // Calculate grand total
             $grandTotal = $request->sub_total - $request->discount_amount;
             if ($grandTotal < 0) {
@@ -247,7 +234,6 @@ class OrderServiceController extends Controller
             }
 
             $orderService->update([
-                'status_order' => $request->status_order,
                 'status_payment' => $request->status_payment,
                 'type' => $request->type,
                 'device' => $request->device,
@@ -260,11 +246,6 @@ class OrderServiceController extends Controller
                 'warranty_period_months' => $request->warranty_period_months,
             ]);
 
-            // If order is being completed, set warranty expiration
-            if ($previousStatus !== 'Selesai' && $request->status_order === 'Selesai') {
-                $orderService->updateWarrantyExpiration(now());
-            }
-
             // Update payment status
             $orderService->updatePaymentStatus();
 
@@ -274,19 +255,6 @@ class OrderServiceController extends Controller
             // Collect existing item IDs to track which to delete
             $existingItemIds = $orderService->items()->pluck('order_service_item_id')->toArray();
             $updatedItemIds = [];
-
-            // Handle stock changes based on status transition
-            if ($previousStatus !== 'Selesai' && $request->status_order === 'Selesai') {
-                // Order is being completed - decrease stock and increase sold count
-                foreach ($orderService->items as $item) {
-                    $this->updateItemStock($item, true);
-                }
-            } elseif ($previousStatus !== 'Dibatalkan' && $request->status_order === 'Dibatalkan') {
-                // Order is being cancelled - restore stock and decrease sold count
-                foreach ($orderService->items as $item) {
-                    $this->updateItemStock($item, false);
-                }
-            }
 
             foreach ($items as $itemData) {
                 $itemId = $itemData['order_service_item_id'] ?? null;
@@ -304,6 +272,7 @@ class OrderServiceController extends Controller
                 if ($itemId && in_array($itemId, $existingItemIds)) {
                     // Update existing item
                     $orderItem = $orderService->items()->where('order_service_item_id', $itemId)->first();
+                    $oldQuantity = $orderItem->quantity;
                     $orderItem->update([
                         'quantity' => $quantity,
                         'price' => $price,
@@ -311,6 +280,17 @@ class OrderServiceController extends Controller
                         'item_id' => $itemIdValue,
                         'item_total' => $itemTotal,
                     ]);
+
+                    // Adjust stock based on quantity change
+                    $quantityDiff = $quantity - $oldQuantity;
+                    if ($quantityDiff > 0) {
+                        // Quantity increased, decrease stock
+                        $this->updateItemStock($orderItem, true, abs($quantityDiff));
+                    } elseif ($quantityDiff < 0) {
+                        // Quantity decreased, increase stock
+                        $this->updateItemStock($orderItem, false, abs($quantityDiff));
+                    }
+
                     $updatedItemIds[] = $itemId;
                 } else {
                     // Create new item
@@ -321,13 +301,21 @@ class OrderServiceController extends Controller
                         'item_id' => $itemIdValue,
                         'item_total' => $itemTotal,
                     ];
-                    $orderService->items()->create($newItemData);
+                    $newItem = $orderService->items()->create($newItemData);
+
+                    // Decrease stock for new item
+                    $this->updateItemStock($newItem, true, $quantity);
                 }
             }
 
             // Delete removed items
             $itemsToDelete = array_diff($existingItemIds, $updatedItemIds);
             if (!empty($itemsToDelete)) {
+                $itemsToDeleteModels = $orderService->items()->whereIn('order_service_item_id', $itemsToDelete)->get();
+                foreach ($itemsToDeleteModels as $itemToDelete) {
+                    // Increase stock for deleted item
+                    $this->updateItemStock($itemToDelete, false, $itemToDelete->quantity);
+                }
                 $orderService->items()->whereIn('order_service_item_id', $itemsToDelete)->delete();
             }
 
@@ -335,6 +323,12 @@ class OrderServiceController extends Controller
 
             return redirect()->route('pemilik.order-service.show', $orderService)
                 ->with('success', 'Order servis berhasil diperbarui.');
+        } catch (ValidationException $e) {
+            DB::rollback();
+            return back()
+                ->withInput()
+                ->withErrors($e->errors())
+                ->with('error', 'Validasi gagal: ' . collect($e->errors())->flatten()->implode(', '));
         } catch (\Exception $e) {
             DB::rollback();
             return back()
@@ -345,6 +339,8 @@ class OrderServiceController extends Controller
 
     public function cancel(OrderService $orderService)
     {
+        $orderService->load('items');
+
         try {
             DB::beginTransaction();
 
@@ -352,11 +348,9 @@ class OrderServiceController extends Controller
                 throw new \Exception('Order yang sudah lunas tidak dapat dibatalkan');
             }
 
-            // If order was completed, revert the stock changes
-            if ($orderService->status_order === 'Selesai') {
-                foreach ($orderService->items as $item) {
-                    $this->updateItemStock($item, false);
-                }
+            // Revert the stock changes for all items
+            foreach ($orderService->items as $item) {
+                $this->updateItemStock($item, false);
             }
 
             // Cancel all related service tickets
@@ -364,9 +358,9 @@ class OrderServiceController extends Controller
                 'status' => 'Dibatalkan'
             ]);
 
-            // Update the status_order to 'Dibatalkan' instead of deleting
+            // Update the status_order to 'dibatalkan' instead of deleting
             $orderService->update([
-                'status_order' => 'Dibatalkan',
+                'status_order' => 'dibatalkan',
                 'status_payment' => 'dibatalkan',
             ]);
 
@@ -384,7 +378,7 @@ class OrderServiceController extends Controller
     public function updateStatus(Request $request, OrderService $orderService)
     {
         $validated = $request->validate([
-            'status_order' => 'required|in:Menunggu,Diproses,Konfirmasi,Diantar,Perlu Diambil,Dibatalkan,Selesai',
+            'status_order' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan',
         ]);
 
         try {
@@ -393,19 +387,29 @@ class OrderServiceController extends Controller
             $oldStatus = $orderService->status_order;
             $orderService->update($validated);
 
-            // Update related service tickets if status changed to Dibatalkan or Selesai
+            // Adjust stock based on status change
+            if ($oldStatus !== $orderService->status_order) {
+                if ($orderService->status_order === 'dibatalkan') {
+                    // Order is being cancelled - increase stock
+                    foreach ($orderService->items as $item) {
+                        $this->updateItemStock($item, false);
+                    }
+                }
+            }
+
+            // Update related service tickets if status changed to dibatalkan or selesai
             if ($oldStatus !== $orderService->status_order && $orderService->tickets()->exists()) {
-                if ($orderService->status_order === 'Dibatalkan') {
+                if ($orderService->status_order === 'dibatalkan') {
                     // Cancel all related service tickets
                     $orderService->tickets()->update([
                         'status' => 'Dibatalkan'
                     ]);
-                } elseif ($orderService->status_order === 'Selesai') {
+                } elseif ($orderService->status_order === 'selesai') {
                     // Complete all related service tickets that are not already completed or cancelled
                     $orderService->tickets()
                         ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
                         ->update([
-                            'status' => 'Selesai'
+                            'status' => 'Dibatalkan'
                         ]);
                 }
             }
@@ -414,16 +418,18 @@ class OrderServiceController extends Controller
             if ($oldStatus !== $orderService->status_order) {
                 try {
                     $type = match ($orderService->status_order) {
-                        'Selesai' => NotificationType::CUSTOMER_ORDER_SERVICE_STATUS_UPDATED,
+                        'selesai' => NotificationType::CUSTOMER_ORDER_SERVICE_STATUS_UPDATED,
                         default => NotificationType::CUSTOMER_ORDER_SERVICE_STATUS_UPDATED
                     };
 
                     $message = match ($orderService->status_order) {
-                        'Selesai' => "Order servis #{$orderService->order_service_id} telah selesai",
-                        'Diproses' => "Order servis #{$orderService->order_service_id} sedang diproses",
-                        'Diantar' => "Order servis #{$orderService->order_service_id} sedang diantar",
-                        'Perlu Diambil' => "Order servis #{$orderService->order_service_id} siap diambil",
-                        'Konfirmasi' => "Order servis #{$orderService->order_service_id} menunggu konfirmasi",
+                        'selesai' => "Order servis #{$orderService->order_service_id} telah selesai",
+                        'diproses' => "Order servis #{$orderService->order_service_id} sedang diproses",
+                        'diantar' => "Order servis #{$orderService->order_service_id} sedang diantar",
+                        'siap_diambil' => "Order servis #{$orderService->order_service_id} siap diambil",
+                        'dijadwalkan' => "Order servis #{$orderService->order_service_id} telah dijadwalkan",
+                        'menuju_lokasi' => "Order servis #{$orderService->order_service_id} sedang menuju lokasi",
+                        'menunggu_sparepart' => "Order servis #{$orderService->order_service_id} menunggu sparepart",
                         default => "Status order servis #{$orderService->order_service_id} diubah menjadi {$orderService->status_order}"
                     };
 
@@ -447,7 +453,7 @@ class OrderServiceController extends Controller
                     $admins = Admin::where('role', 'admin')->get();
                     foreach ($admins as $admin) {
                         $adminType = match ($orderService->status_order) {
-                            'Selesai' => NotificationType::SERVICE_ORDER_COMPLETED,
+                            'selesai' => NotificationType::SERVICE_ORDER_COMPLETED,
                             default => NotificationType::SERVICE_ORDER_STARTED
                         };
 
@@ -475,9 +481,9 @@ class OrderServiceController extends Controller
             $ticketMessage = '';
             if ($orderService->tickets()->exists()) {
                 $ticketCount = $orderService->tickets()->count();
-                if ($orderService->status_order === 'Dibatalkan') {
+                if ($orderService->status_order === 'dibatalkan') {
                     $ticketMessage = " dan {$ticketCount} tiket servis terkait telah dibatalkan";
-                } elseif ($orderService->status_order === 'Selesai') {
+                } elseif ($orderService->status_order === 'selesai') {
                     $ticketMessage = " dan {$ticketCount} tiket servis terkait telah diselesaikan";
                 }
             }
@@ -547,5 +553,37 @@ class OrderServiceController extends Controller
             'discount_type' => $voucher->type,
             'discount_value' => $voucher->type === 'percentage' ? $voucher->discount_percentage : $voucher->discount_amount,
         ]);
+    }
+
+    /**
+     * Remove voucher/discount from order
+     */
+    public function removeVoucher(Request $request, OrderService $orderService)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Calculate new grand total without discount
+            $newGrandTotal = $orderService->sub_total;
+
+            $orderService->update([
+                'discount_amount' => 0,
+                'grand_total' => $newGrandTotal,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Voucher berhasil dihapus',
+                'new_grand_total' => $newGrandTotal,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus voucher: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

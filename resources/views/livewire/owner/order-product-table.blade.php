@@ -4,33 +4,45 @@
         <!-- Status Tabs -->
         <div class="border-b border-gray-200 dark:border-gray-700">
             <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
-                <button wire:click="setActiveTab('all')" 
+                <button wire:click="setActiveTab('all')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'all' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Semua
+                    Semua ({{ $totalCount }})
                 </button>
                 <button wire:click="setActiveTab('menunggu')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'menunggu' ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Menunggu
+                    Menunggu ({{ $statusCounts['menunggu'] ?? 0 }})
+                </button>
+                <button wire:click="setActiveTab('inden')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'inden' ? 'border-orange-500 text-orange-600 dark:text-orange-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Inden ({{ $statusCounts['inden'] ?? 0 }})
+                </button>
+                <button wire:click="setActiveTab('siap_kirim')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'siap_kirim' ? 'border-purple-500 text-purple-600 dark:text-purple-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Siap Kirim ({{ $statusCounts['siap_kirim'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('diproses')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'diproses' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Diproses
+                    Diproses ({{ $statusCounts['diproses'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('dikirim')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'dikirim' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Dikirim
+                    Dikirim ({{ $statusCounts['dikirim'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('selesai')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'selesai' ? 'border-green-500 text-green-600 dark:text-green-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Selesai
+                    Selesai ({{ $statusCounts['selesai'] ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('dibatalkan')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'dibatalkan' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Dibatalkan
+                    Dibatalkan ({{ $statusCounts['dibatalkan'] ?? 0 }})
+                </button>
+                <button wire:click="setActiveTab('will_expire')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'will_expire' ? 'border-amber-500 text-amber-600 dark:text-amber-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Akan Hangus ({{ $willExpireCount ?? 0 }})
                 </button>
                 <button wire:click="setActiveTab('expired')"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'expired' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Melewati Batas Waktu
+                    Melewati Batas Waktu ({{ $expiredCount ?? 0 }})
                 </button>
             </nav>
         </div>
@@ -172,15 +184,18 @@
                         @php
                             $statusColors = [
                                 'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'inden' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                'siap_kirim' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
                                 'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
                                 'dikirim' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
                                 'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
                                 'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                'melewati_jatuh_tempo' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
                             ];
                             $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
-                            {{ ucfirst($order->status_order) }}
+                            {{ str_replace('_', ' ', ucfirst($order->status_order)) }}
                         </span>
                     </div>
                     <div class="col-span-1 text-sm">
@@ -262,15 +277,18 @@
                         @php
                             $statusColors = [
                                 'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'inden' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+                                'siap_kirim' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
                                 'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
                                 'dikirim' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
                                 'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
                                 'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+                                'melewati_jatuh_tempo' => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
                             ];
                             $colorClass = $statusColors[$order->status_order] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                         @endphp
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
-                            {{ ucfirst($order->status_order) }}
+                            {{ str_replace('_', ' ', ucfirst($order->status_order)) }}
                         </span>
                     </div>
                     <div class="flex justify-between text-sm text-gray-900 dark:text-gray-100">

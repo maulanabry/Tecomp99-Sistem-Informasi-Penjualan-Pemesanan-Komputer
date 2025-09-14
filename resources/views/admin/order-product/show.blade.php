@@ -194,12 +194,12 @@
                                             @if($isExpired)
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
                                                     <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                    Sudah Melewati Jatuh Tempo
+                                                    Sudah Melewati Batas Waktu / Kedaluwarsa
                                                 </span>
                                             @elseif($daysLeft <= 1)
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100">
                                                     <i class="fas fa-clock mr-1"></i>
-                                                    Segera Jatuh Tempo
+                                                    Segera Melewati Batas Waktu / Kedaluwarsa
                                                 </span>
                                             @else
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
