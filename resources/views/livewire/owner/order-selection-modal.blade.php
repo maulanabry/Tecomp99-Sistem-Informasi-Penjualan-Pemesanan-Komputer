@@ -101,6 +101,7 @@
                                 <option value="">Semua Status Bayar</option>
                                 <option value="belum_dibayar">Belum Dibayar</option>
                                 <option value="down_payment">Down Payment</option>
+                                <option value="cicilan">Cicilan</option>
                             </select>
                         </div>
 

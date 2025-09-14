@@ -23,9 +23,7 @@
 
                 <!-- Order Selection Button -->
                 <div class="mb-4">
-                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Pilih Order untuk Pembayaran <span class="text-red-500">*</span>
-                    </label>
+                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Pilih Order untuk Pembayaran <span class="text-red-500">*</span></label>
                     <button
                         type="button"
                         @click="openOrderModal()"
@@ -300,244 +298,387 @@
     </div>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const methodSelect = document.getElementById('method');
-                const amountInput = document.getElementById('amount');
-                const cashReceivedInput = document.getElementById('cash_received');
-                const paymentTypeSelect = document.getElementById('payment_type');
-                const changeReturnedInput = document.getElementById('change_returned');
-                const cashChangeContainer = document.getElementById('cashChangeContainer');
-                const cashReceivedContainer = document.getElementById('cashReceivedContainer');
-                const paymentValidationAlert = document.getElementById('paymentValidationAlert');
-                const paymentSuccessAlert = document.getElementById('paymentSuccessAlert');
-                const paymentValidationMessage = document.getElementById('paymentValidationMessage');
-                const paymentSuccessMessage = document.getElementById('paymentSuccessMessage');
-                
-                let currentOrder = null;
+        function paymentForm() {
+            return {
+                selectedOrder: null,
+                selectedOrderId: '',
+                selectedOrderType: '',
 
-                // Show/hide cash fields based on payment method
-                methodSelect.addEventListener('change', function() {
-                    if (this.value === 'Tunai') {
-                        cashReceivedContainer.classList.remove('hidden');
-                        cashChangeContainer.classList.remove('hidden');
-                        cashReceivedInput.required = true;
-                        calculateChange();
-                    } else {
-                        cashReceivedContainer.classList.add('hidden');
-                        cashChangeContainer.classList.add('hidden');
-                        cashReceivedInput.required = false;
-                        cashReceivedInput.value = '';
-                        changeReturnedInput.value = '';
+                openOrderModal() {
+                    Livewire.dispatch('openOrderModal');
+                },
+
+                clearOrder() {
+                    this.selectedOrder = null;
+                    this.selectedOrderId = '';
+                    this.selectedOrderType = '';
+                    // Reset payment form when order is cleared
+                    this.resetPaymentForm();
+                },
+
+                resetPaymentForm() {
+                    // Reset payment type options based on business rules
+                    const paymentTypeSelect = document.getElementById('payment_type');
+                    const amountInput = document.getElementById('amount');
+
+                    if (paymentTypeSelect) {
+                        paymentTypeSelect.innerHTML = '<option value="">Pilih tipe pembayaran</option>';
+                        paymentTypeSelect.innerHTML += '<option value="full">Full Payment</option>';
+                        paymentTypeSelect.innerHTML += '<option value="down_payment">Down Payment</option>';
+                        paymentTypeSelect.innerHTML += '<option value="cicilan">Cicilan</option>';
                     }
-                });
 
-                // Update amount when cash received changes
-                cashReceivedInput.addEventListener('input', function() {
-                    if (!currentOrder) return;
-                    
-                    const cashReceived = parseFloat(this.value) || 0;
-                    const remainingBalance = currentOrder.remaining_balance;
-                    
-                    // Amount is either remaining balance or cash received, whichever is smaller
-                    amountInput.value = Math.min(cashReceived, remainingBalance);
+                    if (amountInput) {
+                        amountInput.value = '';
+                    }
+                },
+
+                updatePaymentOptions() {
+                    if (!this.selectedOrder) return;
+
+                    const paymentTypeSelect = document.getElementById('payment_type');
+                    const amountInput = document.getElementById('amount');
+
+                    if (!paymentTypeSelect) return;
+
+                    // Clear existing options
+                    paymentTypeSelect.innerHTML = '<option value="">Pilih tipe pembayaran</option>';
+
+                    // Add options based on order type and business rules
+                    if (this.selectedOrder.type === 'produk') {
+                        // Product payment rules: full and down_payment only
+                        paymentTypeSelect.innerHTML += '<option value="full">Full Payment</option>';
+                        paymentTypeSelect.innerHTML += '<option value="down_payment">Down Payment (50%)</option>';
+                    } else if (this.selectedOrder.type === 'servis') {
+                        // Service payment rules: full and cicilan only
+                        paymentTypeSelect.innerHTML += '<option value="full">Full Payment</option>';
+                        paymentTypeSelect.innerHTML += '<option value="cicilan">Cicilan</option>';
+                    }
+                },
+
+                formatRupiah(number) {
+                    return new Intl.NumberFormat('id-ID').format(number);
+                },
+
+                formatDate(dateString) {
+                    return new Date(dateString).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                },
+
+                formatPaymentStatus(status) {
+                    const statusMap = {
+                        'belum_dibayar': 'Belum Dibayar',
+                        'down_payment': 'Down Payment',
+                        'cicilan': 'Cicilan',
+                        'lunas': 'Lunas',
+                        'dibatalkan': 'Dibatalkan'
+                    };
+                    return statusMap[status] || status;
+                },
+
+                formatOrderStatus(status) {
+                    const statusMap = {
+                        'menunggu': 'Menunggu',
+                        'Menunggu': 'Menunggu',
+                        'diproses': 'Diproses',
+                        'Diproses': 'Diproses',
+                        'dikirim': 'Dikirim',
+                        'selesai': 'Selesai',
+                        'Selesai': 'Selesai',
+                        'dibatalkan': 'Dibatalkan',
+                        'Dibatalkan': 'Dibatalkan'
+                    };
+                    return statusMap[status] || status;
+                },
+
+                init() {
+                    // Jika ada pre-selected order dari halaman detail order service atau produk, set secara otomatis
+                    // Ini memungkinkan admin langsung memproses pembayaran tanpa perlu memilih order manual
+                    @if($preSelectedOrder)
+                        this.selectedOrder = @json($preSelectedOrder);
+                        this.selectedOrderId = '{{ $preSelectedOrder['id'] }}';
+                        this.selectedOrderType = '{{ $preSelectedOrderType }}';
+
+                        // Update payment options based on pre-selected order
+                        this.$nextTick(() => {
+                            this.updatePaymentOptions();
+                            // Buka modal pemilihan order secara otomatis agar admin dapat melihat order yang sudah dipilih
+                            // Order yang dipilih akan ditandai dengan bintang dan badge "Dipilih"
+                            setTimeout(() => {
+                                this.openOrderModal();
+                            }, 500);
+                        });
+                    @endif
+
+                    // Listen for order selection from modal
+                    window.addEventListener('orderSelected', (event) => {
+                        this.selectedOrder = event.detail[0];
+                        this.selectedOrderId = event.detail[0].id;
+                        this.selectedOrderType = event.detail[0].type;
+
+                        // Update payment options based on selected order
+                        this.$nextTick(() => {
+                            this.updatePaymentOptions();
+                        });
+                    });
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const methodSelect = document.getElementById('method');
+            const amountInput = document.getElementById('amount');
+            const cashReceivedInput = document.getElementById('cash_received');
+            const paymentTypeSelect = document.getElementById('payment_type');
+            const changeReturnedInput = document.getElementById('change_returned');
+            const cashChangeContainer = document.getElementById('cashChangeContainer');
+            const cashReceivedContainer = document.getElementById('cashReceivedContainer');
+            const paymentValidationAlert = document.getElementById('paymentValidationAlert');
+            const paymentSuccessAlert = document.getElementById('paymentSuccessAlert');
+            const paymentValidationMessage = document.getElementById('paymentValidationMessage');
+            const paymentSuccessMessage = document.getElementById('paymentSuccessMessage');
+
+            let currentOrder = null;
+
+            // Listen for order selection to update currentOrder
+            window.addEventListener('orderSelected', (event) => {
+                currentOrder = event.detail[0];
+                validatePaymentAndCalculateChange();
+            });
+
+            // Show/hide cash fields based on payment method
+            methodSelect.addEventListener('change', function() {
+                if (this.value === 'Tunai') {
+                    cashReceivedContainer.classList.remove('hidden');
+                    cashChangeContainer.classList.remove('hidden');
+                    cashReceivedInput.required = true;
+
+                    // Set minimum cash received to match amount if order is selected
+                    if (currentOrder) {
+                        const currentAmount = window.rupiahFormatter.getValue(amountInput);
+                        if (currentAmount > 0) {
+                            window.rupiahFormatter.setValue(cashReceivedInput, currentAmount);
+                        }
+                    }
                     calculateChange();
-                });
+                } else {
+                    cashReceivedContainer.classList.add('hidden');
+                    cashChangeContainer.classList.add('hidden');
+                    cashReceivedInput.required = false;
 
-                // Validate payment and calculate change
-                function validatePaymentAndCalculateChange() {
-                    if (!currentOrder) return;
+                    // Clear cash fields for non-cash payments
+                    cashReceivedInput.value = '';
+                    changeReturnedInput.value = '';
 
-                    const amount = parseFloat(amountInput.value) || 0;
-                    const paymentType = paymentTypeSelect.value;
-                    const remainingBalance = currentOrder.remaining_balance || currentOrder.grand_total;
-
-                    // Hide previous alerts
-                    paymentValidationAlert.classList.add('hidden');
-                    paymentSuccessAlert.classList.add('hidden');
-
-                    // Validate payment
-                    if (amount <= 0) {
-                        showValidationError('Jumlah pembayaran harus lebih dari 0.');
-                        return;
+                    // Clear the hidden input created by currency formatter
+                    const hiddenCashInput = document.querySelector('input[name="cash_received"]');
+                    if (hiddenCashInput && hiddenCashInput.type === 'hidden') {
+                        hiddenCashInput.value = '';
                     }
+                }
+            });
 
-                    if (paymentType === 'full' && amount < remainingBalance) {
-                        showValidationError(`Total pembayaran tidak mencukupi untuk pelunasan penuh. Minimum: Rp ${formatRupiah(remainingBalance)}`);
-                        return;
+            // Update amount when cash received changes
+            cashReceivedInput.addEventListener('input', function() {
+                if (!currentOrder) return;
+
+                const cashReceived = window.rupiahFormatter.getValue(this);
+                const remainingBalance = currentOrder.remaining_balance;
+
+                // Amount is either remaining balance or cash received, whichever is smaller
+                const newAmount = Math.min(cashReceived, remainingBalance);
+                window.rupiahFormatter.setValue(amountInput, newAmount);
+                calculateChange();
+                validatePaymentAndCalculateChange();
+            });
+
+            // Update cash received when amount changes (for cash payments)
+            amountInput.addEventListener('input', function() {
+                if (methodSelect.value === 'Tunai' && currentOrder) {
+                    const amount = window.rupiahFormatter.getValue(this);
+                    const currentCashReceived = window.rupiahFormatter.getValue(cashReceivedInput);
+
+                    // If cash received is less than amount, update it to match amount
+                    if (currentCashReceived < amount) {
+                        window.rupiahFormatter.setValue(cashReceivedInput, amount);
                     }
+                }
+                validatePaymentAndCalculateChange();
+            });
 
-                    // Calculate change for cash payments
-                    if (methodSelect.value === 'Tunai') {
-                        calculateChange();
-                    }
+            // Handle payment type change with business rules
+            paymentTypeSelect.addEventListener('change', function() {
+                if (!currentOrder) return;
 
-                    // Show success message
-                    if (paymentType === 'full' && amount >= remainingBalance) {
-                        const change = amount - remainingBalance;
-                        if (change > 0) {
-                            showSuccessMessage(`Pembayaran lunas dengan kembalian Rp ${formatRupiah(change)}`);
-                        } else {
-                            showSuccessMessage('Pembayaran lunas');
+                const paymentType = this.value;
+                const remainingBalance = currentOrder.remaining_balance;
+
+                // Apply business rules based on order type and payment type
+                if (currentOrder.type === 'produk') {
+                    if (paymentType === 'down_payment') {
+                        // Product DP must be exactly 50%
+                        const dpAmount = Math.round(currentOrder.grand_total * 0.5);
+                        window.rupiahFormatter.setValue(amountInput, dpAmount);
+                        amountInput.readOnly = true;
+
+                        // Update cash received for cash payments
+                        if (methodSelect.value === 'Tunai') {
+                            window.rupiahFormatter.setValue(cashReceivedInput, dpAmount);
                         }
                     } else {
-                        showSuccessMessage(`Down payment sebesar Rp ${formatRupiah(amount)}`);
+                        amountInput.readOnly = false;
+                        if (paymentType === 'full') {
+                            window.rupiahFormatter.setValue(amountInput, remainingBalance);
+
+                            // Update cash received for cash payments
+                            if (methodSelect.value === 'Tunai') {
+                                window.rupiahFormatter.setValue(cashReceivedInput, remainingBalance);
+                            }
+                        }
+                    }
+                } else if (currentOrder.type === 'servis') {
+                    // Service payments are flexible
+                    amountInput.readOnly = false;
+                    if (paymentType === 'full') {
+                        window.rupiahFormatter.setValue(amountInput, remainingBalance);
+
+                        // Update cash received for cash payments
+                        if (methodSelect.value === 'Tunai') {
+                            window.rupiahFormatter.setValue(cashReceivedInput, remainingBalance);
+                        }
                     }
                 }
 
-                function calculateChange() {
-                    if (!currentOrder || methodSelect.value !== 'Tunai') return;
-                    
-                    const cashReceived = parseFloat(cashReceivedInput.value) || 0;
-                    const amount = parseFloat(amountInput.value) || 0;
-                    const change = Math.max(0, cashReceived - amount);
-                    changeReturnedInput.value = change;
+                validatePaymentAndCalculateChange();
+            });
+
+            // Validate payment and calculate change
+            function validatePaymentAndCalculateChange() {
+                if (!currentOrder) return;
+
+                const amount = window.rupiahFormatter.getValue(amountInput);
+                const paymentType = paymentTypeSelect.value;
+                const remainingBalance = currentOrder.remaining_balance || currentOrder.grand_total;
+
+                // Hide previous alerts
+                paymentValidationAlert.classList.add('hidden');
+                paymentSuccessAlert.classList.add('hidden');
+
+                // Validate payment
+                if (amount <= 0) {
+                    showValidationError('Jumlah pembayaran harus lebih dari 0.');
+                    return;
                 }
 
-                function showValidationError(message) {
-                    paymentValidationMessage.textContent = message;
-                    paymentValidationAlert.classList.remove('hidden');
-                    paymentSuccessAlert.classList.add('hidden');
-                }
-
-                function showSuccessMessage(message) {
-                    paymentSuccessMessage.textContent = message;
-                    paymentSuccessAlert.classList.remove('hidden');
-                    paymentValidationAlert.classList.add('hidden');
-                }
-
-                // Add event listeners for real-time validation
-                amountInput.addEventListener('input', validatePaymentAndCalculateChange);
-                paymentTypeSelect.addEventListener('change', validatePaymentAndCalculateChange);
-
-                // Warranty period validation and estimation
-                const warrantyInput = document.getElementById('warranty_period_months');
-                const warrantyEstimation = document.getElementById('warrantyEstimation');
-                const warrantyEstimationText = document.getElementById('warrantyEstimationText');
-                const warrantyValidationAlert = document.getElementById('warrantyValidationAlert');
-                const warrantyValidationMessage = document.getElementById('warrantyValidationMessage');
-
-                function validateWarrantyAndShowEstimation() {
-                    const months = parseInt(warrantyInput.value);
-                    
-                    // Hide previous alerts
-                    warrantyEstimation.classList.add('hidden');
-                    warrantyValidationAlert.classList.add('hidden');
-
-                    if (warrantyInput.value && (isNaN(months) || months < 1 || months > 60)) {
-                        warrantyValidationMessage.textContent = 'Masa garansi harus berupa angka antara 1-60 bulan.';
-                        warrantyValidationAlert.classList.remove('hidden');
+                // Business rule validation
+                if (currentOrder.type === 'produk' && paymentType === 'down_payment') {
+                    const expectedDP = Math.round(currentOrder.grand_total * 0.5);
+                    if (amount !== expectedDP) {
+                        showValidationError(`Down Payment untuk produk harus tepat 50% dari total (Rp ${formatRupiah(expectedDP)})`);
                         return;
                     }
+                }
 
-                    if (months && months > 0) {
-                        const estimatedDate = new Date();
-                        estimatedDate.setMonth(estimatedDate.getMonth() + months);
-                        const formattedDate = estimatedDate.toLocaleDateString('id-ID', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric'
-                        });
-                        warrantyEstimationText.textContent = `Estimasi Berakhir Garansi: ${formattedDate}`;
-                        warrantyEstimation.classList.remove('hidden');
+                if (paymentType === 'full' && amount < remainingBalance) {
+                    showValidationError(`Total pembayaran tidak mencukupi untuk pelunasan penuh. Minimum: Rp ${formatRupiah(remainingBalance)}`);
+                    return;
+                }
+
+                if (paymentType === 'cicilan') {
+                    if (amount > remainingBalance) {
+                        showValidationError(`Jumlah cicilan tidak boleh melebihi sisa pembayaran (Rp ${formatRupiah(remainingBalance)})`);
+                        return;
+                    }
+                    if (amount <= 0) {
+                        showValidationError('Jumlah cicilan harus lebih dari 0');
+                        return;
                     }
                 }
 
-                warrantyInput.addEventListener('input', validateWarrantyAndShowEstimation);
+                // Calculate change for cash payments
+                if (methodSelect.value === 'Tunai') {
+                    calculateChange();
+                }
 
-            const orderTypeSelect = document.getElementById('order_type');
-            const orderSelect = document.getElementById('order_id');
-            const orderProductInfo = document.getElementById('orderProductInfo');
-            const orderServiceInfo = document.getElementById('orderServiceInfo');
+                // Show success message
+                if (paymentType === 'full' && amount >= remainingBalance) {
+                    const change = amount - remainingBalance;
+                    if (change > 0) {
+                        showSuccessMessage(`Pembayaran lunas dengan kembalian Rp ${formatRupiah(change)}`);
+                    } else {
+                        showSuccessMessage('Pembayaran lunas');
+                    }
+                } else if (paymentType === 'down_payment') {
+                    showSuccessMessage(`Down payment sebesar Rp ${formatRupiah(amount)}`);
+                } else if (paymentType === 'cicilan') {
+                    const remainingAfterPayment = remainingBalance - amount;
+                    showSuccessMessage(`Cicilan sebesar Rp ${formatRupiah(amount)}. Sisa: Rp ${formatRupiah(remainingAfterPayment)}`);
+                }
+            }
 
-            // Format number to Indonesian Rupiah
+            function calculateChange() {
+                if (!currentOrder || methodSelect.value !== 'Tunai') return;
+
+                const cashReceived = window.rupiahFormatter.getValue(cashReceivedInput);
+                const amount = window.rupiahFormatter.getValue(amountInput);
+                const change = Math.max(0, cashReceived - amount);
+                window.rupiahFormatter.setValue(changeReturnedInput, change);
+            }
+
+            function showValidationError(message) {
+                paymentValidationMessage.textContent = message;
+                paymentValidationAlert.classList.remove('hidden');
+                paymentSuccessAlert.classList.add('hidden');
+            }
+
+            function showSuccessMessage(message) {
+                paymentSuccessMessage.textContent = message;
+                paymentSuccessAlert.classList.remove('hidden');
+                paymentValidationAlert.classList.add('hidden');
+            }
+
+            // Format number to Indonesian Rupiah (without Rp prefix since currency formatter handles it)
             const formatRupiah = (number) => {
-                return new Intl.NumberFormat('id-ID').format(number);
+                return number.toLocaleString('id-ID');
             };
 
-            orderTypeSelect.addEventListener('change', async function() {
-                orderSelect.disabled = true;
-                orderSelect.innerHTML = '<option value="">Memuat data...</option>';
-                orderProductInfo.classList.add('hidden');
-                orderServiceInfo.classList.add('hidden');
-                currentOrder = null;
+            // Warranty period validation and estimation
+            const warrantyInput = document.getElementById('warranty_period_months');
+            const warrantyEstimation = document.getElementById('warrantyEstimation');
+            const warrantyEstimationText = document.getElementById('warrantyEstimationText');
+            const warrantyValidationAlert = document.getElementById('warrantyValidationAlert');
+            const warrantyValidationMessage = document.getElementById('warrantyValidationMessage');
 
-                if (this.value) {
-                    let orders = [];
-                    if (this.value === 'produk') {
-                        orders = JSON.parse('@json($orderProducts)');
-                        orderProductInfo.classList.remove('hidden');
-                    } else if (this.value === 'servis') {
-                        orders = JSON.parse('@json($orderServices)');
-                        orderServiceInfo.classList.remove('hidden');
-                    }
+            function validateWarrantyAndShowEstimation() {
+                const months = parseInt(warrantyInput.value);
 
-                    orderSelect.innerHTML = '<option value="">Pilih order</option>';
-                    orders.forEach(order => {
-                        const option = document.createElement('option');
-                        option.value = order.id;
-                        option.textContent = `${order.id} - ${order.customer_name} (${order.payment_status})`;
-                        option.dataset.subTotal = order.sub_total;
-                        option.dataset.discount = order.discount_amount;
-                        option.dataset.grandTotal = order.grand_total;
-                        option.dataset.paidAmount = order.paid_amount || 0;
-                        option.dataset.remainingBalance = order.remaining_balance || order.grand_total;
-                        option.dataset.lastPayment = order.last_payment_at || '-';
-                        option.dataset.status = order.payment_status;
-                        option.dataset.customerName = order.customer_name;
-                        orderSelect.appendChild(option);
+                // Hide previous alerts
+                warrantyEstimation.classList.add('hidden');
+                warrantyValidationAlert.classList.add('hidden');
+
+                if (warrantyInput.value && (isNaN(months) || months < 1 || months > 60)) {
+                    warrantyValidationMessage.textContent = 'Masa garansi harus berupa angka antara 1-60 bulan.';
+                    warrantyValidationAlert.classList.remove('hidden');
+                    return;
+                }
+
+                if (months && months > 0) {
+                    const estimatedDate = new Date();
+                    estimatedDate.setMonth(estimatedDate.getMonth() + months);
+                    const formattedDate = estimatedDate.toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
                     });
-
-                    orderSelect.disabled = false;
-                } else {
-                    orderSelect.innerHTML = '<option value="">Pilih order terlebih dahulu</option>';
+                    warrantyEstimationText.textContent = `Estimasi Berakhir Garansi: ${formattedDate}`;
+                    warrantyEstimation.classList.remove('hidden');
                 }
-            });
+            }
 
-            orderSelect.addEventListener('change', function() {
-                if (this.value) {
-                    const selectedOption = this.options[this.selectedIndex];
-                    currentOrder = {
-                        id: selectedOption.value,
-                        sub_total: parseFloat(selectedOption.dataset.subTotal || 0),
-                        discount: parseFloat(selectedOption.dataset.discount || 0),
-                        grand_total: parseFloat(selectedOption.dataset.grandTotal || 0),
-                        paid_amount: parseFloat(selectedOption.dataset.paidAmount || 0),
-                        remaining_balance: parseFloat(selectedOption.dataset.remainingBalance || selectedOption.dataset.grandTotal || 0),
-                        last_payment: selectedOption.dataset.lastPayment,
-                        status: selectedOption.dataset.status,
-                        customer_name: selectedOption.dataset.customerName
-                    };
-
-                    if (orderTypeSelect.value === 'produk') {
-                        document.getElementById('productSubTotal').textContent = formatRupiah(currentOrder.sub_total);
-                        document.getElementById('productDiscount').textContent = formatRupiah(currentOrder.discount);
-                        document.getElementById('productGrandTotal').textContent = formatRupiah(currentOrder.grand_total);
-                        document.getElementById('productPaidAmount').textContent = formatRupiah(currentOrder.paid_amount);
-                        document.getElementById('productRemainingBalance').textContent = formatRupiah(currentOrder.remaining_balance);
-                        document.getElementById('productLastPayment').textContent = currentOrder.last_payment !== '-' ? new Date(currentOrder.last_payment).toLocaleDateString('id-ID') : '-';
-                        document.getElementById('productPaymentStatus').textContent = currentOrder.status;
-                        document.getElementById('productCustomerName').textContent = currentOrder.customer_name;
-                    } else if (orderTypeSelect.value === 'servis') {
-                        document.getElementById('serviceSubTotal').textContent = formatRupiah(currentOrder.sub_total);
-                        document.getElementById('serviceDiscount').textContent = formatRupiah(currentOrder.discount);
-                        document.getElementById('serviceGrandTotal').textContent = formatRupiah(currentOrder.grand_total);
-                        document.getElementById('servicePaidAmount').textContent = formatRupiah(currentOrder.paid_amount);
-                        document.getElementById('serviceRemainingBalance').textContent = formatRupiah(currentOrder.remaining_balance);
-                        document.getElementById('serviceLastPayment').textContent = currentOrder.last_payment !== '-' ? new Date(currentOrder.last_payment).toLocaleDateString('id-ID') : '-';
-                        document.getElementById('servicePaymentStatus').textContent = currentOrder.status;
-                        document.getElementById('serviceCustomerName').textContent = currentOrder.customer_name;
-                    }
-
-                    // Validate payment after order selection
-                    validatePaymentAndCalculateChange();
-                }
-            });
-        });
-
-        // Trigger change event on orderTypeSelect on page load
-        window.addEventListener('load', function() {
-            const orderTypeSelect = document.getElementById('order_type');
-            orderTypeSelect.dispatchEvent(new Event('change'));
+            warrantyInput.addEventListener('input', validateWarrantyAndShowEstimation);
         });
 
         // Image Upload Functionality
