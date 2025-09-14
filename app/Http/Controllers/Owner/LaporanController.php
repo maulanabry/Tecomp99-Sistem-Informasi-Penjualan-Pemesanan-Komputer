@@ -47,37 +47,48 @@ class LaporanController extends Controller
 
     private function getSalesSummary($start, $end)
     {
-        // Total Product Orders
+        // A. Total Pesanan Produk (jumlah semua order product)
         $totalOrders = OrderProduct::whereBetween('created_at', [$start, $end])
             ->whereNotIn('status_payment', ['dibatalkan'])
             ->count();
 
-        // Total Products Sold (sum of quantities from order items)
+        // B. Total Produk Terjual (sum dari quantity produk pada order yang statusnya selesai)
         $totalProductsSold = OrderProductItem::whereHas('orderProduct', function ($query) use ($start, $end) {
             $query->whereBetween('created_at', [$start, $end])
+                ->where('status_order', 'selesai')
                 ->whereNotIn('status_payment', ['dibatalkan']);
         })->sum('quantity');
 
-        // Total Revenue (grand_total from paid orders)
+        // C. Total Pendapatan (Kotor) → hitung dari order_products dengan status_payment = lunas
         $totalRevenue = OrderProduct::whereBetween('created_at', [$start, $end])
-            ->whereIn('status_payment', ['lunas', 'down_payment'])
+            ->where('status_payment', 'lunas')
             ->sum('grand_total');
 
-        // Total Discounts
+        // D. Jumlah Produk dengan Stok Rendah/Habis (misal stok < 5)
+        $lowStockProducts = Product::where('stock', '<', 5)->count();
+
+        // E. Pesanan yang Belum Diselesaikan → order product dengan status_order selain selesai dan dibatalkan
+        $pendingOrders = OrderProduct::whereBetween('created_at', [$start, $end])
+            ->whereNotIn('status_order', ['selesai', 'dibatalkan'])
+            ->whereNotIn('status_payment', ['dibatalkan'])
+            ->count();
+
+        // F. Total Diskon
         $totalDiscounts = OrderProduct::whereBetween('created_at', [$start, $end])
             ->whereNotIn('status_payment', ['dibatalkan'])
             ->sum('discount_amount');
 
-        // Total Shipping
+        // G. Total Ongkir
         $totalShipping = OrderProduct::whereBetween('created_at', [$start, $end])
             ->whereNotIn('status_payment', ['dibatalkan'])
-            ->where('type', 'pengiriman')
             ->sum('shipping_cost');
 
         return [
             'total_orders' => $totalOrders,
             'total_products_sold' => $totalProductsSold,
             'total_revenue' => $totalRevenue,
+            'low_stock_products' => $lowStockProducts,
+            'pending_orders' => $pendingOrders,
             'total_discounts' => $totalDiscounts,
             'total_shipping' => $totalShipping
         ];
@@ -86,8 +97,8 @@ class LaporanController extends Controller
     private function getSalesData($start, $end, $request)
     {
         $query = OrderProduct::with(['customer', 'payments'])
-            ->whereBetween('created_at', [$start, $end])
-            ->whereNotIn('status_payment', ['dibatalkan']);
+            ->whereBetween('order_products.created_at', [$start, $end])
+            ->whereNotIn('order_products.status_payment', ['dibatalkan']);
 
         // Search functionality
         if ($request->has('search') && !empty($request->search)) {
@@ -100,8 +111,53 @@ class LaporanController extends Controller
             });
         }
 
+        // Filter by status_order
+        if ($request->has('status_order') && !empty($request->status_order)) {
+            $query->where('order_products.status_order', $request->status_order);
+        }
+
+        // Filter by status_payment
+        if ($request->has('status_payment') && !empty($request->status_payment)) {
+            $query->where('order_products.status_payment', $request->status_payment);
+        }
+
+        // Filter by payment method
+        if ($request->has('payment_method') && !empty($request->payment_method)) {
+            $query->whereHas('payments', function ($paymentQuery) use ($request) {
+                $paymentQuery->where('method', $request->payment_method);
+            });
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDirection = $request->get('sort_direction', 'desc');
+
+        // Validate sort_by to prevent SQL injection
+        $allowedSortFields = ['created_at', 'grand_total', 'order_product_id', 'customer_name', 'items_count', 'primary_payment_method', 'status_payment', 'status_order'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'created_at';
+        }
+
+        // Handle special sort fields
+        if ($sortBy === 'customer_name') {
+            $query->leftJoin('customers', 'order_products.customer_id', '=', 'customers.customer_id')
+                ->orderBy('customers.name', $sortDirection);
+        } elseif ($sortBy === 'items_count') {
+            // For items_count, we need to add it as a subquery or handle differently
+            // Since items_count is calculated after, we'll sort by created_at for now
+            $query->orderBy('order_products.created_at', $sortDirection);
+        } elseif ($sortBy === 'primary_payment_method') {
+            // Sort by payment method from payments relationship
+            $query->leftJoin('payment_details', function ($join) {
+                $join->on('order_products.order_product_id', '=', 'payment_details.order_product_id')
+                    ->where('payment_details.status', 'dibayar');
+            })->orderBy('payment_details.method', $sortDirection);
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
         // Get items count for each order
-        $orders = $query->orderBy('created_at', 'desc')->paginate(15);
+        $orders = $query->paginate(15)->appends($request->query());
 
         // Add items count to each order
         foreach ($orders as $order) {
@@ -121,6 +177,15 @@ class LaporanController extends Controller
             ->groupBy('date')
             ->orderBy('date')
             ->get();
+
+        // A. Sales per day by payment status
+        $salesByPaymentStatus = OrderProduct::selectRaw('DATE(created_at) as date, status_payment, SUM(grand_total) as total')
+            ->whereBetween('created_at', [$start, $end])
+            ->whereNotIn('status_payment', ['dibatalkan'])
+            ->groupBy('date', 'status_payment')
+            ->orderBy('date')
+            ->get()
+            ->groupBy('date');
 
         // Payment method distribution
         $paymentMethods = PaymentDetail::selectRaw('method, COUNT(*) as count, SUM(amount) as total_amount')
@@ -155,6 +220,13 @@ class LaporanController extends Controller
             ->limit(5)
             ->get();
 
+        // D. Low stock products
+        $lowStockProducts = Product::select('name', 'stock')
+            ->where('stock', '<', 5)
+            ->orderBy('stock', 'asc')
+            ->limit(10)
+            ->get();
+
         // Order Types Data for chart
         $orderTypes = OrderProduct::selectRaw('COALESCE(type, "Tidak Diketahui") as order_type, COUNT(*) as total_orders, SUM(grand_total) as total_revenue')
             ->whereBetween('created_at', [$start, $end])
@@ -163,12 +235,22 @@ class LaporanController extends Controller
             ->orderBy('total_orders', 'desc')
             ->get();
 
+        // H. Payment status distribution
+        $paymentStatusDistribution = OrderProduct::selectRaw('status_payment, COUNT(*) as count, SUM(grand_total) as total_amount')
+            ->whereBetween('created_at', [$start, $end])
+            ->whereNotIn('status_payment', ['dibatalkan'])
+            ->groupBy('status_payment')
+            ->get();
+
         return [
             'sales_per_day' => $salesPerDay,
+            'sales_by_payment_status' => $salesByPaymentStatus,
             'payment_methods' => $paymentMethods,
             'top_products' => $topProducts,
             'low_products' => $lowProducts,
-            'order_types' => $orderTypes
+            'low_stock_products' => $lowStockProducts,
+            'order_types' => $orderTypes,
+            'payment_status_distribution' => $paymentStatusDistribution
         ];
     }
 
@@ -305,10 +387,22 @@ class LaporanController extends Controller
         // Get chart data for services
         $chartData = $this->getServiceChartData($start, $end);
 
+        // Get technicians for filter
+        $technicians = DB::table('admins')
+            ->join('service_tickets', 'admins.id', '=', 'service_tickets.admin_id')
+            ->join('order_services', 'service_tickets.order_service_id', '=', 'order_services.order_service_id')
+            ->whereBetween('order_services.created_at', [$start, $end])
+            ->whereNotIn('order_services.status_payment', ['dibatalkan'])
+            ->select('admins.id', 'admins.name')
+            ->distinct()
+            ->orderBy('admins.name')
+            ->get();
+
         return view('owner.laporan.pemesanan-servis', compact(
             'serviceSummary',
             'serviceData',
             'chartData',
+            'technicians',
             'startDate',
             'endDate'
         ));
@@ -316,54 +410,61 @@ class LaporanController extends Controller
 
     private function getServiceSummary($start, $end)
     {
-        // Total Service Orders
+        // A. Total Service Orders → with subheading showing total revenue (Rp)
         $totalOrders = OrderService::whereBetween('created_at', [$start, $end])
             ->whereNotIn('status_payment', ['dibatalkan'])
             ->count();
 
-        // Total Services Ordered (count orders with status_payment = belum_dibayar)
-        $totalServicesOrdered = OrderService::whereBetween('created_at', [$start, $end])
-            ->where('status_payment', 'belum_dibayar')
-            ->count();
-
-        // Total Revenue (grand_total from LUNAS orders only)
-        $totalRevenue = OrderService::whereBetween('created_at', [$start, $end])
-            ->where('status_payment', 'lunas')
+        $totalRevenueAll = OrderService::whereBetween('created_at', [$start, $end])
+            ->whereNotIn('status_payment', ['dibatalkan'])
             ->sum('grand_total');
 
-        // Total Discounts
-        $totalDiscounts = OrderService::whereBetween('created_at', [$start, $end])
-            ->whereNotIn('status_payment', ['dibatalkan'])
-            ->sum('discount_amount');
-
-        // Count of orders with technicians assigned
-        $ordersWithTechnicians = OrderService::whereBetween('created_at', [$start, $end])
-            ->whereNotIn('status_payment', ['dibatalkan'])
-            ->whereHas('tickets')
-            ->count();
-
-        // Count of completed orders
+        // B. Total Completed Orders
         $completedOrders = OrderService::whereBetween('created_at', [$start, $end])
             ->where('status_order', 'selesai')
             ->count();
 
-        // Total paid amount from down_payment orders
-        $downPaymentAmount = OrderService::whereBetween('created_at', [$start, $end])
-            ->where('status_payment', 'down_payment')
-            ->sum('paid_amount');
+        // C. Total Revenue (Gross) → from service orders with status_payment = lunas
+        $totalRevenue = OrderService::whereBetween('created_at', [$start, $end])
+            ->where('status_payment', 'lunas')
+            ->sum('grand_total');
 
-        // Average revenue per order (only from lunas orders)
-        $averagePerOrder = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
+        // D. Pending Orders → orders with status_order not in (selesai, dibatalkan)
+        $pendingOrders = OrderService::whereBetween('created_at', [$start, $end])
+            ->whereNotIn('status_order', ['selesai', 'dibatalkan'])
+            ->whereNotIn('status_payment', ['dibatalkan'])
+            ->count();
+
+        // E. Average Completion Time
+        $completedOrdersData = OrderService::whereBetween('created_at', [$start, $end])
+            ->where('status_order', 'selesai')
+            ->whereNotNull('estimated_completion')
+            ->get();
+
+        $totalCompletionTime = 0;
+        $completedCount = 0;
+        foreach ($completedOrdersData as $order) {
+            $created = Carbon::parse($order->created_at);
+            $completed = Carbon::parse($order->estimated_completion);
+            $diffInHours = $created->diffInHours($completed);
+            $totalCompletionTime += $diffInHours;
+            $completedCount++;
+        }
+        $averageCompletionTime = $completedCount > 0 ? $totalCompletionTime / $completedCount : 0;
+
+        // F. Late / Expired Orders → count of orders with isExpired = true
+        $expiredOrders = OrderService::whereBetween('created_at', [$start, $end])
+            ->where('is_expired', true)
+            ->count();
 
         return [
             'total_orders' => $totalOrders,
-            'total_services_ordered' => $totalServicesOrdered,
-            'total_revenue' => $totalRevenue,
-            'total_discounts' => $totalDiscounts,
-            'orders_with_technicians' => $ordersWithTechnicians,
+            'total_revenue_all' => $totalRevenueAll,
             'completed_orders' => $completedOrders,
-            'down_payment_amount' => $downPaymentAmount,
-            'average_per_order' => $averagePerOrder
+            'total_revenue' => $totalRevenue,
+            'pending_orders' => $pendingOrders,
+            'average_completion_time' => $averageCompletionTime,
+            'expired_orders' => $expiredOrders
         ];
     }
 
@@ -384,8 +485,75 @@ class LaporanController extends Controller
             });
         }
 
+        // Filter by status_order
+        if ($request->has('status_order') && !empty($request->status_order)) {
+            $query->where('status_order', $request->status_order);
+        }
+
+        // Filter by status_payment
+        if ($request->has('status_payment') && !empty($request->status_payment)) {
+            $query->where('status_payment', $request->status_payment);
+        }
+
+        // Filter by payment method
+        if ($request->has('payment_method') && !empty($request->payment_method)) {
+            $query->whereHas('paymentDetails', function ($paymentQuery) use ($request) {
+                $paymentQuery->where('method', $request->payment_method);
+            });
+        }
+
+        // Filter by expired status
+        if ($request->has('expired_status') && !empty($request->expired_status)) {
+            switch ($request->expired_status) {
+                case 'expired':
+                    $query->where('is_expired', true);
+                    break;
+                case 'upcoming':
+                    $query->where('is_expired', false)
+                        ->whereNotNull('expired_date')
+                        ->where('expired_date', '<=', Carbon::now()->addDays(7));
+                    break;
+                case 'active':
+                    $query->where(function ($q) {
+                        $q->where('is_expired', false)
+                            ->where(function ($subQ) {
+                                $subQ->whereNull('expired_date')
+                                    ->orWhere('expired_date', '>', Carbon::now()->addDays(7));
+                            });
+                    });
+                    break;
+            }
+        }
+
+        // Filter by technician
+        if ($request->has('technician') && !empty($request->technician)) {
+            $query->whereHas('tickets', function ($ticketQuery) use ($request) {
+                $ticketQuery->where('admin_id', $request->technician);
+            });
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDirection = $request->get('sort_direction', 'desc');
+
+        // Validate sort_by to prevent SQL injection
+        $allowedSortFields = ['created_at', 'grand_total', 'order_service_id', 'customer_name', 'status_order', 'status_payment', 'expired_date'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'created_at';
+        }
+
+        // Handle special sort fields
+        if ($sortBy === 'customer_name') {
+            $query->leftJoin('customers', 'order_services.customer_id', '=', 'customers.customer_id')
+                ->orderBy('customers.name', $sortDirection);
+        } elseif ($sortBy === 'expired_date') {
+            $query->orderBy('expired_date', $sortDirection);
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
         // Get orders with pagination
-        $orders = $query->orderBy('created_at', 'desc')->paginate(15);
+        $orders = $query->paginate(15)->appends($request->query());
 
         // Add additional data to each order
         foreach ($orders as $order) {
@@ -439,25 +607,44 @@ class LaporanController extends Controller
 
     private function getServiceChartData($start, $end)
     {
-        // Service orders per day with discounts
-        $servicePerDay = OrderService::selectRaw('DATE(created_at) as date, SUM(grand_total) as total, SUM(discount_amount) as discount, COUNT(*) as orders')
+        // Orders Over Time (daily/weekly/monthly by payment status)
+        $ordersOverTime = OrderService::selectRaw('DATE(created_at) as date, status_payment, COUNT(*) as count, SUM(grand_total) as total')
             ->whereBetween('created_at', [$start, $end])
-            ->whereIn('status_payment', ['lunas', 'down_payment'])
+            ->whereNotIn('status_payment', ['dibatalkan'])
+            ->groupBy('date', 'status_payment')
+            ->orderBy('date')
+            ->get()
+            ->groupBy('date');
+
+        // Discount Usage Trend
+        $discountTrend = OrderService::selectRaw('DATE(created_at) as date, SUM(discount_amount) as total_discount, COUNT(*) as orders_with_discount')
+            ->whereBetween('created_at', [$start, $end])
+            ->where('discount_amount', '>', 0)
+            ->whereNotIn('status_payment', ['dibatalkan'])
             ->groupBy('date')
             ->orderBy('date')
             ->get();
 
-        // Payment method distribution for services
-        $paymentMethods = PaymentDetail::selectRaw('method, COUNT(*) as count, SUM(amount) as total_amount')
-            ->whereHas('orderService', function ($query) use ($start, $end) {
-                $query->whereBetween('created_at', [$start, $end]);
-            })
-            ->where('status', 'dibayar')
-            ->groupBy('method')
+        // Technician Workload (orders per technician)
+        $technicianWorkload = DB::table('service_tickets')
+            ->join('order_services', 'service_tickets.order_service_id', '=', 'order_services.order_service_id')
+            ->join('admins', 'service_tickets.admin_id', '=', 'admins.id')
+            ->selectRaw('admins.name as technician_name, COUNT(*) as total_orders')
+            ->whereBetween('order_services.created_at', [$start, $end])
+            ->whereNotIn('order_services.status_payment', ['dibatalkan'])
+            ->groupBy('admins.id', 'admins.name')
+            ->orderBy('total_orders', 'desc')
             ->get();
 
-        // Top 5 Most Ordered Services
-        $topServices = Service::selectRaw('service.name, SUM(order_service_items.quantity) as total_ordered, SUM(order_service_items.quantity * order_service_items.price) as total_revenue')
+        // Service Type Distribution (onsite vs. ticket service)
+        $serviceTypeDistribution = OrderService::selectRaw('COALESCE(type, "ticket") as service_type, COUNT(*) as count')
+            ->whereBetween('created_at', [$start, $end])
+            ->whereNotIn('status_payment', ['dibatalkan'])
+            ->groupBy('type')
+            ->get();
+
+        // Top Requested Services
+        $topServices = Service::selectRaw('service.name, SUM(order_service_items.quantity) as total_ordered')
             ->join('order_service_items', 'service.service_id', '=', 'order_service_items.item_id')
             ->join('order_services', 'order_service_items.order_service_id', '=', 'order_services.order_service_id')
             ->where('order_service_items.item_type', 'App\\Models\\Service')
@@ -468,36 +655,60 @@ class LaporanController extends Controller
             ->limit(5)
             ->get();
 
-        // Bottom 5 Least Ordered Services
-        $lowServices = Service::selectRaw('service.name, COALESCE(SUM(order_service_items.quantity), 0) as total_ordered')
-            ->leftJoin('order_service_items', function ($join) {
-                $join->on('service.service_id', '=', 'order_service_items.item_id')
-                    ->where('order_service_items.item_type', '=', 'App\\Models\\Service');
-            })
-            ->leftJoin('order_services', function ($join) use ($start, $end) {
-                $join->on('order_service_items.order_service_id', '=', 'order_services.order_service_id')
-                    ->whereBetween('order_services.created_at', [$start, $end])
-                    ->whereNotIn('order_services.status_payment', ['dibatalkan']);
-            })
-            ->groupBy('service.service_id', 'service.name')
-            ->orderBy('total_ordered', 'asc')
-            ->limit(5)
-            ->get();
-
-        // Service Types (Reguler vs Onsite)
-        $serviceTypes = OrderService::selectRaw('COALESCE(type, "Reguler") as service_type, COUNT(*) as total_orders, SUM(grand_total) as total_revenue')
+        // Payment Analytics: Payment Status
+        $paymentStatusDistribution = OrderService::selectRaw('status_payment, COUNT(*) as count, SUM(grand_total) as total_amount')
             ->whereBetween('created_at', [$start, $end])
             ->whereNotIn('status_payment', ['dibatalkan'])
-            ->groupBy('type')
-            ->orderBy('total_orders', 'desc')
+            ->groupBy('status_payment')
+            ->get();
+
+        // Payment Analytics: Payment Method
+        $paymentMethods = PaymentDetail::selectRaw('method, COUNT(*) as count, SUM(amount) as total_amount')
+            ->whereHas('orderService', function ($query) use ($start, $end) {
+                $query->whereBetween('created_at', [$start, $end]);
+            })
+            ->where('status', 'dibayar')
+            ->groupBy('method')
+            ->get();
+
+        // Expiration Analytics: Expired Orders
+        $expiredOrders = OrderService::whereBetween('created_at', [$start, $end])
+            ->where('is_expired', true)
+            ->count();
+
+        // Expiration Analytics: Upcoming Expiration Orders
+        $upcomingExpiration = OrderService::whereBetween('created_at', [$start, $end])
+            ->where('is_expired', false)
+            ->whereNotNull('expired_date')
+            ->where('expired_date', '<=', Carbon::now()->addDays(7))
+            ->count();
+
+        // Reguler Orders by Status (type != 'onsite')
+        $regulerOrdersByStatus = OrderService::selectRaw('status_order, COUNT(*) as count')
+            ->whereBetween('created_at', [$start, $end])
+            ->whereNotIn('status_payment', ['dibatalkan'])
+            ->where('type', '!=', 'onsite')
+            ->groupBy('status_order')
+            ->get();
+
+        // Onsite Orders by Status (type = 'onsite')
+        $onsiteOrdersByStatus = OrderService::selectRaw('status_order, COUNT(*) as count')
+            ->whereBetween('created_at', [$start, $end])
+            ->whereNotIn('status_payment', ['dibatalkan'])
+            ->where('type', 'onsite')
+            ->groupBy('status_order')
             ->get();
 
         return [
-            'service_per_day' => $servicePerDay,
-            'payment_methods' => $paymentMethods,
+            'orders_over_time' => $ordersOverTime,
+            'discount_trend' => $discountTrend,
+            'technician_workload' => $technicianWorkload,
+            'service_type_distribution' => $serviceTypeDistribution,
             'top_services' => $topServices,
-            'low_services' => $lowServices,
-            'service_types' => $serviceTypes
+            'payment_status_distribution' => $paymentStatusDistribution,
+            'payment_methods' => $paymentMethods,
+            'reguler_orders_by_status' => $regulerOrdersByStatus,
+            'onsite_orders_by_status' => $onsiteOrdersByStatus
         ];
     }
 
