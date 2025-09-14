@@ -391,8 +391,8 @@
                         if (option.value) {
                             option.disabled = false;
                             option.style.color = '';
-                            // Remove both old and new booking indicators
-                            option.textContent = option.textContent.replace(' (Tidak Tersedia)', '').replace(/ \(Dipesan - .*\)$/, '');
+                            // Remove booking indicators
+                            option.textContent = option.textContent.replace(/ \(Tidak Tersedia - .*\)$/, '');
                         }
                     });
                 }
@@ -433,15 +433,17 @@
                     
                     // Reset semua option terlebih dahulu
                     resetTimeSlotOptions();
-                    
-                    // Nonaktifkan semua slot yang sudah dibooking (kecuali tiket saat ini)
+
+                    // Nonaktifkan slot yang sudah dibooking oleh teknisi yang dipilih (kecuali tiket saat ini)
                     if (data.booked_slots && data.booked_slots.length > 0) {
                         data.booked_slots.forEach(bookedSlot => {
-                            const option = Array.from(visitTimeSlot.options).find(opt => opt.value === bookedSlot.time_slot);
-                            if (option) {
-                                option.disabled = true;
-                                option.style.color = '#9CA3AF'; // text-gray-400
-                                option.textContent += ` (Dipesan - ${bookedSlot.customer_name})`;
+                            if (bookedSlot.slot_disabled) {
+                                const option = Array.from(visitTimeSlot.options).find(opt => opt.value === bookedSlot.time_slot);
+                                if (option) {
+                                    option.disabled = true;
+                                    option.style.color = '#9CA3AF'; // text-gray-400
+                                    option.textContent += ` (Tidak Tersedia - ${bookedSlot.customer_name} - ${bookedSlot.technician_name})`;
+                                }
                             }
                         });
                     }

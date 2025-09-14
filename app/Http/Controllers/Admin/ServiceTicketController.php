@@ -549,12 +549,13 @@ class ServiceTicketController extends Controller
                 return [
                     'time_slot' => $ticket->visit_schedule->format('H:i'),
                     'customer_name' => $ticket->orderService->customer->name ?? 'Unknown',
+                    'technician_name' => $ticket->admin->name ?? 'Unknown',
                     'order_service_id' => $ticket->order_service_id,
                     'device' => $ticket->orderService->device ?? '',
                     'technician_assigned' => true,
                     'assigned_to_current' => $ticket->admin_id == $validated['admin_id'],
                     'ticket_id' => $ticket->service_ticket_id,
-                    'slot_disabled' => true // Disable all booked slots to prevent double booking
+                    'slot_disabled' => $ticket->admin_id == $validated['admin_id'] // Only disable slots booked by current technician
                 ];
             })
             ->toArray();
@@ -603,8 +604,9 @@ class ServiceTicketController extends Controller
             'exclude_order_service_id' => $excludeOrderServiceId
         ]);
 
-        // Cek apakah slot waktu spesifik sudah diambil
-        $query = ServiceTicket::whereDate('visit_schedule', $visitDate)
+        // Cek apakah slot waktu spesifik sudah diambil oleh teknisi ini
+        $query = ServiceTicket::where('admin_id', $adminId)
+            ->whereDate('visit_schedule', $visitDate)
             ->whereRaw("TIME(visit_schedule) = ?", [$timeSlot . ':00'])
             ->whereHas('orderService', function ($q) {
                 $q->where('type', 'onsite');
