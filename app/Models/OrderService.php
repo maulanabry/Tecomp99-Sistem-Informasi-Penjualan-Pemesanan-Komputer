@@ -137,6 +137,13 @@ class OrderService extends Model
     ];
 
     /**
+     * The relationships that should always be loaded.
+     *
+     * @var array
+     */
+    protected $with = ['payments'];
+
+    /**
      * Boot method to handle model events
      */
     protected static function boot()
@@ -322,6 +329,11 @@ class OrderService extends Model
     public function assignedAdmin()
     {
         return $this->belongsTo(Admin::class, 'assigned_admin_id', 'id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(PaymentDetail::class, 'order_service_id', 'order_service_id');
     }
 
     /**

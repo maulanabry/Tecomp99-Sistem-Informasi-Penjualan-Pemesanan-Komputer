@@ -76,8 +76,8 @@
                                 ];
                             }
 
-                            // Handle cancelled/expired status
-                            if (in_array($order->status_order, ['dibatalkan', 'melewati_jatuh_tempo'])) {
+                            // Handle cancelled status
+                            if (in_array($order->status_order, ['dibatalkan'])) {
                                 $statusFlow[] = $order->status_order;
                                 $statusMapping[$order->status_order] = [
                                     'title' => 'Pesanan Dibatalkan',
@@ -149,16 +149,7 @@
 
                                         <p class="text-gray-600 mt-1">{{ $stepData['description'] }}</p>
 
-                                        @if($stepStatus === 'current' && $order->status_order === 'melewati_jatuh_tempo')
-                                            <div class="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
-                                                    <span class="text-sm font-medium text-red-800">
-                                                        DP tidak dibayar tepat waktu, pesanan dibatalkan otomatis.
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        @endif
+
 
                                         @if(isset($order->shipping) && $order->shipping->tracking_number && $stepStatus === 'current' && $order->status_order === 'dikirim')
                                             <div class="mt-2 p-3 bg-blue-50 rounded-lg">
@@ -176,15 +167,42 @@
                         </div>
                     </div>
 
-                    <!-- Special Warnings and Information -->
-                    @if($order->status_order === 'melewati_jatuh_tempo')
-                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                            <div class="flex items-center">
-                                <i class="fas fa-exclamation-triangle text-red-600 mr-3"></i>
-                                <div>
-                                    <h3 class="text-lg font-semibold text-red-800">Peringatan Penting</h3>
-                                    <p class="text-red-700 mt-1">DP tidak dibayar tepat waktu, pesanan dibatalkan otomatis. Silakan hubungi admin untuk informasi lebih lanjut.</p>
+                    <!-- Expired Date Information -->
+                    @if($order->expired_date)
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h2 class="text-xl font-bold text-gray-900 mb-6">Informasi Pembayaran</h2>
+
+                            <div class="space-y-4">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Tanggal Kadaluarsa:</span>
+                                    <span class="font-medium">{{ $order->expired_date->format('d/m/Y H:i') }}</span>
                                 </div>
+
+                                @if($order->is_expired)
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Status:</span>
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Expired</span>
+                                    </div>
+
+                                    <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                                            <span class="text-sm font-medium text-red-800">Pembayaran telah melewati batas waktu. Silakan hubungi admin untuk informasi lebih lanjut.</span>
+                                        </div>
+                                    </div>
+                                @elseif($order->expired_date->lte(now()->addDays(7)))
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Status:</span>
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Segera lakukan pembayaran</span>
+                                    </div>
+
+                                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-clock text-yellow-600 mr-2"></i>
+                                            <span class="text-sm font-medium text-yellow-800">Segera lakukan pembayaran sebelum tanggal kadaluarsa untuk menghindari pembatalan otomatis.</span>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endif
@@ -358,12 +376,10 @@
                                     @elseif($order->status_order === 'diproses') bg-orange-100 text-orange-800
                                     @elseif($order->status_order === 'inden') bg-purple-100 text-purple-800
                                     @elseif($order->status_order === 'menunggu') bg-gray-100 text-gray-800
-                                    @elseif($order->status_order === 'melewati_jatuh_tempo') bg-red-100 text-red-800
                                     @elseif($order->status_order === 'dibatalkan') bg-red-100 text-red-800
                                     @else bg-gray-100 text-gray-800 @endif
                                 ">
                                     @if($order->status_order === 'siap_kirim') Siap Kirim
-                                    @elseif($order->status_order === 'melewati_jatuh_tempo') Melewati Jatuh Tempo
                                     @else {{ ucfirst($order->status_order) }}
                                     @endif
                                 </span>

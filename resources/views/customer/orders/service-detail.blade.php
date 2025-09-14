@@ -250,6 +250,100 @@
                         </div>
                     </div>
 
+                    <!-- Status Badges -->
+                    @php
+                        $isExpired = $order->is_expired ?? false;
+                        $expiredDate = $order->expired_date;
+                        $showExpiredBadge = $isExpired;
+                        $showExpiringSoonBadge = !$isExpired && $expiredDate && $expiredDate->lessThanOrEqualTo(now()->addDays(7));
+                    @endphp
+
+
+                    <!-- Expired Section -->
+                    @if($expiredDate || $isExpired)
+                        <div class="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden mb-8">
+                            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                                <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                                    @if($isExpired)
+                                        <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                                        Pembayaran Terlambat
+                                    @elseif($expiredDate && $expiredDate->lessThanOrEqualTo(now()->addDays(7)))
+                                        <i class="fas fa-clock text-yellow-600 mr-2"></i>
+                                        Segera Lakukan Pembayaran
+                                    @else
+                                        <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                                        Status Pembayaran
+                                    @endif
+                                </h2>
+                            </div>
+                            <div class="p-6">
+                                @if($isExpired)
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                                            <span class="text-sm font-semibold text-red-800">Pembayaran Terlambat</span>
+                                        </div>
+                                        <p class="text-sm text-red-700">Pesanan ini telah melewati batas waktu pembayaran dan tidak dapat diproses. Silakan hubungi admin untuk informasi lebih lanjut.</p>
+                                    </div>
+                                @elseif($expiredDate && $expiredDate->lessThanOrEqualTo(now()->addDays(7)))
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-clock text-yellow-600 mr-2"></i>
+                                            <span class="text-sm font-semibold text-yellow-800">Waktu Pembayaran Terbatas</span>
+                                        </div>
+                                        <p class="text-sm text-yellow-700">Segera lakukan pembayaran sebelum tanggal kadaluarsa untuk menghindari pembatalan otomatis pesanan.</p>
+                                    </div>
+                                @endif
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-calendar-times text-gray-600 mr-2"></i>
+                                            <span class="text-sm font-medium text-gray-900">Tanggal Kadaluarsa</span>
+                                        </div>
+                                        <p class="text-sm text-gray-700 font-semibold">{{ $expiredDate ? $expiredDate->format('d/m/Y H:i') : 'Tidak ditentukan' }}</p>
+                                    </div>
+
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-info-circle text-gray-600 mr-2"></i>
+                                            <span class="text-sm font-medium text-gray-900">Status</span>
+                                        </div>
+                                        @if($isExpired)
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-500 text-white">
+                                                <i class="fas fa-times-circle mr-1"></i>
+                                                Expired
+                                            </span>
+                                        @elseif($expiredDate && $expiredDate->lessThanOrEqualTo(now()->addDays(7)))
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-400 text-black">
+                                                <i class="fas fa-clock mr-1"></i>
+                                                Akan Kadaluarsa
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500 text-white">
+                                                <i class="fas fa-check-circle mr-1"></i>
+                                                Aktif
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                @if(!$isExpired && $expiredDate && $expiredDate->lessThanOrEqualTo(now()->addDays(7)) && $order->status_payment === 'belum_dibayar')
+                                    <div class="text-center">
+                                        <a
+                                            href="{{ route('customer.payment-order.show', $order->order_service_id) }}"
+                                            class="inline-flex items-center px-8 py-3 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 transition-colors shadow-lg"
+                                        >
+                                            <i class="fas fa-credit-card mr-2"></i>
+                                            Bayar Sekarang
+                                        </a>
+                                        <p class="text-xs text-gray-500 mt-2">Hindari pembatalan otomatis</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Order Summary -->
                     <div class="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                         <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
@@ -261,31 +355,46 @@
                                     <span class="text-gray-600">Tanggal Pemesanan:</span>
                                     <span class="font-medium">{{ $order->created_at->format('d/m/Y H:i') }}</span>
                                 </div>
-                                
+
+                                @if($expiredDate)
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Tanggal Kadaluarsa:</span>
+                                        <span class="font-medium {{ $isExpired ? 'text-red-600' : ($showExpiringSoonBadge ? 'text-yellow-600' : 'text-gray-900') }}">
+                                            {{ $expiredDate->format('d/m/Y H:i') }}
+                                        </span>
+                                    </div>
+                                @endif
+
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">Status Pesanan:</span>
                                     <span class="px-2 py-1 text-xs font-medium rounded-full
                                         @if($order->status_order === 'selesai') bg-green-100 text-green-800
-                                        @elseif($order->status_order === 'sedang_dikerjakan') bg-blue-100 text-blue-800
-                                        @elseif($order->status_order === 'diproses') bg-yellow-100 text-yellow-800
-                                        @elseif($order->status_order === 'menunggu_konfirmasi') bg-orange-100 text-orange-800
+                                        @elseif(in_array($order->status_order, ['diproses', 'menuju_lokasi', 'dijadwalkan'])) bg-blue-100 text-blue-800
+                                        @elseif($order->status_order === 'menunggu_sparepart') bg-yellow-100 text-yellow-800
+                                        @elseif($order->status_order === 'siap_diambil') bg-green-100 text-green-800
+                                        @elseif($order->status_order === 'diantar') bg-blue-100 text-blue-800
+                                        @elseif($order->status_order === 'menunggu') bg-gray-100 text-gray-800
                                         @else bg-gray-100 text-gray-800 @endif
                                     ">
                                         {{ ucfirst(str_replace('_', ' ', $order->status_order)) }}
                                     </span>
                                 </div>
-                                
+
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">Status Pembayaran:</span>
                                     <span class="px-2 py-1 text-xs font-medium rounded-full
                                         @if($order->status_payment === 'lunas') bg-green-100 text-green-800
-                                        @elseif($order->status_payment === 'down_payment') bg-yellow-100 text-yellow-800
+                                        @elseif($order->status_payment === 'cicilan') bg-yellow-100 text-yellow-800
                                         @else bg-red-100 text-red-800 @endif
                                     ">
-                                        {{ ucfirst(str_replace('_', ' ', $order->status_payment)) }}
+                                        @if($order->status_payment === 'cicilan')
+                                            Cicilan
+                                        @else
+                                            {{ ucfirst(str_replace('_', ' ', $order->status_payment)) }}
+                                        @endif
                                     </span>
                                 </div>
-                                
+
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">Tipe Layanan:</span>
                                     <span class="font-medium">{{ $order->type === 'onsite' ? 'Onsite' : 'Reguler' }}</span>
@@ -682,18 +791,26 @@
                     <!-- Action Buttons -->
                     <div class="bg-white rounded-lg shadow-lg p-6">
                         <h2 class="text-xl font-bold text-gray-900 mb-6">Aksi</h2>
-                        
+
                         <div class="space-y-3">
-                            @if($order->status_payment === 'belum_dibayar')
-                                <a 
+                            @if($order->status_payment !== 'lunas')
+                                <a
                                     href="{{ route('customer.payment-order.show', $order->order_service_id) }}"
                                     class="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center justify-center"
                                 >
                                     <i class="fas fa-credit-card mr-2"></i>
                                     Lakukan Pembayaran
                                 </a>
+                            @elseif($order->status_payment === 'belum_dibayar' && $isExpired)
+                                <button
+                                    disabled
+                                    class="w-full bg-gray-400 text-white py-3 px-4 rounded-lg font-semibold cursor-not-allowed flex items-center justify-center opacity-50"
+                                >
+                                    <i class="fas fa-ban mr-2"></i>
+                                    Pembayaran Tidak Tersedia
+                                </button>
                             @else
-                                <a 
+                                <a
                                     href="{{ route('customer.orders.services.invoice', $order) }}"
                                     class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center"
                                 >

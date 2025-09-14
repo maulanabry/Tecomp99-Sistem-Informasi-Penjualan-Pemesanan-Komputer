@@ -109,6 +109,10 @@
                                     <div class="flex items-center space-x-4">
                                         <div>
                                             <p class="text-sm font-medium text-gray-900">{{ $order->order_service_id }}</p>
+                                            @php
+                                                $serviceNames = $order->items->pluck('item.name')->filter()->unique()->implode(', ');
+                                            @endphp
+                                            <p class="text-xs text-gray-600">{{ $serviceNames ?: 'Layanan tidak ditemukan' }}</p>
                                             <p class="text-xs text-gray-500">{{ $order->created_at->format('d M Y, H:i') }}</p>
                                         </div>
                                         <div class="flex space-x-2">
@@ -125,13 +129,13 @@
                                             @php
                                                 $paymentStatusClass = match($order->status_payment) {
                                                     'belum_dibayar' => 'bg-red-100 text-red-800',
-                                                    'down_payment' => 'bg-yellow-100 text-yellow-800',
+                                                    'cicilan' => 'bg-yellow-100 text-yellow-800',
                                                     'lunas' => 'bg-green-100 text-green-800',
                                                     default => 'bg-gray-100 text-gray-800'
                                                 };
                                                 $paymentStatusText = match($order->status_payment) {
                                                     'belum_dibayar' => 'Belum Bayar',
-                                                    'down_payment' => 'DP',
+                                                    'cicilan' => 'Cicilan',
                                                     'lunas' => 'Lunas',
                                                     default => ucfirst($order->status_payment)
                                                 };
@@ -140,20 +144,28 @@
                                                 {{ $paymentStatusText }}
                                             </span>
                                             
-                                            <!-- Order Status -->
+                                            <!-- Status Order -->
                                             @php
                                                 $orderStatusClass = match($order->status_order) {
-                                                    'menunggu_konfirmasi' => 'bg-yellow-100 text-yellow-800',
-                                                    'diproses' => 'bg-blue-100 text-blue-800',
-                                                    'sedang_dikerjakan' => 'bg-indigo-100 text-indigo-800',
+                                                    'menunggu' => 'bg-yellow-100 text-yellow-800',
+                                                    'dijadwalkan' => 'bg-blue-100 text-blue-800',
+                                                    'menuju_lokasi' => 'bg-indigo-100 text-indigo-800',
+                                                    'diproses' => 'bg-purple-100 text-purple-800',
+                                                    'menunggu_sparepart' => 'bg-orange-100 text-orange-800',
+                                                    'siap_diambil' => 'bg-cyan-100 text-cyan-800',
+                                                    'diantar' => 'bg-teal-100 text-teal-800',
                                                     'selesai' => 'bg-green-100 text-green-800',
                                                     'dibatalkan' => 'bg-red-100 text-red-800',
                                                     default => 'bg-gray-100 text-gray-800'
                                                 };
                                                 $orderStatusText = match($order->status_order) {
-                                                    'menunggu_konfirmasi' => 'Menunggu Konfirmasi',
+                                                    'menunggu' => 'Menunggu',
+                                                    'dijadwalkan' => 'Dijadwalkan',
+                                                    'menuju_lokasi' => 'Menuju Lokasi',
                                                     'diproses' => 'Diproses',
-                                                    'sedang_dikerjakan' => 'Sedang Dikerjakan',
+                                                    'menunggu_sparepart' => 'Menunggu Sparepart',
+                                                    'siap_diambil' => 'Siap Diambil',
+                                                    'diantar' => 'Diantar',
                                                     'selesai' => 'Selesai',
                                                     'dibatalkan' => 'Dibatalkan',
                                                     default => ucfirst($order->status_order)
@@ -163,9 +175,36 @@
                                                 {{ $orderStatusText }}
                                             </span>
                                         </div>
+
+                                        <!-- Expiration Information -->
+                                        @if($order->expired_date)
+                                            <div class="mt-2">
+                                                <p class="text-xs text-gray-600">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    Kadaluarsa: {{ $order->expired_date->format('d M Y, H:i') }}
+                                                </p>
+                                                @if($order->is_expired)
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 mt-1">
+                                                        <i class="fas fa-exclamation-triangle mr-1"></i>Kadaluarsa
+                                                    </span>
+                                                @elseif($order->expired_date->lte(now()->addDays(7)))
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">
+                                                        <i class="fas fa-exclamation-circle mr-1"></i>Akan Kadaluarsa
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="text-right">
                                         <p class="text-lg font-semibold text-gray-900">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</p>
+                                        @php
+                                            $paymentMethod = $order->payments->where('status', 'dibayar')->sortByDesc('created_at')->first()?->method ?? '-';
+                                            $completionDate = $order->status_order === 'selesai' ? $order->updated_at->format('d M Y, H:i') : null;
+                                        @endphp
+                                        <p class="text-xs text-gray-500">Metode: {{ $paymentMethod }}</p>
+                                        @if($completionDate)
+                                            <p class="text-xs text-gray-500">Selesai: {{ $completionDate }}</p>
+                                        @endif
                                         <p class="text-xs text-gray-500">{{ $order->items->count() }} layanan</p>
                                     </div>
                                 </div>
@@ -256,8 +295,8 @@
                                             <i class="fas fa-eye mr-2"></i>Lihat Detail
                                         </a>
                                         
-                                        @if($order->status_payment === 'belum_dibayar')
-                                            <a href="{{ route('customer.payment-order.show', $order->order_service_id) }}" 
+                                        @if($order->status_payment === 'belum_dibayar' || $order->status_payment === 'cicilan')
+                                            <a href="{{ route('customer.payment-order.show', $order->order_service_id) }}"
                                                class="text-sm bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
                                                 <i class="fas fa-credit-card mr-2"></i>Lakukan Pembayaran
                                             </a>

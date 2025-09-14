@@ -109,82 +109,91 @@
                                     <div class="flex items-center space-x-4">
                                         <div>
                                             <p class="text-sm font-medium text-gray-900">{{ $order->order_product_id }}</p>
+                                            @php
+                                                $productNames = $order->items->pluck('product.name')->filter()->unique()->implode(', ');
+                                            @endphp
+                                            <p class="text-xs text-gray-600">{{ $productNames ?: 'Produk tidak ditemukan' }}</p>
                                             <p class="text-xs text-gray-500">{{ $order->created_at->format('d M Y, H:i') }}</p>
                                         </div>
                                         <div class="flex space-x-2">
-                                            <!-- Payment Status -->
+                                            <!-- Status Pembayaran -->
                                             @php
                                                 $paymentStatusClass = match($order->status_payment) {
-                                                    'Belum_dibayar' => 'bg-red-100 text-red-800',
-                                                    'Down_payment' => 'bg-yellow-100 text-yellow-800',
-                                                    'Lunas' => 'bg-green-100 text-green-800',
-                                                    'Dibatalkan' => 'bg-red-100 text-red-800',
+                                                    'belum_dibayar' => 'bg-red-100 text-red-800',
+                                                    'down_payment' => 'bg-yellow-100 text-yellow-800',
+                                                    'lunas' => 'bg-green-100 text-green-800',
+                                                    'dibatalkan' => 'bg-red-100 text-red-800',
                                                     default => 'bg-gray-100 text-gray-800'
                                                 };
                                                 $paymentStatusText = match($order->status_payment) {
-                                                    'Belum_dibayar' => 'Belum Dibayar',
-                                                    'Down_payment' => 'Down Payment',
-                                                    'Lunas' => 'Lunas',
-                                                    'Dibatalkan' => 'Dibatalkan',
+                                                    'belum_dibayar' => 'Belum Dibayar',
+                                                    'down_payment' => 'Down Payment',
+                                                    'lunas' => 'Lunas',
+                                                    'dibatalkan' => 'Dibatalkan',
                                                     default => ucfirst($order->status_payment)
                                                 };
-                                                $paymentStatusTooltip = match($order->status_payment) {
-                                                    'Belum_dibayar' => 'Pembayaran belum dilakukan.',
-                                                    'Down_payment' => 'Down payment 50% telah dibayar, sisa pembayaran menunggu.',
-                                                    'Lunas' => 'Pembayaran telah lunas.',
-                                                    'Dibatalkan' => 'Pembayaran dibatalkan.',
-                                                    default => ''
-                                                };
                                             @endphp
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $paymentStatusClass }}"
-                                                  title="{{ $paymentStatusTooltip }}">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $paymentStatusClass }}">
                                                 {{ $paymentStatusText }}
                                             </span>
-                                            
-                                            <!-- Order Status -->
+
+                                            <!-- Status Order -->
                                             @php
                                                 $orderStatusClass = match($order->status_order) {
-                                                    'Menunggu' => 'bg-yellow-100 text-yellow-800',
-                                                    'Inden' => 'bg-orange-100 text-orange-800',
-                                                    'Siap_Kirim' => 'bg-indigo-100 text-indigo-800',
-                                                    'Diproses' => 'bg-blue-100 text-blue-800',
-                                                    'Dikirim' => 'bg-purple-100 text-purple-800',
-                                                    'Selesai' => 'bg-green-100 text-green-800',
-                                                    'Dibatalkan' => 'bg-red-100 text-red-800',
-                                                    'Melewati_Jatuh_Tempo' => 'bg-red-100 text-red-800',
+                                                    'menunggu' => 'bg-yellow-100 text-yellow-800',
+                                                    'inden' => 'bg-orange-100 text-orange-800',
+                                                    'siap_kirim' => 'bg-indigo-100 text-indigo-800',
+                                                    'diproses' => 'bg-blue-100 text-blue-800',
+                                                    'dikirim' => 'bg-purple-100 text-purple-800',
+                                                    'selesai' => 'bg-green-100 text-green-800',
+                                                    'dibatalkan' => 'bg-red-100 text-red-800',
                                                     default => 'bg-gray-100 text-gray-800'
                                                 };
                                                 $orderStatusText = match($order->status_order) {
-                                                    'Menunggu' => 'Menunggu',
-                                                    'Inden' => 'Inden',
-                                                    'Siap_Kirim' => 'Siap Kirim',
-                                                    'Diproses' => 'Diproses',
-                                                    'Dikirim' => 'Dikirim',
-                                                    'Selesai' => 'Selesai',
-                                                    'Dibatalkan' => 'Dibatalkan',
-                                                    'Melewati_Jatuh_Tempo' => 'Melewati Jatuh Tempo',
+                                                    'menunggu' => 'Menunggu',
+                                                    'inden' => 'Inden',
+                                                    'siap_kirim' => 'Siap Kirim',
+                                                    'diproses' => 'Diproses',
+                                                    'dikirim' => 'Dikirim',
+                                                    'selesai' => 'Selesai',
+                                                    'dibatalkan' => 'Dibatalkan',
                                                     default => ucfirst($order->status_order)
                                                 };
-                                                $orderStatusTooltip = match($order->status_order) {
-                                                    'Menunggu' => 'Pesanan sedang menunggu konfirmasi dari admin.',
-                                                    'Inden' => 'Produk sedang dipesan khusus (inden) karena stok tidak tersedia.',
-                                                    'Siap_Kirim' => 'Pesanan sudah siap untuk dikirim ke alamat tujuan.',
-                                                    'Diproses' => 'Pesanan sedang diproses oleh tim kami.',
-                                                    'Dikirim' => 'Pesanan sedang dalam perjalanan ke alamat tujuan.',
-                                                    'Selesai' => 'Pesanan telah selesai dan diterima oleh pelanggan.',
-                                                    'Dibatalkan' => 'Pesanan telah dibatalkan.',
-                                                    'Melewati_Jatuh_Tempo' => 'Pesanan dibatalkan otomatis karena DP tidak dibayar tepat waktu.',
-                                                    default => ''
-                                                };
                                             @endphp
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $orderStatusClass }}"
-                                                  title="{{ $orderStatusTooltip }}">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $orderStatusClass }}">
                                                 {{ $orderStatusText }}
                                             </span>
                                         </div>
+
+                                        <!-- Expiration Information -->
+                                        @if($order->expired_date)
+                                            <div class="mt-2">
+                                                <p class="text-xs text-gray-600">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    Kadaluarsa: {{ $order->expired_date->format('d M Y, H:i') }}
+                                                </p>
+                                                @if($order->is_expired)
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 mt-1">
+                                                        <i class="fas fa-exclamation-triangle mr-1"></i>Kadaluarsa
+                                                    </span>
+                                                @elseif($order->expired_date->lte(now()->addDays(7)))
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">
+                                                        <i class="fas fa-exclamation-circle mr-1"></i>Akan Kadaluarsa
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="text-right">
                                         <p class="text-lg font-semibold text-gray-900">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</p>
+                                        @php
+                                            $paymentMethod = $order->payments->where('status', 'dibayar')->sortByDesc('created_at')->first()?->method ?? '-';
+                                            $completionDate = $order->status_order === 'selesai' ? $order->updated_at->format('d M Y, H:i') : null;
+                                        @endphp
+                                        <p class="text-xs text-gray-500">Metode: {{ $paymentMethod }}</p>
+                                        @if($completionDate)
+                                            <p class="text-xs text-gray-500">Selesai: {{ $completionDate }}</p>
+                                        @endif
                                         <p class="text-xs text-gray-500">{{ $order->items->count() }} item</p>
                                     </div>
                                 </div>
