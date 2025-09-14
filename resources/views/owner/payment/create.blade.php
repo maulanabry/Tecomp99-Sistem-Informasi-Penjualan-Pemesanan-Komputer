@@ -1,6 +1,7 @@
 <x-layout-owner>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <div class="max-w-7xl mx-auto p-6">
+    <script src="{{ asset('js/currency-formatter.js') }}"></script>
+    <div class="max-w-7xl mx-auto p-6" x-data="paymentForm()">
         @if (session('success'))
             <div class="mb-4">
                 <x-alert type="success" :message="session('success')" />
@@ -20,16 +21,16 @@
             <!-- Pilih Order -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Pilih Order</h2>
-
+                
                 <!-- Order Selection Button -->
                 <div class="mb-4">
                     <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Pilih Order untuk Pembayaran <span class="text-red-500">*</span></label>
-                    <button
+                    <button 
                         type="button"
                         @click="openOrderModal()"
                         class="w-full flex items-center justify-between px-4 py-3 text-left bg-gray-50 border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-primary-300 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-primary-800 transition-colors duration-200"
                     >
-                        <span x-text="selectedOrder ? selectedOrder.id + ' - ' + selectedOrder.customer_name + ' (' + selectedOrder.order_type_display + ')' : 'Klik untuk memilih order...'"
+                        <span x-text="selectedOrder ? selectedOrder.id + ' - ' + selectedOrder.customer_name + ' (' + selectedOrder.order_type_display + ')' : 'Klik untuk memilih order...'" 
                               class="text-sm text-gray-900 dark:text-gray-100"
                               :class="!selectedOrder ? 'text-gray-500 dark:text-gray-400' : ''">
                         </span>
@@ -50,12 +51,12 @@
                 @enderror
 
                 <!-- Selected Order Info Display -->
-                <div x-show="selectedOrder"
+                <div x-show="selectedOrder" 
                      x-transition:enter="transition ease-out duration-300"
                      x-transition:enter-start="opacity-0 transform scale-95"
                      x-transition:enter-end="opacity-100 transform scale-100"
                      class="mt-4 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
-
+                    
                     <!-- Order Header -->
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center space-x-3">
@@ -71,7 +72,7 @@
                                 <p class="text-sm text-gray-500 dark:text-gray-400" x-text="selectedOrder ? selectedOrder.order_type_display + ' - ' + selectedOrder.customer_name : ''"></p>
                             </div>
                         </div>
-                        <button
+                        <button 
                             type="button"
                             @click="clearOrder()"
                             class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -165,7 +166,18 @@
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Rincian Pembayaran</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+                    <div>
+                        <label for="payment_type" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                            Tipe Pembayaran <span class="text-red-500">*</span>
+                        </label>
+                        <select id="payment_type" name="payment_type" required
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="">Pilih tipe pembayaran</option>
+                            <option value="full">Full</option>
+                            <option value="down_payment">Down Payment</option>
+                            <option value="cicilan">Cicilan</option>
+                        </select>
+                    </div>
                     <div>
                         <label for="method" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Metode Pembayaran <span class="text-red-500">*</span>
@@ -175,6 +187,7 @@
                             <option value="">Pilih metode pembayaran</option>
                             <option value="Tunai">Tunai</option>
                             <option value="Bank BCA">Bank BCA</option>
+                             <option value="QRIS">QRIS</option>
                         </select>
                     </div>
 
@@ -182,19 +195,20 @@
                         <label for="cash_received" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Uang Diterima <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" id="cash_received" name="cash_received"
+                        <input type="text" id="cash_received" name="cash_received"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            placeholder="Masukkan jumlah uang yang diterima dari customer">
+                            placeholder="0"
+                            data-currency="true">
                     </div>
 
                     <div>
                         <label for="amount" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Jumlah Pembayaran <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" id="amount" name="amount" required
+                        <input type="text" id="amount" name="amount" required
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            data-currency="true"
-                            placeholder="Masukkan jumlah pembayaran">
+                            placeholder="0"
+                            data-currency="true">
                         <div id="paymentValidationAlert" class="mt-2 hidden">
                             <div class="p-3 text-sm text-red-800 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-300">
                                 <span id="paymentValidationMessage"></span>
@@ -211,23 +225,13 @@
                         <label for="change_returned" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                             Kembalian
                         </label>
-                        <input type="number" id="change_returned" name="change_returned" readonly
+                        <input type="text" id="change_returned" name="change_returned" readonly
                             class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            placeholder="Kembalian akan dihitung otomatis">
+                            placeholder="0"
+                            data-currency="true">
                     </div>
 
-                    <div>
-                        <label for="payment_type" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                            Tipe Pembayaran <span class="text-red-500">*</span>
-                        </label>
-                        <select id="payment_type" name="payment_type" required
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                            <option value="">Pilih tipe pembayaran</option>
-                            <option value="full">Full</option>
-                            <option value="down_payment">Down Payment</option>
-                            <option value="cicilan">Cicilan</option>
-                        </select>
-                    </div>
+
 
                     <div>
                         <label for="warranty_period_months" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -297,7 +301,7 @@
         />
     </div>
 
-        <script>
+    <script>
         function paymentForm() {
             return {
                 selectedOrder: null,
@@ -320,14 +324,14 @@
                     // Reset payment type options based on business rules
                     const paymentTypeSelect = document.getElementById('payment_type');
                     const amountInput = document.getElementById('amount');
-
+                    
                     if (paymentTypeSelect) {
                         paymentTypeSelect.innerHTML = '<option value="">Pilih tipe pembayaran</option>';
                         paymentTypeSelect.innerHTML += '<option value="full">Full Payment</option>';
                         paymentTypeSelect.innerHTML += '<option value="down_payment">Down Payment</option>';
                         paymentTypeSelect.innerHTML += '<option value="cicilan">Cicilan</option>';
                     }
-
+                    
                     if (amountInput) {
                         amountInput.value = '';
                     }
@@ -440,7 +444,7 @@
             const paymentSuccessAlert = document.getElementById('paymentSuccessAlert');
             const paymentValidationMessage = document.getElementById('paymentValidationMessage');
             const paymentSuccessMessage = document.getElementById('paymentSuccessMessage');
-
+            
             let currentOrder = null;
 
             // Listen for order selection to update currentOrder
@@ -484,10 +488,10 @@
             // Update amount when cash received changes
             cashReceivedInput.addEventListener('input', function() {
                 if (!currentOrder) return;
-
+                
                 const cashReceived = window.rupiahFormatter.getValue(this);
                 const remainingBalance = currentOrder.remaining_balance;
-
+                
                 // Amount is either remaining balance or cash received, whichever is smaller
                 const newAmount = Math.min(cashReceived, remainingBalance);
                 window.rupiahFormatter.setValue(amountInput, newAmount);
@@ -500,7 +504,7 @@
                 if (methodSelect.value === 'Tunai' && currentOrder) {
                     const amount = window.rupiahFormatter.getValue(this);
                     const currentCashReceived = window.rupiahFormatter.getValue(cashReceivedInput);
-
+                    
                     // If cash received is less than amount, update it to match amount
                     if (currentCashReceived < amount) {
                         window.rupiahFormatter.setValue(cashReceivedInput, amount);
@@ -512,10 +516,10 @@
             // Handle payment type change with business rules
             paymentTypeSelect.addEventListener('change', function() {
                 if (!currentOrder) return;
-
+                
                 const paymentType = this.value;
                 const remainingBalance = currentOrder.remaining_balance;
-
+                
                 // Apply business rules based on order type and payment type
                 if (currentOrder.type === 'produk') {
                     if (paymentType === 'down_payment') {
@@ -551,7 +555,7 @@
                         }
                     }
                 }
-
+                
                 validatePaymentAndCalculateChange();
             });
 
@@ -654,7 +658,7 @@
 
             function validateWarrantyAndShowEstimation() {
                 const months = parseInt(warrantyInput.value);
-
+                
                 // Hide previous alerts
                 warrantyEstimation.classList.add('hidden');
                 warrantyValidationAlert.classList.add('hidden');

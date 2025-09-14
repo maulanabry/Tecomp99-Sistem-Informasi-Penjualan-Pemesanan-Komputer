@@ -41,46 +41,53 @@ class PaymentController extends Controller
 
     public function create(Request $request)
     {
-        // Check for pre-selected order from query parameters
+        // Cek apakah ada order_service_id atau order_product_id yang dikirim dari halaman detail order
         $preSelectedOrder = null;
         $preSelectedOrderType = null;
 
-        if ($request->has('order_product_id')) {
-            $order = OrderProduct::with('customer')->find($request->order_product_id);
-            if ($order) {
+        if ($request->has('order_service_id')) {
+            $orderService = OrderService::with('customer')->where('order_service_id', $request->order_service_id)->first();
+            if ($orderService && !in_array($orderService->status_payment, ['dibatalkan', 'lunas', 'selesai'])) {
                 $preSelectedOrder = [
-                    'id' => $order->order_product_id,
-                    'customer_name' => $order->customer->name,
-                    'sub_total' => (float) $order->sub_total,
-                    'discount_amount' => (float) $order->discount_amount,
-                    'grand_total' => (float) $order->grand_total,
-                    'paid_amount' => (float) $order->paid_amount,
-                    'remaining_balance' => (float) $order->remaining_balance,
-                    'last_payment_at' => $order->last_payment_at ? $order->last_payment_at->toISOString() : null,
-                    'payment_status' => $order->status_payment,
-                    'type' => 'produk',
-                    'order_type_display' => 'Order Produk'
-                ];
-                $preSelectedOrderType = 'produk';
-            }
-        } elseif ($request->has('order_service_id')) {
-            $order = OrderService::with('customer')->find($request->order_service_id);
-            if ($order) {
-                $preSelectedOrder = [
-                    'id' => $order->order_service_id,
-                    'customer_name' => $order->customer->name,
-                    'sub_total' => (float) $order->sub_total,
-                    'discount_amount' => (float) $order->discount_amount,
-                    'grand_total' => (float) $order->grand_total,
-                    'paid_amount' => (float) $order->paid_amount,
-                    'remaining_balance' => (float) $order->remaining_balance,
-                    'last_payment_at' => $order->last_payment_at ? $order->last_payment_at->toISOString() : null,
-                    'payment_status' => $order->status_payment,
+                    'id' => $orderService->order_service_id,
                     'type' => 'servis',
-                    'order_type_display' => 'Order Servis',
-                    'device' => $order->device
+                    'customer_name' => $orderService->customer->name,
+                    'customer_id' => $orderService->customer_id,
+                    'sub_total' => (float) $orderService->sub_total,
+                    'discount_amount' => (float) $orderService->discount_amount,
+                    'grand_total' => (float) $orderService->grand_total,
+                    'paid_amount' => (float) $orderService->paid_amount,
+                    'remaining_balance' => (float) $orderService->remaining_balance,
+                    'status_order' => $orderService->status_order,
+                    'status_payment' => $orderService->status_payment,
+                    'last_payment_at' => $orderService->last_payment_at,
+                    'created_at' => $orderService->created_at,
+                    'device' => $orderService->device,
+                    'order_type_display' => 'Servis',
                 ];
                 $preSelectedOrderType = 'servis';
+            }
+        } elseif ($request->has('order_product_id')) {
+            $orderProduct = OrderProduct::with('customer')->where('order_product_id', $request->order_product_id)->first();
+            if ($orderProduct && !in_array($orderProduct->status_payment, ['dibatalkan', 'lunas'])) {
+                $preSelectedOrder = [
+                    'id' => $orderProduct->order_product_id,
+                    'type' => 'produk',
+                    'customer_name' => $orderProduct->customer->name,
+                    'customer_id' => $orderProduct->customer_id,
+                    'sub_total' => (float) $orderProduct->sub_total,
+                    'discount_amount' => (float) $orderProduct->discount_amount,
+                    'grand_total' => (float) $orderProduct->grand_total,
+                    'paid_amount' => (float) $orderProduct->paid_amount,
+                    'remaining_balance' => (float) $orderProduct->remaining_balance,
+                    'status_order' => $orderProduct->status_order,
+                    'status_payment' => $orderProduct->status_payment,
+                    'last_payment_at' => $orderProduct->last_payment_at,
+                    'created_at' => $orderProduct->created_at,
+                    'shipping_cost' => (float) $orderProduct->shipping_cost,
+                    'order_type_display' => 'Produk',
+                ];
+                $preSelectedOrderType = 'produk';
             }
         }
 
@@ -98,13 +105,11 @@ class PaymentController extends Controller
                     'paid_amount' => (float) $order->paid_amount,
                     'remaining_balance' => (float) $order->remaining_balance,
                     'last_payment_at' => $order->last_payment_at ? $order->last_payment_at->toISOString() : null,
-                    'payment_status' => $order->status_payment,
-                    'type' => 'produk',
-                    'order_type_display' => 'Order Produk'
+                    'payment_status' => $order->status_payment
                 ];
             });
 
-        // Ambil order servis yang statusnya belum dibayar atau down_payment saja
+        // Ambil order servis yang statusnya belum dibayar atau cicilan saja
         $orderServices = OrderService::with('customer')
             ->whereNotIn('status_payment', ['dibatalkan', 'lunas', 'selesai'])
             ->get()
@@ -118,10 +123,7 @@ class PaymentController extends Controller
                     'paid_amount' => (float) $order->paid_amount,
                     'remaining_balance' => (float) $order->remaining_balance,
                     'last_payment_at' => $order->last_payment_at ? $order->last_payment_at->toISOString() : null,
-                    'payment_status' => $order->status_payment,
-                    'type' => 'servis',
-                    'order_type_display' => 'Order Servis',
-                    'device' => $order->device
+                    'payment_status' => $order->status_payment
                 ];
             });
 
@@ -246,16 +248,25 @@ class PaymentController extends Controller
     public function update(Request $request, $payment_id)
     {
         try {
-            $request->validate([
-                'method' => 'required|in:Tunai,Bank BCA',
-                'amount' => 'required|integer|min:1',
-                'cash_received' => 'nullable|numeric|min:1',
-                'status' => 'required|in:pending,dibayar,gagal',
-                'payment_type' => 'required|in:full,down_payment',
-                'proof_photo' => 'nullable|image|max:2048', // max 2MB
+            // Use PaymentDetail constants for validation
+            $validationRules = [
+                'method' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_METHODS)),
+                'amount' => 'required|numeric|min:1',
+                'status' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_STATUSES)),
+                'payment_type' => 'required|in:' . implode(',', array_keys(PaymentDetail::PAYMENT_TYPES)),
+                'proof_photo' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
                 'change_returned' => 'nullable|numeric|min:0',
                 'warranty_period_months' => 'nullable|integer|min:1|max:60',
-            ]);
+            ];
+
+            // Add cash_received validation only for cash payments
+            if ($request->method === 'Tunai') {
+                $validationRules['cash_received'] = 'required|numeric|min:1';
+            } else {
+                $validationRules['cash_received'] = 'nullable|numeric';
+            }
+
+            $request->validate($validationRules);
 
             // Validate change_returned only for cash payments
             if ($request->method === 'Tunai' && $request->change_returned !== null && $request->change_returned < 0) {

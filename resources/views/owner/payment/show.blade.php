@@ -26,13 +26,13 @@
                 </div>
                 <div class="flex space-x-3">
                     @if (!in_array($payment->status, ['dibayar', 'gagal']))
-                        <a href="{{ route('owner.payments.edit', ['payment_id' => $payment->payment_id]) }}" 
+                        <a href="{{ route('owner.payments.edit', ['payment_id' => $payment->payment_id]) }}"
                             class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                             <i class="fas fa-edit mr-2"></i>
                             Edit Pembayaran
                         </a>
                     @endif
-                    <a href="{{ route('owner.payments.index') }}" 
+                    <a href="{{ route('owner.payments.index') }}"
                         class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
@@ -101,7 +101,7 @@
                                         @php
                                             $statusConfig = [
                                                 'menunggu' => ['bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100', 'fas fa-clock'],
-                                                'diproses' => ['bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100', 'fas fa-cog'],
+                                                'diproses' => ['bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100', 'fas fa-clock'],
                                                 'dibayar' => ['bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100', 'fas fa-check-circle'],
                                                 'gagal' => ['bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100', 'fas fa-times-circle'],
                                             ];
@@ -116,9 +116,17 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
                                     <dd class="mt-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $payment->payment_type === 'full' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' }}">
-                                            <i class="fas {{ $payment->payment_type === 'full' ? 'fa-money-check-alt' : 'fa-hand-holding-usd' }} mr-1"></i>
-                                            {{ $payment->payment_type === 'full' ? 'Pelunasan' : 'DP (Down Payment)' }}
+                                        @php
+                                            $paymentTypeConfig = [
+                                                'full' => ['bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100', 'fa-money-check-alt', 'Pelunasan'],
+                                                'down_payment' => ['bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100', 'fa-hand-holding-usd', 'DP (Down Payment)'],
+                                                'cicilan' => ['bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100', 'fa-list', 'Cicilan']
+                                            ];
+                                            $config = $paymentTypeConfig[$payment->payment_type] ?? ['bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200', 'fa-question-circle', ucfirst($payment->payment_type)];
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config[0] }}">
+                                            <i class="fas {{ $config[1] }} mr-1"></i>
+                                            {{ $config[2] }}
                                         </span>
                                     </dd>
                                 </div>
@@ -128,22 +136,6 @@
                                     <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-semibold text-green-600 dark:text-green-400">Rp {{ number_format($payment->change_returned, 0, ',', '.') }}</dd>
                                 </div>
                                 @endif
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
-                                    <dd class="mt-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $payment->payment_type === 'full' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : ($payment->payment_type === 'down_payment' ? 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' : 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100') }}">
-                                            <i class="fas {{ $payment->payment_type === 'full' ? 'fa-money-check-alt' : ($payment->payment_type === 'down_payment' ? 'fa-hand-holding-usd' : 'fa-credit-card') }} mr-1"></i>
-                                            @php
-                                                $typeLabels = [
-                                                    'full' => 'Pelunasan',
-                                                    'down_payment' => 'DP (Down Payment)',
-                                                    'cicilan' => 'Cicilan'
-                                                ];
-                                                echo $typeLabels[$payment->payment_type] ?? ucfirst($payment->payment_type);
-                                            @endphp
-                                        </span>
-                                    </dd>
-                                </div>
                             </dl>
                         </div>
                     </div>
@@ -240,6 +232,91 @@
                         </div>
                     </div>
                     @endif
+
+                    {{-- Cicilan Installment Records Section --}}
+                    @if($payment->payment_type === 'cicilan' && $order)
+                        @php
+                            $cicilanPayments = $payment->order_type === 'produk'
+                                ? $order->payments->where('payment_type', 'cicilan')->sortBy('created_at')
+                                : $order->paymentDetails->where('payment_type', 'cicilan')->sortBy('created_at');
+                        @endphp
+
+                        @if($cicilanPayments->isNotEmpty())
+                        <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                    <i class="fas fa-list mr-2 text-primary-500"></i>
+                                    Riwayat Cicilan
+                                </h3>
+                            </div>
+                            <div class="p-6">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead class="bg-gray-50 dark:bg-gray-800">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">No</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID Pembayaran</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Jumlah</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tanggal Dibayar</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                            @foreach($cicilanPayments as $index => $cicilanPayment)
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $index + 1 }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $cicilanPayment->payment_id }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($cicilanPayment->amount, 0, ',', '.') }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                    @if($cicilanPayment->status === 'dibayar')
+                                                        {{ $cicilanPayment->created_at->format('d F Y H:i') }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    @php
+                                                        $statusConfig = [
+                                                            'menunggu' => ['bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100', 'fas fa-clock'],
+                                                            'diproses' => ['bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100', 'fas fa-clock'],
+                                                            'dibayar' => ['bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100', 'fas fa-check-circle'],
+                                                            'gagal' => ['bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100', 'fas fa-times-circle'],
+                                                        ];
+                                                        $config = $statusConfig[$cicilanPayment->status] ?? ['bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200', 'fas fa-question-circle'];
+                                                    @endphp
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config[0] }}">
+                                                        <i class="{{ $config[1] }} mr-1"></i>
+                                                        {{ ucfirst($cicilanPayment->status) }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {{-- Summary Section --}}
+                                <div class="mt-6 bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                    <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-3">Ringkasan Pembayaran</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="text-center">
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">Total Order</div>
+                                            <div class="text-lg font-bold text-gray-900 dark:text-gray-100">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">Total Dibayar</div>
+                                            <div class="text-lg font-bold text-green-600 dark:text-green-400">Rp {{ number_format($order->paid_amount ?? 0, 0, ',', '.') }}</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">Sisa Pembayaran</div>
+                                            <div class="text-lg font-bold text-red-600 dark:text-red-400">Rp {{ number_format($order->remaining_balance ?? 0, 0, ',', '.') }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    @endif
                 </div>
 
                 <!-- Sidebar -->
@@ -254,7 +331,7 @@
                         </div>
                         <div class="p-6 space-y-3">
                             @if (!in_array($payment->status, ['dibayar', 'gagal']))
-                                <a href="{{ route('owner.payments.edit', ['payment_id' => $payment->payment_id]) }}" 
+                                <a href="{{ route('payments.edit', ['payment_id' => $payment->payment_id]) }}" 
                                     class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                     <i class="fas fa-edit mr-2"></i>
                                     Edit Pembayaran
@@ -326,16 +403,17 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipe Pembayaran</dt>
                                     <dd class="mt-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $payment->payment_type === 'full' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100' : ($payment->payment_type === 'down_payment' ? 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' : 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100') }}">
-                                            <i class="fas {{ $payment->payment_type === 'full' ? 'fa-money-check-alt' : ($payment->payment_type === 'down_payment' ? 'fa-hand-holding-usd' : 'fa-credit-card') }} mr-1"></i>
-                                            @php
-                                                $typeLabels = [
-                                                    'full' => 'Pelunasan',
-                                                    'down_payment' => 'DP (Down Payment)',
-                                                    'cicilan' => 'Cicilan'
-                                                ];
-                                                echo $typeLabels[$payment->payment_type] ?? ucfirst($payment->payment_type);
-                                            @endphp
+                                        @php
+                                            $paymentTypeConfig = [
+                                                'full' => ['bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100', 'fa-money-check-alt', 'Pelunasan'],
+                                                'down_payment' => ['bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100', 'fa-hand-holding-usd', 'DP (Down Payment)'],
+                                                'cicilan' => ['bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100', 'fa-list', 'Cicilan']
+                                            ];
+                                            $config = $paymentTypeConfig[$payment->payment_type] ?? ['bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200', 'fa-question-circle', ucfirst($payment->payment_type)];
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config[0] }}">
+                                            <i class="fas {{ $config[1] }} mr-1"></i>
+                                            {{ $config[2] }}
                                         </span>
                                     </dd>
                                 </div>
@@ -402,8 +480,7 @@
                                             <div>
                                                 @php
                                                     $iconColors = [
-                                                        'menunggu' => 'bg-yellow-500',
-                                                        'diproses' => 'bg-blue-500',
+                                                        'pending' => 'bg-yellow-500',
                                                         'dibayar' => 'bg-green-500',
                                                         'gagal' => 'bg-red-500',
                                                     ];
@@ -417,11 +494,6 @@
                                                     @elseif($historyPayment->status === 'gagal')
                                                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                        </svg>
-                                                    @elseif($historyPayment->status === 'diproses')
-                                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                         </svg>
                                                     @else
                                                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -440,14 +512,14 @@
                                                     </p>
                                                     <p class="text-sm text-gray-500 dark:text-gray-400">
                                                         {{ $historyPayment->method }} - Rp {{ number_format($historyPayment->amount, 0, ',', '.') }}
-                                                        (@php
-                                                            $typeLabels = [
-                                                                'full' => 'Full Payment',
-                                                                'down_payment' => 'Down Payment',
+                                                        @php
+                                                            $paymentTypeLabels = [
+                                                                'full' => 'Pelunasan',
+                                                                'down_payment' => 'DP (Down Payment)',
                                                                 'cicilan' => 'Cicilan'
                                                             ];
-                                                            echo '(' . ($typeLabels[$historyPayment->payment_type] ?? $historyPayment->payment_type) . ')';
-                                                        @endphp)
+                                                        @endphp
+                                                        ({{ $paymentTypeLabels[$historyPayment->payment_type] ?? ucfirst($historyPayment->payment_type) }})
                                                     </p>
                                                 </div>
                                                 <div class="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
@@ -529,16 +601,9 @@
             } elseif ($payment->order_type === 'servis' && $payment->orderService && $payment->orderService->customer) {
                 $customerName = $payment->orderService->customer->name;
             }
-
-            $statusConfig = [
-                'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
-                'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
-                'dibayar' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
-                'gagal' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
-            ];
         @endphp
 
-        <x-cancel-payment-modal 
+        <x-cancel-payment-modal
             :id="$payment->payment_id"
             :paymentId="$payment->payment_id"
             :customerName="$customerName"

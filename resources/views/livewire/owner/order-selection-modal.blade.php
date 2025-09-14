@@ -2,8 +2,8 @@
     @if($show)
     <div
         class="fixed inset-0 z-50 overflow-y-auto"
-        aria-labelledby="modal-title"
-        role="dialog"
+        aria-labelledby="modal-title" 
+        role="dialog" 
         aria-modal="true"
         x-data
         x-transition:enter="ease-out duration-300"
@@ -32,8 +32,8 @@
             >
                 <!-- Close button -->
                 <div class="absolute right-0 top-0 pr-4 pt-4">
-                    <button
-                        type="button"
+                    <button 
+                        type="button" 
                         wire:click="close"
                         class="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
@@ -101,7 +101,6 @@
                                 <option value="">Semua Status Bayar</option>
                                 <option value="belum_dibayar">Belum Dibayar</option>
                                 <option value="down_payment">Down Payment</option>
-                                <option value="cicilan">Cicilan</option>
                             </select>
                         </div>
 
@@ -185,7 +184,7 @@
                                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                                             @foreach($orders as $order)
                                                 @php
-                                                    // Cek apakah order ini adalah pre-selected dari halaman detail
+                                                    // Cek apakah order ini adalah pre-selected dari halaman sebelumnya
                                                     // Pre-selection terjadi ketika admin mengklik "Tambah Pembayaran" dari halaman detail order service atau produk
                                                     // Order yang pre-selected akan ditandai dengan background biru dan badge "Dipilih"
                                                     $isPreSelected = $preSelectedOrder && $preSelectedOrder['id'] === $order['id'] && $preSelectedOrderType === $order['type'];
