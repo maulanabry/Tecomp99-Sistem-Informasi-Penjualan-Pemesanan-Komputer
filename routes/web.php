@@ -362,6 +362,7 @@ Route::middleware('auth:admin,teknisi,pemilik')->group(function () {
         // Slot Availability Check
         Route::post('/check-slot-availability', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'checkSlotAvailability'])->name('service-tickets.check-slot');
         Route::post('/get-booked-slots', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'getBookedSlotsForDate'])->name('service-tickets.get-booked-slots');
+        Route::post('/get-available-technicians', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'getAvailableTechniciansForSlot'])->name('service-tickets.get-available-technicians');
 
         // Service Ticket Actions
         Route::get('/{ticket}/actions/create', [\App\Http\Controllers\Admin\ServiceTicketController::class, 'createAction'])->name('service-tickets.actions.create');

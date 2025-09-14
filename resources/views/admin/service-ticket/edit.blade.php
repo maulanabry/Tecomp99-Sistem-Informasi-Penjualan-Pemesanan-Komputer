@@ -54,7 +54,7 @@
                                         <i class="fas fa-ticket-alt mr-2 text-primary-500"></i>
                                         Informasi Dasar Tiket
                                     </h3>
-                                    
+
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <!-- Status -->
                                         <div>
@@ -79,31 +79,12 @@
                                             @enderror
                                         </div>
 
-                                        <!-- Technician Selection -->
-                                        <div>
-                                            <label for="admin_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                                                Teknisi <span class="text-red-500">*</span>
-                                            </label>
-                                            <select name="admin_id" id="admin_id" required
-                                                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('admin_id') border-red-500 @enderror">
-                                                <option value="">Pilih teknisi</option>
-                                                @foreach($technicians as $technician)
-                                                    <option value="{{ $technician->id }}" {{ old('admin_id', $ticket->admin_id) == $technician->id ? 'selected' : '' }}>
-                                                        {{ $technician->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('admin_id')
-                                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-
                                         <!-- Schedule Date -->
-                                        <div class="md:col-span-2">
+                                        <div>
                                             <label for="schedule_date" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                                 Tanggal Jadwal <span class="text-red-500">*</span>
                                             </label>
-                                            <input type="date" name="schedule_date" id="schedule_date" 
+                                            <input type="date" name="schedule_date" id="schedule_date"
                                                 value="{{ old('schedule_date', $ticket->schedule_date->format('Y-m-d')) }}"
                                                 min="{{ date('Y-m-d') }}"
                                                 class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('schedule_date') border-red-500 @enderror"
@@ -174,6 +155,26 @@
                                         </div>
                                     </div>
                                     <input type="hidden" id="visit_schedule" name="visit_schedule" value="{{ old('visit_schedule', $ticket->visit_schedule ? $ticket->visit_schedule->format('Y-m-d\TH:i') : '') }}">
+
+                                    <!-- Technician Selection -->
+                                    <div class="mt-6">
+                                        <label for="admin_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                            Teknisi <span class="text-red-500">*</span>
+                                        </label>
+                                        <select name="admin_id" id="admin_id" required
+                                            class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('admin_id') border-red-500 @enderror">
+                                            <option value="">Pilih teknisi</option>
+                                            @foreach($technicians as $technician)
+                                                <option value="{{ $technician->id }}" {{ old('admin_id', $ticket->admin_id) == $technician->id ? 'selected' : '' }}>
+                                                    {{ $technician->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div id="technicianAvailability" class="mt-2 text-sm"></div>
+                                        @error('admin_id')
+                                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                        @enderror
+                                    </div>
                                     @endif
                                 </div>
 
@@ -383,171 +384,116 @@
             let isCheckingAvailability = false;
 
             /**
-             * Reset semua option slot waktu ke kondisi enabled
+             * Memuat teknisi yang tersedia untuk tanggal dan slot waktu tertentu
              */
-            function resetTimeSlotOptions() {
-                if (visitTimeSlot) {
-                    Array.from(visitTimeSlot.options).forEach(option => {
-                        if (option.value) {
-                            option.disabled = false;
-                            option.style.color = '';
-                            // Remove booking indicators
-                            option.textContent = option.textContent.replace(/ \(Tidak Tersedia - .*\)$/, '');
-                        }
-                    });
-                }
-            }
-
-            /**
-             * Memuat slot yang tersedia untuk tanggal dan teknisi tertentu
-             * Menonaktifkan slot yang sudah dibooking (kecuali tiket saat ini)
-             */
-            async function loadAvailableSlots() {
-                if (!adminSelect || !visitDate || !adminSelect.value || !visitDate.value) {
-                    if (visitTimeSlot) resetTimeSlotOptions();
-                    if (slotAvailability) slotAvailability.innerHTML = '';
+            async function loadAvailableTechnicians() {
+                if (!visitDate || !visitTimeSlot || !visitDate.value || !visitTimeSlot.value) {
+                    // Reset technician dropdown to show all technicians normally
+                    resetTechnicianOptions();
+                    if (technicianAvailability) technicianAvailability.innerHTML = '';
                     return;
                 }
 
                 // Tampilkan loading state
-                if (slotAvailability) {
-                    slotAvailability.innerHTML = '<span class="text-blue-600 flex items-center"><i class="fas fa-spinner fa-spin mr-1"></i>Memuat ketersediaan slot...</span>';
+                if (technicianAvailability) {
+                    technicianAvailability.innerHTML = '<span class="text-blue-600 flex items-center"><i class="fas fa-spinner fa-spin mr-1"></i>Memuat ketersediaan teknisi...</span>';
                 }
 
                 try {
-                    const response = await fetch('/admin/service-tickets/get-booked-slots', {
+                    const response = await fetch('/admin/service-tickets/get-available-technicians', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
                         body: JSON.stringify({
-                            admin_id: adminSelect.value,
-                            visit_date: visitDate.value,
-                            exclude_ticket_id: currentTicketId,
-                            exclude_order_service_id: '{{ $ticket->orderService->order_service_id }}'
-                        })
-                    });
-
-                    const data = await response.json();
-                    
-                    // Reset semua option terlebih dahulu
-                    resetTimeSlotOptions();
-
-                    // Nonaktifkan slot yang sudah dibooking oleh teknisi yang dipilih (kecuali tiket saat ini)
-                    if (data.booked_slots && data.booked_slots.length > 0) {
-                        data.booked_slots.forEach(bookedSlot => {
-                            if (bookedSlot.slot_disabled) {
-                                const option = Array.from(visitTimeSlot.options).find(opt => opt.value === bookedSlot.time_slot);
-                                if (option) {
-                                    option.disabled = true;
-                                    option.style.color = '#9CA3AF'; // text-gray-400
-                                    option.textContent += ` (Tidak Tersedia - ${bookedSlot.customer_name} - ${bookedSlot.technician_name})`;
-                                }
-                            }
-                        });
-                    }
-
-                    // Update informasi ketersediaan
-                    updateAvailabilityInfo(data);
-                    
-                    // Jika ada slot yang dipilih, cek ketersediaannya
-                    if (visitTimeSlot && visitTimeSlot.value) {
-                        checkSpecificSlotAvailability();
-                    }
-
-                } catch (error) {
-                    console.error('Error loading available slots:', error);
-                    if (slotAvailability) {
-                        slotAvailability.innerHTML = '<span class="text-red-600 flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal memuat ketersediaan slot</span>';
-                    }
-                }
-            }
-
-            /**
-             * Update informasi ketersediaan slot
-             */
-            function updateAvailabilityInfo(data) {
-                if (!slotAvailability) return;
-
-                if (data.date_full) {
-                    slotAvailability.innerHTML = `
-                        <div class="text-red-600 flex items-center">
-                            <i class="fas fa-times-circle mr-1"></i>
-                            Teknisi sudah mencapai batas maksimal kunjungan hari ini (${data.total_visits_today}/${data.max_visits_per_day})
-                        </div>
-                    `;
-                } else {
-                    slotAvailability.innerHTML = `
-                        <div class="text-blue-600 flex items-center">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            ${data.remaining_slots} slot tersisa dari ${data.max_visits_per_day} slot maksimal per hari
-                        </div>
-                    `;
-                }
-            }
-
-            /**
-             * Cek ketersediaan slot waktu spesifik yang dipilih
-             * Mengecualikan tiket saat ini dari pengecekan konflik
-             */
-            async function checkSpecificSlotAvailability() {
-                if (!adminSelect || !visitDate || !visitTimeSlot || !adminSelect.value || !visitDate.value || !visitTimeSlot.value || isCheckingAvailability) {
-                    return;
-                }
-
-                isCheckingAvailability = true;
-
-                try {
-                    const response = await fetch('/admin/service-tickets/check-slot-availability', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({
-                            admin_id: adminSelect.value,
                             visit_date: visitDate.value,
                             visit_time_slot: visitTimeSlot.value,
-                            exclude_ticket_id: currentTicketId,
-                            exclude_order_service_id: '{{ $ticket->orderService->order_service_id }}'
+                            exclude_ticket_id: currentTicketId
                         })
                     });
 
                     const data = await response.json();
-                    
-                    if (data.available) {
-                        // Slot tersedia - update hidden field dan tampilkan pesan sukses
-                        updateVisitScheduleHidden();
-                        if (slotAvailability) {
-                            slotAvailability.innerHTML = `
-                                <div class="text-green-600 flex items-center">
-                                    <i class="fas fa-check-circle mr-1"></i>
-                                    Slot ${visitTimeSlot.value} tersedia (${data.remaining_slots} slot tersisa hari ini)
-                                </div>
-                            `;
-                        }
-                    } else {
-                        // Slot tidak tersedia - bersihkan hidden field dan tampilkan pesan error
-                        if (visitScheduleHidden) visitScheduleHidden.value = '';
-                        if (slotAvailability) {
-                            slotAvailability.innerHTML = `
-                                <div class="text-red-600 flex items-center">
-                                    <i class="fas fa-times-circle mr-1"></i>
-                                    ${data.message}
-                                </div>
-                            `;
-                        }
-                    }
+
+                    // Update technician dropdown options
+                    updateTechnicianOptions(data.technicians);
+
+                    // Update informasi ketersediaan
+                    updateTechnicianAvailabilityInfo(data);
+
                 } catch (error) {
-                    console.error('Error checking slot availability:', error);
-                    if (slotAvailability) {
-                        slotAvailability.innerHTML = '<span class="text-red-600 flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal mengecek ketersediaan slot</span>';
+                    console.error('Error loading available technicians:', error);
+                    if (technicianAvailability) {
+                        technicianAvailability.innerHTML = '<span class="text-red-600 flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal memuat ketersediaan teknisi</span>';
                     }
-                } finally {
-                    isCheckingAvailability = false;
                 }
             }
+
+            /**
+             * Reset technician dropdown ke kondisi normal
+             */
+            function resetTechnicianOptions() {
+                if (adminSelect) {
+                    // Reset to original options - this would need to be handled differently
+                    // For now, we'll just clear any special styling
+                    Array.from(adminSelect.options).forEach(option => {
+                        if (option.value) {
+                            option.textContent = option.textContent.replace(/ – Tidak Tersedia – .*$/, '');
+                            option.style.color = '';
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Update technician dropdown options berdasarkan data dari server
+             */
+            function updateTechnicianOptions(technicians) {
+                if (!adminSelect) return;
+
+                // Clear existing options except the first one
+                while (adminSelect.options.length > 1) {
+                    adminSelect.remove(1);
+                }
+
+                // Add technician options
+                technicians.forEach(technician => {
+                    const option = document.createElement('option');
+                    option.value = technician.id;
+                    option.textContent = technician.display_text;
+
+                    // If unavailable, style it differently
+                    if (!technician.available) {
+                        option.style.color = '#9CA3AF'; // text-gray-400
+                    }
+
+                    adminSelect.appendChild(option);
+                });
+
+                // Set the selected value if it exists
+                if (adminSelect && '{{ $ticket->admin_id }}') {
+                    adminSelect.value = '{{ $ticket->admin_id }}';
+                }
+            }
+
+            /**
+             * Update informasi ketersediaan teknisi
+             */
+            function updateTechnicianAvailabilityInfo(data) {
+                if (!technicianAvailability) return;
+
+                const availableCount = data.technicians.filter(t => t.available).length;
+                const totalCount = data.technicians.length;
+
+                technicianAvailability.innerHTML = `
+                    <div class="text-blue-600 flex items-center">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        ${availableCount} dari ${totalCount} teknisi tersedia untuk slot ini
+                    </div>
+                `;
+            }
+
+
 
             /**
              * Update field hidden visit_schedule dengan format datetime
@@ -572,32 +518,34 @@
             }
 
             // Event listeners untuk berbagai perubahan input
-            if (adminSelect) {
-                adminSelect.addEventListener('change', function() {
-                    // Reset slot yang dipilih ketika teknisi berubah
-                    if (visitTimeSlot) visitTimeSlot.value = '';
-                    if (visitScheduleHidden) visitScheduleHidden.value = '';
-                    
-                    // Load ulang slot yang tersedia
-                    loadAvailableSlots();
-                });
-            }
-            
             if (visitDate) {
                 visitDate.addEventListener('change', function() {
-                    // Reset slot yang dipilih ketika tanggal berubah
+                    // Reset slot dan technician ketika tanggal berubah
                     if (visitTimeSlot) visitTimeSlot.value = '';
+                    if (adminSelect) adminSelect.value = '';
                     if (visitScheduleHidden) visitScheduleHidden.value = '';
-                    
-                    // Load ulang slot yang tersedia
-                    loadAvailableSlots();
+                    if (technicianAvailability) technicianAvailability.innerHTML = '';
                 });
             }
-            
+
             if (visitTimeSlot) {
-                visitTimeSlot.addEventListener('change', checkSpecificSlotAvailability);
+                visitTimeSlot.addEventListener('change', function() {
+                    // Reset technician selection when slot changes
+                    if (adminSelect) adminSelect.value = '';
+                    if (visitScheduleHidden) visitScheduleHidden.value = '';
+
+                    // Load available technicians for this slot
+                    loadAvailableTechnicians();
+                });
             }
-            
+
+            if (adminSelect) {
+                adminSelect.addEventListener('change', function() {
+                    // Update visit schedule hidden field when technician is selected
+                    updateVisitScheduleHidden();
+                });
+            }
+
             // Event listeners untuk estimasi tanggal selesai
             scheduleDate.addEventListener('change', updateEstimateDate);
             estimationDays.addEventListener('change', updateEstimateDate);
@@ -605,10 +553,10 @@
 
             // Inisialisasi saat page load
             updateEstimateDate();
-            
-            // Load slot yang tersedia jika form sudah memiliki nilai teknisi dan tanggal
-            if (adminSelect && visitDate && adminSelect.value && visitDate.value) {
-                loadAvailableSlots();
+
+            // Load technicians if slot is already selected
+            if (visitDate && visitTimeSlot && visitDate.value && visitTimeSlot.value) {
+                loadAvailableTechnicians();
             }
         });
     </script>

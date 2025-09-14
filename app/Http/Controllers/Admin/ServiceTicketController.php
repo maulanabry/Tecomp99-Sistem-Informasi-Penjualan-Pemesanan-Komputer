@@ -508,6 +508,61 @@ class ServiceTicketController extends Controller
     }
 
     /**
+     * Mendapatkan teknisi yang tersedia untuk tanggal dan slot waktu tertentu
+     * Digunakan untuk menampilkan dropdown teknisi dengan status ketersediaan
+     */
+    public function getAvailableTechniciansForSlot(Request $request)
+    {
+        $validated = $request->validate([
+            'visit_date' => 'required|date',
+            'visit_time_slot' => 'required|in:08:00,10:30,13:00,15:30,18:00',
+            'exclude_ticket_id' => 'nullable|string'
+        ]);
+
+        // Ambil semua teknisi
+        $technicians = Admin::where('role', 'teknisi')->get();
+
+        $availableTechnicians = $technicians->map(function ($technician) use ($validated) {
+            // Cek apakah teknisi sudah memiliki booking di slot tersebut
+            $query = ServiceTicket::where('admin_id', $technician->id)
+                ->whereDate('visit_schedule', $validated['visit_date'])
+                ->whereRaw("TIME(visit_schedule) = ?", [$validated['visit_time_slot'] . ':00'])
+                ->whereHas('orderService', function ($q) {
+                    $q->where('type', 'onsite');
+                })
+                ->with(['orderService.customer']);
+
+            // Exclude ticket tertentu jika sedang edit
+            if (!empty($validated['exclude_ticket_id'])) {
+                $query->where('service_ticket_id', '!=', $validated['exclude_ticket_id']);
+            }
+
+            $existingBooking = $query->first();
+
+            if ($existingBooking) {
+                return [
+                    'id' => $technician->id,
+                    'name' => $technician->name,
+                    'available' => false,
+                    'customer_name' => $existingBooking->orderService->customer->name ?? 'Unknown',
+                    'display_text' => $technician->name . ' – Tidak Tersedia – ' . ($existingBooking->orderService->customer->name ?? 'Unknown')
+                ];
+            } else {
+                return [
+                    'id' => $technician->id,
+                    'name' => $technician->name,
+                    'available' => true,
+                    'display_text' => $technician->name
+                ];
+            }
+        });
+
+        return response()->json([
+            'technicians' => $availableTechnicians
+        ]);
+    }
+
+    /**
      * Mendapatkan semua slot yang sudah dibooking untuk tanggal dan teknisi tertentu
      * Digunakan untuk menampilkan slot yang tidak tersedia di frontend
      */
