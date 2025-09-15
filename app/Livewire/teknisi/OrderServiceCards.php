@@ -52,11 +52,16 @@ class OrderServiceCards extends Component
     public function getStatusBadgeClass($status)
     {
         return match ($status) {
-            'Menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-            'Diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-            'Selesai' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-            'Dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-            default => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+            'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+            'dijadwalkan' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
+            'menuju_lokasi' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+            'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+            'menunggu_sparepart' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
+            'siap_diambil' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100',
+            'diantar' => 'bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100',
+            'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+            'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+            default => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
         };
     }
 
@@ -118,10 +123,15 @@ class OrderServiceCards extends Component
 
         $tabCounts = [
             'all' => (clone $baseQuery)->count(),
-            'Menunggu' => (clone $baseQuery)->where('status_order', 'Menunggu')->count(),
-            'Diproses' => (clone $baseQuery)->where('status_order', 'Diproses')->count(),
-            'Selesai' => (clone $baseQuery)->where('status_order', 'Selesai')->count(),
-            'Dibatalkan' => (clone $baseQuery)->where('status_order', 'Dibatalkan')->count(),
+            'menunggu' => (clone $baseQuery)->where('status_order', 'menunggu')->count(),
+            'dijadwalkan' => (clone $baseQuery)->where('status_order', 'dijadwalkan')->count(),
+            'menuju_lokasi' => (clone $baseQuery)->where('status_order', 'menuju_lokasi')->count(),
+            'diproses' => (clone $baseQuery)->where('status_order', 'diproses')->count(),
+            'menunggu_sparepart' => (clone $baseQuery)->where('status_order', 'menunggu_sparepart')->count(),
+            'siap_diambil' => (clone $baseQuery)->where('status_order', 'siap_diambil')->count(),
+            'diantar' => (clone $baseQuery)->where('status_order', 'diantar')->count(),
+            'selesai' => (clone $baseQuery)->where('status_order', 'selesai')->count(),
+            'dibatalkan' => (clone $baseQuery)->where('status_order', 'dibatalkan')->count(),
         ];
 
         return view('livewire.teknisi.order-service-cards', [

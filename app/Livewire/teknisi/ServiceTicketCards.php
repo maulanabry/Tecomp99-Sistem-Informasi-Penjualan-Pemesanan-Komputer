@@ -18,12 +18,15 @@ class ServiceTicketCards extends Component
 
     public $tabCounts = [
         'all' => 0,
-        'Menunggu' => 0,
-        'Diproses' => 0,
-        'Diantar' => 0,
-        'Perlu Diambil' => 0,
-        'Selesai' => 0,
-        'Dibatalkan' => 0,
+        'menunggu' => 0,
+        'dijadwalkan' => 0,
+        'menuju_lokasi' => 0,
+        'diproses' => 0,
+        'menunggu_sparepart' => 0,
+        'siap_diambil' => 0,
+        'diantar' => 0,
+        'selesai' => 0,
+        'dibatalkan' => 0,
     ];
 
     protected $listeners = ['refreshServiceTicketCards' => '$refresh'];
@@ -83,24 +86,30 @@ class ServiceTicketCards extends Component
             });
 
         $this->tabCounts['all'] = (clone $baseQuery)->count();
-        $this->tabCounts['Menunggu'] = (clone $baseQuery)->where('status', 'Menunggu')->count();
-        $this->tabCounts['Diproses'] = (clone $baseQuery)->where('status', 'Diproses')->count();
-        $this->tabCounts['Diantar'] = (clone $baseQuery)->where('status', 'Diantar')->count();
-        $this->tabCounts['Perlu Diambil'] = (clone $baseQuery)->where('status', 'Perlu Diambil')->count();
-        $this->tabCounts['Selesai'] = (clone $baseQuery)->where('status', 'Selesai')->count();
-        $this->tabCounts['Dibatalkan'] = (clone $baseQuery)->where('status', 'Dibatalkan')->count();
+        $this->tabCounts['menunggu'] = (clone $baseQuery)->where('status', 'menunggu')->count();
+        $this->tabCounts['dijadwalkan'] = (clone $baseQuery)->where('status', 'dijadwalkan')->count();
+        $this->tabCounts['menuju_lokasi'] = (clone $baseQuery)->where('status', 'menuju_lokasi')->count();
+        $this->tabCounts['diproses'] = (clone $baseQuery)->where('status', 'diproses')->count();
+        $this->tabCounts['menunggu_sparepart'] = (clone $baseQuery)->where('status', 'menunggu_sparepart')->count();
+        $this->tabCounts['siap_diambil'] = (clone $baseQuery)->where('status', 'siap_diambil')->count();
+        $this->tabCounts['diantar'] = (clone $baseQuery)->where('status', 'diantar')->count();
+        $this->tabCounts['selesai'] = (clone $baseQuery)->where('status', 'selesai')->count();
+        $this->tabCounts['dibatalkan'] = (clone $baseQuery)->where('status', 'dibatalkan')->count();
     }
 
     public function getStatusBadgeClass($status)
     {
         return match ($status) {
-            'Menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-            'Diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-            'Diantar' => 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-            'Perlu Diambil' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-            'Selesai' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-            'Dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-            default => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
+            'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+            'dijadwalkan' => 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100',
+            'menuju_lokasi' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100',
+            'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
+            'menunggu_sparepart' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100',
+            'siap_diambil' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100',
+            'diantar' => 'bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100',
+            'selesai' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+            'dibatalkan' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+            default => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
         };
     }
 

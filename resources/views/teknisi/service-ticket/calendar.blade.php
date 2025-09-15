@@ -146,8 +146,23 @@
                 let statusBadge = '';
                 if (props.status) {
                     const statusColors = {
+                        'menunggu': 'bg-yellow-100 text-yellow-800',
+                        'dijadwalkan': 'bg-purple-100 text-purple-800',
+                        'menuju_lokasi': 'bg-orange-100 text-orange-800',
+                        'diproses': 'bg-blue-100 text-blue-800',
+                        'menunggu_sparepart': 'bg-indigo-100 text-indigo-800',
+                        'siap_diambil': 'bg-cyan-100 text-cyan-800',
+                        'diantar': 'bg-pink-100 text-pink-800',
+                        'selesai': 'bg-green-100 text-green-800',
+                        'dibatalkan': 'bg-red-100 text-red-800',
+                        // Fallback for capitalized versions
                         'Menunggu': 'bg-yellow-100 text-yellow-800',
+                        'Dijadwalkan': 'bg-purple-100 text-purple-800',
+                        'Menuju_lokasi': 'bg-orange-100 text-orange-800',
                         'Diproses': 'bg-blue-100 text-blue-800',
+                        'Menunggu_sparepart': 'bg-indigo-100 text-indigo-800',
+                        'Siap_diambil': 'bg-cyan-100 text-cyan-800',
+                        'Diantar': 'bg-pink-100 text-pink-800',
                         'Selesai': 'bg-green-100 text-green-800',
                         'Dibatalkan': 'bg-red-100 text-red-800'
                     };

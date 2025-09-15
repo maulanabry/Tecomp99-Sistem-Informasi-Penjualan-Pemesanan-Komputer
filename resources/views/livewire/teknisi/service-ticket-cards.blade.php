@@ -36,10 +36,10 @@
     </div>
 
     <!-- Status Tabs -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg">
+    <div class="bg-white dark:bg-gray-800 rounded-lg overflow-x-auto">
         <div class="border-b border-gray-200 dark:border-gray-700">
-            <nav class="-mb-px flex space-x-8 px-6 overflow-x-auto" aria-label="Tabs">
-                <button wire:click="setActiveTab('all')" 
+            <nav class="-mb-px flex space-x-8 px-6 min-w-max" aria-label="Tabs">
+                <button wire:click="setActiveTab('all')"
                         class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'all' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Semua
                     <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'all' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
@@ -47,51 +47,75 @@
                     </span>
                 </button>
 
-                <button wire:click="setActiveTab('Menunggu')" 
-                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'Menunggu' ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                <button wire:click="setActiveTab('menunggu')"
+                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'menunggu' ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Menunggu
-                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'Menunggu' ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
-                        {{ $tabCounts['Menunggu'] }}
+                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'menunggu' ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
+                        {{ $tabCounts['menunggu'] }}
                     </span>
                 </button>
 
-                <button wire:click="setActiveTab('Diproses')" 
-                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'Diproses' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                <button wire:click="setActiveTab('dijadwalkan')"
+                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'dijadwalkan' ? 'border-purple-500 text-purple-600 dark:text-purple-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Dijadwalkan
+                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'dijadwalkan' ? 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
+                        {{ $tabCounts['dijadwalkan'] }}
+                    </span>
+                </button>
+
+                <button wire:click="setActiveTab('menuju_lokasi')"
+                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'menuju_lokasi' ? 'border-orange-500 text-orange-600 dark:text-orange-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Menuju Lokasi
+                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'menuju_lokasi' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
+                        {{ $tabCounts['menuju_lokasi'] }}
+                    </span>
+                </button>
+
+                <button wire:click="setActiveTab('diproses')"
+                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'diproses' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Diproses
-                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'Diproses' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
-                        {{ $tabCounts['Diproses'] }}
+                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'diproses' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
+                        {{ $tabCounts['diproses'] }}
                     </span>
                 </button>
 
-                <button wire:click="setActiveTab('Diantar')" 
-                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'Diantar' ? 'border-purple-500 text-purple-600 dark:text-purple-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                <button wire:click="setActiveTab('menunggu_sparepart')"
+                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'menunggu_sparepart' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Menunggu Sparepart
+                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'menunggu_sparepart' ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
+                        {{ $tabCounts['menunggu_sparepart'] }}
+                    </span>
+                </button>
+
+                <button wire:click="setActiveTab('siap_diambil')"
+                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'siap_diambil' ? 'border-cyan-500 text-cyan-600 dark:text-cyan-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    Siap Diambil
+                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'siap_diambil' ? 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900 dark:text-cyan-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
+                        {{ $tabCounts['siap_diambil'] }}
+                    </span>
+                </button>
+
+                <button wire:click="setActiveTab('diantar')"
+                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'diantar' ? 'border-pink-500 text-pink-600 dark:text-pink-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Diantar
-                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'Diantar' ? 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
-                        {{ $tabCounts['Diantar'] }}
+                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'diantar' ? 'bg-pink-100 text-pink-600 dark:bg-pink-900 dark:text-pink-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
+                        {{ $tabCounts['diantar'] }}
                     </span>
                 </button>
 
-                <button wire:click="setActiveTab('Perlu Diambil')" 
-                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'Perlu Diambil' ? 'border-orange-500 text-orange-600 dark:text-orange-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    Perlu Diambil
-                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'Perlu Diambil' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
-                        {{ $tabCounts['Perlu Diambil'] }}
-                    </span>
-                </button>
-
-                <button wire:click="setActiveTab('Selesai')" 
-                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'Selesai' ? 'border-green-500 text-green-600 dark:text-green-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                <button wire:click="setActiveTab('selesai')"
+                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'selesai' ? 'border-green-500 text-green-600 dark:text-green-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Selesai
-                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'Selesai' ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
-                        {{ $tabCounts['Selesai'] }}
+                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'selesai' ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
+                        {{ $tabCounts['selesai'] }}
                     </span>
                 </button>
 
-                <button wire:click="setActiveTab('Dibatalkan')" 
-                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'Dibatalkan' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                <button wire:click="setActiveTab('dibatalkan')"
+                        class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $activeTab === 'dibatalkan' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
                     Dibatalkan
-                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'Dibatalkan' ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
-                        {{ $tabCounts['Dibatalkan'] }}
+                    <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ $activeTab === 'dibatalkan' ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300' }}">
+                        {{ $tabCounts['dibatalkan'] }}
                     </span>
                 </button>
             </nav>
