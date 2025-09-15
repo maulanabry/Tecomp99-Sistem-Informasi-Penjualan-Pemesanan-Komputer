@@ -333,7 +333,7 @@ class ServiceTicketController extends Controller
             ->whereHas('orderService', function ($q) {
                 $q->where('type', 'reguler');
             })
-            ->whereIn('status', ['Menunggu', 'Diproses'])
+            ->whereIn('status', ['menunggu', 'diproses'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -397,32 +397,164 @@ class ServiceTicketController extends Controller
         return view('teknisi.service-ticket.show', compact('ticket', 'previousUrl'));
     }
 
-    public function updateStatus(Request $request, ServiceTicket $ticket)
+    public function edit(ServiceTicket $ticket)
     {
-        $request->validate([
-            'status' => 'required|in:Menunggu,Diproses,Diantar,Perlu Diambil,Selesai'
-        ]);
+        $ticket->load(['orderService.customer', 'admin']);
 
-        $oldStatus = $ticket->status;
-        $ticket->update([
-            'status' => $request->status
-        ]);
+        // Get all technicians (admins with teknisi role)
+        $technicians = Admin::where('role', 'teknisi')->get();
 
-        // Create notification for status update by teknisi
-        if ($oldStatus !== $request->status) {
+        return view('teknisi.service-ticket.edit', compact('ticket', 'technicians'));
+    }
+
+    public function update(Request $request, ServiceTicket $ticket)
+    {
+        // Get the order service to check its type
+        $orderService = $ticket->orderService;
+
+        $rules = [
+            'status' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan',
+            'admin_id' => 'required|exists:admins,id',
+            'schedule_date' => 'required|date',
+            'estimation_days' => 'nullable|integer|min:1',
+        ];
+
+        // Add visit schedule validation only for onsite orders
+        if ($orderService && $orderService->type === 'onsite') {
+            $rules['visit_date'] = 'required|date';
+            $rules['visit_time_slot'] = 'required|in:08:00,10:30,13:00,15:30,18:00';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Handle visit schedule for onsite orders
+        if ($orderService && $orderService->type === 'onsite') {
+            // Check slot availability (exclude current ticket)
+            $isSlotAvailable = $this->checkSlotAvailabilityInternal(
+                $validated['admin_id'],
+                $validated['visit_date'],
+                $validated['visit_time_slot'],
+                $ticket->service_ticket_id
+            );
+
+            if (!$isSlotAvailable['available']) {
+                return back()->withErrors(['visit_time_slot' => $isSlotAvailable['message']])->withInput();
+            }
+
+            $validated['visit_schedule'] = $validated['visit_date'] . ' ' . $validated['visit_time_slot'] . ':00';
+            unset($validated['visit_date'], $validated['visit_time_slot']);
+        }
+
+        // Calculate estimate_date if estimation_days is provided
+        if (!empty($validated['estimation_days'])) {
+            $scheduleDate = new \DateTime($validated['schedule_date']);
+            $validated['estimate_date'] = $scheduleDate->modify("+{$validated['estimation_days']} days")->format('Y-m-d');
+        }
+
+        // Begin transaction
+        DB::beginTransaction();
+        try {
+            // Set session flag to bypass validation during update
+            session(['bypass_ticket_validation' => true]);
+
+            // Update service ticket
+            $ticket->update($validated);
+
+            // Clear session flag
+            session()->forget('bypass_ticket_validation');
+
+            // Update order service status to match ticket status
+            $orderService->update(['status_order' => $validated['status']]);
+
+            DB::commit();
+
+            // Create notification for ticket update by teknisi
             try {
                 $teknisi = auth('teknisi')->user();
                 $this->createTicketNotificationForAdmin(
                     $ticket,
                     NotificationType::TEKNISI_ORDER_UPDATED,
-                    "Tiket #{$ticket->service_ticket_id} telah diperbarui oleh Teknisi {$teknisi->name} - Status: {$request->status}"
+                    "Tiket #{$ticket->service_ticket_id} telah diperbarui oleh Teknisi {$teknisi->name}"
                 );
             } catch (\Exception $e) {
-                Log::error('Failed to create status update notification: ' . $e->getMessage());
+                Log::error('Failed to create ticket update notification: ' . $e->getMessage());
             }
+
+            return redirect()->route('teknisi.service-tickets.show', $ticket)
+                ->with('success', 'Tiket servis berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            // Clear session flag on error
+            session()->forget('bypass_ticket_validation');
+            return back()->with('error', 'Terjadi kesalahan saat memperbarui tiket servis: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function getAvailableTechniciansForSlot(Request $request)
+    {
+        $validated = $request->validate([
+            'visit_date' => 'required|date',
+            'visit_time_slot' => 'required|in:08:00,10:30,13:00,15:30,18:00',
+            'exclude_ticket_id' => 'nullable|string'
+        ]);
+
+        // Get all technicians
+        $allTechnicians = Admin::where('role', 'teknisi')->get();
+
+        $technicians = [];
+
+        foreach ($allTechnicians as $technician) {
+            $availability = $this->checkSlotAvailabilityInternal(
+                $technician->id,
+                $validated['visit_date'],
+                $validated['visit_time_slot'],
+                $validated['exclude_ticket_id'] ?? null
+            );
+
+            $technicians[] = [
+                'id' => $technician->id,
+                'name' => $technician->name,
+                'available' => $availability['available'],
+                'display_text' => $technician->name . ($availability['available'] ? '' : ' – Tidak Tersedia – ' . $availability['message'])
+            ];
         }
 
-        return redirect()->back()->with('success', 'Status tiket berhasil diperbarui.');
+        return response()->json([
+            'technicians' => $technicians
+        ]);
+    }
+
+    public function updateStatus(Request $request, ServiceTicket $ticket)
+    {
+        $request->validate([
+            'status' => 'required|in:menunggu,dijadwalkan,menuju_lokasi,diproses,menunggu_sparepart,siap_diambil,diantar,selesai,dibatalkan'
+        ]);
+
+        $oldStatus = $ticket->status;
+
+        try {
+            $ticket->update([
+                'status' => $request->status
+            ]);
+
+            // Create notification for status update by teknisi
+            if ($oldStatus !== $request->status) {
+                try {
+                    $teknisi = auth('teknisi')->user();
+                    $this->createTicketNotificationForAdmin(
+                        $ticket,
+                        NotificationType::TEKNISI_ORDER_UPDATED,
+                        "Tiket #{$ticket->service_ticket_id} telah diperbarui oleh Teknisi {$teknisi->name} - Status: {$request->status}"
+                    );
+                } catch (\Exception $e) {
+                    Log::error('Failed to create status update notification: ' . $e->getMessage());
+                }
+            }
+
+            return redirect()->back()->with('success', 'Status tiket berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function storeAction(Request $request, ServiceTicket $ticket)

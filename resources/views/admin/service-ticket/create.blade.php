@@ -124,6 +124,25 @@
                                     @enderror
                                 </div>
                             </div>
+
+                            <!-- Technician Selection for Regular -->
+                            <div id="regularTechnicianSection" class="mt-6">
+                                <label for="admin_id_regular" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                    Teknisi (Reguler) <span class="text-red-500">*</span>
+                                </label>
+                                <select name="admin_id" id="admin_id_regular"
+                                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('admin_id') border-red-500 @enderror">
+                                    <option value="">Pilih teknisi</option>
+                                    @foreach($technicians as $technician)
+                                        <option value="{{ $technician->id }}" {{ old('admin_id') == $technician->id ? 'selected' : '' }}>
+                                            {{ $technician->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('admin_id')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         <!-- Visit Schedule Section (for Onsite) -->
@@ -175,7 +194,7 @@
                                 <label for="admin_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                     Teknisi <span class="text-red-500">*</span>
                                 </label>
-                                <select name="admin_id" id="admin_id" required
+                                <select name="admin_id" id="admin_id"
                                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('admin_id') border-red-500 @enderror">
                                     <option value="">Pilih teknisi</option>
                                     @foreach($technicians as $technician)
@@ -272,6 +291,19 @@
             const visitTimeSlot = document.getElementById('visit_time_slot');
             const visitScheduleHidden = document.getElementById('visit_schedule');
             const slotAvailability = document.getElementById('slotAvailability');
+            const regularTechnicianSection = document.getElementById('regularTechnicianSection');
+
+            // Set initial attributes
+            const onsiteSelect = document.getElementById('admin_id');
+            const regularSelect = document.getElementById('admin_id_regular');
+            if (onsiteSelect) {
+                onsiteSelect.required = false;
+                onsiteSelect.name = '';
+            }
+            if (regularSelect) {
+                regularSelect.required = true;
+                regularSelect.name = 'admin_id';
+            }
 
             // Variabel untuk menyimpan status loading
             let isCheckingAvailability = false;
@@ -317,15 +349,36 @@
                     orderInfo.classList.remove('hidden');
                 }
 
-                // Tampilkan/sembunyikan section jadwal kunjungan berdasarkan tipe order
+                // Tampilkan/sembunyikan section berdasarkan tipe order
                 if (orderData.type === 'onsite') {
                     if (visitScheduleSection) visitScheduleSection.classList.remove('hidden');
+                    if (regularTechnicianSection) regularTechnicianSection.classList.add('hidden');
+                    // Set attributes
+                    if (onsiteSelect) {
+                        onsiteSelect.required = true;
+                        onsiteSelect.name = 'admin_id';
+                    }
+                    if (regularSelect) {
+                        regularSelect.required = false;
+                        regularSelect.name = '';
+                        regularSelect.value = '';
+                    }
                     // Reset dan load ulang teknisi yang tersedia jika ada tanggal dan slot yang dipilih
                     if (visitDate.value && visitTimeSlot.value) {
                         loadAvailableTechnicians();
                     }
                 } else {
                     if (visitScheduleSection) visitScheduleSection.classList.add('hidden');
+                    if (regularTechnicianSection) regularTechnicianSection.classList.remove('hidden');
+                    // Set attributes
+                    if (onsiteSelect) {
+                        onsiteSelect.required = false;
+                        onsiteSelect.name = '';
+                    }
+                    if (regularSelect) {
+                        regularSelect.required = true;
+                        regularSelect.name = 'admin_id';
+                    }
                     clearVisitSchedule();
                 }
             });

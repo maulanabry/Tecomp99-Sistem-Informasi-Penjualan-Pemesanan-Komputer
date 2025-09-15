@@ -1,4 +1,7 @@
-<x-layout-teknisi>
+<x-layout-admin>
+    <!-- Include the modal component -->
+    <livewire:teknisi.service-ticket-order-selection-modal key="service-ticket-modal" :preSelectedOrder="$preSelectedOrder ?? null" />
+
     <div class="py-6">
         @if (session('success'))
             <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mb-4">
@@ -14,34 +17,13 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <!-- Breadcrumbs -->
             <div class="mb-2">
-                <nav class="flex" aria-label="Breadcrumb">
-                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                        <li class="inline-flex items-center">
-                            <a href="{{ route('teknisi.dashboard.index') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-400 dark:hover:text-white">
-                                <i class="fas fa-home mr-2"></i>
-                                Dashboard
-                            </a>
-                        </li>
-                        <li>
-                            <div class="flex items-center">
-                                <i class="fas fa-chevron-right text-gray-400 mx-1"></i>
-                                <a href="{{ route('teknisi.service-tickets.index') }}" class="ml-1 text-sm font-medium text-gray-700 hover:text-primary-600 md:ml-2 dark:text-gray-400 dark:hover:text-white">Tiket Servis</a>
-                            </div>
-                        </li>
-                        <li aria-current="page">
-                            <div class="flex items-center">
-                                <i class="fas fa-chevron-right text-gray-400 mx-1"></i>
-                                <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2 dark:text-gray-400">Buat Tiket</span>
-                            </div>
-                        </li>
-                    </ol>
-                </nav>
+                <x-breadcrumbs />
             </div>
-            
+
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Buat Tiket Servis</h1>
                 <div class="flex space-x-3">
-                    <a href="{{ route('teknisi.service-tickets.index') }}" 
+                    <a href="{{ route('teknisi.service-tickets.index') }}"
                         class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
@@ -54,34 +36,35 @@
                 <div class="p-6">
                     <form action="{{ route('teknisi.service-tickets.store') }}" method="POST" class="space-y-6">
                         @csrf
-                        
+
                         <!-- Order Selection Section -->
                         <div class="border-b border-gray-200 dark:border-gray-600 pb-6">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
                                 <i class="fas fa-file-alt mr-2 text-primary-500"></i>
                                 Pilih Order Servis
                             </h3>
-                            
+
                             <div class="grid grid-cols-1 gap-6">
                                 <!-- Order Selection -->
                                 <div>
                                     <label for="order_service_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                         Order Servis <span class="text-red-500">*</span>
                                     </label>
-                                    <select name="order_service_id" id="order_service_id" required
-                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('order_service_id') border-red-500 @enderror">
-                                        <option value="">Pilih order servis</option>
-                                        @foreach($orderServices as $order)
-                                            <option value="{{ $order->order_service_id }}" 
-                                                data-type="{{ $order->type }}"
-                                                data-device="{{ $order->device }}"
-                                                data-complaints="{{ $order->complaints }}"
-                                                data-customer="{{ $order->customer->name }}"
-                                                {{ old('order_service_id', $selectedOrderServiceId) === $order->order_service_id ? 'selected' : '' }}>
-                                                {{ $order->order_service_id }} - {{ $order->customer->name }} ({{ ucfirst($order->type) }})
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <div class="flex gap-3">
+                                        <input type="text" id="selected_order_display" readonly
+                                            class="flex-1 block px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-gray-100 sm:text-sm"
+                                            placeholder="Belum ada order servis yang dipilih"
+                                            value="{{ old('order_service_id') ? (collect($orderServices ?? [])->where('order_service_id', old('order_service_id'))->first() ? collect($orderServices ?? [])->where('order_service_id', old('order_service_id'))->first()->order_service_id . ' - ' . collect($orderServices ?? [])->where('order_service_id', old('order_service_id'))->first()->customer->name : '') : '' }}">
+                                        <div wire:ignore>
+                                        <button type="button"
+                                            onclick="openServiceTicketOrderModal()"
+                                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                            <i class="fas fa-search mr-2"></i>
+                                            Pilih Order
+                                        </button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="order_service_id" id="order_service_id" required value="{{ old('order_service_id') }}">
                                     @error('order_service_id')
                                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                     @enderror
@@ -126,31 +109,12 @@
                             </h3>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Technician Selection -->
-                                <div>
-                                    <label for="admin_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                                        Teknisi <span class="text-red-500">*</span>
-                                    </label>
-                                    <select name="admin_id" id="admin_id" required
-                                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('admin_id') border-red-500 @enderror">
-                                        <option value="">Pilih teknisi</option>
-                                        @foreach($technicians as $technician)
-                                            <option value="{{ $technician->id }}" {{ old('admin_id') == $technician->id ? 'selected' : '' }}>
-                                                {{ $technician->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('admin_id')
-                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
                                 <!-- Schedule Date -->
                                 <div>
                                     <label for="schedule_date" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                         Tanggal Jadwal <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="date" name="schedule_date" id="schedule_date" 
+                                    <input type="date" name="schedule_date" id="schedule_date"
                                         value="{{ old('schedule_date') }}"
                                         min="{{ date('Y-m-d') }}"
                                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('schedule_date') border-red-500 @enderror"
@@ -159,6 +123,25 @@
                                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                     @enderror
                                 </div>
+                            </div>
+
+                            <!-- Technician Selection for Regular -->
+                            <div id="regularTechnicianSection" class="mt-6">
+                                <label for="admin_id_regular" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                    Teknisi (Reguler) <span class="text-red-500">*</span>
+                                </label>
+                                <select name="admin_id" id="admin_id_regular"
+                                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('admin_id') border-red-500 @enderror">
+                                    <option value="">Pilih teknisi</option>
+                                    @foreach($technicians as $technician)
+                                        <option value="{{ $technician->id }}" {{ old('admin_id') == $technician->id ? 'selected' : '' }}>
+                                            {{ $technician->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('admin_id')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
@@ -192,11 +175,11 @@
                                     <select name="visit_time_slot" id="visit_time_slot"
                                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('visit_time_slot') border-red-500 @enderror">
                                         <option value="">Pilih slot waktu</option>
-                                        <option value="08:00" {{ old('visit_time_slot') === '08:00' ? 'selected' : '' }}>08:00 - 09:30</option>
-                                        <option value="10:30" {{ old('visit_time_slot') === '10:30' ? 'selected' : '' }}>10:30 - 12:00</option>
-                                        <option value="13:00" {{ old('visit_time_slot') === '13:00' ? 'selected' : '' }}>13:00 - 14:30</option>
-                                        <option value="15:30" {{ old('visit_time_slot') === '15:30' ? 'selected' : '' }}>15:30 - 17:00</option>
-                                        <option value="18:00" {{ old('visit_time_slot') === '18:00' ? 'selected' : '' }}>18:00 - 19:30</option>
+                                        <option value="08:00" {{ old('visit_time_slot') === '08:00' ? 'selected' : '' }}>08.00 – 09.30</option>
+                                        <option value="10:30" {{ old('visit_time_slot') === '10:30' ? 'selected' : '' }}>10.30 – 12.00</option>
+                                        <option value="13:00" {{ old('visit_time_slot') === '13:00' ? 'selected' : '' }}>13.00 – 14.30</option>
+                                        <option value="15:30" {{ old('visit_time_slot') === '15:30' ? 'selected' : '' }}>15.30 – 17.00</option>
+                                        <option value="18:00" {{ old('visit_time_slot') === '18:00' ? 'selected' : '' }}>18.00 – 19.30</option>
                                     </select>
                                     <div id="slotAvailability" class="mt-2 text-sm"></div>
                                     @error('visit_time_slot')
@@ -205,6 +188,26 @@
                                 </div>
                             </div>
                             <input type="hidden" id="visit_schedule" name="visit_schedule" value="{{ old('visit_schedule') }}">
+
+                            <!-- Technician Selection -->
+                            <div class="mt-6">
+                                <label for="admin_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                    Teknisi <span class="text-red-500">*</span>
+                                </label>
+                                <select name="admin_id" id="admin_id"
+                                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm @error('admin_id') border-red-500 @enderror">
+                                    <option value="">Pilih teknisi</option>
+                                    @foreach($technicians as $technician)
+                                        <option value="{{ $technician->id }}" {{ old('admin_id') == $technician->id ? 'selected' : '' }}>
+                                            {{ $technician->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div id="technicianAvailability" class="mt-2 text-sm"></div>
+                                @error('admin_id')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         <!-- Estimation Section -->
@@ -274,7 +277,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const orderSelect = document.getElementById('order_service_id');
+            // Ambil semua elemen DOM yang diperlukan
+            const selectOrderBtn = document.getElementById('select_order_btn');
+            const selectedOrderDisplay = document.getElementById('selected_order_display');
+            const orderServiceIdInput = document.getElementById('order_service_id');
             const orderInfo = document.getElementById('orderServiceInfo');
             const visitScheduleSection = document.getElementById('visitScheduleSection');
             const scheduleDate = document.getElementById('schedule_date');
@@ -285,61 +291,126 @@
             const visitTimeSlot = document.getElementById('visit_time_slot');
             const visitScheduleHidden = document.getElementById('visit_schedule');
             const slotAvailability = document.getElementById('slotAvailability');
+            const regularTechnicianSection = document.getElementById('regularTechnicianSection');
 
-            // Order services data for JavaScript
-            const orderServices = {!! json_encode($orderServices->map(function($order) {
-                return [
-                    'order_service_id' => $order->order_service_id,
-                    'device' => $order->device,
-                    'complaints' => $order->complaints,
-                    'customer_name' => $order->customer->name,
-                    'type' => $order->type
-                ];
-            })->values()) !!};
+            // Set initial attributes
+            const onsiteSelect = document.getElementById('admin_id');
+            const regularSelect = document.getElementById('admin_id_regular');
+            if (onsiteSelect) {
+                onsiteSelect.required = false;
+                onsiteSelect.name = '';
+            }
+            if (regularSelect) {
+                regularSelect.required = true;
+                regularSelect.name = 'admin_id';
+            }
 
-            // Handle order selection
-            orderSelect.addEventListener('change', function() {
-                if (this.value) {
-                    const selectedOption = this.options[this.selectedIndex];
-                    const orderType = selectedOption.getAttribute('data-type');
-                    const device = selectedOption.getAttribute('data-device');
-                    const complaints = selectedOption.getAttribute('data-complaints');
-                    const customer = selectedOption.getAttribute('data-customer');
-                    
-                    // Update order info display
-                    document.getElementById('deviceInfo').textContent = device || '-';
-                    document.getElementById('complaintsInfo').textContent = complaints || '-';
-                    document.getElementById('customerInfo').textContent = customer || '-';
-                    document.getElementById('typeInfo').textContent = orderType === 'onsite' ? 'Onsite (Kunjungan)' : 'Reguler (Di Toko)';
+            // Variabel untuk menyimpan status loading
+            let isCheckingAvailability = false;
+
+            // Listen for order selection event from Livewire
+            Livewire.on('serviceTicketOrderSelected', function(data) {
+                console.log('serviceTicketOrderSelected event triggered');
+                console.log('Order data received:', data);
+
+                // Handle both single object and array format
+                let orderData = data;
+                if (Array.isArray(data) && data.length > 0) {
+                    orderData = data[0];
+                }
+
+                console.log('Processed order data:', orderData);
+
+                // Update form fields
+                if (orderServiceIdInput && orderData.id) {
+                    orderServiceIdInput.value = orderData.id;
+                    console.log('Setting order_service_id to:', orderData.id);
+                }
+
+                if (selectedOrderDisplay && orderData.id && orderData.customer_name) {
+                    selectedOrderDisplay.value = orderData.id + ' - ' + orderData.customer_name;
+                }
+
+                // Update order info display with character limits
+                const deviceText = orderData.device ? (orderData.device.length > 50 ? orderData.device.substring(0, 50) + '...' : orderData.device) : '-';
+                const complaintsText = orderData.complaints ? (orderData.complaints.length > 80 ? orderData.complaints.substring(0, 80) + '...' : orderData.complaints) : '-';
+
+                const deviceInfo = document.getElementById('deviceInfo');
+                const complaintsInfo = document.getElementById('complaintsInfo');
+                const customerInfo = document.getElementById('customerInfo');
+                const typeInfo = document.getElementById('typeInfo');
+
+                if (deviceInfo) deviceInfo.textContent = deviceText;
+                if (complaintsInfo) complaintsInfo.textContent = complaintsText;
+                if (customerInfo) customerInfo.textContent = orderData.customer_name || '-';
+                if (typeInfo) typeInfo.textContent = orderData.type === 'onsite' ? 'Onsite (Kunjungan)' : 'Reguler (Di Toko)';
+
+                if (orderInfo) {
                     orderInfo.classList.remove('hidden');
-                    
-                    // Show/hide visit schedule based on order type
-                    if (orderType === 'onsite') {
-                        visitScheduleSection.classList.remove('hidden');
-                    } else {
-                        visitScheduleSection.classList.add('hidden');
-                        clearVisitSchedule();
+                }
+
+                // Tampilkan/sembunyikan section berdasarkan tipe order
+                if (orderData.type === 'onsite') {
+                    if (visitScheduleSection) visitScheduleSection.classList.remove('hidden');
+                    if (regularTechnicianSection) regularTechnicianSection.classList.add('hidden');
+                    // Set attributes
+                    if (onsiteSelect) {
+                        onsiteSelect.required = true;
+                        onsiteSelect.name = 'admin_id';
+                    }
+                    if (regularSelect) {
+                        regularSelect.required = false;
+                        regularSelect.name = '';
+                        regularSelect.value = '';
+                    }
+                    // Reset dan load ulang teknisi yang tersedia jika ada tanggal dan slot yang dipilih
+                    if (visitDate.value && visitTimeSlot.value) {
+                        loadAvailableTechnicians();
                     }
                 } else {
-                    orderInfo.classList.add('hidden');
-                    visitScheduleSection.classList.add('hidden');
+                    if (visitScheduleSection) visitScheduleSection.classList.add('hidden');
+                    if (regularTechnicianSection) regularTechnicianSection.classList.remove('hidden');
+                    // Set attributes
+                    if (onsiteSelect) {
+                        onsiteSelect.required = false;
+                        onsiteSelect.name = '';
+                    }
+                    if (regularSelect) {
+                        regularSelect.required = true;
+                        regularSelect.name = 'admin_id';
+                    }
                     clearVisitSchedule();
                 }
             });
 
-            // Clear visit schedule fields
+            /**
+             * Membersihkan semua field jadwal kunjungan
+             */
             function clearVisitSchedule() {
                 if (visitDate) visitDate.value = '';
                 if (visitTimeSlot) visitTimeSlot.value = '';
+                if (adminSelect) adminSelect.value = '';
                 if (visitScheduleHidden) visitScheduleHidden.value = '';
-                if (slotAvailability) slotAvailability.innerHTML = '';
+                if (technicianAvailability) technicianAvailability.innerHTML = '';
+
+                // Reset technician dropdown to show all technicians normally
+                resetTechnicianOptions();
             }
 
-            // Check slot availability for onsite services
-            async function checkSlotAvailability() {
-                if (!adminSelect.value || !visitDate.value || !visitTimeSlot.value) {
-                    if (slotAvailability) slotAvailability.innerHTML = '';
+            /**
+             * Memuat teknisi yang tersedia untuk tanggal dan slot waktu tertentu
+             */
+            async function loadAvailableTechnicians() {
+                if (!visitDate || !visitTimeSlot || !visitDate.value || !visitTimeSlot.value) {
+                    // Reset technician dropdown to show all technicians normally
+                    resetTechnicianOptions();
+                    if (technicianAvailability) technicianAvailability.innerHTML = '';
                     return;
+                }
+
+                // Tampilkan loading state
+                if (technicianAvailability) {
+                    technicianAvailability.innerHTML = '<span class="text-blue-600 flex items-center"><i class="fas fa-spinner fa-spin mr-1"></i>Memuat ketersediaan teknisi...</span>';
                 }
 
                 try {
@@ -357,28 +428,75 @@
                     });
 
                     const data = await response.json();
-                    
-                    if (data.available) {
-                        slotAvailability.innerHTML = `<span class="text-green-600 flex items-center"><i class="fas fa-check-circle mr-1"></i>Slot tersedia (${data.remaining_slots} slot tersisa hari ini)</span>`;
-                        updateVisitScheduleHidden();
-                    } else {
-                        slotAvailability.innerHTML = `<span class="text-red-600 flex items-center"><i class="fas fa-times-circle mr-1"></i>${data.message}</span>`;
-                        if (visitScheduleHidden) visitScheduleHidden.value = '';
+
+                    // Update informasi ketersediaan slot
+                    if (technicianAvailability) {
+                        if (data.available) {
+                            technicianAvailability.innerHTML = `
+                                <div class="text-green-600 flex items-center">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Slot tersedia (${data.remaining_slots || 0} slot tersisa hari ini)
+                                </div>
+                            `;
+                        } else {
+                            technicianAvailability.innerHTML = `
+                                <div class="text-red-600 flex items-center">
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    ${data.message || 'Slot tidak tersedia'}
+                                </div>
+                            `;
+                        }
                     }
+
                 } catch (error) {
                     console.error('Error checking slot availability:', error);
-                    if (slotAvailability) slotAvailability.innerHTML = '<span class="text-red-600 flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i>Error checking availability</span>';
+                    if (technicianAvailability) {
+                        technicianAvailability.innerHTML = '<span class="text-red-600 flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal memeriksa ketersediaan slot</span>';
+                    }
                 }
             }
 
-            // Update hidden visit_schedule field
+            /**
+             * Reset technician dropdown ke kondisi normal
+             */
+            function resetTechnicianOptions() {
+                if (adminSelect) {
+                    // Reset to original options - this would need to be handled differently
+                    // For now, we'll just clear any special styling
+                    Array.from(adminSelect.options).forEach(option => {
+                        if (option.value) {
+                            option.textContent = option.textContent.replace(/ – Tidak Tersedia – .*$/, '');
+                            option.style.color = '';
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Check slot availability when technician and slot are selected
+             */
+            function checkSlotAvailability() {
+                if (!visitDate || !visitTimeSlot || !adminSelect || !visitDate.value || !visitTimeSlot.value || !adminSelect.value) {
+                    if (technicianAvailability) technicianAvailability.innerHTML = '';
+                    return;
+                }
+
+                // Call the loadAvailableTechnicians function to check availability
+                loadAvailableTechnicians();
+            }
+
+            /**
+             * Update field hidden visit_schedule dengan format datetime
+             */
             function updateVisitScheduleHidden() {
                 if (visitDate && visitTimeSlot && visitDate.value && visitTimeSlot.value && visitScheduleHidden) {
                     visitScheduleHidden.value = visitDate.value + 'T' + visitTimeSlot.value + ':00';
                 }
             }
 
-            // Update estimate date based on schedule date and estimation days
+            /**
+             * Update tanggal estimasi selesai berdasarkan tanggal jadwal dan estimasi hari
+             */
             function updateEstimateDate() {
                 if (scheduleDate.value && estimationDays.value) {
                     const startDate = new Date(scheduleDate.value);
@@ -389,19 +507,74 @@
                 }
             }
 
-            // Event listeners
-            if (adminSelect) adminSelect.addEventListener('change', checkSlotAvailability);
-            if (visitDate) visitDate.addEventListener('change', checkSlotAvailability);
-            if (visitTimeSlot) visitTimeSlot.addEventListener('change', checkSlotAvailability);
-            
+            // Event listeners untuk berbagai perubahan input
+            if (visitDate) {
+                visitDate.addEventListener('change', function() {
+                    // Reset slot dan technician ketika tanggal berubah
+                    if (visitTimeSlot) visitTimeSlot.value = '';
+                    if (adminSelect) adminSelect.value = '';
+                    if (visitScheduleHidden) visitScheduleHidden.value = '';
+                    if (technicianAvailability) technicianAvailability.innerHTML = '';
+                });
+            }
+
+            if (visitTimeSlot) {
+                visitTimeSlot.addEventListener('change', function() {
+                    // Reset technician selection when slot changes
+                    if (adminSelect) adminSelect.value = '';
+                    if (visitScheduleHidden) visitScheduleHidden.value = '';
+
+                    // Load available technicians for this slot
+                    loadAvailableTechnicians();
+                });
+            }
+
+            if (adminSelect) {
+                adminSelect.addEventListener('change', function() {
+                    // Update visit schedule hidden field when technician is selected
+                    updateVisitScheduleHidden();
+                    // Check slot availability when technician is selected
+                    checkSlotAvailability();
+                });
+            }
+
+            // Event listeners untuk estimasi tanggal selesai
             scheduleDate.addEventListener('change', updateEstimateDate);
             estimationDays.addEventListener('change', updateEstimateDate);
             estimationDays.addEventListener('input', updateEstimateDate);
 
-            // Initialize on page load if there are old values
-            if (orderSelect.value) {
-                orderSelect.dispatchEvent(new Event('change'));
+            // Function to open the service ticket order modal
+            window.openServiceTicketOrderModal = function() {
+                console.log('Opening service ticket order modal...');
+                // Dispatch Livewire event to open the modal
+                Livewire.dispatch('openServiceTicketOrderModal');
+                console.log('Modal open event dispatched');
+            };
+
+            // Inisialisasi jika ada nilai lama (old values) saat page load
+            if (orderServiceIdInput.value) {
+                // Jika ada old value, trigger event untuk menampilkan informasi order
+                const oldOrderData = {
+                    id: orderServiceIdInput.value,
+                    customer_name: selectedOrderDisplay.value.split(' - ')[1] || '',
+                    device: '',
+                    complaints: '',
+                    type: 'reguler'
+                };
+                Livewire.dispatch('serviceTicketOrderSelected', oldOrderData);
             }
+
+            // Load technicians if slot is already selected
+            if (visitDate && visitTimeSlot && visitDate.value && visitTimeSlot.value) {
+                loadAvailableTechnicians();
+            }
+
+            // Jika ada pre-selected order, buka modal secara otomatis
+            @if(isset($selectedOrderServiceId) && $selectedOrderServiceId)
+                setTimeout(() => {
+                    openServiceTicketOrderModal();
+                }, 500);
+            @endif
         });
     </script>
-</x-layout-teknisi>
+</x-layout-admin>

@@ -403,39 +403,22 @@
 
                 <!-- Sidebar -->
                 <div class="lg:col-span-1">
-                    <!-- Quick Actions -->
+                    <!-- Aksi -->
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                <i class="fas fa-bolt mr-2 text-primary-500"></i>
-                                Aksi Cepat
+                                <i class="fas fa-cogs mr-2 text-primary-500"></i>
+                                Aksi
                             </h3>
                         </div>
                         <div class="p-6 space-y-3">
-                            <a href="{{ route('teknisi.customers.show', $orderService->customer) }}"
-                                class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
-                                <i class="fas fa-user mr-2"></i>
-                                Detail Pelanggan
+                            <a href="{{ route('teknisi.order-services.edit', $orderService) }}"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <i class="fas fa-edit mr-2"></i>
+                                Edit Pesanan
                             </a>
 
-                            @if($orderService->customer->contact)
-                                <a href="{{ $orderService->customer->whatsapp_link }}" target="_blank"
-                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-green-300 shadow-sm text-sm font-medium rounded-md text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-gray-700 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-900/20">
-                                    <i class="fab fa-whatsapp mr-2"></i>
-                                    WhatsApp Pelanggan
-                                </a>
-                            @endif
-
-                            @if($orderService->tickets->isNotEmpty())
-                                @foreach($orderService->tickets as $ticket)
-                                    <a href="{{ route('teknisi.service-tickets.show', $ticket) }}"
-                                        class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
-                                        <i class="fas fa-ticket-alt mr-2"></i>
-                                        Lihat Tiket Servis
-                                    </a>
-                                    @break
-                                @endforeach
-                            @else
+                            @if($orderService->tickets->isEmpty())
                                 @if($orderService->type === 'onsite' && !$orderService->hasTicket && !in_array($orderService->status_order, ['Selesai', 'Dibatalkan']))
                                     <a href="{{ route('teknisi.service-tickets.create', ['order_service_id' => $orderService->order_service_id]) }}"
                                         class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
@@ -450,6 +433,56 @@
                                     </a>
                                 @endif
                             @endif
+
+                            @if($orderService->status_order !== 'Dibatalkan' && $orderService->status_order !== 'Selesai')
+                                <button type="button"
+                                    data-modal-target="cancel-order-cancel-order"
+                                    data-modal-toggle="cancel-order-cancel-order"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-gray-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20">
+                                    <i class="fas fa-times mr-2"></i>
+                                    Batalkan pesanan
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Informasi Pesanan -->
+                    <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-info-circle mr-2 text-primary-500"></i>
+                                Informasi Pesanan
+                            </h3>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            @if($orderService->tickets->isNotEmpty())
+                                @foreach($orderService->tickets as $ticket)
+                                    <a href="{{ route('teknisi.service-tickets.show', $ticket) }}"
+                                        class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
+                                        <i class="fas fa-ticket-alt mr-2"></i>
+                                        Lihat Tiket Servis
+                                    </a>
+                                    @break
+                                @endforeach
+                            @endif
+
+                            <a href="{{ route('teknisi.customers.show', $orderService->customer) }}"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600">
+                                <i class="fas fa-user mr-2"></i>
+                                Profil Pelanggan
+                            </a>
+
+                            <a href="{{ route('teknisi.order-services.invoice', $orderService) }}"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600">
+                                <i class="fas fa-file-invoice mr-2"></i>
+                                Lihat Invoice
+                            </a>
+
+                            <a href="{{ route('teknisi.order-services.receipt', $orderService) }}"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600">
+                                <i class="fas fa-receipt mr-2"></i>
+                                Lihat Tanda Terima
+                            </a>
                         </div>
                     </div>
 

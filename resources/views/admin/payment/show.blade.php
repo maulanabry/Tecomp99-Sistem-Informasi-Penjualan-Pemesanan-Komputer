@@ -321,60 +321,63 @@
 
                 <!-- Sidebar -->
                 <div class="lg:col-span-1">
-                    <!-- Quick Actions -->
+                    <!-- Aksi Section Card -->
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                <i class="fas fa-bolt mr-2 text-primary-500"></i>
-                                Aksi Cepat
+                                <i class="fas fa-cogs mr-2 text-primary-500"></i>
+                                Aksi
                             </h3>
                         </div>
                         <div class="p-6 space-y-3">
                             @if (!in_array($payment->status, ['dibayar', 'gagal']))
-                                <a href="{{ route('payments.edit', ['payment_id' => $payment->payment_id]) }}" 
+                                <a href="{{ route('payments.edit', ['payment_id' => $payment->payment_id]) }}"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                     <i class="fas fa-edit mr-2"></i>
                                     Edit Pembayaran
                                 </a>
                             @endif
-                            @if($order && $customer)
-                                <a href="{{ $customer->whatsapp_link }}" target="_blank"
-                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-green-300 shadow-sm text-sm font-medium rounded-md text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-gray-700 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-900/20">
-                                    <i class="fab fa-whatsapp mr-2"></i>
-                                    Hubungi Pelanggan
-                                </a>
-                                @if($customer->email)
-                                <a href="mailto:{{ $customer->email }}"
-                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
-                                    <i class="fas fa-envelope mr-2"></i>
-                                    Kirim Email
-                                </a>
-                                @endif
-                                @if($payment->order_type === 'produk')
-                                    <a href="{{ route('order-products.show', $payment->order_product_id) }}"
-                                        class="w-full inline-flex items-center justify-center px-4 py-2 border border-purple-300 shadow-sm text-sm font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-900/20">
-                                        <i class="fas fa-box mr-2"></i>
-                                        Lihat Order Produk
-                                    </a>
-                                @else
-                                    <a href="{{ route('order-services.show', $payment->order_service_id) }}"
-                                        class="w-full inline-flex items-center justify-center px-4 py-2 border border-purple-300 shadow-sm text-sm font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-900/20">
-                                        <i class="fas fa-tools mr-2"></i>
-                                        Lihat Order Servis
-                                    </a>
-                                @endif
+                        </div>
+                    </div>
+
+                    <!-- Informasi Pesanan Section Card -->
+                    @if($order && $customer)
+                    <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                <i class="fas fa-info-circle mr-2 text-primary-500"></i>
+                                Informasi Pesanan
+                            </h3>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            <a href="{{ $customer->whatsapp_link }}" target="_blank"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 border border-green-300 shadow-sm text-sm font-medium rounded-md text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-gray-700 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-900/20">
+                                <i class="fab fa-whatsapp mr-2"></i>
+                                Hubungi Pelanggan
+                            </a>
+                            @if($customer->email)
+                            <a href="mailto:{{ $customer->email }}"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
+                                <i class="fas fa-envelope mr-2"></i>
+                                Kirim Email
+                            </a>
                             @endif
-                            @if($payment->status !== 'gagal')
-                                <button type="button"
-                                    data-modal-target="cancel-payment-modal-{{ $payment->payment_id }}"
-                                    data-modal-toggle="cancel-payment-modal-{{ $payment->payment_id }}"
-                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-gray-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20">
-                                    <i class="fas fa-ban mr-2"></i>
-                                    Batalkan Pembayaran
-                                </button>
+                            @if($payment->order_type === 'produk')
+                                <a href="{{ route('order-products.show', $payment->order_product_id) }}"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-purple-300 shadow-sm text-sm font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-900/20">
+                                    <i class="fas fa-box mr-2"></i>
+                                    Lihat Pesanan
+                                </a>
+                            @else
+                                <a href="{{ route('order-services.show', $payment->order_service_id) }}"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-purple-300 shadow-sm text-sm font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-900/20">
+                                    <i class="fas fa-tools mr-2"></i>
+                                    Lihat Pesanan
+                                </a>
                             @endif
                         </div>
                     </div>
+                    @endif
 
                     <!-- Metadata -->
                     <div class="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">

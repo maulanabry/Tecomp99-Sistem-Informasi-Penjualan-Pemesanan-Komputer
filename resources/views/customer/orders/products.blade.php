@@ -44,25 +44,37 @@
                     <!-- Tab Navigation -->
                     <div class="bg-white rounded-lg shadow-sm mb-6">
                 <div class="border-b border-gray-200">
-                    <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
-                        <a href="{{ route('customer.orders.products', ['status' => 'semua']) }}" 
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'semua' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                    <nav class="-mb-px flex space-x-8 px-6 overflow-x-auto" aria-label="Tabs">
+                        <a href="{{ route('customer.orders.products', ['status' => 'semua']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'semua' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Semua
                         </a>
-                        <a href="{{ route('customer.orders.products', ['status' => 'Belum_dibayar']) }}"
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'Belum_dibayar' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                            Belum Dibayar
+                        <a href="{{ route('customer.orders.products', ['status' => 'menunggu']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'menunggu' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Menunggu
                         </a>
-                        <a href="{{ route('customer.orders.products', ['status' => 'Diproses']) }}"
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'Diproses' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <a href="{{ route('customer.orders.products', ['status' => 'inden']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'inden' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Inden
+                        </a>
+                        <a href="{{ route('customer.orders.products', ['status' => 'siap_kirim']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'siap_kirim' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Siap Kirim
+                        </a>
+                        <a href="{{ route('customer.orders.products', ['status' => 'diproses']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'diproses' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Diproses
                         </a>
-                        <a href="{{ route('customer.orders.products', ['status' => 'Selesai']) }}"
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'Selesai' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <a href="{{ route('customer.orders.products', ['status' => 'dikirim']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'dikirim' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Dikirim
+                        </a>
+                        <a href="{{ route('customer.orders.products', ['status' => 'selesai']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'selesai' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Selesai
                         </a>
-                        <a href="{{ route('customer.orders.products', ['status' => 'Dibatalkan']) }}"
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'Dibatalkan' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <a href="{{ route('customer.orders.products', ['status' => 'dibatalkan']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'dibatalkan' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Dibatalkan
                         </a>
                     </nav>

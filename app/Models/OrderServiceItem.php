@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\OrderService $orderService
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceItem newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceItem query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceItem whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderServiceItem whereItemId($value)
@@ -58,5 +59,13 @@ class OrderServiceItem extends Model
     public function item()
     {
         return $this->morphTo();
+    }
+
+    /**
+     * Direct relationship to Service (when item_type is 'service')
+     */
+    public function service()
+    {
+        return $this->belongsTo(Service::class, 'item_id', 'service_id');
     }
 }

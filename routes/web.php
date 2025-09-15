@@ -487,7 +487,10 @@ Route::middleware('auth:teknisi')->group(function () {
         Route::get('/calendar', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'calendar'])->name('teknisi.service-tickets.calendar');
         Route::get('/calendar/events', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'calendarEvents'])->name('teknisi.service-tickets.calendar.events');
         Route::post('/check-slot-availability', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'checkSlotAvailability'])->name('teknisi.service-tickets.check-slot');
+        Route::post('/get-available-technicians', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'getAvailableTechniciansForSlot'])->name('teknisi.service-tickets.get-available-technicians');
         Route::get('/{ticket}', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'show'])->name('teknisi.service-tickets.show');
+        Route::get('/{ticket}/edit', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'edit'])->name('teknisi.service-tickets.edit');
+        Route::put('/{ticket}', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'update'])->name('teknisi.service-tickets.update');
         Route::put('/{ticket}/status', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'updateStatus'])->name('teknisi.service-tickets.update-status');
         Route::put('/{ticket}/cancel', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'cancel'])->name('teknisi.service-tickets.cancel');
         Route::post('/{ticket}/actions', [\App\Http\Controllers\Teknisi\ServiceTicketController::class, 'storeAction'])->name('teknisi.service-tickets.actions.store');

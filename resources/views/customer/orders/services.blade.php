@@ -44,25 +44,45 @@
                     <!-- Tab Navigation -->
                     <div class="bg-white rounded-lg shadow-sm mb-6">
                 <div class="border-b border-gray-200">
-                    <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
-                        <a href="{{ route('customer.orders.services', ['status' => 'semua']) }}" 
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'semua' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                    <nav class="-mb-px flex space-x-8 px-6 overflow-x-auto" aria-label="Tabs">
+                        <a href="{{ route('customer.orders.services', ['status' => 'semua']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'semua' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Semua
                         </a>
-                        <a href="{{ route('customer.orders.services', ['status' => 'belum_bayar']) }}" 
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'belum_bayar' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                            Belum Bayar
+                        <a href="{{ route('customer.orders.services', ['status' => 'menunggu']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'menunggu' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Menunggu
                         </a>
-                        <a href="{{ route('customer.orders.services', ['status' => 'diproses']) }}" 
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'diproses' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <a href="{{ route('customer.orders.services', ['status' => 'dijadwalkan']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'dijadwalkan' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Dijadwalkan
+                        </a>
+                        <a href="{{ route('customer.orders.services', ['status' => 'menuju_lokasi']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'menuju_lokasi' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Menuju Lokasi
+                        </a>
+                        <a href="{{ route('customer.orders.services', ['status' => 'diproses']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'diproses' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Diproses
                         </a>
-                        <a href="{{ route('customer.orders.services', ['status' => 'selesai']) }}" 
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'selesai' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <a href="{{ route('customer.orders.services', ['status' => 'menunggu_sparepart']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'menunggu_sparepart' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Menunggu Sparepart
+                        </a>
+                        <a href="{{ route('customer.orders.services', ['status' => 'siap_diambil']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'siap_diambil' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Siap Diambil
+                        </a>
+                        <a href="{{ route('customer.orders.services', ['status' => 'diantar']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'diantar' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Diantar
+                        </a>
+                        <a href="{{ route('customer.orders.services', ['status' => 'selesai']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'selesai' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Selesai
                         </a>
-                        <a href="{{ route('customer.orders.services', ['status' => 'dibatalkan']) }}" 
-                           class="py-4 px-1 border-b-2 font-medium text-sm {{ $status === 'dibatalkan' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <a href="{{ route('customer.orders.services', ['status' => 'dibatalkan']) }}"
+                           class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap {{ $status === 'dibatalkan' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Dibatalkan
                         </a>
                     </nav>

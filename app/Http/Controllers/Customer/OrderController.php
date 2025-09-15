@@ -25,20 +25,7 @@ class OrderController extends Controller
 
         // Filter berdasarkan status
         if ($status !== 'semua') {
-            switch ($status) {
-                case 'belum_bayar':
-                    $query->where('status_payment', 'belum_dibayar');
-                    break;
-                case 'diproses':
-                    $query->whereIn('status_order', ['diproses', 'dikemas', 'dikirim']);
-                    break;
-                case 'selesai':
-                    $query->where('status_order', 'selesai');
-                    break;
-                case 'dibatalkan':
-                    $query->where('status_order', 'dibatalkan');
-                    break;
-            }
+            $query->where('status_order', $status);
         }
 
         // Filter berdasarkan pencarian
@@ -71,20 +58,7 @@ class OrderController extends Controller
 
         // Filter berdasarkan status
         if ($status !== 'semua') {
-            switch ($status) {
-                case 'belum_bayar':
-                    $query->where('status_payment', 'belum_dibayar');
-                    break;
-                case 'diproses':
-                    $query->whereIn('status_order', ['diproses', 'sedang_dikerjakan']);
-                    break;
-                case 'selesai':
-                    $query->where('status_order', 'selesai');
-                    break;
-                case 'dibatalkan':
-                    $query->where('status_order', 'dibatalkan');
-                    break;
-            }
+            $query->where('status_order', $status);
         }
 
         // Filter berdasarkan pencarian
