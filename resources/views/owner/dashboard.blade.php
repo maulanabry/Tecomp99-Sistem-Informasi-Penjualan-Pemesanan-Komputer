@@ -1,22 +1,20 @@
 <x-layout-owner>
-    <div class="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-900">
-
-
+    <div class="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
         <!-- Summary Cards Component -->
         <div class="flex-shrink-0">
             <livewire:owner.owner-dashboard-summary-cards />
         </div>
 
-        <!-- Two Column Layout -->
-        <div class="flex-1 min-h-0 px-6 pb-6 overflow-hidden">
-            <div class="grid grid-cols-2 gap-6 h-full">
+        <!-- Responsive Grid Layout -->
+        <div class="flex-1 px-4 sm:px-6 pb-4 sm:pb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 h-full">
                 <!-- Left Column: Operational -->
-                <div class="h-full overflow-hidden">
+                <div class="h-full min-h-[400px]">
                     <livewire:owner.owner-dashboard-operational-tabs />
                 </div>
 
                 <!-- Right Column: Analytics -->
-                <div class="h-full overflow-hidden">
+                <div class="h-full min-h-[400px]">
                     <livewire:owner.owner-dashboard-analytics-tabs />
                 </div>
             </div>
