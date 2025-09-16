@@ -449,6 +449,7 @@ Route::middleware('auth:admin')->group(function () {
 
     // Melewati_jatuh_tempo Orders and Overdue Services Routes
     Route::get('/admin/melewati_jatuh_tempo-orders', [\App\Http\Controllers\Admin\OrderProductController::class, 'expiredOrders'])->name('admin.melewati_jatuh_tempo-orders');
+    Route::get('/admin/orders/expired', [\App\Http\Controllers\Admin\OrderProductController::class, 'expiredOrders'])->name('admin.orders.expired');
     Route::get('/admin/overdue-services', [\App\Http\Controllers\Admin\OrderServiceController::class, 'overdueServices'])->name('admin.overdue-services');
 });
 

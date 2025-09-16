@@ -27,6 +27,10 @@ class ProductController extends Controller
             $query->where('categories_id', $request->category);
         }
 
+        if ($request->filled('filter') && $request->filter === 'low_stock') {
+            $query->where('stock', '<=', 5);
+        }
+
         $allowedSorts = ['product_id', 'name', 'price', 'stock', 'sold_count', 'is_active', 'updated_at'];
         $sort = $request->get('sort', 'updated_at');
         $direction = $request->get('direction', 'desc');

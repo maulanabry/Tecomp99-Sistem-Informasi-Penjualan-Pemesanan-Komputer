@@ -1,15 +1,15 @@
-<div class="space-y-4" x-data="paymentChart()" @init-chart.window="initChart()">
+<div class="space-y-4">
     <div class="flex justify-between items-center">
         <h4 class="text-sm font-medium text-gray-900 dark:text-white">Status Pembayaran</h4>
         <div class="text-xs text-gray-500 dark:text-gray-400">
             Total: {{ array_sum($chartData['data']) }} pesanan
         </div>
     </div>
-    
+
     <!-- Chart Container -->
     <div class="relative">
         <div class="h-64 flex items-center justify-center">
-            <canvas id="paymentStatusChart" class="w-full h-full"></canvas>
+            <canvas id="paymentStatusChart-{{ $this->getId() }}" class="w-full h-full"></canvas>
         </div>
     </div>
     
@@ -95,52 +95,66 @@
     </div>
 </div>
 
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    function paymentChart() {
-        return {
-            initChart() {
-                const ctx = document.getElementById('paymentStatusChart');
-                if (ctx && typeof Chart !== 'undefined') {
-                    // Destroy existing chart if it exists
-                    if (window.paymentStatusChartInstance) {
-                        window.paymentStatusChartInstance.destroy();
-                    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const chartId = 'paymentStatusChart-{{ $this->getId() }}';
+        const ctx = document.getElementById(chartId);
+        let chart;
 
-                    window.paymentStatusChartInstance = new Chart(ctx.getContext('2d'), {
-                        type: 'doughnut',
-                        data: {
-                            labels: @json($chartData['labels']),
-                            datasets: [{
-                                data: @json($chartData['data']),
-                                backgroundColor: @json($chartData['colors']),
-                                borderWidth: 2,
-                                borderColor: '#ffffff'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            const label = context.label || '';
-                                            const value = context.parsed;
-                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                            const percentage = ((value / total) * 100).toFixed(1);
-                                            return `${label}: ${value} pesanan (${percentage}%)`;
-                                        }
+        function createChart() {
+            if (chart) {
+                chart.destroy();
+            }
+
+            if (ctx && @json($chartData ?? null)) {
+                chart = new Chart(ctx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: @json($chartData['labels']),
+                        datasets: [{
+                            data: @json($chartData['data']),
+                            backgroundColor: @json($chartData['colors']),
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return `${label}: ${value} pesanan (${percentage}%)`;
                                     }
                                 }
-                            },
-                            cutout: '60%'
-                        }
-                    });
-                }
+                            }
+                        },
+                        cutout: '60%'
+                    }
+                });
             }
         }
-    }
+
+        createChart();
+
+        // Listen for Livewire updates
+        Livewire.on('refresh-dashboard', () => {
+            setTimeout(createChart, 100);
+        });
+
+        // Listen for component updates
+        document.addEventListener('livewire:updated', function() {
+            setTimeout(createChart, 100);
+        });
+    });
 </script>

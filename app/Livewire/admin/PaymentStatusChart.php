@@ -19,7 +19,6 @@ class PaymentStatusChart extends Component
     public function mount()
     {
         $this->loadData();
-        $this->dispatch('init-chart');
     }
 
     public function loadData()
@@ -99,12 +98,7 @@ class PaymentStatusChart extends Component
 
     public function showOverduePayments()
     {
-        return redirect()->route('admin.payment.index', ['status' => 'overdue']);
-    }
-
-    public function updated()
-    {
-        $this->dispatch('init-chart');
+        return redirect()->route('admin.orders.expired');
     }
 
     public function render()

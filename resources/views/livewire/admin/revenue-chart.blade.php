@@ -1,15 +1,15 @@
 <div class="space-y-4">
     <!-- Filter Buttons -->
     <div class="flex space-x-2">
-        <button wire:click="setRevenueFilter('daily')" 
+        <button onclick="window.location.href = window.location.pathname + '?tab=revenue&filter=daily'"
                 class="px-3 py-1 text-xs rounded {{ $revenueFilter === 'daily' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600' }}">
             Harian
         </button>
-        <button wire:click="setRevenueFilter('monthly')" 
+        <button onclick="window.location.href = window.location.pathname + '?tab=revenue&filter=monthly'"
                 class="px-3 py-1 text-xs rounded {{ $revenueFilter === 'monthly' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600' }}">
             Bulanan
         </button>
-        <button wire:click="setRevenueFilter('yearly')" 
+        <button onclick="window.location.href = window.location.pathname + '?tab=revenue&filter=yearly'"
                 class="px-3 py-1 text-xs rounded {{ $revenueFilter === 'yearly' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600' }}">
             Tahunan
         </button>
@@ -37,65 +37,63 @@
     <!-- Chart.js Script -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chartId = 'revenueChart-{{ $this->getId() }}';
-            const ctx = document.getElementById(chartId);
-            let chart;
+        const chartId = 'revenueChart-{{ $this->getId() }}';
+        const ctx = document.getElementById(chartId);
+        let chart;
 
-            function createChart() {
-                if (chart) {
-                    chart.destroy();
-                }
+        function createChart() {
+            if (chart) {
+                chart.destroy();
+            }
 
-                if (ctx && @json($revenueChart ?? null)) {
-                    chart = new Chart(ctx.getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: @json($revenueChart['labels'] ?? []),
-                            datasets: [{
-                                label: 'Pendapatan (Rp)',
-                                data: @json($revenueChart['revenues'] ?? []),
-                                borderColor: '#10b981',
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.4
-                            }]
+            if (ctx && @json($revenueChart ?? null)) {
+                chart = new Chart(ctx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: @json($revenueChart['labels'] ?? []),
+                        datasets: [{
+                            label: 'Pendapatan (Rp)',
+                            data: @json($revenueChart['revenues'] ?? []),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        callback: function(value) {
-                                            return 'Rp ' + value.toLocaleString('id-ID');
-                                        }
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'Rp ' + value.toLocaleString('id-ID');
                                     }
                                 }
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
+        }
 
-            createChart();
+        createChart();
 
-            // Listen for Livewire updates
-            Livewire.on('refresh-dashboard', () => {
-                setTimeout(createChart, 100);
-            });
+        // Listen for Livewire updates
+        Livewire.on('refresh-dashboard', () => {
+            setTimeout(createChart, 100);
+        });
 
-            // Listen for component updates
-            document.addEventListener('livewire:updated', function() {
-                setTimeout(createChart, 100);
-            });
+        // Listen for component updates
+        document.addEventListener('livewire:updated', function() {
+            setTimeout(createChart, 100);
         });
     </script>
 </div>

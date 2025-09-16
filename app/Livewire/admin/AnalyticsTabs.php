@@ -10,6 +10,11 @@ class AnalyticsTabs extends Component
 
     protected $listeners = ['refresh-dashboard' => '$refresh'];
 
+    public function mount()
+    {
+        $this->activeTab = request('tab', 'revenue');
+    }
+
     public function setActiveTab($tab)
     {
         $this->activeTab = $tab;

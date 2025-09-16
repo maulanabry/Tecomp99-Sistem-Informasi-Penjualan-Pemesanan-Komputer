@@ -149,7 +149,7 @@ class OverduePaymentsAnalysis extends Component
 
     public function showAllOverdue()
     {
-        return redirect()->route('admin.payment.overdue');
+        return redirect()->route('admin.orders.expired');
     }
 
     public function render()

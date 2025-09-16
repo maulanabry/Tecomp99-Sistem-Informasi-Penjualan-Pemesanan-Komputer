@@ -16,6 +16,7 @@ class RevenueChart extends Component
 
     public function mount()
     {
+        $this->revenueFilter = request('filter', 'monthly');
         $this->calculateRevenueChart();
     }
 
