@@ -17,11 +17,9 @@ class OwnerDashboardHeaderRevenue extends Component
 
     public function calculateRevenue()
     {
-        $now = Carbon::now();
-        $this->totalRevenue = PaymentDetail::where('status', 'dibayar')
-            ->whereMonth('created_at', $now->month)
-            ->whereYear('created_at', $now->year)
-            ->sum('amount');
+        $orderServiceTotal = \App\Models\OrderService::where('status_payment', 'lunas')->sum('grand_total');
+        $orderProductTotal = \App\Models\OrderProduct::where('status_payment', 'lunas')->sum('grand_total');
+        $this->totalRevenue = $orderServiceTotal + $orderProductTotal;
     }
 
     public function render()

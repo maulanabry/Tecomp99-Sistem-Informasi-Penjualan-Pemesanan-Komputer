@@ -18,6 +18,7 @@ class AnalyticsTabs extends Component
     public function setActiveTab($tab)
     {
         $this->activeTab = $tab;
+        $this->dispatchBrowserEvent('refresh-charts');
     }
 
     public function render()

@@ -1,20 +1,39 @@
 <x-layout-owner>
-    <div class="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div class="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-900">
+        <!-- Header Section -->
+        <div class="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Owner</h1>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Ringkasan operasional dan kinerja bisnis</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl font-bold text-green-600 dark:text-green-400">
+                        <livewire:owner.owner-dashboard-header-revenue />
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Total Pendapatan Bulan Ini</div>
+                    <button class="mt-2 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400">
+                        <i class="fas fa-sync-alt mr-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Summary Cards Component -->
         <div class="flex-shrink-0">
             <livewire:owner.owner-dashboard-summary-cards />
         </div>
 
-        <!-- Responsive Grid Layout -->
-        <div class="flex-1 px-4 sm:px-6 pb-4 sm:pb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 h-full">
+        <!-- Two Column Layout -->
+        <div class="flex-1 min-h-0 px-6 pb-6 overflow-hidden">
+            <div class="grid grid-cols-2 gap-6 h-full">
                 <!-- Left Column: Operational -->
-                <div class="h-full min-h-[400px]">
+                <div class="h-full overflow-hidden">
                     <livewire:owner.owner-dashboard-operational-tabs />
                 </div>
 
                 <!-- Right Column: Analytics -->
-                <div class="h-full min-h-[400px]">
+                <div class="h-full overflow-hidden">
                     <livewire:owner.owner-dashboard-analytics-tabs />
                 </div>
             </div>
@@ -27,5 +46,23 @@
         setInterval(() => {
             Livewire.emit('refresh');
         }, 300000);
+
+        // Listener untuk event Livewire yang memicu render ulang chart
+        window.addEventListener('refresh-charts', function () {
+            // Ganti dengan fungsi render chart kamu
+            if (typeof renderAllCharts === 'function') {
+                renderAllCharts();
+            }
+            // Atau, jika pakai Chart.js:
+            // if (window.myChart) window.myChart.update();
+        });
+
+        // Contoh: trigger manual saat Livewire selesai update
+        document.addEventListener("livewire:navigated", function() {
+            window.dispatchEvent(new Event('refresh-charts'));
+        });
+        document.addEventListener("livewire:load", function() {
+            window.dispatchEvent(new Event('refresh-charts'));
+        });
     </script>
 </x-layout-owner>

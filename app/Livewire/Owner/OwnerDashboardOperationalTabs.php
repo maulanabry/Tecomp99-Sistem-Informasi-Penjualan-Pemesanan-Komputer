@@ -9,11 +9,19 @@ use App\Models\ServiceTicket;
 
 class OwnerDashboardOperationalTabs extends Component
 {
+    protected $listeners = ['refresh-dashboard' => '$refresh'];
+
     public $activeTab = 'jadwal-servis';
+
+    public function mount()
+    {
+        $this->dispatch('refresh-dashboard');
+    }
 
     public function setActiveTab($tab)
     {
         $this->activeTab = $tab;
+        $this->dispatch('refresh-dashboard');
     }
 
     public function render()

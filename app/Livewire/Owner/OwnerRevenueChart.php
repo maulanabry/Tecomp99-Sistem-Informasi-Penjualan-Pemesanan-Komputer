@@ -8,6 +8,8 @@ use Carbon\Carbon;
 
 class OwnerRevenueChart extends Component
 {
+    protected $listeners = ['refresh-dashboard' => '$refresh'];
+
     public $revenueFilter = 'monthly';
     public $revenueChart;
 

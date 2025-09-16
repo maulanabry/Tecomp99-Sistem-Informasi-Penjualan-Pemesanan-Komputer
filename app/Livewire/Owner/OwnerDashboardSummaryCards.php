@@ -11,6 +11,8 @@ use Carbon\Carbon;
 
 class OwnerDashboardSummaryCards extends Component
 {
+    protected $listeners = ['refresh-dashboard' => '$refresh'];
+
     public $showMore = false;
 
     // Card data
@@ -34,10 +36,16 @@ class OwnerDashboardSummaryCards extends Component
         $lastMonth = $now->copy()->subMonth();
 
         // Total Pendapatan Kotor (current month)
-        $this->totalPendapatanKotor = PaymentDetail::where('status', 'dibayar')
-            ->whereMonth('created_at', $now->month)
-            ->whereYear('created_at', $now->year)
-            ->sum('amount');
+        $this->totalPendapatanKotor =
+            OrderProduct::where('status_payment', 'lunas')
+            ->whereMonth('updated_at', $now->month)
+            ->whereYear('updated_at', $now->year)
+            ->sum('grand_total')
+            +
+            OrderService::where('status_payment', 'lunas')
+            ->whereMonth('updated_at', $now->month)
+            ->whereYear('updated_at', $now->year)
+            ->sum('grand_total');
 
         // Total Order (Product + Service)
         $this->totalOrder = OrderProduct::count() + OrderService::count();
@@ -66,8 +74,8 @@ class OwnerDashboardSummaryCards extends Component
         $this->servisSelesaiBelumDiambil = OrderService::where('status_order', 'siap_diambil')
             ->count();
 
-        // Pembayaran Belum Lunas
-        $this->pembayaranBelumLunas = PaymentDetail::where('status', 'belum_dibayar')
+        // Pembayaran Belum Dikonformasi
+        $this->pembayaranBelumLunas = PaymentDetail::where('status', 'menunggu')
             ->count();
     }
 

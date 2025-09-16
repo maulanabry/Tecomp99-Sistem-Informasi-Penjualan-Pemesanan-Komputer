@@ -7,6 +7,8 @@ use App\Models\PaymentDetail;
 
 class OwnerPaymentStatusChart extends Component
 {
+    protected $listeners = ['refresh-dashboard' => '$refresh'];
+
     public $paymentStatusData;
 
     public function mount()

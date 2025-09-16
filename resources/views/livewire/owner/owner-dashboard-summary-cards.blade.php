@@ -1,22 +1,4 @@
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-    <!-- Header Section -->
-    <div class="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 mb-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-lg font-bold text-gray-900 dark:text-white">Dashboard Pemilik</h1>
-                <p class="text-xs text-gray-600 dark:text-gray-400">Ringkasan operasional dan kinerja bisnis</p>
-            </div>
-            <div class="text-right">
-                <div class="text-xl font-bold text-green-600 dark:text-green-400">
-                    <livewire:owner.owner-dashboard-header-revenue />
-                </div>
-                <div class="text-xs text-gray-600 dark:text-gray-400">Total Pendapatan Bulan Ini</div>
-                <button wire:click="$refresh" class="mt-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400">
-                    <i class="fas fa-sync-alt mr-1"></i> Refresh
-                </button>
-            </div>
-        </div>
-    </div>
+<div class="p-6">
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Total Pendapatan Kotor -->
@@ -132,7 +114,7 @@
                 </div>
                 <div class="flex-grow ml-2">
                     <div class="text-lg font-bold text-gray-900 dark:text-white">{{ $pembayaranBelumLunas }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">Pembayaran Belum Lunas</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Pembayaran Belum Dikonfirmasi</div>
                 </div>
             </div>
         </div>
@@ -140,7 +122,7 @@
     </div>
 
     <!-- Tampilkan Lebih Banyak Button -->
-    <div class="mt-4 text-center">
+    <div class="mt-2 text-left">
         <button wire:click="toggleShowMore" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 text-sm font-medium">
             @if($showMore)
                 <i class="fas fa-chevron-up mr-1"></i> Sembunyikan

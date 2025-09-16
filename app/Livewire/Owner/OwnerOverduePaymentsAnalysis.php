@@ -10,6 +10,8 @@ use Carbon\Carbon;
 
 class OwnerOverduePaymentsAnalysis extends Component
 {
+    protected $listeners = ['refresh-dashboard' => '$refresh'];
+
     public $overduePayments;
 
     public function mount()

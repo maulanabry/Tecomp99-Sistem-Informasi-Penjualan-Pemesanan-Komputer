@@ -8,6 +8,8 @@ use App\Models\OrderService;
 
 class OwnerOrderDistributionChart extends Component
 {
+    protected $listeners = ['refresh-dashboard' => '$refresh'];
+
     public $distributionData;
 
     public function mount()
