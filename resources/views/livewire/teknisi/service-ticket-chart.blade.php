@@ -1,56 +1,73 @@
-<div>
-    <!-- Chart Header -->
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-            <i class="fas fa-chart-line text-green-600 dark:text-green-400 mr-2"></i>
-            Tren Tiket Servis
-        </h3>
-        <div class="flex space-x-2">
+<div class="h-full flex flex-col">
+    <!-- Chart Header - Compact -->
+    <div class="flex justify-between items-center mb-3 flex-shrink-0">
+        <div class="flex space-x-1">
             <button wire:click="setPeriod(7)" 
-                    class="px-3 py-1 text-xs rounded {{ $period == 7 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' }}">
+                    class="px-2 py-1 text-xs rounded {{ $period == 7 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' }}">
                 7 Hari
             </button>
             <button wire:click="setPeriod(30)" 
-                    class="px-3 py-1 text-xs rounded {{ $period == 30 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' }}">
+                    class="px-2 py-1 text-xs rounded {{ $period == 30 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' }}">
                 30 Hari
             </button>
         </div>
+        <span class="text-xs text-gray-500 dark:text-gray-400">{{ $period }} hari terakhir</span>
     </div>
 
-    <!-- Chart Container -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <div class="h-48">
-            <canvas id="serviceTicketChart" width="400" height="200"></canvas>
+    <!-- Chart Container - Compact -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 mb-3 flex-shrink-0">
+        <div class="h-32">
+            <canvas id="serviceTicketChart" width="400" height="128"></canvas>
         </div>
     </div>
 
-    <!-- Statistics -->
-    <div class="mt-4 grid grid-cols-2 gap-2">
-        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 border border-blue-200 dark:border-blue-700">
-            <div class="text-center">
-                <p class="text-xl font-bold text-blue-900 dark:text-blue-100">{{ $statistics['total_tickets'] }}</p>
-                <p class="text-xs text-blue-700 dark:text-blue-300">Total Tiket</p>
+    <!-- Statistics - Scrollable -->
+    <div class="flex-1 min-h-0 overflow-y-auto">
+        <div class="grid grid-cols-2 gap-2">
+            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 border border-blue-200 dark:border-blue-700">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-blue-900 dark:text-blue-100">{{ $statistics['total_tickets'] }}</p>
+                    <p class="text-xs text-blue-700 dark:text-blue-300">Total Tiket</p>
+                </div>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-2 border border-green-200 dark:border-green-700">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-green-900 dark:text-green-100">{{ $statistics['average_per_day'] }}</p>
+                    <p class="text-xs text-green-700 dark:text-green-300">Rata-rata/Hari</p>
+                </div>
+            </div>
+
+            <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2 border border-purple-200 dark:border-purple-700">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-purple-900 dark:text-purple-100">{{ $statistics['max_day'] }}</p>
+                    <p class="text-xs text-purple-700 dark:text-purple-300">Tertinggi</p>
+                    <p class="text-xs text-purple-600 dark:text-purple-400">({{ $statistics['max_day_date'] }})</p>
+                </div>
+            </div>
+
+            <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-2 border border-orange-200 dark:border-orange-700">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-orange-900 dark:text-orange-100">{{ $statistics['completion_rate'] }}%</p>
+                    <p class="text-xs text-orange-700 dark:text-orange-300">Tingkat Selesai</p>
+                </div>
             </div>
         </div>
 
-        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-2 border border-green-200 dark:border-green-700">
-            <div class="text-center">
-                <p class="text-xl font-bold text-green-900 dark:text-green-100">{{ $statistics['average_per_day'] }}</p>
-                <p class="text-xs text-green-700 dark:text-green-300">Rata-rata/Hari</p>
+        <!-- Additional Insights -->
+        <div class="mt-3 space-y-2">
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-600 dark:text-gray-400">Periode</span>
+                    <span class="text-xs font-medium text-gray-900 dark:text-white">{{ $period }} hari terakhir</span>
+                </div>
             </div>
-        </div>
 
-        <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2 border border-purple-200 dark:border-purple-700">
-            <div class="text-center">
-                <p class="text-xl font-bold text-purple-900 dark:text-purple-100">{{ $statistics['max_day'] }}</p>
-                <p class="text-xs text-purple-700 dark:text-purple-300">Tertinggi ({{ $statistics['max_day_date'] }})</p>
-            </div>
-        </div>
-
-        <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-2 border border-orange-200 dark:border-orange-700">
-            <div class="text-center">
-                <p class="text-xl font-bold text-orange-900 dark:text-orange-100">{{ $statistics['completion_rate'] }}%</p>
-                <p class="text-xs text-orange-700 dark:text-orange-300">Tingkat Selesai</p>
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-600 dark:text-gray-400">Update Terakhir</span>
+                    <span class="text-xs font-medium text-gray-900 dark:text-white">{{ now()->format('H:i') }}</span>
+                </div>
             </div>
         </div>
     </div>

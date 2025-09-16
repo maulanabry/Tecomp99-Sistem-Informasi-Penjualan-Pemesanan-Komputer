@@ -40,6 +40,7 @@ class RegularQueue extends Component
         }
 
         return $query->get()->map(function ($ticket, $index) {
+            $waitingHours = Carbon::parse($ticket->created_at)->diffInHours(Carbon::now());
             return [
                 'ticket_id' => $ticket->service_ticket_id,
                 'urutan' => $index + 1,
@@ -53,6 +54,7 @@ class RegularQueue extends Component
                 'status_badge' => $this->getStatusBadge($ticket),
                 'waiting_time' => $this->getWaitingTime($ticket),
                 'priority' => $this->getPriority($ticket),
+                'is_overdue' => $waitingHours > 24,
             ];
         });
     }
@@ -82,13 +84,29 @@ class RegularQueue extends Component
         $created = Carbon::parse($ticket->created_at);
         $now = Carbon::now();
 
-        $diffInHours = $created->diffInHours($now);
-        $diffInMinutes = $created->diffInMinutes($now) % 60;
+        $diffInDays = (int) $created->diffInDays($now);
+        $diffInHours = (int) ($created->diffInHours($now) % 24);
+        $diffInMinutes = (int) ($created->diffInMinutes($now) % 60);
+
+        $waitingTime = [];
+
+        if ($diffInDays > 0) {
+            $waitingTime[] = $diffInDays . ' hari';
+        }
 
         if ($diffInHours > 0) {
-            return $diffInHours . 'j ' . $diffInMinutes . 'm';
+            $waitingTime[] = $diffInHours . ' jam';
         }
-        return $diffInMinutes . ' menit';
+
+        if ($diffInMinutes > 0 && $diffInDays == 0) {
+            $waitingTime[] = $diffInMinutes . ' menit';
+        }
+
+        if (empty($waitingTime)) {
+            return 'Baru saja';
+        }
+
+        return implode(' ', $waitingTime);
     }
 
     /**

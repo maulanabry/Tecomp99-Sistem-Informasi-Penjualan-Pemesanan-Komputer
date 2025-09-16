@@ -28,7 +28,7 @@ class TodaySchedule extends Component
         $teknisiId = Auth::guard('teknisi')->id();
         $today = Carbon::today();
 
-        $query = ServiceTicket::with(['orderService.customer'])
+        $query = ServiceTicket::with(['orderService.customer.addresses'])
             ->where('admin_id', $teknisiId)
             ->whereDate('schedule_date', $today)
             ->orderBy('visit_schedule', 'asc');
@@ -63,7 +63,7 @@ class TodaySchedule extends Component
             $customer = $ticket->orderService->customer;
             if ($customer && $customer->addresses->isNotEmpty()) {
                 $address = $customer->addresses->first();
-                return $address->address . ', ' . $address->city;
+                return $address->detail_address ?? 'Alamat detail belum tersedia';
             }
             return 'Alamat belum tersedia';
         }
