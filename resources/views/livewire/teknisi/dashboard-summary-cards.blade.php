@@ -1,3 +1,4 @@
+
 <div>
     <!-- Summary Cards Grid - Optimized for one-page layout -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3" wire:poll.30000ms>
