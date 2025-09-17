@@ -10,7 +10,7 @@ use Carbon\Carbon;
 
 class OwnerOverduePaymentsAnalysis extends Component
 {
-    protected $listeners = ['refresh-dashboard' => '$refresh'];
+    protected $listeners = ['refresh-dashboard' => '$refresh', 'refresh-charts' => 'loadOverduePayments'];
 
     public $overduePayments;
 
@@ -31,19 +31,19 @@ class OwnerOverduePaymentsAnalysis extends Component
         // Get overdue payments from orders
         $overdueProductOrders = OrderProduct::with(['customer'])
             ->where('status_order', '!=', 'completed')
-            ->where('deadline', '<', $now)
+            ->where('is_expired', true)
             ->whereHas('paymentDetails', function ($query) {
                 $query->where('status', 'belum_dibayar');
             })
             ->get()
             ->map(function ($order) use ($now) {
-                $overdueDays = $now->diffInDays($order->deadline);
+                $overdueDays = $now->diffInDays($order->expired_date);
                 $unpaidAmount = $order->paymentDetails->where('status', 'belum_dibayar')->sum('amount');
 
                 return [
                     'order_id' => $order->order_product_id,
                     'customer_name' => $order->customer->name,
-                    'deadline' => $order->deadline,
+                    'expired_date' => $order->expired_date,
                     'overdue_days' => $overdueDays,
                     'amount' => $unpaidAmount,
                     'type' => 'product'
@@ -52,19 +52,19 @@ class OwnerOverduePaymentsAnalysis extends Component
 
         $overdueServiceOrders = OrderService::with(['customer'])
             ->where('status_order', '!=', 'completed')
-            ->where('deadline', '<', $now)
+            ->where('is_expired', true)
             ->whereHas('paymentDetails', function ($query) {
                 $query->where('status', 'belum_dibayar');
             })
             ->get()
             ->map(function ($order) use ($now) {
-                $overdueDays = $now->diffInDays($order->deadline);
+                $overdueDays = $now->diffInDays($order->expired_date);
                 $unpaidAmount = $order->paymentDetails->where('status', 'belum_dibayar')->sum('amount');
 
                 return [
                     'order_id' => $order->order_service_id,
                     'customer_name' => $order->customer->name,
-                    'deadline' => $order->deadline,
+                    'expired_date' => $order->expired_date,
                     'overdue_days' => $overdueDays,
                     'amount' => $unpaidAmount,
                     'type' => 'service'

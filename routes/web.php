@@ -6,7 +6,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KomerceAPIController;
 use App\Http\Controllers\Admin\KomerceAPIController as ControllersKomerceAPIController;
-use App\Http\Controllers\Pemilik\PemilikDashboardController;
+use App\Http\Controllers\Owner\OwnerDashboardController;
 use App\Http\Controllers\Teknisi\TeknisiDashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Livewire\Admin\CreateOrderProduct;
@@ -520,7 +520,7 @@ Route::middleware('auth:teknisi')->group(function () {
 
 // Pemilik Dashboard
 Route::middleware('auth:pemilik')->group(function () {
-    Route::get('/pemilik/dashboard', [PemilikDashboardController::class, 'index'])->name('pemilik.dashboard.index');
+    Route::get('/pemilik/dashboard', [OwnerDashboardController::class, 'index'])->name('pemilik.dashboard.index');
 
     // Pemilik User Management
     Route::prefix('pemilik/manajemen-pengguna')->group(function () {

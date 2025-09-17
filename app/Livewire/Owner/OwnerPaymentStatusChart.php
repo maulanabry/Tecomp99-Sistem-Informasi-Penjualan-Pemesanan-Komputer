@@ -7,7 +7,7 @@ use App\Models\PaymentDetail;
 
 class OwnerPaymentStatusChart extends Component
 {
-    protected $listeners = ['refresh-dashboard' => '$refresh'];
+    protected $listeners = ['refresh-dashboard' => '$refresh', 'refresh-charts' => 'loadPaymentStatusData'];
 
     public $paymentStatusData;
 

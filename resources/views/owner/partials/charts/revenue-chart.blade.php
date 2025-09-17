@@ -1,23 +1,23 @@
 <div class="space-y-4">
     <!-- Filter Buttons -->
     <div class="flex space-x-2">
-        <button wire:click="$set('revenueFilter', 'daily')"
+        <a href="{{ route('pemilik.dashboard.index', ['analytics_tab' => 'tren-pendapatan', 'revenue_filter' => 'daily']) }}"
                 class="px-3 py-1 text-xs rounded {{ $revenueFilter === 'daily' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600' }}">
             Harian
-        </button>
-        <button wire:click="$set('revenueFilter', 'monthly')"
+        </a>
+        <a href="{{ route('pemilik.dashboard.index', ['analytics_tab' => 'tren-pendapatan', 'revenue_filter' => 'monthly']) }}"
                 class="px-3 py-1 text-xs rounded {{ $revenueFilter === 'monthly' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600' }}">
             Bulanan
-        </button>
-        <button wire:click="$set('revenueFilter', 'yearly')"
+        </a>
+        <a href="{{ route('pemilik.dashboard.index', ['analytics_tab' => 'tren-pendapatan', 'revenue_filter' => 'yearly']) }}"
                 class="px-3 py-1 text-xs rounded {{ $revenueFilter === 'yearly' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600' }}">
             Tahunan
-        </button>
+        </a>
     </div>
 
     <!-- Chart -->
     <div class="h-48">
-        <canvas id="ownerRevenueChart-{{ $this->getId() }}"></canvas>
+        <canvas id="ownerRevenueChart"></canvas>
     </div>
 
     <!-- Summary -->
@@ -37,17 +37,10 @@
     <!-- Chart.js Script -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const chartId = 'ownerRevenueChart-{{ $this->getId() }}';
-        const ctx = document.getElementById(chartId);
-        let chart;
-
-        function createChart() {
-            if (chart) {
-                chart.destroy();
-            }
-
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('ownerRevenueChart');
             if (ctx && @json($revenueChart ?? null)) {
-                chart = new Chart(ctx.getContext('2d'), {
+                new Chart(ctx.getContext('2d'), {
                     type: 'line',
                     data: {
                         labels: @json($revenueChart['labels'] ?? []),
@@ -82,18 +75,6 @@
                     }
                 });
             }
-        }
-
-        createChart();
-
-        // Listen for Livewire updates
-        Livewire.on('refresh-dashboard', () => {
-            setTimeout(createChart, 100);
-        });
-
-        // Listen for component updates
-        document.addEventListener('livewire:updated', function() {
-            setTimeout(createChart, 100);
         });
     </script>
 </div>

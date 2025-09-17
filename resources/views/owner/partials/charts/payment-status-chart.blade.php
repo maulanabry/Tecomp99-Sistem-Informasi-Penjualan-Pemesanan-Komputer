@@ -1,7 +1,7 @@
-<div x-data="paymentStatusChart" class="space-y-4">
+<div class="space-y-4">
     <!-- Chart -->
-    <div wire:ignore class="h-48">
-        <canvas x-ref="paymentStatusCanvas"></canvas>
+    <div class="h-48">
+        <canvas id="ownerPaymentStatusChart"></canvas>
     </div>
 
     <!-- Summary Table -->
@@ -62,62 +62,42 @@
     <!-- Chart.js Script -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('paymentStatusChart', () => ({
-                chart: null,
-                chartData: @entangle('paymentStatusData'),
-                init() {
-                    // Use a timeout to make sure canvas is ready after a tab switch
-                    setTimeout(() => {
-                        this.drawChart();
-                    }, 50);
-
-                    this.$watch('chartData', () => {
-                        this.drawChart();
-                    });
-                },
-                drawChart() {
-                    if (this.chart) {
-                        this.chart.destroy();
-                    }
-
-                    if (!this.chartData || !this.$refs.paymentStatusCanvas) return;
-
-                    const ctx = this.$refs.paymentStatusCanvas.getContext('2d');
-                    this.chart = new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: this.chartData.labels,
-                            datasets: [{
-                                data: this.chartData.data,
-                                backgroundColor: [
-                                    'rgba(251, 191, 36, 0.8)',  // Yellow for menunggu
-                                    'rgba(59, 130, 246, 0.8)',  // Blue for DP
-                                    'rgba(249, 115, 22, 0.8)',  // Orange for cicilan
-                                    'rgba(34, 197, 94, 0.8)'    // Green for lunas
-                                ],
-                                borderColor: [
-                                    'rgba(251, 191, 36, 1)',
-                                    'rgba(59, 130, 246, 1)',
-                                    'rgba(249, 115, 22, 1)',
-                                    'rgba(34, 197, 94, 1)'
-                                ],
-                                borderWidth: 2
-                            }]
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('ownerPaymentStatusChart');
+            if (ctx && @json($paymentStatusData ?? null)) {
+                new Chart(ctx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: @json($paymentStatusData['labels'] ?? []),
+                        datasets: [{
+                            data: @json($paymentStatusData['data'] ?? []),
+                            backgroundColor: [
+                                'rgba(251, 191, 36, 0.8)',  // Yellow for menunggu
+                                'rgba(59, 130, 246, 0.8)',  // Blue for DP
+                                'rgba(249, 115, 22, 0.8)',  // Orange for cicilan
+                                'rgba(34, 197, 94, 0.8)'    // Green for lunas
+                            ],
+                            borderColor: [
+                                'rgba(251, 191, 36, 1)',
+                                'rgba(59, 130, 246, 1)',
+                                'rgba(249, 115, 22, 1)',
+                                'rgba(34, 197, 94, 1)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false // Legend is handled by the table below
-                                }
-                            },
-                            cutout: '60%'
-                        }
-                    });
-                }
-            }));
+                        cutout: '60%'
+                    }
+                });
+            }
         });
     </script>
 </div>

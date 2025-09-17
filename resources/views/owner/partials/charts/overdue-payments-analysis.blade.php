@@ -22,9 +22,8 @@
                                 {{ $payment['customer_name'] }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {{ \Carbon\Carbon::parse($payment['expired_date'])->format('d M Y') }}
+                                {{ \Carbon\Carbon::parse($payment['deadline'])->format('d M Y') }}
                             </td>
-
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-red-600 dark:text-red-400">
                                 {{ $payment['overdue_days'] }} hari
                             </td>

@@ -8,7 +8,7 @@ use App\Models\OrderService;
 
 class OwnerOrderDistributionChart extends Component
 {
-    protected $listeners = ['refresh-dashboard' => '$refresh'];
+    protected $listeners = ['refresh-dashboard' => '$refresh', 'refresh-charts' => 'loadDistributionData'];
 
     public $distributionData;
 

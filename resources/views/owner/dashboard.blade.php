@@ -34,7 +34,7 @@
 
                 <!-- Right Column: Analytics -->
                 <div class="h-full overflow-hidden">
-                    <livewire:owner.owner-dashboard-analytics-tabs />
+                    @include('owner.partials.analytics-tabs')
                 </div>
             </div>
         </div>
@@ -44,25 +44,9 @@
     <script>
         // Refresh dashboard stats every 5 minutes
         setInterval(() => {
-            Livewire.emit('refresh');
-        }, 300000);
-
-        // Listener untuk event Livewire yang memicu render ulang chart
-        window.addEventListener('refresh-charts', function () {
-            // Ganti dengan fungsi render chart kamu
-            if (typeof renderAllCharts === 'function') {
-                renderAllCharts();
+            if (typeof Livewire !== 'undefined') {
+                Livewire.emit('refresh');
             }
-            // Atau, jika pakai Chart.js:
-            // if (window.myChart) window.myChart.update();
-        });
-
-        // Contoh: trigger manual saat Livewire selesai update
-        document.addEventListener("livewire:navigated", function() {
-            window.dispatchEvent(new Event('refresh-charts'));
-        });
-        document.addEventListener("livewire:load", function() {
-            window.dispatchEvent(new Event('refresh-charts'));
-        });
+        }, 300000);
     </script>
 </x-layout-owner>
