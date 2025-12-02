@@ -17,6 +17,8 @@ class PaymentDetailsTable extends Component
     public $sortDirection = 'desc';
     public $activeTab = 'all';
     public $orderTypeFilter = '';
+    public $statusFilter = '';
+    public $methodFilter = '';
     public $perPage = 10;
 
     public $selectedPaymentId = null;
@@ -44,6 +46,16 @@ class PaymentDetailsTable extends Component
     }
 
     public function updatingOrderTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingMethodFilter()
     {
         $this->resetPage();
     }
@@ -124,8 +136,14 @@ class PaymentDetailsTable extends Component
                 ->when($this->activeTab !== 'all', function ($query) {
                     $query->where('status', $this->activeTab);
                 })
+                ->when($this->statusFilter, function ($query) {
+                    $query->where('status', $this->statusFilter);
+                })
                 ->when($this->orderTypeFilter, function ($query) {
                     $query->where('order_type', $this->orderTypeFilter);
+                })
+                ->when($this->methodFilter, function ($query) {
+                    $query->where('method', $this->methodFilter);
                 })
                 ->orderBy($this->sortField, $this->sortDirection)
                 ->paginate($this->perPage)

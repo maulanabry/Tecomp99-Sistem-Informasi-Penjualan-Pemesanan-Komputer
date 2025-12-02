@@ -536,11 +536,7 @@
                         amountInput.readOnly = false;
                         if (paymentType === 'full') {
                             window.rupiahFormatter.setValue(amountInput, remainingBalance);
-
-                            // Update cash received for cash payments
-                            if (methodSelect.value === 'Tunai') {
-                                window.rupiahFormatter.setValue(cashReceivedInput, remainingBalance);
-                            }
+                            window.rupiahFormatter.setValue(cashReceivedInput, remainingBalance);
                         }
                     }
                 } else if (currentOrder.type === 'servis') {
@@ -548,11 +544,7 @@
                     amountInput.readOnly = false;
                     if (paymentType === 'full') {
                         window.rupiahFormatter.setValue(amountInput, remainingBalance);
-
-                        // Update cash received for cash payments
-                        if (methodSelect.value === 'Tunai') {
-                            window.rupiahFormatter.setValue(cashReceivedInput, remainingBalance);
-                        }
+                        window.rupiahFormatter.setValue(cashReceivedInput, remainingBalance);
                     }
                 }
                 

@@ -11,9 +11,6 @@
                     Rp {{ number_format($totalRevenueCurrentMonth, 0, ',', '.') }}
                 </div>
                 <div class="text-sm text-gray-600 dark:text-gray-400">Total Pendapatan Bulan Ini</div>
-                <button wire:click="refreshDashboard" class="mt-2 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400">
-                    <i class="fas fa-sync-alt mr-1"></i> Refresh
-                </button>
             </div>
         </div>
     </div>

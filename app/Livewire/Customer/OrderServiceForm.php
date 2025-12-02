@@ -327,8 +327,6 @@ class OrderServiceForm extends Component
             'discount_amount' => 0,
             'paid_amount' => 0,
             'remaining_balance' => 0,
-            'visit_slot' => $this->slot_waktu,
-            'visit_date' => $this->tanggal_kunjungan,
         ]);
 
         // Handle file uploads

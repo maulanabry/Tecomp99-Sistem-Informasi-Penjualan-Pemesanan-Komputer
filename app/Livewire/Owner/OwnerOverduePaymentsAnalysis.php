@@ -37,7 +37,7 @@ class OwnerOverduePaymentsAnalysis extends Component
             })
             ->get()
             ->map(function ($order) use ($now) {
-                $overdueDays = $now->diffInDays($order->expired_date);
+                $overdueDays = round($now->diffInHours($order->expired_date) / 24);
                 $unpaidAmount = $order->paymentDetails->where('status', 'belum_dibayar')->sum('amount');
 
                 return [
@@ -58,7 +58,7 @@ class OwnerOverduePaymentsAnalysis extends Component
             })
             ->get()
             ->map(function ($order) use ($now) {
-                $overdueDays = $now->diffInDays($order->expired_date);
+                $overdueDays = round($now->diffInHours($order->expired_date) / 24);
                 $unpaidAmount = $order->paymentDetails->where('status', 'belum_dibayar')->sum('amount');
 
                 return [

@@ -116,8 +116,6 @@ class OrderService extends Model
         'last_payment_at',
         'estimated_completion',
         'assigned_admin_id',
-        'visit_slot',
-        'visit_date',
         'expired_date',
     ];
 
@@ -125,7 +123,6 @@ class OrderService extends Model
         'warranty_expired_at' => 'datetime',
         'last_payment_at' => 'datetime',
         'estimated_completion' => 'datetime',
-        'visit_date' => 'date',
         'expired_date' => 'datetime',
         'paid_amount' => 'decimal:2',
         'remaining_balance' => 'decimal:2',
@@ -421,12 +418,15 @@ class OrderService extends Model
         // Generate service ticket ID
         $ticketId = $this->generateServiceTicketId();
 
-        // Parse visit schedule from visit_date and visit_slot
+        // Parse visit schedule from note JSON
         $visitSchedule = null;
-        if ($this->visit_date && $this->visit_slot) {
-            // Extract start time from slot (e.g., "08:00 - 09:30" -> "08:00")
-            $startTime = explode(' - ', $this->visit_slot)[0];
-            $visitSchedule = Carbon::parse($this->visit_date . ' ' . $startTime);
+        if ($this->note) {
+            $noteData = json_decode($this->note, true);
+            if (isset($noteData['tanggal_kunjungan']) && isset($noteData['slot_waktu'])) {
+                // Extract start time from slot (e.g., "08:00 - 09:30" -> "08:00")
+                $startTime = explode(' - ', $noteData['slot_waktu'])[0];
+                $visitSchedule = Carbon::parse($noteData['tanggal_kunjungan'] . ' ' . $startTime);
+            }
         }
 
         // Create service ticket

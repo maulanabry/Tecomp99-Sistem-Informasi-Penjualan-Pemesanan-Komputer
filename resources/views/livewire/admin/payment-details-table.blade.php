@@ -33,6 +33,7 @@
                 <select wire:model.live="statusFilter" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:text-gray-200 shadow-sm dark:bg-gray-700 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
                     <option value="">Semua Status</option>
                     <option value="menunggu">Menunggu</option>
+                    <option value="diproses">Diproses</option>
                     <option value="dibayar">Dibayar</option>
                     <option value="gagal">Gagal</option>
                 </select>
@@ -51,6 +52,7 @@
                     <option value="">Semua Metode</option>
                     <option value="Tunai">Tunai</option>
                     <option value="Bank BCA">Bank BCA</option>
+                    <option value="QRIS">QRIS</option>
                 </select>
             </div>
             <!-- Row Selector -->
@@ -156,6 +158,7 @@
                         @php
                             $statusConfig = [
                                 'menunggu' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+                                'diproses' => 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
                                 'dibayar' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
                                 'gagal' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
                             ];
